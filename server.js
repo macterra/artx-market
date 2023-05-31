@@ -1,5 +1,4 @@
 const express = require('express');
-const serveStatic = require('serve-static');
 const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
@@ -7,7 +6,7 @@ const fs = require('fs');
 const app = express();
 
 // Serve the React frontend
-app.use(serveStatic(path.join(__dirname, 'frontend/build')));
+app.use(express.static(path.join(__dirname, 'frontend/build')));
 
 // Serve the images
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
