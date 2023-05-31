@@ -1,3 +1,7 @@
+# Custom ignores
+uploads/
+frontend/build/
+
 # Logs
 logs
 *.log
