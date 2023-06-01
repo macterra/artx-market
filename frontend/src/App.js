@@ -6,6 +6,7 @@ function App() {
   const [message, setMessage] = useState('');
   const [uploadStatus, setUploadStatus] = useState('');
   const [images, setImages] = useState([]);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const handleUpload = async (event) => {
     const file = event.target.files[0];
@@ -23,6 +24,7 @@ function App() {
       const data = await response.json();
 
       if (data.success) {
+        setRefreshKey((prevKey) => prevKey + 1); // Increment refreshKey after a successful upload
         setUploadStatus('Image uploaded successfully');
       } else {
         setUploadStatus('Image upload failed');
@@ -45,7 +47,7 @@ function App() {
         <h1>{message}</h1>
         <input type="file" onChange={handleUpload} />
         <p>{uploadStatus}</p>
-        <ImageGrid />
+        <ImageGrid refreshKey={refreshKey} />
       </header>
     </div>
   );

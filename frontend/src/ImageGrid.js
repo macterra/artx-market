@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-const ImageGrid = () => {
+const ImageGrid = ({ refreshKey }) => {
     const [images, setImages] = useState([]);
 
     useEffect(() => {
@@ -19,7 +19,7 @@ const ImageGrid = () => {
         };
 
         fetchAssets();
-    }, []);
+    }, [refreshKey]);
 
     return (
         <div
