@@ -3,6 +3,7 @@ const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
 const crypto = require('crypto');
+const sharp = require('sharp');
 
 const app = express();
 
@@ -50,6 +51,24 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
     const assetName = 'asset' + path.extname(req.file.originalname);
     const newPath = path.join(hashFolder, assetName);
     fs.renameSync(req.file.path, newPath);
+
+    // Get image metadata using sharp
+    const imageMetadata = await sharp(newPath).metadata();
+
+    // Create the metadata object
+    const metadata = {
+      fileName: assetName,
+      fileSize: req.file.size,
+      width: imageMetadata.width,
+      height: imageMetadata.height,
+      depth: imageMetadata.depth,
+      format: imageMetadata.format,
+      uploadTime: new Date().toISOString(),
+    };
+
+    // Write the metadata to meta.json
+    const metadataPath = path.join(hashFolder, 'meta.json');
+    await fs.promises.writeFile(metadataPath, JSON.stringify(metadata, null, 2));
 
     res.json({ success: true, message: 'Image uploaded successfully' });
   } else {
