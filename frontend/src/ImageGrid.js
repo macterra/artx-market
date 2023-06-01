@@ -5,13 +5,13 @@ const ImageGrid = ({ refreshKey }) => {
 
     useEffect(() => {
         const fetchAssets = async () => {
-            const response = await fetch('http://localhost:5000/api/assets');
+            const response = await fetch('/api/assets');
             const assetFolders = await response.json();
 
             const imagePromises = assetFolders.map(async (folder) => {
-                const metaResponse = await fetch(`http://localhost:5000/uploads/${folder}/meta.json`);
+                const metaResponse = await fetch(`/uploads/${folder}/meta.json`);
                 const metadata = await metaResponse.json();
-                return `http://localhost:5000/uploads/${folder}/${metadata.fileName}`;
+                return `/uploads/${folder}/${metadata.fileName}`;
             });
 
             const imageUrls = await Promise.all(imagePromises);
