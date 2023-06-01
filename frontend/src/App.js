@@ -39,42 +39,12 @@ function App() {
       .then((data) => setMessage(data.message));
   }, []);
 
-  const fetchImages = async () => {
-    try {
-      const response = await fetch('http://localhost:5000/api/images');
-      const data = await response.json();
-      setImages(data);
-    } catch (error) {
-      console.error('Error fetching images:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchImages();
-  }, [uploadStatus]);
-
   return (
     <div className="App">
       <header className="App-header">
         <h1>{message}</h1>
         <input type="file" onChange={handleUpload} />
         <p>{uploadStatus}</p>
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-            gridGap: '16px',
-          }}
-        >
-          {images.map((image, index) => (
-            <img
-              key={index}
-              src={`http://localhost:5000/uploads/${image}`}
-              alt={`Uploaded ${image}`}
-              style={{ width: '100%', height: 'auto' }}
-            />
-          ))}
-        </div>
         <ImageGrid />
       </header>
     </div>
