@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import ImageGrid from './ImageGrid';
+import BuildTime from './BuildTime';
 
 function App() {
   const [message, setMessage] = useState('');
@@ -44,6 +45,7 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
+        <BuildTime />
         <h1>{message}</h1>
         <input type="file" onChange={handleUpload} />
         <p>{uploadStatus}</p>
