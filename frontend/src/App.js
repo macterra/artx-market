@@ -16,7 +16,7 @@ function App() {
     try {
       setUploadStatus('Image uploading...');
 
-      const response = await fetch('http://localhost:5000/api/upload', {
+      const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
       });
@@ -36,7 +36,7 @@ function App() {
   };
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/data')
+    fetch('/api/data')
       .then((response) => response.json())
       .then((data) => setMessage(data.message));
   }, []);
