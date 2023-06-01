@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
+import ImageGrid from './ImageGrid';
 
 function App() {
   const [message, setMessage] = useState('');
@@ -74,6 +75,7 @@ function App() {
             />
           ))}
         </div>
+        <ImageGrid />
       </header>
     </div>
   );
