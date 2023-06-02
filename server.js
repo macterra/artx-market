@@ -154,29 +154,6 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
   }
 });
 
-const getImagesRecursively = async (dir) => {
-  const dirents = await fs.promises.readdir(dir, { withFileTypes: true });
-  const files = await Promise.all(
-    dirents.map(async (dirent) => {
-      const res = path.join(dir, dirent.name);
-      return dirent.isDirectory() ? getImagesRecursively(res) : res;
-    })
-  );
-  return Array.prototype.concat(...files);
-};
-
-app.get('/api/images', async (req, res) => {
-  try {
-    const uploadsDir = path.join(__dirname, 'uploads');
-    const filePaths = await getImagesRecursively(uploadsDir);
-    const relativePaths = filePaths.map((filePath) => path.relative(uploadsDir, filePath));
-    res.json(relativePaths);
-  } catch (error) {
-    console.error('Error reading uploaded images:', error);
-    res.status(500).json({ message: 'Error reading uploaded images' });
-  }
-});
-
 app.get('/api/assets', async (req, res) => {
   try {
     const uploadsDir = path.join(__dirname, 'uploads');
