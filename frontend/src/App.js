@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import ImageGrid from './ImageGrid';
 import BuildTime from './BuildTime';
+import AuthButton from './AuthButton';
 
 function App() {
   const [message, setMessage] = useState('');
   const [uploadStatus, setUploadStatus] = useState('');
-  const [images, setImages] = useState([]);
   const [refreshKey, setRefreshKey] = useState(0);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -23,6 +23,15 @@ function App() {
       console.error('Error fetching authentication status:', error);
       setIsAuthenticated(false);
     }
+  };
+
+  const handleLogin = () => {
+    window.location.href = '/login';
+  };
+
+  const handleLogout = async () => {
+    await fetch('/logout', { method: 'GET', credentials: 'include' });
+    checkAuthStatus();
   };
 
   const handleUpload = async (event) => {
@@ -66,6 +75,7 @@ function App() {
     <div className="App">
       <header className="App-header">
         <BuildTime />
+        <AuthButton isAuthenticated={isAuthenticated} onLogin={handleLogin} onLogout={handleLogout} />
         <h1>{message}</h1>
         {isAuthenticated ? (
           <>

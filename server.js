@@ -11,19 +11,19 @@ const session = require('express-session');
 const app = express();
 
 const config = {
-	host: 'localhost',
-	port: 5000,
-	url: null,
+  host: 'localhost',
+  port: 5000,
+  url: null,
 };
 
 if (!config.url) {
-	config.url = 'http://' + config.host + ':' + config.port;
+  config.url = 'http://' + config.host + ':' + config.port;
 }
 
 app.use(session({
-	secret: '12345',
-	resave: true,
-	saveUninitialized: true,
+  secret: '12345',
+  resave: true,
+  saveUninitialized: true,
 }));
 
 // Serve the React frontend
@@ -56,41 +56,52 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 const map = {
-	user: new Map(),
+  user: new Map(),
 };
 
-passport.serializeUser(function(user, done) {
-	done(null, user.id);
+passport.serializeUser(function (user, done) {
+  done(null, user.id);
 });
 
-passport.deserializeUser(function(id, done) {
-	done(null, map.user.get(id) || null);
+passport.deserializeUser(function (id, done) {
+  done(null, map.user.get(id) || null);
 });
 
-passport.use(new LnurlAuth.Strategy(function(linkingPublicKey, done) {
-	let user = map.user.get(linkingPublicKey);
-	if (!user) {
-		user = { id: linkingPublicKey };
-		map.user.set(linkingPublicKey, user);
-	}
-	done(null, user);
+passport.use(new LnurlAuth.Strategy(function (linkingPublicKey, done) {
+  let user = map.user.get(linkingPublicKey);
+  if (!user) {
+    user = { id: linkingPublicKey };
+    map.user.set(linkingPublicKey, user);
+  }
+  done(null, user);
 }));
 
 app.use(passport.authenticate('lnurl-auth'));
 
 app.get('/login',
-	function(req, res, next) {
-		if (req.user) {
-			// Already authenticated.
-			return res.redirect('/');
-		}
-		next();
-	},
-	new LnurlAuth.Middleware({
-		callbackUrl: config.url + '/login',
-		cancelUrl: config.url
-	})
+  function (req, res, next) {
+    if (req.user) {
+      // Already authenticated.
+      return res.redirect('/');
+    }
+    next();
+  },
+  new LnurlAuth.Middleware({
+    callbackUrl: config.url + '/login',
+    cancelUrl: config.url
+  })
 );
+
+app.get('/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error('Error destroying session:', err);
+      res.status(500).json({ message: 'Error logging out' });
+    } else {
+      res.json({ message: 'Logged out successfully' });
+    }
+  });
+});
 
 app.get('/check-auth', (req, res) => {
   if (req.isAuthenticated()) {
@@ -178,6 +189,11 @@ app.get('/api/assets', async (req, res) => {
     console.error('Error reading asset subfolders:', error);
     res.status(500).json({ message: 'Error reading asset subfolders' });
   }
+});
+
+app.use((req, res, next) => {
+  console.warn(`Warning: Unhandled endpoint - ${req.method} ${req.originalUrl}`);
+  res.status(404).json({ message: 'Endpoint not found' });
 });
 
 const PORT = process.env.PORT || 5000;
