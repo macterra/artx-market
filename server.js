@@ -136,7 +136,9 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
     // Create the metadata object
     const metadata = {
       fileName: assetName,
+      originalName: req.file.originalname,
       fileSize: req.file.size,
+      hash: fileHash,
       width: imageMetadata.width,
       height: imageMetadata.height,
       depth: imageMetadata.depth,
