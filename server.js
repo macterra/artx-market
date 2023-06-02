@@ -97,6 +97,9 @@ app.get('/login',
   function (req, res, next) {
     if (req.user) {
       // Already authenticated.
+      const userFolder = path.join(config.agents, req.user.id.toString());
+      ensureFolderExists(userFolder);
+      console.log(`user logged in ${userFolder}`);
       return res.redirect('/');
     }
     next();
