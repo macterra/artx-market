@@ -151,6 +151,7 @@ app.post('/api/upload', ensureAuthenticated, upload.single('image'), async (req,
         fileSize: req.file.size,
         hash: fileHash,
         type: 'image',
+        path: `/uploads/${fileHash}/${assetName}`
       },
       image: {
         width: imageMetadata.width,
@@ -181,6 +182,24 @@ app.get('/api/assets', async (req, res) => {
   } catch (error) {
     console.error('Error reading asset subfolders:', error);
     res.status(500).json({ message: 'Error reading asset subfolders' });
+  }
+});
+
+app.get('/api/assets_new', async (req, res) => {
+  try {
+    const assetFolder = 'uploads';
+    const assetFolders = fs.readdirSync(assetFolder);
+    const metaDataPromises = assetFolders.map((folder) => {
+      const metaFilePath = path.join(assetFolder, folder, 'meta.json');
+      return fs.promises.readFile(metaFilePath, 'utf-8');
+    });
+
+    const metaDataContents = await Promise.all(metaDataPromises);
+    const metaDataArray = metaDataContents.map((content) => JSON.parse(content));
+    res.json(metaDataArray);
+  } catch (error) {
+    console.error('Error reading meta.json files:', error);
+    res.status(500).json({ message: 'Error fetching asset metadata' });
   }
 });
 

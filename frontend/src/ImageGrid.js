@@ -5,19 +5,14 @@ const ImageGrid = ({ refreshKey }) => {
 
     useEffect(() => {
         const fetchAssets = async () => {
-            const response = await fetch('/api/assets');
-            const assetFolders = await response.json();
-
-            const imagePromises = assetFolders.map(async (folder) => {
-                const metaResponse = await fetch(`/uploads/${folder}/meta.json`);
-                const metadata = await metaResponse.json();
-                return `/uploads/${folder}/${metadata.asset.fileName}`;
-            });
-
-            const imageUrls = await Promise.all(imagePromises);
-            setImages(imageUrls);
+          try {
+            const response = await fetch('/api/assets_new');
+            const imageMetadata = await response.json();
+            setImages(imageMetadata);
+          } catch (error) {
+            console.error('Error fetching image metadata:', error);
+          }
         };
-
         fetchAssets();
     }, [refreshKey]);
 
@@ -30,10 +25,10 @@ const ImageGrid = ({ refreshKey }) => {
                 gridGap: '16px',
             }}
         >
-            {images.map((imageUrl, index) => (
+            {images.map((metadata, index) => (
                 <img
                     key={index}
-                    src={imageUrl}
+                    src={metadata.asset.path}
                     alt={index}
                     style={{ width: '100%', height: 'auto' }} />
             ))}
