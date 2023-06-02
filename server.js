@@ -14,6 +14,10 @@ const config = {
   host: 'localhost',
   port: 5000,
   url: null,
+  data: 'data',
+  uploads: 'data/uploads',
+  assets: 'data/assets',
+  agents: 'data/agents',
 };
 
 if (!config.url) {
@@ -29,8 +33,8 @@ app.use(session({
 // Serve the React frontend
 app.use(express.static(path.join(__dirname, 'frontend/build')));
 
-// Serve the images
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Serve the assets
+app.use('/data', express.static(path.join(__dirname, config.data)));
 
 app.get('/api/data', (req, res) => {
   res.json({ message: 'Welcome to the ArtX!' });
@@ -45,7 +49,7 @@ function gitHash(fileBuffer) {
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/');
+    cb(null, config.uploads);
   },
   filename: (req, file, cb) => {
     cb(null, file.originalname);
@@ -128,7 +132,7 @@ app.post('/api/upload', ensureAuthenticated, upload.single('image'), async (req,
     const fileHash = gitHash(fileBuffer);
 
     // Create the subfolder
-    const hashFolder = path.join('uploads', fileHash);
+    const hashFolder = path.join(config.assets, fileHash);
     if (!fs.existsSync(hashFolder)) {
       fs.mkdirSync(hashFolder);
     }
@@ -151,7 +155,7 @@ app.post('/api/upload', ensureAuthenticated, upload.single('image'), async (req,
         fileSize: req.file.size,
         hash: fileHash,
         type: 'image',
-        path: `/uploads/${fileHash}/${assetName}`
+        path: `/${config.assets}/${fileHash}/${assetName}`
       },
       image: {
         width: imageMetadata.width,
@@ -173,7 +177,7 @@ app.post('/api/upload', ensureAuthenticated, upload.single('image'), async (req,
 
 app.get('/api/assets', async (req, res) => {
   try {
-    const assetFolder = 'uploads';
+    const assetFolder = config.assets;
     const assetFolders = fs.readdirSync(assetFolder);
     const metaDataPromises = assetFolders.map((folder) => {
       const metaFilePath = path.join(assetFolder, folder, 'meta.json');
