@@ -24,6 +24,17 @@ if (!config.url) {
   config.url = 'http://' + config.host + ':' + config.port;
 }
 
+const ensureFolderExists = (folderPath) => {
+  if (!fs.existsSync(folderPath)) {
+    fs.mkdirSync(folderPath, { recursive: true });
+  }
+};
+
+ensureFolderExists(config.data);
+ensureFolderExists(config.uploads);
+ensureFolderExists(config.assets);
+ensureFolderExists(config.agents);
+
 app.use(session({
   secret: 'Satoshi',
   resave: true,
