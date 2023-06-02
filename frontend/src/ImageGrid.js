@@ -6,7 +6,7 @@ const ImageGrid = ({ refreshKey }) => {
     useEffect(() => {
         const fetchAssets = async () => {
           try {
-            const response = await fetch('/api/assets_new');
+            const response = await fetch('/api/assets');
             const imageMetadata = await response.json();
             setImages(imageMetadata);
           } catch (error) {

@@ -173,20 +173,6 @@ app.post('/api/upload', ensureAuthenticated, upload.single('image'), async (req,
 
 app.get('/api/assets', async (req, res) => {
   try {
-    const uploadsDir = path.join(__dirname, 'uploads');
-    const dirents = await fs.promises.readdir(uploadsDir, { withFileTypes: true });
-    const subfolderNames = dirents
-      .filter((dirent) => dirent.isDirectory())
-      .map((dirent) => dirent.name);
-    res.json(subfolderNames);
-  } catch (error) {
-    console.error('Error reading asset subfolders:', error);
-    res.status(500).json({ message: 'Error reading asset subfolders' });
-  }
-});
-
-app.get('/api/assets_new', async (req, res) => {
-  try {
     const assetFolder = 'uploads';
     const assetFolders = fs.readdirSync(assetFolder);
     const metaDataPromises = assetFolders.map((folder) => {
