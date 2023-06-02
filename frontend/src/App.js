@@ -8,6 +8,22 @@ function App() {
   const [uploadStatus, setUploadStatus] = useState('');
   const [images, setImages] = useState([]);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const checkAuthStatus = async () => {
+    try {
+      const response = await fetch('/check-auth');
+      const data = await response.json();
+      if (data.message === 'Authenticated') {
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
+      }
+    } catch (error) {
+      console.error('Error fetching authentication status:', error);
+      setIsAuthenticated(false);
+    }
+  };
 
   const handleUpload = async (event) => {
     const file = event.target.files[0];
@@ -37,6 +53,10 @@ function App() {
   };
 
   useEffect(() => {
+    checkAuthStatus();
+  }, []);
+
+  useEffect(() => {
     fetch('/api/data')
       .then((response) => response.json())
       .then((data) => setMessage(data.message));
@@ -47,9 +67,15 @@ function App() {
       <header className="App-header">
         <BuildTime />
         <h1>{message}</h1>
-        <input type="file" onChange={handleUpload} />
-        <p>{uploadStatus}</p>
-        <ImageGrid refreshKey={refreshKey} />
+        {isAuthenticated ? (
+          <>
+            <input type="file" onChange={handleUpload} />
+            <p>{uploadStatus}</p>
+            <ImageGrid refreshKey={refreshKey} />
+          </>
+        ) : (
+          <p>Please log in to view and upload images.</p>
+        )}
       </header>
     </div>
   );

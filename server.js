@@ -92,6 +92,14 @@ app.get('/login',
 	})
 );
 
+app.get('/check-auth', (req, res) => {
+  if (req.isAuthenticated()) {
+    res.json({ message: 'Authenticated' });
+  } else {
+    res.status(401).json({ message: 'Unauthorized' });
+  }
+});
+
 const upload = multer({ storage });
 
 app.post('/api/upload', upload.single('image'), async (req, res) => {
