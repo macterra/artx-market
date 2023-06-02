@@ -11,7 +11,7 @@ const ImageGrid = ({ refreshKey }) => {
             const imagePromises = assetFolders.map(async (folder) => {
                 const metaResponse = await fetch(`/uploads/${folder}/meta.json`);
                 const metadata = await metaResponse.json();
-                return `/uploads/${folder}/${metadata.fileName}`;
+                return `/uploads/${folder}/${metadata.asset.fileName}`;
             });
 
             const imageUrls = await Promise.all(imagePromises);
@@ -34,7 +34,7 @@ const ImageGrid = ({ refreshKey }) => {
                 <img
                     key={index}
                     src={imageUrl}
-                    alt={`Image ${index}`}
+                    alt={index}
                     style={{ width: '100%', height: 'auto' }} />
             ))}
         </div>

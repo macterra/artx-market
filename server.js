@@ -113,7 +113,15 @@ app.get('/check-auth', (req, res) => {
 
 const upload = multer({ storage });
 
-app.post('/api/upload', upload.single('image'), async (req, res) => {
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  } else {
+    res.status(401).json({ message: 'Unauthorized' });
+  }
+}
+
+app.post('/api/upload', ensureAuthenticated, upload.single('image'), async (req, res) => {
   if (req.file) {
     // Calculate the Git hash
     const fileBuffer = fs.readFileSync(req.file.path);
@@ -135,15 +143,21 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
 
     // Create the metadata object
     const metadata = {
-      fileName: assetName,
-      originalName: req.file.originalname,
-      fileSize: req.file.size,
-      hash: fileHash,
-      width: imageMetadata.width,
-      height: imageMetadata.height,
-      depth: imageMetadata.depth,
-      format: imageMetadata.format,
-      uploadTime: new Date().toISOString(),
+      asset: {
+        creator: req.user.id,
+        uploadTime: new Date().toISOString(),
+        fileName: assetName,
+        originalName: req.file.originalname,
+        fileSize: req.file.size,
+        hash: fileHash,
+        type: 'image',
+      },
+      image: {
+        width: imageMetadata.width,
+        height: imageMetadata.height,
+        depth: imageMetadata.depth,
+        format: imageMetadata.format,
+      }
     };
 
     // Write the metadata to meta.json
