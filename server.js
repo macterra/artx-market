@@ -139,6 +139,43 @@ function ensureAuthenticated(req, res, next) {
   }
 }
 
+
+const addAssetToUploads = async (userId, imageHash) => {
+  const userFolder = path.join(config.agents, userId.toString());
+  const agentJsonPath = path.join(userFolder, 'agent.json');
+
+  let agentData = {};
+
+  // Check if the agent.json file exists
+  if (fs.existsSync(agentJsonPath)) {
+    const agentJsonContent = await fs.promises.readFile(agentJsonPath, 'utf-8');
+    agentData = JSON.parse(agentJsonContent);
+  }
+
+  // If the "collections" property doesn't exist, create it
+  if (!agentData.collections) {
+    agentData.collections = [];
+  }
+
+  // Find the "uploads" collection
+  let uploadsCollection = agentData.collections.find((collection) => collection.name === 'uploads');
+
+  // If the "uploads" collection doesn't exist, create it and add it to the collections list
+  if (!uploadsCollection) {
+    uploadsCollection = {
+      name: 'uploads',
+      assets: [],
+    };
+    agentData.collections.push(uploadsCollection);
+  }
+
+  // Add the image hash to the "uploads" collection
+  uploadsCollection.assets.push(imageHash);
+
+  // Write the updated agent data to the agent.json file
+  await fs.promises.writeFile(agentJsonPath, JSON.stringify(agentData, null, 2));
+};
+
 app.post('/api/upload', ensureAuthenticated, upload.single('image'), async (req, res) => {
   if (req.file) {
     // Calculate the Git hash
@@ -182,6 +219,8 @@ app.post('/api/upload', ensureAuthenticated, upload.single('image'), async (req,
     // Write the metadata to meta.json
     const metadataPath = path.join(hashFolder, 'meta.json');
     await fs.promises.writeFile(metadataPath, JSON.stringify(metadata, null, 2));
+
+    await addAssetToUploads(req.user.id, fileHash);
 
     res.json({ success: true, message: 'Image uploaded successfully' });
   } else {
