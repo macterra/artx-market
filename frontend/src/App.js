@@ -4,7 +4,8 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { AppBar, Toolbar, Typography, Button } from '@mui/material';
 import ImageGrid from './ImageGrid';
 import ImageDetails from './ImageDetails';
-import BuildTime from './BuildTime';
+//import BuildTime from './BuildTime';
+import AppHeader from './AppHeader';
 import './App.css';
 
 function App() {
@@ -68,29 +69,12 @@ function Home() {
   return (
     <ThemeProvider theme={darkTheme}>
       <div className="App">
-        <AppBar position="static">
-          <Toolbar>
-            <BuildTime />
-            {/* Add your app title or logo here */}
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              ArtX Market
-            </Typography>
-            {isAuthenticated && (
-              <Button color="inherit" onClick={() => navigate('/profile')}>
-                Profile
-              </Button>
-            )}
-            {isAuthenticated ? (
-              <Button color="inherit" onClick={handleLogout}>
-                Logout
-              </Button>
-            ) : (
-              <Button color="inherit" onClick={handleLogin}>
-                Login
-              </Button>
-            )}
-          </Toolbar>
-        </AppBar>
+        <AppHeader
+          isAuthenticated={isAuthenticated}
+          handleLogin={handleLogin}
+          handleLogout={handleLogout}
+          navigate={navigate}
+        />
         <header className="App-header">
           <h1>{message}</h1>
         </header>
@@ -170,29 +154,12 @@ function Profile() {
   return (
     <ThemeProvider theme={darkTheme}>
       <div className="App">
-        <AppBar position="static">
-          <Toolbar>
-            <BuildTime />
-            {/* Add your app title or logo here */}
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              ArtX Market
-            </Typography>
-            {isAuthenticated && (
-              <Button color="inherit" onClick={() => navigate('/')}>
-                Home
-              </Button>
-            )}
-            {isAuthenticated ? (
-              <Button color="inherit" onClick={handleLogout}>
-                Logout
-              </Button>
-            ) : (
-              <Button color="inherit" onClick={handleLogin}>
-                Login
-              </Button>
-            )}
-          </Toolbar>
-        </AppBar>
+        <AppHeader
+          isAuthenticated={isAuthenticated}
+          handleLogin={handleLogin}
+          handleLogout={handleLogout}
+          navigate={navigate}
+        />
         <header className="App-header">
           {isAuthenticated ? (
             <>
