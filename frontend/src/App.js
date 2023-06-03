@@ -12,7 +12,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/image/:hash" element={<ImageDetails />} />
+        <Route path="/image/:hash" element={<ImageView />} />
       </Routes>
     </Router>
   );
@@ -110,6 +110,33 @@ function Profile() {
           ) : (
             <p>Please log in to view and upload images.</p>
           )}
+        </header>
+      </div>
+    </ThemeProvider>
+  );
+}
+
+function ImageView() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const navigate = useNavigate();
+
+  const darkTheme = createTheme({
+    palette: {
+      mode: 'dark',
+    },
+  });
+
+  return (
+    <ThemeProvider theme={darkTheme}>
+      <div className="App">
+        <AppHeader
+          isAuthenticated={isAuthenticated}
+          setIsAuthenticated={setIsAuthenticated}
+          navigate={navigate}
+        />
+        <header className="App-header">
+        <ImageDetails />
         </header>
       </div>
     </ThemeProvider>
