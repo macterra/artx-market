@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { AppBar, Toolbar, Typography, Button } from '@mui/material';
 import ImageGrid from './ImageGrid';
 import ImageDetails from './ImageDetails';
-//import BuildTime from './BuildTime';
 import AppHeader from './AppHeader';
 import './App.css';
 
@@ -32,34 +30,6 @@ function Home() {
     },
   });
 
-  const checkAuthStatus = async () => {
-    try {
-      const response = await fetch('/check-auth');
-      const data = await response.json();
-      if (data.message === 'Authenticated') {
-        setIsAuthenticated(true);
-      } else {
-        setIsAuthenticated(false);
-      }
-    } catch (error) {
-      console.error('Error fetching authentication status:', error);
-      setIsAuthenticated(false);
-    }
-  };
-
-  const handleLogin = () => {
-    window.location.href = '/login';
-  };
-
-  const handleLogout = async () => {
-    await fetch('/logout', { method: 'GET', credentials: 'include' });
-    checkAuthStatus();
-  };
-
-  useEffect(() => {
-    checkAuthStatus();
-  }, []);
-
   useEffect(() => {
     fetch('/api/data')
       .then((response) => response.json())
@@ -71,8 +41,7 @@ function Home() {
       <div className="App">
         <AppHeader
           isAuthenticated={isAuthenticated}
-          handleLogin={handleLogin}
-          handleLogout={handleLogout}
+          setIsAuthenticated={setIsAuthenticated}
           navigate={navigate}
         />
         <header className="App-header">
@@ -95,30 +64,6 @@ function Profile() {
       mode: 'dark',
     },
   });
-
-  const checkAuthStatus = async () => {
-    try {
-      const response = await fetch('/check-auth');
-      const data = await response.json();
-      if (data.message === 'Authenticated') {
-        setIsAuthenticated(true);
-      } else {
-        setIsAuthenticated(false);
-      }
-    } catch (error) {
-      console.error('Error fetching authentication status:', error);
-      setIsAuthenticated(false);
-    }
-  };
-
-  const handleLogin = () => {
-    window.location.href = '/login';
-  };
-
-  const handleLogout = async () => {
-    await fetch('/logout', { method: 'GET', credentials: 'include' });
-    checkAuthStatus();
-  };
 
   const handleUpload = async (event) => {
     const file = event.target.files[0];
@@ -147,22 +92,17 @@ function Profile() {
     }
   };
 
-  useEffect(() => {
-    checkAuthStatus();
-  }, []);
-
   return (
     <ThemeProvider theme={darkTheme}>
       <div className="App">
         <AppHeader
           isAuthenticated={isAuthenticated}
-          handleLogin={handleLogin}
-          handleLogout={handleLogout}
+          setIsAuthenticated={setIsAuthenticated}
           navigate={navigate}
         />
         <header className="App-header">
           {isAuthenticated ? (
-            <>
+            <>upload:
               <input type="file" onChange={handleUpload} />
               <p>{uploadStatus}</p>
               <ImageGrid refreshKey={refreshKey} />
