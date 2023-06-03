@@ -1,8 +1,41 @@
 import React, { useEffect } from 'react';
-import { AppBar, Toolbar, Typography, Button } from '@mui/material';
+import {
+    AppBar,
+    Toolbar,
+    Typography,
+    Button,
+    Menu,
+    MenuItem,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogContentText,
+    DialogActions,
+} from '@mui/material';
+
 import BuildTime from './BuildTime';
 
 const AppHeader = ({ isAuthenticated, setIsAuthenticated, navigate }) => {
+
+    const [anchorEl, setAnchorEl] = React.useState(null);
+    const [aboutOpen, setAboutOpen] = React.useState(false);
+
+    const handleHelpMenuClick = (event) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleHelpMenuClose = () => {
+        setAnchorEl(null);
+    };
+
+    const handleAboutClick = () => {
+        setAnchorEl(null);
+        setAboutOpen(true);
+    };
+
+    const handleAboutClose = () => {
+        setAboutOpen(false);
+    };
 
     const checkAuthStatus = async () => {
         try {
@@ -29,38 +62,67 @@ const AppHeader = ({ isAuthenticated, setIsAuthenticated, navigate }) => {
 
     const handleLogout = async () => {
         await fetch('/logout', { method: 'GET', credentials: 'include' });
-        //window.location.reload();
         checkAuthStatus();
     };
 
     return (
-        <AppBar position="static">
-            <Toolbar>
-                <BuildTime />
-                <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                    ArtX Market
-                </Typography>
-                {isAuthenticated && (
-                    <Button color="inherit" onClick={() => navigate('/')}>
-                        Home
+        <>
+            <AppBar position="static">
+                <Toolbar>
+                    <BuildTime />
+                    <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                        ArtX Market
+                    </Typography>
+                    {isAuthenticated && (
+                        <Button color="inherit" onClick={() => navigate('/')}>
+                            Home
+                        </Button>
+                    )}
+                    {isAuthenticated && (
+                        <Button color="inherit" onClick={() => navigate('/profile')}>
+                            Profile
+                        </Button>
+                    )}
+                    {isAuthenticated ? (
+                        <Button color="inherit" onClick={handleLogout}>
+                            Logout
+                        </Button>
+                    ) : (
+                        <Button color="inherit" onClick={handleLogin}>
+                            Login
+                        </Button>
+                    )}
+                    <Button
+                        color="inherit"
+                        aria-controls="help-menu"
+                        aria-haspopup="true"
+                        onClick={handleHelpMenuClick}
+                    >
+                        Help
                     </Button>
-                )}
-                {isAuthenticated && (
-                    <Button color="inherit" onClick={() => navigate('/profile')}>
-                        Profile
-                    </Button>
-                )}
-                {isAuthenticated ? (
-                    <Button color="inherit" onClick={handleLogout}>
-                        Logout
-                    </Button>
-                ) : (
-                    <Button color="inherit" onClick={handleLogin}>
-                        Login
-                    </Button>
-                )}
-            </Toolbar>
-        </AppBar>
+                    <Menu
+                        id="help-menu"
+                        anchorEl={anchorEl}
+                        keepMounted
+                        open={Boolean(anchorEl)}
+                        onClose={handleHelpMenuClose}
+                    >
+                        <MenuItem onClick={handleAboutClick}>About</MenuItem>
+                    </Menu>
+                </Toolbar>
+            </AppBar>
+            <Dialog onClose={handleAboutClose} open={aboutOpen}>
+                <DialogTitle>About</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        <BuildTime />
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleAboutClose}>Close</Button>
+                </DialogActions>
+            </Dialog>
+        </>
     );
 };
 
