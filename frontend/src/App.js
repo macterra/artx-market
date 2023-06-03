@@ -18,17 +18,17 @@ function App() {
   );
 }
 
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+  },
+});
+
 function Home() {
   const [message, setMessage] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const navigate = useNavigate();
-
-  const darkTheme = createTheme({
-    palette: {
-      mode: 'dark',
-    },
-  });
 
   useEffect(() => {
     fetch('/api/data')
@@ -58,12 +58,6 @@ function Profile() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const navigate = useNavigate();
-
-  const darkTheme = createTheme({
-    palette: {
-      mode: 'dark',
-    },
-  });
 
   const handleUpload = async (event) => {
     const file = event.target.files[0];
@@ -120,12 +114,6 @@ function ImageView() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const navigate = useNavigate();
-
-  const darkTheme = createTheme({
-    palette: {
-      mode: 'dark',
-    },
-  });
 
   return (
     <ThemeProvider theme={darkTheme}>
