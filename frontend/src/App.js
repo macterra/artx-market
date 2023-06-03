@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import './App.css';
+import { useNavigate, BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { AppBar, Toolbar, Typography, Button } from '@mui/material';
 import ImageGrid from './ImageGrid';
 import ImageDetails from './ImageDetails';
 import BuildTime from './BuildTime';
-
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import './App.css';
 
 function App() {
   return (
@@ -23,8 +21,6 @@ function App() {
 
 function Home() {
   const [message, setMessage] = useState('');
-  const [uploadStatus, setUploadStatus] = useState('');
-  const [refreshKey, setRefreshKey] = useState(0);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const navigate = useNavigate();
@@ -57,33 +53,6 @@ function Home() {
   const handleLogout = async () => {
     await fetch('/logout', { method: 'GET', credentials: 'include' });
     checkAuthStatus();
-  };
-
-  const handleUpload = async (event) => {
-    const file = event.target.files[0];
-    const formData = new FormData();
-    formData.append('image', file);
-
-    try {
-      setUploadStatus('Image uploading...');
-
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setRefreshKey((prevKey) => prevKey + 1); // Increment refreshKey after a successful upload
-        setUploadStatus('Image uploaded successfully');
-      } else {
-        setUploadStatus('Image upload failed');
-      }
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      setUploadStatus('Image upload failed');
-    }
   };
 
   useEffect(() => {
@@ -131,7 +100,6 @@ function Home() {
 }
 
 function Profile() {
-  const [message, setMessage] = useState('');
   const [uploadStatus, setUploadStatus] = useState('');
   const [refreshKey, setRefreshKey] = useState(0);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -197,12 +165,6 @@ function Profile() {
 
   useEffect(() => {
     checkAuthStatus();
-  }, []);
-
-  useEffect(() => {
-    fetch('/api/data')
-      .then((response) => response.json())
-      .then((data) => setMessage(data.message));
   }, []);
 
   return (
