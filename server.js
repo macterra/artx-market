@@ -247,8 +247,12 @@ app.get('/api/assets', async (req, res) => {
 });
 
 app.use((req, res, next) => {
-  console.warn(`Warning: Unhandled endpoint - ${req.method} ${req.originalUrl}`);
-  res.status(404).json({ message: 'Endpoint not found' });
+  if (!req.path.startsWith('/api')) {
+    res.sendFile(path.join(__dirname, 'frontend/build', 'index.html'));
+  } else {
+    console.warn(`Warning: Unhandled API endpoint - ${req.method} ${req.originalUrl}`);
+    res.status(404).json({ message: 'Endpoint not found' });
+  }
 });
 
 const PORT = process.env.PORT || config.port;
