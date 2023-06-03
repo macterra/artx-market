@@ -69,10 +69,6 @@ const AppHeader = ({ isAuthenticated, setIsAuthenticated, navigate }) => {
         <>
             <AppBar position="static">
                 <Toolbar>
-                    <BuildTime />
-                    <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                        ArtX Market
-                    </Typography>
                     {isAuthenticated && (
                         <Button color="inherit" onClick={() => navigate('/')}>
                             Home
@@ -83,6 +79,9 @@ const AppHeader = ({ isAuthenticated, setIsAuthenticated, navigate }) => {
                             Profile
                         </Button>
                     )}
+                    <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                        ArtX Market
+                    </Typography>
                     {isAuthenticated ? (
                         <Button color="inherit" onClick={handleLogout}>
                             Logout
