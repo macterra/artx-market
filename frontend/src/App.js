@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './App.css';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { AppBar, Toolbar, Typography, Button } from '@mui/material';
@@ -10,6 +11,8 @@ function App() {
   const [uploadStatus, setUploadStatus] = useState('');
   const [refreshKey, setRefreshKey] = useState(0);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const navigate = useNavigate();
 
   const darkTheme = createTheme({
     palette: {
@@ -89,6 +92,11 @@ function App() {
               ArtX Market
             </Typography>
 
+            {isAuthenticated && (
+              <Button color="inherit" onClick={() => navigate('/profile')}>
+                Profile
+              </Button>
+            )}
             {isAuthenticated ? (
               <Button color="inherit" onClick={handleLogout}>
                 Logout
