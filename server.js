@@ -100,7 +100,7 @@ app.get('/login',
       const userFolder = path.join(config.agents, req.user.id.toString());
       ensureFolderExists(userFolder);
       console.log(`user logged in ${userFolder}`);
-      return res.redirect('/');
+      return res.redirect('/profile');
     }
     next();
   },
