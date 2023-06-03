@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import AppHeader from './AppHeader';
+import ProfileView from './ProfileView';
 import ImageGrid from './ImageGrid';
 import ImageDetails from './ImageDetails';
-import AppHeader from './AppHeader';
 import './App.css';
 
 function App() {
@@ -96,7 +97,8 @@ function Profile() {
         />
         <header className="App-header">
           {isAuthenticated ? (
-            <>upload:
+            <>
+              <ProfileView />
               <input type="file" onChange={handleUpload} />
               <p>{uploadStatus}</p>
               <ImageGrid refreshKey={refreshKey} />
@@ -124,7 +126,7 @@ function ImageView() {
           navigate={navigate}
         />
         <header className="App-header">
-        <ImageDetails />
+          <ImageDetails />
         </header>
       </div>
     </ThemeProvider>

@@ -246,6 +246,38 @@ app.get('/api/assets', async (req, res) => {
   }
 });
 
+app.get('/api/profile', async (req, res) => {
+
+  const userId = req.query.userId || req.user?.id;
+  
+  if (!userId) {
+    return res.status(401).json({ message: 'User not logged in' });
+  }
+
+  try {
+
+    const userFolder = path.join(config.agents, userId.toString());
+    const agentJsonPath = path.join(userFolder, 'agent.json');
+  
+    let agentData = {};
+  
+    // Check if the agent.json file exists
+    if (fs.existsSync(agentJsonPath)) {
+      const agentJsonContent = await fs.promises.readFile(agentJsonPath, 'utf-8');
+      agentData = JSON.parse(agentJsonContent);
+    }
+  
+    if (agentData) {
+      res.json(agentData);
+    } else {
+      res.status(404).json({ message: 'Profile not found' });
+    }
+  } catch (error) {
+    console.error('Error fetching profile data:', error);
+    res.status(500).json({ message: 'Error fetching profile data' });
+  }
+});
+
 app.use((req, res, next) => {
   if (!req.path.startsWith('/api')) {
     res.sendFile(path.join(__dirname, 'frontend/build', 'index.html'));
