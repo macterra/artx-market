@@ -1,14 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { AppBar, Toolbar, Typography, Button } from '@mui/material';
 import ImageGrid from './ImageGrid';
 import BuildTime from './BuildTime';
-import AuthButton from './AuthButton';
 
 function App() {
   const [message, setMessage] = useState('');
   const [uploadStatus, setUploadStatus] = useState('');
   const [refreshKey, setRefreshKey] = useState(0);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const darkTheme = createTheme({
+    palette: {
+      mode: 'dark',
+    },
+  });
 
   const checkAuthStatus = async () => {
     try {
@@ -72,22 +79,41 @@ function App() {
   }, []);
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <BuildTime />
-        <AuthButton isAuthenticated={isAuthenticated} onLogin={handleLogin} onLogout={handleLogout} />
-        <h1>{message}</h1>
-        {isAuthenticated ? (
-          <>
-            <input type="file" onChange={handleUpload} />
-            <p>{uploadStatus}</p>
-            <ImageGrid refreshKey={refreshKey} />
-          </>
-        ) : (
-          <p>Please log in to view and upload images.</p>
-        )}
-      </header>
-    </div>
+    <ThemeProvider theme={darkTheme}>
+      <div className="App">
+        <AppBar position="static">
+          <Toolbar>
+            <BuildTime />
+            {/* Add your app title or logo here */}
+            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+              ArtX Market
+            </Typography>
+
+            {isAuthenticated ? (
+              <Button color="inherit" onClick={handleLogout}>
+                Logout
+              </Button>
+            ) : (
+              <Button color="inherit" onClick={handleLogin}>
+                Login
+              </Button>
+            )}
+          </Toolbar>
+        </AppBar>
+        <header className="App-header">
+          <h1>{message}</h1>
+          {isAuthenticated ? (
+            <>
+              <input type="file" onChange={handleUpload} />
+              <p>{uploadStatus}</p>
+              <ImageGrid refreshKey={refreshKey} />
+            </>
+          ) : (
+            <p>Please log in to view and upload images.</p>
+          )}
+        </header>
+      </div>
+    </ThemeProvider>
   );
 }
 
