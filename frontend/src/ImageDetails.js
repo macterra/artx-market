@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import {
+    Button,
     Table,
     TableBody,
     TableCell,
     TableContainer,
     TableRow,
-  } from '@mui/material';
+} from '@mui/material';
 
 const ImageDetails = () => {
     const { hash } = useParams();
@@ -30,6 +31,27 @@ const ImageDetails = () => {
     if (!metadata) {
         return <p>Loading...</p>;
     }
+
+    const handleSetPfpClick = async () => {
+        try {
+            const response = await fetch('/profile/pfp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ pfp: metadata.asset.path }),
+            });
+
+            if (response.ok) {
+                console.log('Profile picture updated successfully');
+            } else {
+                const data = await response.json();
+                console.error('Error updating profile picture:', data.message);
+            }
+        } catch (error) {
+            console.error('Error updating profile picture:', error);
+        }
+    };
 
     return (
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -73,6 +95,9 @@ const ImageDetails = () => {
                         </TableBody>
                     </Table>
                 </TableContainer>
+                <Button variant="contained" color="primary" onClick={handleSetPfpClick}>
+                    Set as Profile Picture
+                </Button>
             </div>
         </div>
     );
