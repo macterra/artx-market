@@ -1,14 +1,45 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, TextField } from '@mui/material';
 
 const ProfileEditor = () => {
     const [name, setName] = useState('');
     const [tagline, setTagline] = useState('');
 
-    const handleSaveClick = () => {
-        // Add your logic to save the updated name and tagline here
-        console.log('Save button clicked');
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                const response = await fetch(`/api/profile`);
+                const data = await response.json();
+                setName(data.name);
+                setTagline(data.tagline);
+            } catch (error) {
+                console.error('Error fetching profile data:', error);
+            }
+        };
+
+        fetchProfile();
+    }, []);
+
+    const handleSaveClick = async () => {
+        try {
+            const response = await fetch('/api/profile', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name, tagline }),
+            });
+
+            if (response.ok) {
+                console.log('Profile updated successfully');
+            } else {
+                const data = await response.json();
+                console.error('Error updating profile:', data.message);
+            }
+        } catch (error) {
+            console.error('Error updating profile:', error);
+        }
     };
 
     return (
