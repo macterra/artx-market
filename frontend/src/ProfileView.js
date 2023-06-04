@@ -28,20 +28,24 @@ const ProfileView = ({ userId, navigate }) => {
     };
 
     return (
-        <div>
-            {profile.pfp && (
-                <img
-                    src={profile.pfp}
-                    alt="Profile pic"
-                    style={{ width: '100px', height: '100px', objectFit: 'cover' }}
-                />
-            )}
-            <h2>{profile.name}</h2>
-            <p>{profile.tagline}</p>
-            <Button variant="contained" color="primary" onClick={handleEditClick}>
-                Edit
-            </Button>
-        </div>
+        <>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+                <Button variant="contained" color="primary" onClick={handleEditClick}>
+                    Edit
+                </Button>
+            </div>
+            <div>
+                {profile.pfp && (
+                    <img
+                        src={profile.pfp}
+                        alt="Profile pic"
+                        style={{ width: '100px', height: '100px', objectFit: 'cover' }}
+                    />
+                )}
+                <h2>{profile.name}</h2>
+                <p>{profile.tagline}</p>
+            </div>
+        </>
     );
 };
 
