@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
+import { Button } from '@mui/material';
 
-const ProfileView = ({ userId }) => {
+const ProfileView = ({ userId, navigate }) => {
     const [profile, setProfile] = useState(null);
 
     useEffect(() => {
@@ -22,6 +23,10 @@ const ProfileView = ({ userId }) => {
         return <p>Loading profile...</p>;
     }
 
+    const handleEditClick = () => {
+        navigate('/profile/edit');
+    };
+
     return (
         <div>
             {profile.pfp && (
@@ -33,6 +38,9 @@ const ProfileView = ({ userId }) => {
             )}
             <h2>{profile.name}</h2>
             <p>{profile.tagline}</p>
+            <Button variant="contained" color="primary" onClick={handleEditClick}>
+                Edit
+            </Button>
         </div>
     );
 };

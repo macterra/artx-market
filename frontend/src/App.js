@@ -3,6 +3,7 @@ import { useNavigate, BrowserRouter as Router, Routes, Route } from 'react-route
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import AppHeader from './AppHeader';
 import ProfileView from './ProfileView';
+import ProfileEditor from './ProfileEditor';
 import ImageGrid from './ImageGrid';
 import ImageDetails from './ImageDetails';
 import './App.css';
@@ -13,6 +14,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/profile/edit" element={<EditProfile />} />
         <Route path="/image/:hash" element={<ImageView />} />
       </Routes>
     </Router>
@@ -98,7 +100,7 @@ function Profile() {
         <header className="App-header">
           {isAuthenticated ? (
             <>
-              <ProfileView />
+              <ProfileView navigate={navigate} />
               <input type="file" onChange={handleUpload} />
               <p>{uploadStatus}</p>
               <ImageGrid refreshKey={refreshKey} />
@@ -106,6 +108,27 @@ function Profile() {
           ) : (
             <p>Please log in to view and upload images.</p>
           )}
+        </header>
+      </div>
+    </ThemeProvider>
+  );
+}
+
+function EditProfile() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const navigate = useNavigate();
+
+  return (
+    <ThemeProvider theme={darkTheme}>
+      <div className="App">
+        <AppHeader
+          isAuthenticated={isAuthenticated}
+          setIsAuthenticated={setIsAuthenticated}
+          navigate={navigate}
+        />
+        <header className="App-header">
+          <ProfileEditor />
         </header>
       </div>
     </ThemeProvider>
