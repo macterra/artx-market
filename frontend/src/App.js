@@ -128,7 +128,7 @@ function EditProfile() {
           navigate={navigate}
         />
         <header className="App-header">
-          <ProfileEditor />
+          <ProfileEditor  navigate={navigate} />
         </header>
       </div>
     </ThemeProvider>

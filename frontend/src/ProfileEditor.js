@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button, TextField } from '@mui/material';
 
-const ProfileEditor = () => {
+const ProfileEditor = ({ navigate }) => {
     const [name, setName] = useState('');
     const [tagline, setTagline] = useState('');
 
@@ -36,10 +36,12 @@ const ProfileEditor = () => {
             } else {
                 const data = await response.json();
                 console.error('Error updating profile:', data.message);
+                alert(data.message);
             }
         } catch (error) {
             console.error('Error updating profile:', error);
         }
+        navigate('/profile');
     };
 
     return (
