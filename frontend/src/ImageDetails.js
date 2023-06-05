@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 
 import {
     Button,
@@ -34,7 +34,7 @@ const ImageDetails = ({ navigate }) => {
 
     const handleSetPfpClick = async () => {
         try {
-            const response = await fetch('/profile/pfp', {
+            const response = await fetch('/api/profile/pfp', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -81,7 +81,9 @@ const ImageDetails = ({ navigate }) => {
                             </TableRow>
                             <TableRow>
                                 <TableCell>Creator:</TableCell>
-                                <TableCell>{metadata.asset.creator}</TableCell>
+                                <TableCell>
+                                    <Link to={`/profile/${metadata.asset.creator}`}>{metadata.asset.creator}</Link>
+                                </TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell>File size:</TableCell>
