@@ -1,8 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { Button } from '@mui/material';
 
-const ProfileView = ({ userId, navigate }) => {
+const ProfileView = ({ navigate }) => {
+    const { userId } = useParams();
     const [profile, setProfile] = useState(null);
 
     useEffect(() => {
