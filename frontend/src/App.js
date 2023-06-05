@@ -19,6 +19,7 @@ function App() {
         <Route path="/profile/edit" element={<EditProfile />} />
         <Route path="/image/:hash" element={<ViewImage />} />
         <Route path="/image/edit/:hash" element={<EditImage />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );
@@ -131,7 +132,7 @@ function EditProfile() {
           navigate={navigate}
         />
         <header className="App-header">
-          <ProfileEditor  navigate={navigate} />
+          <ProfileEditor navigate={navigate} />
         </header>
       </div>
     </ThemeProvider>
@@ -174,6 +175,28 @@ function EditImage() {
         />
         <header className="App-header">
           <ImageEditor navigate={navigate} />
+        </header>
+      </div>
+    </ThemeProvider>
+  );
+}
+
+function NotFound() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const navigate = useNavigate();
+
+  return (
+    <ThemeProvider theme={darkTheme}>
+      <div className="App">
+        <AppHeader
+          isAuthenticated={isAuthenticated}
+          setIsAuthenticated={setIsAuthenticated}
+          navigate={navigate}
+        />
+        <header className="App-header">
+          <h1>404 - Not Found</h1>
+          <p>The page you are looking for does not exist.</p>
         </header>
       </div>
     </ThemeProvider>
