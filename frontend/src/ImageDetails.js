@@ -13,6 +13,18 @@ import {
 const ImageDetails = ({ navigate }) => {
     const { hash } = useParams();
     const [metadata, setMetadata] = useState(null);
+    const [creator, setCreator] = useState(null);
+
+    const shortenString = async (str) => {
+        if (str.length <= 16) {
+            return str;
+        }
+
+        const firstEight = str.slice(0, 8);
+        const lastEight = str.slice(-8);
+
+        return `${firstEight}...${lastEight}`;
+    };
 
     useEffect(() => {
         const fetchMetadata = async () => {
@@ -20,6 +32,7 @@ const ImageDetails = ({ navigate }) => {
                 const response = await fetch(`/data/assets/${hash}/meta.json`);
                 const metadata = await response.json();
                 setMetadata(metadata);
+                setCreator(await shortenString(metadata.asset.creator));
             } catch (error) {
                 console.error('Error fetching image metadata:', error);
             }
@@ -82,7 +95,7 @@ const ImageDetails = ({ navigate }) => {
                             <TableRow>
                                 <TableCell>Creator:</TableCell>
                                 <TableCell>
-                                    <Link to={`/profile/${metadata.asset.creator}`}>{metadata.asset.creator}</Link>
+                                    <Link to={`/profile/${metadata.asset.creator}`}>{creator}</Link>
                                 </TableCell>
                             </TableRow>
                             <TableRow>
