@@ -10,7 +10,7 @@ import {
     TableRow,
 } from '@mui/material';
 
-const ImageDetails = () => {
+const ImageDetails = ({ navigate }) => {
     const { hash } = useParams();
     const [metadata, setMetadata] = useState(null);
 
@@ -53,6 +53,10 @@ const ImageDetails = () => {
         }
     };
 
+    const handleEditClick = async () => {
+        navigate(`/image/edit/${metadata.asset.hash}`)
+    };
+
     return (
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <div style={{ width: '50%', padding: '16px' }}>
@@ -65,15 +69,15 @@ const ImageDetails = () => {
                         <TableBody>
                             <TableRow>
                                 <TableCell>Title:</TableCell>
-                                <TableCell></TableCell>
+                                <TableCell>{metadata.asset.title}</TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell>Description:</TableCell>
-                                <TableCell></TableCell>
+                                <TableCell>{metadata.asset.description}</TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell>Tags:</TableCell>
-                                <TableCell></TableCell>
+                                <TableCell>{metadata.asset.tags}</TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell>Creator:</TableCell>
@@ -97,6 +101,10 @@ const ImageDetails = () => {
                 </TableContainer>
                 <Button variant="contained" color="primary" onClick={handleSetPfpClick}>
                     Set as Profile Picture
+                </Button>
+                <p></p>
+                <Button variant="contained" color="primary" onClick={handleEditClick}>
+                    Edit Metadata
                 </Button>
             </div>
         </div>

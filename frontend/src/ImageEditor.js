@@ -1,0 +1,102 @@
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+
+import {
+    Button,
+    TextField,
+} from '@mui/material';
+
+const ImageEditor = ({ navigate }) => {
+    const { hash } = useParams();
+    const [metadata, setMetadata] = useState(null);
+    const [title, setTitle] = useState(null);
+    const [description, setDescription] = useState(null);
+    const [tags, setTags] = useState(null);
+
+    useEffect(() => {
+        const fetchMetadata = async () => {
+            try {
+                const response = await fetch(`/data/assets/${hash}/meta.json`);
+                const metadata = await response.json();
+                setMetadata(metadata);
+                setTitle(metadata.asset.title);
+                setDescription(metadata.asset.description);
+                setTags(metadata.asset.tags);
+            } catch (error) {
+                console.error('Error fetching image metadata:', error);
+            }
+        };
+
+        fetchMetadata();
+    }, [hash]);
+
+    if (!metadata) {
+        return <p>Loading...</p>;
+    }
+
+    const handleSaveClick = async () => {
+        try {
+            metadata.asset.title = title;
+            metadata.asset.description = description;
+            metadata.asset.tags = tags;
+
+            const response = await fetch('/api/asset', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ metadata }),
+            });
+
+            if (response.ok) {
+                console.log('Metadata updated successfully');
+            } else {
+                const data = await response.json();
+                console.error('Error updating metadata:', data.message);
+                alert(data.message);
+            }
+        } catch (error) {
+            console.error('Error updating metadata:', error);
+        }
+        navigate(`/image/${metadata.asset.hash}`);
+    };
+
+    return (
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <div style={{ width: '50%', padding: '16px' }}>
+                <img src={metadata.asset.path} alt={metadata.asset.originalName} style={{ width: '100%', height: 'auto' }} />
+            </div>
+            <div style={{ width: '50%', padding: '16px' }}>
+                <h2>Edit Metadata</h2>
+                <form>
+                    <TextField
+                        label="Title"
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        fullWidth
+                        margin="normal"
+                    />
+                    <TextField
+                        label="Description"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        fullWidth
+                        margin="normal"
+                    />
+                    <TextField
+                        label="Tags"
+                        value={tags}
+                        onChange={(e) => setTags(e.target.value)}
+                        fullWidth
+                        margin="normal"
+                    />
+                    <Button variant="contained" color="primary" onClick={handleSaveClick}>
+                        Save
+                    </Button>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+export default ImageEditor;

@@ -6,6 +6,7 @@ import ProfileView from './ProfileView';
 import ProfileEditor from './ProfileEditor';
 import ImageGrid from './ImageGrid';
 import ImageDetails from './ImageDetails';
+import ImageEditor from './ImageEditor';
 import './App.css';
 
 function App() {
@@ -13,9 +14,10 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/profile" element={<ViewProfile />} />
         <Route path="/profile/edit" element={<EditProfile />} />
-        <Route path="/image/:hash" element={<ImageView />} />
+        <Route path="/image/:hash" element={<ViewImage />} />
+        <Route path="/image/edit/:hash" element={<EditImage />} />
       </Routes>
     </Router>
   );
@@ -55,7 +57,7 @@ function Home() {
   );
 }
 
-function Profile() {
+function ViewProfile() {
   const [uploadStatus, setUploadStatus] = useState('');
   const [refreshKey, setRefreshKey] = useState(0);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -135,7 +137,7 @@ function EditProfile() {
   );
 }
 
-function ImageView() {
+function ViewImage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const navigate = useNavigate();
@@ -149,7 +151,28 @@ function ImageView() {
           navigate={navigate}
         />
         <header className="App-header">
-          <ImageDetails />
+          <ImageDetails navigate={navigate} />
+        </header>
+      </div>
+    </ThemeProvider>
+  );
+}
+
+function EditImage() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const navigate = useNavigate();
+
+  return (
+    <ThemeProvider theme={darkTheme}>
+      <div className="App">
+        <AppHeader
+          isAuthenticated={isAuthenticated}
+          setIsAuthenticated={setIsAuthenticated}
+          navigate={navigate}
+        />
+        <header className="App-header">
+          <ImageEditor navigate={navigate} />
         </header>
       </div>
     </ThemeProvider>

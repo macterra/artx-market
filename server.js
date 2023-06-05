@@ -248,6 +248,44 @@ app.get('/api/assets', async (req, res) => {
   }
 });
 
+app.post('/api/asset', async (req, res) => {
+  const { metadata } = req.body;
+  const userId = req.user?.id;
+
+  if (!userId) {
+    return res.status(401).json({ message: 'User not logged in' });
+  }
+
+  try {
+    const assetFolder = path.join(config.assets, metadata.asset?.hash);
+    const assetJsonPath = path.join(assetFolder, 'meta.json');
+
+    let assetData = {};
+
+    // Check if the agent.json file exists
+    if (fs.existsSync(assetJsonPath)) {
+      const assetJsonContent = await fs.promises.readFile(assetJsonPath, 'utf-8');
+      assetData = JSON.parse(assetJsonContent);
+    }
+
+    if (userId != assetData.asset.creator) {
+      res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    assetData.asset.title = metadata.asset?.title;
+    assetData.asset.description = metadata.asset?.description;
+    assetData.asset.tags = metadata.asset?.tags;
+
+    // Write the updated agent data to the agent.json file
+    await fs.promises.writeFile(assetJsonPath, JSON.stringify(assetData, null, 2));
+
+    res.json({ message: 'Metadata updated successfully' });
+  } catch (error) {
+    console.error('Error updating metadata:', error);
+    res.status(500).json({ message: 'Error updating metadata' });
+  }
+});
+
 app.get('/api/profile', async (req, res) => {
 
   const userId = req.query.userId || req.user?.id;
@@ -314,7 +352,7 @@ app.post('/api/profile', async (req, res) => {
   }
 });
 
-app.post('/profile/pfp', async (req, res) => {
+app.post('/api/profile/pfp', async (req, res) => {
   const { pfp } = req.body;
   const userId = req.user?.id;
 
