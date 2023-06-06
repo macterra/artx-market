@@ -248,6 +248,29 @@ app.get('/api/assets', async (req, res) => {
   }
 });
 
+app.post('/api/collection', async (req, res) => {
+  const { hashes } = req.body;
+
+  if (!Array.isArray(hashes)) {
+    res.status(400).json({ message: 'Invalid input, expected an array of hashes' });
+    return;
+  }
+
+  try {
+    const metadataPromises = hashes.map(async (hash) => {
+      const metaFilePath = path.join(config.assets, hash, 'meta.json');
+      const metaFileContent = await fs.promises.readFile(metaFilePath, 'utf-8');
+      return JSON.parse(metaFileContent);
+    });
+
+    const metadataArray = await Promise.all(metadataPromises);
+    res.json(metadataArray);
+  } catch (error) {
+    console.error('Error reading meta.json files:', error);
+    res.status(500).json({ message: 'Error fetching asset metadata' });
+  }
+});
+
 app.post('/api/asset', async (req, res) => {
   const { metadata } = req.body;
   const userId = req.user?.id;
