@@ -9,11 +9,8 @@ const ImageGrid = ({ refreshKey }) => {
             try {
                 const response1 = await fetch(`/api/profile`);
                 const profile = await response1.json();
-                console.log(profile);
                 const uploads = profile?.collections[0];
-                console.log(uploads);
                 const assets = uploads?.assets;
-                console.log(assets);
 
                 const response = await fetch('/api/collection', {
                     method: 'POST',
@@ -23,7 +20,6 @@ const ImageGrid = ({ refreshKey }) => {
                     body: JSON.stringify({ hashes: assets }),
                 });
                 const imageMetadata = await response.json();
-                console.log(imageMetadata);
                 setImages(imageMetadata);
             } catch (error) {
                 console.error('Error fetching image metadata:', error);
