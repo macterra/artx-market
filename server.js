@@ -99,9 +99,7 @@ app.get('/login',
   function (req, res, next) {
     if (req.user) {
       // Already authenticated.
-      const userFolder = path.join(config.agents, req.user.id.toString());
-      ensureFolderExists(userFolder);
-      console.log(`user logged in ${userFolder}`);
+      const agentData = getAgent(req.user.id, true);
       return res.redirect('/profile');
     }
     next();
@@ -141,8 +139,7 @@ function ensureAuthenticated(req, res, next) {
   }
 }
 
-
-const addAssetToUploads = async (userId, imageHash) => {
+const getAgent = async(userId, doCreate) => {
   const userFolder = path.join(config.agents, userId.toString());
   const agentJsonPath = path.join(userFolder, 'agent.json');
 
@@ -152,7 +149,32 @@ const addAssetToUploads = async (userId, imageHash) => {
   if (fs.existsSync(agentJsonPath)) {
     const agentJsonContent = await fs.promises.readFile(agentJsonPath, 'utf-8');
     agentData = JSON.parse(agentJsonContent);
+  } else if (doCreate) {
+    agentData = {
+      id: userId,
+      name: 'anon',
+      tagline: '',
+      description: '',
+      defaultCollection: 0,
+    };
+    
+    ensureFolderExists(userFolder);
+    await fs.promises.writeFile(agentJsonPath, JSON.stringify(agentData, null, 2));
   }
+
+  return agentData;
+};
+
+const saveAgent = async(agentData) => {
+  const userFolder = path.join(config.agents, agentData.id);
+  const agentJsonPath = path.join(userFolder, 'agent.json');
+
+  await fs.promises.writeFile(agentJsonPath, JSON.stringify(agentData, null, 2));
+};
+
+const addAssetToUploads = async (userId, imageHash) => {
+
+  agentData = await getAgent(userId, true);
 
   // If the "collections" property doesn't exist, create it
   if (!agentData.collections) {
@@ -175,7 +197,7 @@ const addAssetToUploads = async (userId, imageHash) => {
   uploadsCollection.assets.push(imageHash);
 
   // Write the updated agent data to the agent.json file
-  await fs.promises.writeFile(agentJsonPath, JSON.stringify(agentData, null, 2));
+  await saveAgent(agentData);
 };
 
 app.post('/api/upload', ensureAuthenticated, upload.single('image'), async (req, res) => {
@@ -317,18 +339,8 @@ app.get('/api/profile', async (req, res) => {
     return res.status(401).json({ message: 'User not logged in' });
   }
 
-  try {
-
-    const userFolder = path.join(config.agents, userId.toString());
-    const agentJsonPath = path.join(userFolder, 'agent.json');
-
-    let agentData = {};
-
-    // Check if the agent.json file exists
-    if (fs.existsSync(agentJsonPath)) {
-      const agentJsonContent = await fs.promises.readFile(agentJsonPath, 'utf-8');
-      agentData = JSON.parse(agentJsonContent);
-    }
+  try {    
+    const agentData = await getAgent(userId, false);
 
     if (agentData) {
       res.json(agentData);

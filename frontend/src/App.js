@@ -16,6 +16,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/profile/" element={<ViewProfile />} />
         <Route path="/profile/:userId" element={<ViewProfile />} />
+        <Route path="/profile/:userId/:collId" element={<ViewProfile />} />
         <Route path="/profile/edit" element={<EditProfile />} />
         <Route path="/image/:hash" element={<ViewImage />} />
         <Route path="/image/edit/:hash" element={<EditImage />} />

@@ -4,15 +4,25 @@ import { useParams } from 'react-router-dom';
 import { Button } from '@mui/material';
 
 const ProfileView = ({ navigate }) => {
-    const { userId } = useParams();
+    const { userId, collId } = useParams();
     const [profile, setProfile] = useState(null);
 
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const response = await fetch(`/api/profile${userId ? `?userId=${userId}` : ''}`);
-                const data = await response.json();
-                setProfile(data);
+                if (!userId) {
+                    const response = await fetch(`/api/profile`);
+                    const profileData = await response.json();
+                    navigate(`/profile/${profileData.id}/${profileData.defaultCollection}`);
+                } else if (!collId) {
+                    const response = await fetch(`/api/profile?userId=${userId}`);
+                    const profileData = await response.json();
+                    navigate(`/profile/${userId}/${profileData.defaultCollection}`);
+                } else {
+                    const response = await fetch(`/api/profile?userId=${userId}`);
+                    const profileData = await response.json();
+                    setProfile(profileData);
+                }
             } catch (error) {
                 console.error('Error fetching profile data:', error);
             }
@@ -31,7 +41,7 @@ const ProfileView = ({ navigate }) => {
 
     return (
         <>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', width: '90%' }}>
                 <Button variant="contained" color="primary" onClick={handleEditClick}>
                     Edit
                 </Button>
