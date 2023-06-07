@@ -323,38 +323,6 @@ app.post('/api/profile', ensureAuthenticated, async (req, res) => {
   await saveAgent(agentData);
 });
 
-app.post('/api/profile/pfp', async (req, res) => {
-  const { pfp } = req.body;
-  const userId = req.user?.id;
-
-  if (!userId) {
-    return res.status(401).json({ message: 'User not logged in' });
-  }
-
-  try {
-    const userFolder = path.join(config.agents, userId.toString());
-    const agentJsonPath = path.join(userFolder, 'agent.json');
-
-    let agentData = {};
-
-    // Check if the agent.json file exists
-    if (fs.existsSync(agentJsonPath)) {
-      const agentJsonContent = await fs.promises.readFile(agentJsonPath, 'utf-8');
-      agentData = JSON.parse(agentJsonContent);
-    }
-
-    agentData.pfp = pfp;
-
-    // Write the updated agent data to the agent.json file
-    await fs.promises.writeFile(agentJsonPath, JSON.stringify(agentData, null, 2));
-
-    res.json({ message: 'Profile picture updated successfully' });
-  } catch (error) {
-    console.error('Error updating profile picture:', error);
-    res.status(500).json({ message: 'Error updating profile picture' });
-  }
-});
-
 app.use((req, res, next) => {
   if (!req.path.startsWith('/api')) {
     res.sendFile(path.join(__dirname, 'frontend/build', 'index.html'));

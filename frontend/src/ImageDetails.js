@@ -46,20 +46,26 @@ const ImageDetails = ({ navigate }) => {
     }
 
     const handleSetPfpClick = async () => {
-        try {
-            const response = await fetch('/api/profile/pfp', {
+        try {            
+            const response1 = await fetch(`/api/profile`);
+            const profile = await response1.json();
+
+            profile.pfp = metadata.asset.path;
+
+            const response2 = await fetch('/api/profile', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ pfp: metadata.asset.path }),
+                body: JSON.stringify(profile),
             });
 
-            if (response.ok) {
-                console.log('Profile picture updated successfully');
+            if (response2.ok) {
+                console.log('Profile updated successfully');
             } else {
-                const data = await response.json();
-                console.error('Error updating profile picture:', data.message);
+                const data = await response2.json();
+                console.error('Error updating profile:', data.message);
+                alert(data.message);
             }
         } catch (error) {
             console.error('Error updating profile picture:', error);
