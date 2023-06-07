@@ -139,7 +139,7 @@ function ensureAuthenticated(req, res, next) {
   }
 }
 
-const getAgent = async(userId, doCreate) => {
+const getAgent = async (userId, doCreate) => {
   const userFolder = path.join(config.agents, userId.toString());
   const agentJsonPath = path.join(userFolder, 'agent.json');
 
@@ -157,7 +157,7 @@ const getAgent = async(userId, doCreate) => {
       description: '',
       defaultCollection: 0,
     };
-    
+
     ensureFolderExists(userFolder);
     await fs.promises.writeFile(agentJsonPath, JSON.stringify(agentData, null, 2));
   }
@@ -165,7 +165,7 @@ const getAgent = async(userId, doCreate) => {
   return agentData;
 };
 
-const saveAgent = async(agentData) => {
+const saveAgent = async (agentData) => {
   const userFolder = path.join(config.agents, agentData.id);
   const agentJsonPath = path.join(userFolder, 'agent.json');
 
@@ -252,7 +252,7 @@ app.post('/api/upload', ensureAuthenticated, upload.single('image'), async (req,
   }
 });
 
-app.post('/api/asset', async (req, res) => {
+app.post('/api/asset', ensureAuthenticated, async (req, res) => {
   const { metadata } = req.body;
   const userId = req.user?.id;
 
@@ -298,7 +298,7 @@ app.get('/api/profile', async (req, res) => {
     return res.status(401).json({ message: 'User not logged in' });
   }
 
-  try {    
+  try {
     const agentData = await getAgent(userId, false);
 
     if (agentData) {
@@ -313,14 +313,20 @@ app.get('/api/profile', async (req, res) => {
 });
 
 app.post('/api/profile', ensureAuthenticated, async (req, res) => {
-  const agentData = req.body;
-  const userId = req.user.id;
+  try {
+    const agentData = req.body;
+    const userId = req.user.id;
 
-  if (userId != agentData.id) {
-    return res.status(401).json({ message: 'Unauthorized' });
+    if (userId != agentData.id) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    await saveAgent(agentData);    
+    res.json({ message: 'Metadata updated successfully' });
+  } catch (error) {
+    console.error('Error updating metadata:', error);
+    res.status(500).json({ message: 'Error updating metadata' });
   }
-
-  await saveAgent(agentData);
 });
 
 app.use((req, res, next) => {
