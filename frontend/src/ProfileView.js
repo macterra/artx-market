@@ -29,7 +29,7 @@ const ProfileView = ({ navigate }) => {
         };
 
         fetchProfile();
-    }, [userId]);
+    }, [navigate, userId, collId]);
 
     if (!profile) {
         return <p>Loading profile...</p>;

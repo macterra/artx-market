@@ -54,7 +54,7 @@ const AppHeader = ({ isAuthenticated, setIsAuthenticated, navigate }) => {
 
     useEffect(() => {
         checkAuthStatus();
-    }, []);
+    });
 
     const handleLogin = () => {
         window.location.href = '/login';
