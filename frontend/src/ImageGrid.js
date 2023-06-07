@@ -18,15 +18,15 @@ const ImageGrid = ({ refreshKey }) => {
                 const profileResp = await fetch(`/api/profile?userId=${userId}`);
                 const profileData = await profileResp.json();
                 const collection = profileData?.collections[collId];
-                const collectionResp = await fetch('/api/collection', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(collection),
+                const assets = collection.assets;
+
+                const imageMetadataPromises = assets.map(async (hash) => {
+                    const metaResp = await fetch(`/data/assets/${hash}/meta.json`);
+                    return metaResp.json();
                 });
-                const imageMetadata = await collectionResp.json();
-                setImages(imageMetadata);
+
+                const metadata = await Promise.all(imageMetadataPromises);
+                setImages(metadata);
             } catch (error) {
                 console.error('Error fetching image metadata:', error);
             }
