@@ -312,38 +312,15 @@ app.get('/api/profile', async (req, res) => {
   }
 });
 
-app.post('/api/profile', async (req, res) => {
-  const { name, tagline } = req.body;
-  const userId = req.user?.id;
+app.post('/api/profile', ensureAuthenticated, async (req, res) => {
+  const agentData = req.body;
+  const userId = req.user.id;
 
-  if (!userId) {
-    return res.status(401).json({ message: 'User not logged in' });
+  if (userId != agentData.id) {
+    return res.status(401).json({ message: 'Unauthorized' });
   }
 
-  try {
-
-    const userFolder = path.join(config.agents, userId.toString());
-    const agentJsonPath = path.join(userFolder, 'agent.json');
-
-    let agentData = {};
-
-    // Check if the agent.json file exists
-    if (fs.existsSync(agentJsonPath)) {
-      const agentJsonContent = await fs.promises.readFile(agentJsonPath, 'utf-8');
-      agentData = JSON.parse(agentJsonContent);
-    }
-
-    agentData.name = name;
-    agentData.tagline = tagline;
-
-    // Write the updated agent data to the agent.json file
-    await fs.promises.writeFile(agentJsonPath, JSON.stringify(agentData, null, 2));
-
-    res.json({ message: 'Profile updated successfully' });
-  } catch (error) {
-    console.error('Error updating profile data:', error);
-    res.status(500).json({ message: 'Error updating profile data' });
-  }
+  await saveAgent(agentData);
 });
 
 app.post('/api/profile/pfp', async (req, res) => {

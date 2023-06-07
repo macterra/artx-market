@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Button, TextField, List, ListItem, ListItemText } from '@mui/material';
 
 const ProfileEditor = ({ navigate }) => {
+    const [profile, setProfile] = useState({});
     const [name, setName] = useState('');
     const [tagline, setTagline] = useState('');
     const [collections, setCollections] = useState([]);
@@ -13,6 +14,7 @@ const ProfileEditor = ({ navigate }) => {
             try {
                 const response = await fetch(`/api/profile`);
                 const data = await response.json();
+                setProfile(data);
                 setName(data.name);
                 setTagline(data.tagline);
                 setCollections(data.collections);
@@ -26,12 +28,16 @@ const ProfileEditor = ({ navigate }) => {
 
     const handleSaveClick = async () => {
         try {
+            profile.name = name;
+            profile.tagline = tagline;
+            profile.collections = collections;
+
             const response = await fetch('/api/profile', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ name, tagline }),
+                body: JSON.stringify(profile),
             });
 
             if (response.ok) {
@@ -53,6 +59,7 @@ const ProfileEditor = ({ navigate }) => {
             {
                 name: 'new',
                 description: '',
+                assets: [],
             },
         ]);
         setSelectedCollectionIndex(collections.length);
