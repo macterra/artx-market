@@ -1,32 +1,42 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 
 const ImageGrid = ({ refreshKey }) => {
+    const { userId, collId } = useParams();
     const [images, setImages] = useState([]);
 
     useEffect(() => {
         const fetchAssets = async () => {
             try {
-                const response1 = await fetch(`/api/profile`);
-                const profile = await response1.json();
-                const uploads = profile?.collections[0];
-                //const assets = uploads?.assets;
+                console.log(`userId=${userId}`);
+                console.log(`collId= ${collId}`);
 
-                const response = await fetch('/api/collection', {
+                if (typeof userId === 'undefined' || typeof collId === 'undefined') {
+                    return;
+                }
+
+                const profileResp = await fetch(`/api/profile?userId=${userId}`);
+                const profileData = await profileResp.json();
+                const collection = profileData?.collections[collId];
+                const collectionResp = await fetch('/api/collection', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(uploads),
+                    body: JSON.stringify(collection),
                 });
-                const imageMetadata = await response.json();
+                const imageMetadata = await collectionResp.json();
                 setImages(imageMetadata);
             } catch (error) {
                 console.error('Error fetching image metadata:', error);
             }
         };
         fetchAssets();
-    }, [refreshKey]);
+    }, [refreshKey, userId, collId]);
+
+    if (!images) {
+        return <p>Loading images...</p>;
+    }
 
     return (
         <div
