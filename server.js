@@ -214,14 +214,10 @@ const recreateCollections = async (userId) => {
 
       // Check if the asset metadata has a collection specified
       if (metadata.asset.collection) {
-        const collectionName = metadata.asset.collection;
+        const collectionIdx = metadata.asset.collection;
 
         // Find the collection with the specified name or create a new one if not found
-        let collection = agentData.collections.find((c) => c.name === collectionName);
-        if (!collection) {
-          collection = { name: collectionName, assets: [] };
-          agentData.collections.push(collection);
-        }
+        let collection = agentData.collections[collectionIdx];
 
         // Add the hash to the collection's assets array
         if (!collection.assets.includes(hash)) {
@@ -361,7 +357,7 @@ app.post('/api/profile', ensureAuthenticated, async (req, res) => {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    await saveAgent(agentData);    
+    await saveAgent(agentData);
     res.json({ message: 'Metadata updated successfully' });
   } catch (error) {
     console.error('Error updating metadata:', error);

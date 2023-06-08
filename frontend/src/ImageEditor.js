@@ -102,7 +102,7 @@ const ImageEditor = ({ navigate }) => {
                             onChange={(e) => setSelectedCollection(e.target.value)}
                         >
                             {collections.map((collection, index) => (
-                                <MenuItem key={index} value={collection.name}>
+                                <MenuItem key={index} value={index}>
                                     {collection.name}
                                 </MenuItem>
                             ))}
