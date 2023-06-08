@@ -279,6 +279,7 @@ app.post('/api/asset', ensureAuthenticated, async (req, res) => {
     assetData.asset.title = metadata.asset?.title;
     assetData.asset.description = metadata.asset?.description;
     assetData.asset.tags = metadata.asset?.tags;
+    assetData.asset.collection = metadata.asset?.collection;
 
     // Write the updated agent data to the agent.json file
     await fs.promises.writeFile(assetJsonPath, JSON.stringify(assetData, null, 2));

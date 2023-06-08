@@ -1,10 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-
-import {
-    Button,
-    TextField,
-} from '@mui/material';
+import { Button, TextField, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 
 const ImageEditor = ({ navigate }) => {
     const { hash } = useParams();
@@ -12,6 +8,8 @@ const ImageEditor = ({ navigate }) => {
     const [title, setTitle] = useState(null);
     const [description, setDescription] = useState(null);
     const [tags, setTags] = useState(null);
+    const [collections, setCollections] = useState([]);
+    const [selectedCollection, setSelectedCollection] = useState('');
 
     useEffect(() => {
         const fetchMetadata = async () => {
@@ -22,6 +20,11 @@ const ImageEditor = ({ navigate }) => {
                 setTitle(metadata.asset.title);
                 setDescription(metadata.asset.description);
                 setTags(metadata.asset.tags);
+                setSelectedCollection(metadata.asset.collection || 0);
+                
+                const profileResponse = await fetch('/api/profile');
+                const profileData = await profileResponse.json();
+                setCollections(profileData.collections || []);
             } catch (error) {
                 console.error('Error fetching image metadata:', error);
             }
@@ -39,6 +42,7 @@ const ImageEditor = ({ navigate }) => {
             metadata.asset.title = title;
             metadata.asset.description = description;
             metadata.asset.tags = tags;
+            metadata.asset.collection = selectedCollection;
 
             const response = await fetch('/api/asset', {
                 method: 'POST',
@@ -90,6 +94,20 @@ const ImageEditor = ({ navigate }) => {
                         fullWidth
                         margin="normal"
                     />
+                    <FormControl fullWidth margin="normal">
+                        <InputLabel id="collection-select-label">Collection</InputLabel>
+                        <Select
+                            labelId="collection-select-label"
+                            value={selectedCollection}
+                            onChange={(e) => setSelectedCollection(e.target.value)}
+                        >
+                            {collections.map((collection, index) => (
+                                <MenuItem key={index} value={collection.name}>
+                                    {collection.name}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
                     <Button variant="contained" color="primary" onClick={handleSaveClick}>
                         Save
                     </Button>

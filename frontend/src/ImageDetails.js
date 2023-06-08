@@ -79,10 +79,13 @@ const ImageDetails = ({ navigate }) => {
     return (
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <div style={{ width: '50%', padding: '16px' }}>
-                <img src={metadata.asset.path} alt={metadata.asset.originalName} style={{ width: '100%', height: 'auto' }} />
+                <img src={metadata.asset.path} alt={metadata.asset.originalName} style={{ width: '100%', height: 'auto' }} />           
+                <Button variant="contained" color="primary" onClick={handleSetPfpClick}>
+                    Set as Profile Picture
+                </Button>
             </div>
             <div style={{ width: '50%', padding: '16px' }}>
-                <h2>Metadata:</h2>
+                <h2>Metadata</h2>
                 <TableContainer>
                     <Table>
                         <TableBody>
@@ -116,14 +119,14 @@ const ImageDetails = ({ navigate }) => {
                                 <TableCell>Image format:</TableCell>
                                 <TableCell>{metadata.image.format}</TableCell>
                             </TableRow>
+                            <TableRow>
+                                <TableCell>Collection:</TableCell>
+                                <TableCell>{metadata.asset.collection}</TableCell>
+                            </TableRow>
                             {/* Add any other metadata you want to display */}
                         </TableBody>
                     </Table>
                 </TableContainer>
-                <Button variant="contained" color="primary" onClick={handleSetPfpClick}>
-                    Set as Profile Picture
-                </Button>
-                <p></p>
                 <Button variant="contained" color="primary" onClick={handleEditClick}>
                     Edit Metadata
                 </Button>
