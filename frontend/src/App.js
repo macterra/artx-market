@@ -106,9 +106,9 @@ function ViewProfile() {
           {isAuthenticated ? (
             <>
               <ProfileView navigate={navigate} />
+              <ImageGrid refreshKey={refreshKey} />
               <input type="file" onChange={handleUpload} />
               <p>{uploadStatus}</p>
-              <ImageGrid refreshKey={refreshKey} />
             </>
           ) : (
             <p>Please log in to view and upload images.</p>

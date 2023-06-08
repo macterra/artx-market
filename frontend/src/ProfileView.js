@@ -1,11 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Button } from '@mui/material';
+import { Button, Tabs, Tab } from '@mui/material';
 
 const ProfileView = ({ navigate }) => {
     const { userId, collId } = useParams();
     const [profile, setProfile] = useState(null);
+    const [selectedCollectionIndex, setSelectedCollectionIndex] = useState(null);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -39,6 +40,11 @@ const ProfileView = ({ navigate }) => {
         navigate('/profile/edit');
     };
 
+    const handleCollectionChange = (event, newIndex) => {
+        setSelectedCollectionIndex(newIndex);
+        navigate(`/profile/${userId}/${newIndex}`);
+    };
+
     return (
         <>
             <div style={{ display: 'flex', justifyContent: 'flex-end', width: '90%' }}>
@@ -57,6 +63,19 @@ const ProfileView = ({ navigate }) => {
                 <h2>{profile.name}</h2>
                 <p>{profile.tagline}</p>
             </div>
+            <p>Collections</p>
+            <Tabs
+                value={selectedCollectionIndex}
+                onChange={handleCollectionChange}
+                indicatorColor="primary"
+                textColor="primary"
+                variant="scrollable"
+                scrollButtons="auto"
+            >
+                {profile.collections.map((collection, index) => (
+                    <Tab key={index} label={collection.name} />
+                ))}
+            </Tabs>
         </>
     );
 };
