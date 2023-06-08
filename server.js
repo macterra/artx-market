@@ -156,6 +156,7 @@ const getAgent = async (userId, doCreate) => {
       tagline: '',
       description: '',
       defaultCollection: 0,
+      collections: [{ name: 'uploads', description: '', assets: []}],
     };
 
     ensureFolderExists(userFolder);
@@ -195,6 +196,42 @@ const addAssetToUploads = async (userId, imageHash) => {
 
   // Add the image hash to the "uploads" collection
   uploadsCollection.assets.push(imageHash);
+
+  // Write the updated agent data to the agent.json file
+  await saveAgent(agentData);
+};
+
+const recreateCollections = async (userId) => {
+
+  agentData = await getAgent(userId, false);
+
+  for (const hash of agentData.collections[0].assets) {
+    try {
+      // Read the metadata for the hash
+      const metadataPath = path.join(config.assets, hash, 'meta.json');
+      const metadataContent = await fs.promises.readFile(metadataPath, 'utf-8');
+      const metadata = JSON.parse(metadataContent);
+
+      // Check if the asset metadata has a collection specified
+      if (metadata.asset.collection) {
+        const collectionName = metadata.asset.collection;
+
+        // Find the collection with the specified name or create a new one if not found
+        let collection = agentData.collections.find((c) => c.name === collectionName);
+        if (!collection) {
+          collection = { name: collectionName, assets: [] };
+          agentData.collections.push(collection);
+        }
+
+        // Add the hash to the collection's assets array
+        if (!collection.assets.includes(hash)) {
+          collection.assets.push(hash);
+        }
+      }
+    } catch (error) {
+      console.error(`Error processing asset ${hash}:`, error);
+    }
+  }
 
   // Write the updated agent data to the agent.json file
   await saveAgent(agentData);
@@ -283,6 +320,8 @@ app.post('/api/asset', ensureAuthenticated, async (req, res) => {
 
     // Write the updated agent data to the agent.json file
     await fs.promises.writeFile(assetJsonPath, JSON.stringify(assetData, null, 2));
+
+    await recreateCollections(userId);
 
     res.json({ message: 'Metadata updated successfully' });
   } catch (error) {
