@@ -253,7 +253,7 @@ app.post('/api/upload', ensureAuthenticated, upload.single('image'), async (req,
 });
 
 app.post('/api/asset', ensureAuthenticated, async (req, res) => {
-  const { metadata } = req.body;
+  const metadata = req.body;
   const userId = req.user?.id;
 
   if (!userId) {

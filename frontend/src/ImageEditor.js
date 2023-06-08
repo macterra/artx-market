@@ -21,7 +21,7 @@ const ImageEditor = ({ navigate }) => {
                 setDescription(metadata.asset.description);
                 setTags(metadata.asset.tags);
                 setSelectedCollection(metadata.asset.collection || 0);
-                
+
                 const profileResponse = await fetch('/api/profile');
                 const profileData = await profileResponse.json();
                 setCollections(profileData.collections || []);
@@ -49,7 +49,7 @@ const ImageEditor = ({ navigate }) => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ metadata }),
+                body: JSON.stringify(metadata),
             });
 
             if (response.ok) {
