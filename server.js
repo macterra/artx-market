@@ -356,6 +356,36 @@ app.get('/api/profile', async (req, res) => {
   }
 });
 
+const readAssetMetadata = async(xid) => {
+  const metadataPath = path.join(config.assets, xid, 'meta.json');
+  const metadataContent = await fs.promises.readFile(metadataPath, 'utf-8');
+  const metadata = JSON.parse(metadataContent);
+  return metadata;
+};
+
+app.get('/api/collection/:userId/:collectionId', async (req, res) => {
+  try {
+    const { userId, collectionId } = req.params;
+    const agentData = await getAgent(userId, false);
+    const collection = agentData.collections[collectionId];
+
+    const assetsInCollection = [];
+
+    for (const assetId of agentData.uploads) {
+      const assetMetadata = await readAssetMetadata(assetId);
+
+      if (collectionId === 0 || assetMetadata.collection === collection.xid) {
+        assetsInCollection.push(assetMetadata);
+      }
+    }
+
+    res.json(assetsInCollection);
+  } catch (error) {
+    console.error('Error processing collection request:', error);
+    res.status(500).json({ error: 'An error occurred while processing the request.' });
+  }
+});
+
 app.post('/api/profile', ensureAuthenticated, async (req, res) => {
   try {
     const agentData = req.body;
