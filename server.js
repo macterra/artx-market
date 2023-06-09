@@ -7,6 +7,7 @@ const sharp = require('sharp');
 const passport = require('passport');
 const LnurlAuth = require('passport-lnurl-auth');
 const session = require('express-session');
+const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 
@@ -173,10 +174,15 @@ const saveAgent = async (agentData) => {
   await fs.promises.writeFile(agentJsonPath, JSON.stringify(agentData, null, 2));
 };
 
-const addAssetToUploads = async (userId, imageHash) => {
-
+const addAssetToUploads = async (userId, asset) => {
   agentData = await getAgent(userId, true);
 
+  if (!agentData.uploads) {
+    agentData.uploads = [];
+  }
+
+  agentData.uploads.push(asset);
+  
   // If the "collections" property doesn't exist, create it
   if (!agentData.collections) {
     agentData.collections = [];
@@ -195,9 +201,8 @@ const addAssetToUploads = async (userId, imageHash) => {
   }
 
   // Add the image hash to the "uploads" collection
-  uploadsCollection.assets.push(imageHash);
+  uploadsCollection.assets.push(asset);
 
-  // Write the updated agent data to the agent.json file
   await saveAgent(agentData);
 };
 
@@ -235,19 +240,21 @@ const recreateCollections = async (userId) => {
 
 app.post('/api/upload', ensureAuthenticated, upload.single('image'), async (req, res) => {
   if (req.file) {
+    const xid = uuidv4();
+
     // Calculate the Git hash
     const fileBuffer = fs.readFileSync(req.file.path);
     const fileHash = gitHash(fileBuffer);
 
     // Create the subfolder
-    const hashFolder = path.join(config.assets, fileHash);
-    if (!fs.existsSync(hashFolder)) {
-      fs.mkdirSync(hashFolder);
+    const assetFolder = path.join(config.assets, xid);
+    if (!fs.existsSync(assetFolder)) {
+      fs.mkdirSync(assetFolder);
     }
 
     // Move the file to the subfolder and rename it to "asset"
-    const assetName = 'asset' + path.extname(req.file.originalname);
-    const newPath = path.join(hashFolder, assetName);
+    const assetName = '_' + path.extname(req.file.originalname);
+    const newPath = path.join(assetFolder, assetName);
     fs.renameSync(req.file.path, newPath);
 
     // Get image metadata using sharp
@@ -256,6 +263,7 @@ app.post('/api/upload', ensureAuthenticated, upload.single('image'), async (req,
     // Create the metadata object
     const metadata = {
       asset: {
+        xid: xid,
         creator: req.user.id,
         uploadTime: new Date().toISOString(),
         fileName: assetName,
@@ -263,7 +271,7 @@ app.post('/api/upload', ensureAuthenticated, upload.single('image'), async (req,
         fileSize: req.file.size,
         hash: fileHash,
         type: 'image',
-        path: `/${config.assets}/${fileHash}/${assetName}`
+        path: `/${config.assets}/${xid}/${assetName}`
       },
       image: {
         width: imageMetadata.width,
@@ -274,10 +282,10 @@ app.post('/api/upload', ensureAuthenticated, upload.single('image'), async (req,
     };
 
     // Write the metadata to meta.json
-    const metadataPath = path.join(hashFolder, 'meta.json');
+    const metadataPath = path.join(assetFolder, 'meta.json');
     await fs.promises.writeFile(metadataPath, JSON.stringify(metadata, null, 2));
 
-    await addAssetToUploads(req.user.id, fileHash);
+    await addAssetToUploads(req.user.id, xid);
 
     res.json({ success: true, message: 'Image uploaded successfully' });
   } else {
