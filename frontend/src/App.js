@@ -5,7 +5,7 @@ import AppHeader from './AppHeader';
 import ProfileView from './ProfileView';
 import ProfileEditor from './ProfileEditor';
 import ImageGrid from './ImageGrid';
-import ImageDetails from './ImageDetails';
+import ImageView from './ImageView';
 import ImageEditor from './ImageEditor';
 import './App.css';
 
@@ -154,7 +154,7 @@ function ViewImage() {
           navigate={navigate}
         />
         <header className="App-header">
-          <ImageDetails navigate={navigate} />
+          <ImageView navigate={navigate} />
         </header>
       </div>
     </ThemeProvider>

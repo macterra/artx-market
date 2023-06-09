@@ -10,7 +10,7 @@ import {
     TableRow,
 } from '@mui/material';
 
-const ImageDetails = ({ navigate }) => {
+const ImageView = ({ navigate }) => {
     const { hash } = useParams();
     const [metadata, setMetadata] = useState(null);
     const [creator, setCreator] = useState(null);
@@ -135,4 +135,4 @@ const ImageDetails = ({ navigate }) => {
     );
 };
 
-export default ImageDetails;
+export default ImageView;
