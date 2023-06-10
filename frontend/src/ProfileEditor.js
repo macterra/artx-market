@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Button, TextField, List, ListItem, ListItemText } from '@mui/material';
+import { Button, TextField } from '@mui/material';
 
 const ProfileEditor = ({ navigate }) => {
     const [profile, setProfile] = useState({});

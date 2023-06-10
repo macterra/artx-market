@@ -158,7 +158,7 @@ const getAgent = async (userId, doCreate) => {
       description: '',
       defaultCollection: 0,
       uploads: [],
-      collections: [{ name: 'uploads', description: ''}],
+      collections: [{ name: 'uploads', description: '' }],
     };
 
     ensureFolderExists(userFolder);
@@ -183,7 +183,7 @@ const getAssets = async (userId) => {
   if (fs.existsSync(jsonPath)) {
     const jsonContent = await fs.promises.readFile(jsonPath, 'utf-8');
     assetData = JSON.parse(jsonContent);
-  } 
+  }
 
   return assetData;
 }
@@ -192,7 +192,7 @@ const addAssetToUploads = async (userId, asset) => {
   let assetData = await getAssets(userId);
 
   assetData.push(asset);
-  
+
   const jsonPath = path.join(config.agents, userId, 'assets.json');
   await fs.promises.writeFile(jsonPath, JSON.stringify(assetData, null, 2));
 };
@@ -272,21 +272,19 @@ app.post('/api/asset', ensureAuthenticated, async (req, res) => {
       assetData = JSON.parse(assetJsonContent);
     }
 
-    if (userId != assetData.asset.creator) {
+    if (userId == assetData.asset.creator) {
+      assetData.asset.title = metadata.asset?.title;
+      assetData.asset.description = metadata.asset?.description;
+      assetData.asset.tags = metadata.asset?.tags;
+      assetData.asset.collection = metadata.asset?.collection;
+
+      // Write the updated agent data to the agent.json file
+      await fs.promises.writeFile(assetJsonPath, JSON.stringify(assetData, null, 2));
+
+      res.json({ message: 'Metadata updated successfully' });
+    } else {
       res.status(401).json({ message: 'Unauthorized' });
     }
-
-    assetData.asset.title = metadata.asset?.title;
-    assetData.asset.description = metadata.asset?.description;
-    assetData.asset.tags = metadata.asset?.tags;
-    assetData.asset.collection = metadata.asset?.collection;
-
-    // Write the updated agent data to the agent.json file
-    await fs.promises.writeFile(assetJsonPath, JSON.stringify(assetData, null, 2));
-
-    //await recreateCollections(userId);
-
-    res.json({ message: 'Metadata updated successfully' });
   } catch (error) {
     console.error('Error updating metadata:', error);
     res.status(500).json({ message: 'Error updating metadata' });
@@ -315,7 +313,7 @@ app.get('/api/profile', async (req, res) => {
   }
 });
 
-const readAssetMetadata = async(xid) => {
+const readAssetMetadata = async (xid) => {
   const metadataPath = path.join(config.assets, xid, 'meta.json');
   const metadataContent = await fs.promises.readFile(metadataPath, 'utf-8');
   const metadata = JSON.parse(metadataContent);

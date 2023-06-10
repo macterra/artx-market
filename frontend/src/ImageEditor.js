@@ -25,6 +25,10 @@ const ImageEditor = ({ navigate }) => {
                 const profileResponse = await fetch('/api/profile');
                 const profileData = await profileResponse.json();
                 setCollections(profileData.collections || []);
+
+                if (profileData.xid !== metadata.asset.creator) {
+                    navigate(`/image/${metadata.asset.xid}`);
+                }
             } catch (error) {
                 console.error('Error fetching image metadata:', error);
             }
