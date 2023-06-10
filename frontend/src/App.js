@@ -6,6 +6,7 @@ import Box from '@mui/material/Box';
 import AppHeader from './AppHeader';
 import ProfileView from './ProfileView';
 import ProfileEditor from './ProfileEditor';
+import CollectionEditor from './CollectionEditor';
 import ImageGrid from './ImageGrid';
 import ImageView from './ImageView';
 import ImageEditor from './ImageEditor';
@@ -140,7 +141,10 @@ function EditProfile() {
           navigate={navigate}
         />
         <header className="App-header">
-          <ProfileEditor navigate={navigate} />
+          <Box display="flex">
+            <ProfileEditor navigate={navigate} />
+            <CollectionEditor navigate={navigate} />
+          </Box>
         </header>
       </div>
     </ThemeProvider>

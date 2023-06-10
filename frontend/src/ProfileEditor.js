@@ -6,8 +6,6 @@ const ProfileEditor = ({ navigate }) => {
     const [profile, setProfile] = useState({});
     const [name, setName] = useState('');
     const [tagline, setTagline] = useState('');
-    const [collections, setCollections] = useState([]);
-    const [selectedCollectionIndex, setSelectedCollectionIndex] = useState(null);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -17,7 +15,6 @@ const ProfileEditor = ({ navigate }) => {
                 setProfile(data);
                 setName(data.name);
                 setTagline(data.tagline);
-                setCollections(data.collections);
             } catch (error) {
                 console.error('Error fetching profile data:', error);
             }
@@ -30,7 +27,6 @@ const ProfileEditor = ({ navigate }) => {
         try {
             profile.name = name;
             profile.tagline = tagline;
-            profile.collections = collections;
 
             const response = await fetch('/api/profile', {
                 method: 'POST',
@@ -50,31 +46,6 @@ const ProfileEditor = ({ navigate }) => {
         } catch (error) {
             console.error('Error updating profile:', error);
         }
-        navigate('/profile');
-    };
-
-    const handleAddCollection = () => {
-        setCollections([
-            ...collections,
-            {
-                name: 'new',
-                description: '',
-                assets: [],
-            },
-        ]);
-        setSelectedCollectionIndex(collections.length);
-    };
-
-    const handleCollectionNameChange = (e, index) => {
-        const newCollections = [...collections];
-        newCollections[index].name = e.target.value;
-        setCollections(newCollections);
-    };
-
-    const handleCollectionDescriptionChange = (e, index) => {
-        const newCollections = [...collections];
-        newCollections[index].description = e.target.value;
-        setCollections(newCollections);
     };
 
     return (
@@ -99,44 +70,6 @@ const ProfileEditor = ({ navigate }) => {
                     Save
                 </Button>
             </form>
-            <h2>Collections</h2>
-            <List>
-                {collections.map((collection, index) => (
-                    <ListItem
-                        button
-                        key={index}
-                        onClick={() => setSelectedCollectionIndex(index)}
-                        selected={index === selectedCollectionIndex}
-                    >
-                        <ListItemText primary={collection.name} />
-                    </ListItem>
-                ))}
-            </List>
-            {selectedCollectionIndex !== null && (
-                <form>
-                    <TextField
-                        label="Collection Name"
-                        value={collections[selectedCollectionIndex].name}
-                        onChange={(e) =>
-                            handleCollectionNameChange(e, selectedCollectionIndex)
-                        }
-                        fullWidth
-                        margin="normal"
-                    />
-                    <TextField
-                        label="Collection Description"
-                        value={collections[selectedCollectionIndex].description}
-                        onChange={(e) =>
-                            handleCollectionDescriptionChange(e, selectedCollectionIndex)
-                        }
-                        fullWidth
-                        margin="normal"
-                    />
-                </form>
-            )}
-            <Button variant="contained" color="primary" onClick={handleAddCollection}>
-                Add Collection
-            </Button>
         </div >
     );
 };
