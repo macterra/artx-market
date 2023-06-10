@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Tabs, Tab } from '@mui/material';
+import { Box, Tabs, Tab } from '@mui/material';
 
 const ProfileView = ({ navigate }) => {
     const { userId, collId } = useParams();
@@ -43,17 +43,19 @@ const ProfileView = ({ navigate }) => {
 
     return (
         <>
-            <div>
+            <Box display="flex" flexDirection="row" alignItems="center" mt={2} mb={2}>
                 {profile.pfp && (
                     <img
                         src={profile.pfp}
                         alt="Profile pic"
-                        style={{ width: '100px', height: '100px', objectFit: 'cover' }}
+                        style={{ width: '100px', height: '100px', objectFit: 'cover', marginRight: '16px' }}
                     />
                 )}
-                <h2>{profile.name}</h2>
-                <p>{profile.tagline}</p>
-            </div>
+                <div>
+                    <h2 style={{ margin: 0 }}>{profile.name}</h2>
+                    <p style={{ margin: 0 }}>{profile.tagline}</p>
+                </div>
+            </Box>
             <p>Collections</p>
             <Tabs
                 value={selectedCollectionIndex}

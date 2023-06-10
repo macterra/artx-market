@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import Box from '@mui/material/Box';
 import AppHeader from './AppHeader';
 import ProfileView from './ProfileView';
 import ProfileEditor from './ProfileEditor';
@@ -96,17 +98,22 @@ function ViewProfile() {
 
   return (
     <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
       <div className="App">
         <AppHeader
           isAuthenticated={isAuthenticated}
           setIsAuthenticated={setIsAuthenticated}
           navigate={navigate}
         />
-        <header className="App-header">
+        {/* Update the styles for the App-header */}
+        <header className="App-header" style={{ padding: 0, height: '100%', display: 'flex', flexDirection: 'column' }}>
           {isAuthenticated ? (
             <>
-              <ProfileView navigate={navigate} />
-              <ImageGrid refreshKey={refreshKey} />
+              {/* Wrap the ProfileView and ImageGrid components in a Box container */}
+              <Box display="flex" flexDirection="column" flexGrow={1}>
+                <ProfileView navigate={navigate} />
+                <ImageGrid refreshKey={refreshKey} />
+              </Box>
               <input type="file" onChange={handleUpload} />
               <p>{uploadStatus}</p>
             </>
