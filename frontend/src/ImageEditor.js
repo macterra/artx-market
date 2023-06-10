@@ -27,7 +27,8 @@ const ImageEditor = ({ navigate }) => {
                 setCollections(profileData.collections || []);
 
                 if (profileData.xid !== metadata.asset.creator) {
-                    navigate(`/image/${metadata.asset.xid}`);
+                    console.log(`editor ${profileData.xid} creator ${metadata.asset.creator}`);
+                    //navigate(`/image/${metadata.asset.xid}`);
                 }
             } catch (error) {
                 console.error('Error fetching image metadata:', error);

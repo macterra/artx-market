@@ -31,11 +31,16 @@ const ImageGrid = ({ refreshKey }) => {
         return <p>Loading images...</p>;
     }
 
+    const imageCardStyle = {
+        margin: '8px', // Add a margin around the ImageCard components
+        textDecoration: 'none', // Remove the text decoration from the Link component
+    };
+
     return (
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
             {images.map((metadata, index) => (
-                <Link key={index} to={`/image/${metadata.asset.xid}`}>
-                    <ImageCard key={index} src={metadata.asset.path} alt={index} />
+                <Link key={index} to={`/image/${metadata.asset.xid}`} style={imageCardStyle}>
+                    <ImageCard key={index} metadata={metadata} />
                 </Link>
             ))}
         </div>
