@@ -17,8 +17,24 @@ import BuildTime from './BuildTime';
 
 const AppHeader = ({ isAuthenticated, setIsAuthenticated, navigate }) => {
 
+    const [profileAnchorEl, setProfileAnchorEl] = React.useState(null);
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [aboutOpen, setAboutOpen] = React.useState(false);
+
+    // Add the handleEditProfileClick function
+    const handleEditProfileClick = () => {
+        navigate('/profile/edit');
+    };
+
+    // Add state and handlers for the Profile menu
+
+    const handleProfileMenuClick = (event) => {
+        setProfileAnchorEl(event.currentTarget);
+    };
+
+    const handleProfileMenuClose = () => {
+        setProfileAnchorEl(null);
+    };
 
     const handleHelpMenuClick = (event) => {
         setAnchorEl(event.currentTarget);
@@ -75,10 +91,32 @@ const AppHeader = ({ isAuthenticated, setIsAuthenticated, navigate }) => {
                         </Button>
                     )}
                     {isAuthenticated && (
-                        <Button color="inherit" onClick={() => navigate('/profile')}>
-                            Profile
-                        </Button>
+                      <Button
+                        color="inherit"
+                        aria-controls="profile-menu"
+                        aria-haspopup="true"
+                        onClick={handleProfileMenuClick}
+                      >
+                        Profile
+                      </Button>
                     )}
+                    <Menu
+                        id="profile-menu"
+                        anchorEl={profileAnchorEl}
+                        keepMounted
+                        open={Boolean(profileAnchorEl)}
+                        onClose={handleProfileMenuClose}
+                    >
+                        {/* Add the new menu item under the Profile button */}
+                        <MenuItem onClick={() => {
+                            handleProfileMenuClose();
+                            navigate('/profile');
+                        }}>View Profile</MenuItem>
+                        <MenuItem onClick={() => {
+                            handleProfileMenuClose();
+                            handleEditProfileClick();
+                        }}>Edit Profile</MenuItem>
+                    </Menu>
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                         ArtX Market
                     </Typography>

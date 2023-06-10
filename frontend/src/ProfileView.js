@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Button, Tabs, Tab } from '@mui/material';
+import { Tabs, Tab } from '@mui/material';
 
 const ProfileView = ({ navigate }) => {
     const { userId, collId } = useParams();
@@ -36,10 +36,6 @@ const ProfileView = ({ navigate }) => {
         return <p>Loading profile...</p>;
     }
 
-    const handleEditClick = () => {
-        navigate('/profile/edit');
-    };
-
     const handleCollectionChange = (event, newIndex) => {
         setSelectedCollectionIndex(newIndex);
         navigate(`/profile/${userId}/${newIndex}`);
@@ -47,11 +43,6 @@ const ProfileView = ({ navigate }) => {
 
     return (
         <>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', width: '90%' }}>
-                <Button variant="contained" color="primary" onClick={handleEditClick}>
-                    Edit
-                </Button>
-            </div>
             <div>
                 {profile.pfp && (
                     <img
