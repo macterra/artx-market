@@ -12,8 +12,8 @@ const { v4: uuidv4 } = require('uuid');
 const app = express();
 
 const config = {
-  host: 'localhost',
-  port: 5000,
+  host: process.env.ARTX_HOST || 'localhost',
+  port: process.env.ARTX_PORT || 5000,
   url: null,
   data: 'data',
   uploads: 'data/uploads',
@@ -369,8 +369,6 @@ app.use((req, res, next) => {
   }
 });
 
-const PORT = process.env.PORT || config.port;
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+app.listen(config.port, () => {
+  console.log(`ArtX server running on ${config.host}:${config.port}`);
 });
