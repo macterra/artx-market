@@ -108,19 +108,15 @@ function ViewProfile() {
         />
         {/* Update the styles for the App-header */}
         <header className="App-header" style={{ padding: 0, height: '100%', display: 'flex', flexDirection: 'column' }}>
-          {isAuthenticated ? (
-            <>
-              {/* Wrap the ProfileView and ImageGrid components in a Box container */}
-              <Box display="flex" flexDirection="column" flexGrow={1}>
-                <ProfileView navigate={navigate} />
-                <ImageGrid refreshKey={refreshKey} />
-              </Box>
-              <input type="file" onChange={handleUpload} />
-              <p>{uploadStatus}</p>
-            </>
-          ) : (
-            <p>Please log in to view and upload images.</p>
-          )}
+          <>
+            {/* Wrap the ProfileView and ImageGrid components in a Box container */}
+            <Box display="flex" flexDirection="column" flexGrow={1}>
+              <ProfileView navigate={navigate} />
+              <ImageGrid refreshKey={refreshKey} />
+            </Box>
+            <input type="file" onChange={handleUpload} />
+            <p>{uploadStatus}</p>
+          </>
         </header>
       </div>
     </ThemeProvider>

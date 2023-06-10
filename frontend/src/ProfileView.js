@@ -14,7 +14,12 @@ const ProfileView = ({ navigate }) => {
                 if (!userId) {
                     const response = await fetch(`/api/profile`);
                     const profileData = await response.json();
-                    navigate(`/profile/${profileData.id}/${profileData.defaultCollection}`);
+
+                    if (!profileData.id) {
+                        navigate('/');
+                    } else {
+                        navigate(`/profile/${profileData.id}/${profileData.defaultCollection}`);
+                    }
                 } else if (!collId) {
                     const response = await fetch(`/api/profile/${userId}`);
                     const profileData = await response.json();
