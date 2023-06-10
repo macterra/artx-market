@@ -367,15 +367,16 @@ const readAssetMetadata = async(xid) => {
 app.get('/api/collection/:userId/:collectionId', async (req, res) => {
   try {
     const { userId, collectionId } = req.params;
+    const collectionIndex = parseInt(collectionId, 10);
     const agentData = await getAgent(userId, false);
-    const collection = agentData.collections[collectionId];
 
     const assetsInCollection = [];
 
     for (const assetId of agentData.uploads) {
       const assetMetadata = await readAssetMetadata(assetId);
+      const assetCollection = assetMetadata.asset.collection || 0;
 
-      if (collectionId === 0 || assetMetadata.collection === collection.xid) {
+      if (collectionIndex === assetCollection) {
         assetsInCollection.push(assetMetadata);
       }
     }
