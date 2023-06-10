@@ -252,6 +252,24 @@ app.post('/api/upload', ensureAuthenticated, upload.single('image'), async (req,
   }
 });
 
+app.get('/api/asset/:xid', async (req, res) => {
+  try {
+    const { xid } = req.params;
+    const assetPath = path.join(config.assets, xid, 'meta.json');
+
+    if (fs.existsSync(assetPath)) {
+      const jsonContent = await fs.promises.readFile(assetPath, 'utf-8');
+      const assetData = JSON.parse(jsonContent);
+      res.json(assetData);
+    } else {      
+      res.status(404).json({ message: 'Asset not found' });
+    }
+  } catch (error) {
+    console.error('Error processing asset request:', error);
+    res.status(500).json({ error: 'An error occurred while processing the request.' });
+  }
+});
+
 app.post('/api/asset', ensureAuthenticated, async (req, res) => {
   const metadata = req.body;
   const userId = req.user?.id;

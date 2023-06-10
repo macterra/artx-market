@@ -19,7 +19,7 @@ const ImageView = ({ navigate }) => {
     useEffect(() => {
         const fetchMetadata = async () => {
             try {
-                const response = await fetch(`/data/assets/${xid}/meta.json`);
+                const response = await fetch(`/api/asset/${xid}`);
                 const metadata = await response.json();
                 setMetadata(metadata);
 
