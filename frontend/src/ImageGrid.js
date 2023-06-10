@@ -15,18 +15,10 @@ const ImageGrid = ({ refreshKey }) => {
                     return;
                 }
 
-                const profileResp = await fetch(`/api/profile?userId=${userId}`);
-                const profileData = await profileResp.json();
-                const collection = profileData?.collections[collId];
-                const assets = collection.assets;
+                const response = await fetch(`/api/collection/${userId}/${collId}`);
+                const collection = await response.json();
 
-                const imageMetadataPromises = assets.map(async (hash) => {
-                    const metaResp = await fetch(`/data/assets/${hash}/meta.json`);
-                    return metaResp.json();
-                });
-
-                const metadata = await Promise.all(imageMetadataPromises);
-                setImages(metadata);
+                setImages(collection);
             } catch (error) {
                 console.error('Error fetching image metadata:', error);
             }
@@ -48,7 +40,7 @@ const ImageGrid = ({ refreshKey }) => {
             }}
         >
             {images.map((metadata, index) => (
-                <Link key={index} to={`/image/${metadata.asset.hash}`}>
+                <Link key={index} to={`/image/${metadata.asset.xid}`}>
                     <img
                         key={index}
                         src={metadata.asset.path}

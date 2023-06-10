@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 
 const ImageView = ({ navigate }) => {
-    const { hash } = useParams();
+    const { xid } = useParams();
     const [metadata, setMetadata] = useState(null);
     const [creator, setCreator] = useState(null);
 
@@ -29,7 +29,7 @@ const ImageView = ({ navigate }) => {
     useEffect(() => {
         const fetchMetadata = async () => {
             try {
-                const response = await fetch(`/data/assets/${hash}/meta.json`);
+                const response = await fetch(`/data/assets/${xid}/meta.json`);
                 const metadata = await response.json();
                 setMetadata(metadata);
                 setCreator(await shortenString(metadata.asset.creator));
@@ -39,7 +39,7 @@ const ImageView = ({ navigate }) => {
         };
 
         fetchMetadata();
-    }, [hash]);
+    }, [xid]);
 
     if (!metadata) {
         return <p>Loading...</p>;
@@ -73,7 +73,7 @@ const ImageView = ({ navigate }) => {
     };
 
     const handleEditClick = async () => {
-        navigate(`/image/edit/${metadata.asset.hash}`)
+        navigate(`/image/edit/${metadata.asset.xid}`)
     };
 
     return (

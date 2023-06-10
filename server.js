@@ -157,7 +157,8 @@ const getAgent = async (userId, doCreate) => {
       tagline: '',
       description: '',
       defaultCollection: 0,
-      collections: [{ name: 'uploads', description: '', assets: []}],
+      uploads: [],
+      collections: [{ name: 'uploads', description: ''}],
     };
 
     ensureFolderExists(userFolder);
@@ -184,29 +185,29 @@ const addAssetToUploads = async (userId, asset) => {
   agentData.uploads.push(asset);
   
   // If the "collections" property doesn't exist, create it
-  if (!agentData.collections) {
-    agentData.collections = [];
-  }
+  // if (!agentData.collections) {
+  //   agentData.collections = [];
+  // }
 
-  // Find the "uploads" collection
-  let uploadsCollection = agentData.collections.find((collection) => collection.name === 'uploads');
+  // // Find the "uploads" collection
+  // let uploadsCollection = agentData.collections.find((collection) => collection.name === 'uploads');
 
-  // If the "uploads" collection doesn't exist, create it and add it to the collections list
-  if (!uploadsCollection) {
-    uploadsCollection = {
-      name: 'uploads',
-      assets: [],
-    };
-    agentData.collections.push(uploadsCollection);
-  }
+  // // If the "uploads" collection doesn't exist, create it and add it to the collections list
+  // if (!uploadsCollection) {
+  //   uploadsCollection = {
+  //     name: 'uploads',
+  //     assets: [],
+  //   };
+  //   agentData.collections.push(uploadsCollection);
+  // }
 
-  // Add the image hash to the "uploads" collection
-  uploadsCollection.assets.push(asset);
+  // // Add the image hash to the "uploads" collection
+  // uploadsCollection.assets.push(asset);
 
   await saveAgent(agentData);
 };
 
-const recreateCollections = async (userId) => {
+const recreateCollectionsXXXX = async (userId) => {
 
   agentData = await getAgent(userId, false);
 
@@ -302,7 +303,7 @@ app.post('/api/asset', ensureAuthenticated, async (req, res) => {
   }
 
   try {
-    const assetFolder = path.join(config.assets, metadata.asset?.hash);
+    const assetFolder = path.join(config.assets, metadata.asset?.xid);
     const assetJsonPath = path.join(assetFolder, 'meta.json');
 
     let assetData = {};
@@ -325,7 +326,7 @@ app.post('/api/asset', ensureAuthenticated, async (req, res) => {
     // Write the updated agent data to the agent.json file
     await fs.promises.writeFile(assetJsonPath, JSON.stringify(assetData, null, 2));
 
-    await recreateCollections(userId);
+    //await recreateCollections(userId);
 
     res.json({ message: 'Metadata updated successfully' });
   } catch (error) {

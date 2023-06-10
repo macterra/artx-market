@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Button, TextField, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 
 const ImageEditor = ({ navigate }) => {
-    const { hash } = useParams();
+    const { xid } = useParams();
     const [metadata, setMetadata] = useState(null);
     const [title, setTitle] = useState(null);
     const [description, setDescription] = useState(null);
@@ -14,7 +14,7 @@ const ImageEditor = ({ navigate }) => {
     useEffect(() => {
         const fetchMetadata = async () => {
             try {
-                const response = await fetch(`/data/assets/${hash}/meta.json`);
+                const response = await fetch(`/data/assets/${xid}/meta.json`);
                 const metadata = await response.json();
                 setMetadata(metadata);
                 setTitle(metadata.asset.title);
@@ -31,7 +31,7 @@ const ImageEditor = ({ navigate }) => {
         };
 
         fetchMetadata();
-    }, [hash]);
+    }, [xid]);
 
     if (!metadata) {
         return <p>Loading...</p>;
@@ -62,7 +62,7 @@ const ImageEditor = ({ navigate }) => {
         } catch (error) {
             console.error('Error updating metadata:', error);
         }
-        navigate(`/image/${metadata.asset.hash}`);
+        navigate(`/image/${metadata.asset.xid}`);
     };
 
     return (

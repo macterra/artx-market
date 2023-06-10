@@ -18,8 +18,8 @@ function App() {
         <Route path="/profile/:userId" element={<ViewProfile />} />
         <Route path="/profile/:userId/:collId" element={<ViewProfile />} />
         <Route path="/profile/edit" element={<EditProfile />} />
-        <Route path="/image/:hash" element={<ViewImage />} />
-        <Route path="/image/edit/:hash" element={<EditImage />} />
+        <Route path="/image/:xid" element={<ViewImage />} />
+        <Route path="/image/edit/:xid" element={<EditImage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
