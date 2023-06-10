@@ -46,9 +46,15 @@ const ProfileView = ({ navigate }) => {
             <Box display="flex" flexDirection="row" alignItems="center" mt={2} mb={2}>
                 {profile.pfp && (
                     <img
-                        src={profile.pfp}
-                        alt="Profile pic"
-                        style={{ width: '100px', height: '100px', objectFit: 'cover', marginRight: '16px' }}
+                      src={profile.pfp}
+                      alt="Profile pic"
+                      style={{
+                        width: '100px',
+                        height: '100px',
+                        objectFit: 'cover',
+                        marginRight: '16px',
+                        borderRadius: '50%', // Add this line to create a circular mask
+                      }}
                     />
                 )}
                 <div>
