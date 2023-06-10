@@ -175,68 +175,26 @@ const saveAgent = async (agentData) => {
   await fs.promises.writeFile(agentJsonPath, JSON.stringify(agentData, null, 2));
 };
 
+const getAssets = async (userId) => {
+  const userFolder = path.join(config.agents, userId.toString());
+  const jsonPath = path.join(userFolder, 'assets.json');
+  let assetData = [];
+
+  if (fs.existsSync(jsonPath)) {
+    const jsonContent = await fs.promises.readFile(jsonPath, 'utf-8');
+    assetData = JSON.parse(jsonContent);
+  } 
+
+  return assetData;
+}
+
 const addAssetToUploads = async (userId, asset) => {
-  agentData = await getAgent(userId, true);
+  let assetData = await getAssets(userId);
 
-  if (!agentData.uploads) {
-    agentData.uploads = [];
-  }
-
-  agentData.uploads.push(asset);
+  assetData.push(asset);
   
-  // If the "collections" property doesn't exist, create it
-  // if (!agentData.collections) {
-  //   agentData.collections = [];
-  // }
-
-  // // Find the "uploads" collection
-  // let uploadsCollection = agentData.collections.find((collection) => collection.name === 'uploads');
-
-  // // If the "uploads" collection doesn't exist, create it and add it to the collections list
-  // if (!uploadsCollection) {
-  //   uploadsCollection = {
-  //     name: 'uploads',
-  //     assets: [],
-  //   };
-  //   agentData.collections.push(uploadsCollection);
-  // }
-
-  // // Add the image hash to the "uploads" collection
-  // uploadsCollection.assets.push(asset);
-
-  await saveAgent(agentData);
-};
-
-const recreateCollectionsXXXX = async (userId) => {
-
-  agentData = await getAgent(userId, false);
-
-  for (const hash of agentData.collections[0].assets) {
-    try {
-      // Read the metadata for the hash
-      const metadataPath = path.join(config.assets, hash, 'meta.json');
-      const metadataContent = await fs.promises.readFile(metadataPath, 'utf-8');
-      const metadata = JSON.parse(metadataContent);
-
-      // Check if the asset metadata has a collection specified
-      if (metadata.asset.collection) {
-        const collectionIdx = metadata.asset.collection;
-
-        // Find the collection with the specified name or create a new one if not found
-        let collection = agentData.collections[collectionIdx];
-
-        // Add the hash to the collection's assets array
-        if (!collection.assets.includes(hash)) {
-          collection.assets.push(hash);
-        }
-      }
-    } catch (error) {
-      console.error(`Error processing asset ${hash}:`, error);
-    }
-  }
-
-  // Write the updated agent data to the agent.json file
-  await saveAgent(agentData);
+  const jsonPath = path.join(config.agents, userId, 'assets.json');
+  await fs.promises.writeFile(jsonPath, JSON.stringify(assetData, null, 2));
 };
 
 app.post('/api/upload', ensureAuthenticated, upload.single('image'), async (req, res) => {
@@ -368,11 +326,10 @@ app.get('/api/collection/:userId/:collectionId', async (req, res) => {
   try {
     const { userId, collectionId } = req.params;
     const collectionIndex = parseInt(collectionId, 10);
-    const agentData = await getAgent(userId, false);
-
+    const assets = await getAssets(userId);
     const assetsInCollection = [];
 
-    for (const assetId of agentData.uploads) {
+    for (const assetId of assets) {
       const assetMetadata = await readAssetMetadata(assetId);
       const assetCollection = assetMetadata.asset.collection || 0;
 
