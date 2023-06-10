@@ -23,7 +23,7 @@ const ImageView = ({ navigate }) => {
                 const metadata = await response.json();
                 setMetadata(metadata);
 
-                const profResp = await fetch(`/api/profile?userId=${metadata.asset.creator}`);
+                const profResp = await fetch(`/api/profile/${metadata.asset.creator}`);
                 const profileData = await profResp.json();
                 setCreator(profileData.name);
                 setCollection(profileData.collections[metadata.asset.collection || 0].name);

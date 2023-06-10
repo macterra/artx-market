@@ -16,11 +16,11 @@ const ProfileView = ({ navigate }) => {
                     const profileData = await response.json();
                     navigate(`/profile/${profileData.id}/${profileData.defaultCollection}`);
                 } else if (!collId) {
-                    const response = await fetch(`/api/profile?userId=${userId}`);
+                    const response = await fetch(`/api/profile/${userId}`);
                     const profileData = await response.json();
                     navigate(`/profile/${userId}/${profileData.defaultCollection}`);
                 } else {
-                    const response = await fetch(`/api/profile?userId=${userId}`);
+                    const response = await fetch(`/api/profile/${userId}`);
                     const profileData = await response.json();
                     setProfile(profileData);
                 }

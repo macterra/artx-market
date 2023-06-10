@@ -309,12 +309,11 @@ app.post('/api/asset', ensureAuthenticated, async (req, res) => {
   }
 });
 
-app.get('/api/profile', async (req, res) => {
-
-  const userId = req.query.userId || req.user?.id;
+app.get('/api/profile/:id?', async (req, res) => {
+  const userId = req.params.id || req.user?.id;
 
   if (!userId) {
-    return res.status(401).json({ message: 'User not logged in' });
+    return res.status(404).json({ message: 'Profile not found' });
   }
 
   try {
