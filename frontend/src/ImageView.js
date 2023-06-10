@@ -14,17 +14,7 @@ const ImageView = ({ navigate }) => {
     const { xid } = useParams();
     const [metadata, setMetadata] = useState(null);
     const [creator, setCreator] = useState(null);
-
-    const shortenString = async (str) => {
-        if (str.length <= 16) {
-            return str;
-        }
-
-        const firstEight = str.slice(0, 8);
-        const lastEight = str.slice(-8);
-
-        return `${firstEight}...${lastEight}`;
-    };
+    const [collection, setCollection] = useState(null);
 
     useEffect(() => {
         const fetchMetadata = async () => {
@@ -32,7 +22,11 @@ const ImageView = ({ navigate }) => {
                 const response = await fetch(`/data/assets/${xid}/meta.json`);
                 const metadata = await response.json();
                 setMetadata(metadata);
-                setCreator(await shortenString(metadata.asset.creator));
+
+                const profResp = await fetch(`/api/profile?userId=${metadata.asset.creator}`);
+                const profileData = await profResp.json();
+                setCreator(profileData.name);
+                setCollection(profileData.collections[metadata.asset.collection || 0].name);
             } catch (error) {
                 console.error('Error fetching image metadata:', error);
             }
@@ -46,7 +40,7 @@ const ImageView = ({ navigate }) => {
     }
 
     const handleSetPfpClick = async () => {
-        try {            
+        try {
             const response1 = await fetch(`/api/profile`);
             const profile = await response1.json();
 
@@ -79,7 +73,7 @@ const ImageView = ({ navigate }) => {
     return (
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <div style={{ width: '50%', padding: '16px' }}>
-                <img src={metadata.asset.path} alt={metadata.asset.originalName} style={{ width: '100%', height: 'auto' }} />           
+                <img src={metadata.asset.path} alt={metadata.asset.originalName} style={{ width: '100%', height: 'auto' }} />
                 <Button variant="contained" color="primary" onClick={handleSetPfpClick}>
                     Set as Profile Picture
                 </Button>
@@ -121,7 +115,11 @@ const ImageView = ({ navigate }) => {
                             </TableRow>
                             <TableRow>
                                 <TableCell>Collection:</TableCell>
-                                <TableCell>{metadata.asset.collection}</TableCell>
+                                <TableCell>
+                                    <Link to={`/profile/${metadata.asset.creator}/${metadata.asset.collection||0}`}>
+                                        {collection}
+                                    </Link>
+                                </TableCell>
                             </TableRow>
                             {/* Add any other metadata you want to display */}
                         </TableBody>
