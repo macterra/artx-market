@@ -67,7 +67,7 @@ const ProfileView = ({ navigate }) => {
                     <p style={{ margin: 0 }}>{profile.tagline}</p>
                 </div>
             </Box>
-            <p>Collections</p>
+            <p style={{ textAlign: 'left' }}>Collections</p>
             <Tabs
                 value={selectedCollectionIndex}
                 onChange={handleCollectionChange}
