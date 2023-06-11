@@ -10,6 +10,7 @@ import CollectionEditor from './CollectionEditor';
 import ImageGrid from './ImageGrid';
 import ImageView from './ImageView';
 import ImageEditor from './ImageEditor';
+import NftView from './NftView';
 import './App.css';
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
         <Route path="/profile/edit" element={<EditProfile />} />
         <Route path="/image/:xid" element={<ViewImage />} />
         <Route path="/image/edit/:xid" element={<EditImage />} />
+        <Route path="/nft/:xid" element={<ViewNft />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
@@ -189,6 +191,26 @@ function EditImage() {
   );
 }
 
+function ViewNft() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const navigate = useNavigate();
+
+  return (
+    <ThemeProvider theme={darkTheme}>
+      <div className="App">
+        <AppHeader
+          isAuthenticated={isAuthenticated}
+          setIsAuthenticated={setIsAuthenticated}
+          navigate={navigate}
+        />
+        <header className="App-header">
+          <NftView navigate={navigate} />
+        </header>
+      </div>
+    </ThemeProvider>
+  );
+}
 function NotFound() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
