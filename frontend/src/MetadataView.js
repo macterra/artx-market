@@ -41,14 +41,6 @@ const MetadataView = ({ metadata }) => {
                         <TableCell>{metadata.asset.title}</TableCell>
                     </TableRow>
                     <TableRow>
-                        <TableCell>Description:</TableCell>
-                        <TableCell>{metadata.asset.description}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                        <TableCell>Tags:</TableCell>
-                        <TableCell>{metadata.asset.tags}</TableCell>
-                    </TableRow>
-                    <TableRow>
                         <TableCell>Creator:</TableCell>
                         <TableCell>
                             <Link to={`/profile/${metadata.asset.creator}`}>{creator}</Link>

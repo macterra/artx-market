@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { Tab, Tabs } from '@mui/material';
 import MetadataView from './MetadataView'
+import AssetEditor from './AssetEditor';
 
 const AssetView = ({ navigate }) => {
     const { xid } = useParams();
@@ -49,7 +50,7 @@ const AssetView = ({ navigate }) => {
                     <Tab key={2} label={'NFT'} />
                 </Tabs>
                 {tab === 0 && <MetadataView metadata={metadata} />}
-                {tab === 1 && <MetadataView />}
+                {tab === 1 && <AssetEditor metadata={metadata} setTab={setTab} />}
                 {tab === 2 && <MetadataView />}
             </div>
         </div>
