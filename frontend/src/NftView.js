@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-
 import {
     Button,
     Table,
@@ -10,6 +9,7 @@ import {
     TableRow,
     TextField,
 } from '@mui/material';
+import ImageTabs from './ImageTabs';
 
 const NftView = ({ navigate }) => {
     const { xid } = useParams();
@@ -64,7 +64,7 @@ const NftView = ({ navigate }) => {
                 <img src={metadata.asset.path} alt={metadata.asset.originalName} style={{ width: '100%', height: 'auto' }} />
             </div>
             <div style={{ width: '50%', padding: '16px' }}>
-                <h2>NFT</h2>
+                <ImageTabs xid={xid} navigate={navigate} index={2} />
                 <TableContainer>
                     <Table>
                         <TableBody>

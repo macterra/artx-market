@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-
 import {
     Button,
     Table,
@@ -8,9 +7,8 @@ import {
     TableCell,
     TableContainer,
     TableRow,
-    Tabs,
-    Tab,
 } from '@mui/material';
+import ImageTabs from './ImageTabs';
 
 const ImageView = ({ navigate }) => {
     const { xid } = useParams();
@@ -68,19 +66,6 @@ const ImageView = ({ navigate }) => {
         }
     };
 
-    const handleEditClick = async () => {
-        navigate(`/image/edit/${metadata.asset.xid}`)
-    };
-
-    const handleTabChange = (event, newIndex) => {
-        if (newIndex === 1) {
-            navigate(`/image/edit/${xid}`)
-        }
-        if (newIndex === 2) {
-            navigate(`/nft/${xid}`);
-        }
-    };
-
     return (
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <div style={{ width: '50%', padding: '16px' }}>
@@ -90,18 +75,7 @@ const ImageView = ({ navigate }) => {
                 </Button>
             </div>
             <div style={{ width: '50%', padding: '16px' }}>
-                <Tabs
-                    value={0}
-                    onChange={handleTabChange}
-                    indicatorColor="primary"
-                    textColor="primary"
-                    variant="scrollable"
-                    scrollButtons="auto"
-                >
-                    <Tab key={0} label={'Metadata'} />
-                    <Tab key={1} label={'Edit'} />
-                    <Tab key={2} label={'NFT'} />
-                </Tabs>
+                <ImageTabs xid={xid} navigate={navigate} index={0} />
                 <TableContainer>
                     <Table>
                         <TableBody>
@@ -147,9 +121,6 @@ const ImageView = ({ navigate }) => {
                         </TableBody>
                     </Table>
                 </TableContainer>
-                <Button variant="contained" color="primary" onClick={handleEditClick}>
-                    Edit Metadata
-                </Button>
             </div>
         </div>
     );

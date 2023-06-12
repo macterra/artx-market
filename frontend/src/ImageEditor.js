@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Button, TextField, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import ImageTabs from './ImageTabs';
 
 const ImageEditor = ({ navigate }) => {
     const { xid } = useParams();
@@ -76,7 +77,7 @@ const ImageEditor = ({ navigate }) => {
                 <img src={metadata.asset.path} alt={metadata.asset.originalName} style={{ width: '100%', height: 'auto' }} />
             </div>
             <div style={{ width: '50%', padding: '16px' }}>
-                <h2>Edit Metadata</h2>
+                <ImageTabs xid={xid} navigate={navigate} index={1} />
                 <form>
                     <TextField
                         label="Title"
