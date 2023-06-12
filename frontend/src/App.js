@@ -51,6 +51,7 @@ function Home() {
 
   return (
     <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
       <div className="App">
         <AppHeader
           isAuthenticated={isAuthenticated}
@@ -132,6 +133,7 @@ function EditProfile() {
 
   return (
     <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
       <div className="App">
         <AppHeader
           isAuthenticated={isAuthenticated}
@@ -156,6 +158,7 @@ function ViewImage() {
 
   return (
     <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
       <div className="App">
         <AppHeader
           isAuthenticated={isAuthenticated}
@@ -177,6 +180,7 @@ function EditImage() {
 
   return (
     <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
       <div className="App">
         <AppHeader
           isAuthenticated={isAuthenticated}
@@ -198,6 +202,7 @@ function ViewNft() {
 
   return (
     <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
       <div className="App">
         <AppHeader
           isAuthenticated={isAuthenticated}
@@ -218,6 +223,7 @@ function NotFound() {
 
   return (
     <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
       <div className="App">
         <AppHeader
           isAuthenticated={isAuthenticated}
