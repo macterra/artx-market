@@ -5,12 +5,9 @@ import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
 import AppHeader from './AppHeader';
 import ProfileView from './ProfileView';
+import ImageGrid from './ImageGrid';
 import ProfileEditor from './ProfileEditor';
 import CollectionEditor from './CollectionEditor';
-import ImageGrid from './ImageGrid';
-import ImageView from './ImageView';
-import ImageEditor from './ImageEditor';
-import NftView from './NftView';
 import AssetView from './AssetView';
 import './App.css';
 
@@ -23,9 +20,6 @@ function App() {
         <Route path="/profile/:userId" element={<ViewProfile />} />
         <Route path="/profile/:userId/:collId" element={<ViewProfile />} />
         <Route path="/profile/edit" element={<EditProfile />} />
-        <Route path="/image/meta/:xid" element={<ViewImage />} />
-        <Route path="/image/edit/:xid" element={<EditImage />} />
-        <Route path="/image/nft/:xid" element={<ViewNft />} />
         <Route path="/asset/:xid" element={<ViewAsset />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
@@ -175,71 +169,6 @@ function ViewAsset() {
   );
 }
 
-function ViewImage() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  const navigate = useNavigate();
-
-  return (
-    <ThemeProvider theme={darkTheme}>
-      <CssBaseline />
-      <div className="App">
-        <AppHeader
-          isAuthenticated={isAuthenticated}
-          setIsAuthenticated={setIsAuthenticated}
-          navigate={navigate}
-        />
-        <header className="App-header">
-          <ImageView navigate={navigate} />
-        </header>
-      </div>
-    </ThemeProvider>
-  );
-}
-
-function EditImage() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  const navigate = useNavigate();
-
-  return (
-    <ThemeProvider theme={darkTheme}>
-      <CssBaseline />
-      <div className="App">
-        <AppHeader
-          isAuthenticated={isAuthenticated}
-          setIsAuthenticated={setIsAuthenticated}
-          navigate={navigate}
-        />
-        <header className="App-header">
-          <ImageEditor navigate={navigate} />
-        </header>
-      </div>
-    </ThemeProvider>
-  );
-}
-
-function ViewNft() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  const navigate = useNavigate();
-
-  return (
-    <ThemeProvider theme={darkTheme}>
-      <CssBaseline />
-      <div className="App">
-        <AppHeader
-          isAuthenticated={isAuthenticated}
-          setIsAuthenticated={setIsAuthenticated}
-          navigate={navigate}
-        />
-        <header className="App-header">
-          <NftView navigate={navigate} />
-        </header>
-      </div>
-    </ThemeProvider>
-  );
-}
 function NotFound() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
