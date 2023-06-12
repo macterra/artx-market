@@ -26,7 +26,7 @@ const NftView = ({ navigate }) => {
                 const metadata = await response.json();
                 const profResp = await fetch(`/api/profile/${metadata.asset.creator}`);
                 const profileData = await profResp.json();
-                
+
                 setMetadata(metadata);
                 setCreator(profileData.name);
                 setCollection(profileData.collections[metadata.asset.collection || 0].name);
@@ -40,7 +40,7 @@ const NftView = ({ navigate }) => {
     }, [xid]);
 
     if (!metadata) {
-        return <p>Loading...</p>;
+        return;
     }
 
     const handleEditionsChange = async (value) => {

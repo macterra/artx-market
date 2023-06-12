@@ -40,7 +40,7 @@ const ImageEditor = ({ navigate }) => {
     }, [xid]);
 
     if (!metadata) {
-        return <p>Loading...</p>;
+        return;
     }
 
     const handleSaveClick = async () => {

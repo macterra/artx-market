@@ -36,7 +36,7 @@ const ImageView = ({ navigate }) => {
     }, [xid]);
 
     if (!metadata) {
-        return <p>Loading...</p>;
+        return;
     }
 
     const handleSetPfpClick = async () => {
