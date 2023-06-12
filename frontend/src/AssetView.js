@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Tab, Tabs } from '@mui/material';
 import MetadataView from './MetadataView'
 import AssetEditor from './AssetEditor';
+import NftMinter from './NftMinter';
 
 const AssetView = ({ navigate }) => {
     const { xid } = useParams();
@@ -47,11 +48,11 @@ const AssetView = ({ navigate }) => {
                 >
                     <Tab key={0} label={'Metadata'} />
                     <Tab key={1} label={'Edit'} />
-                    <Tab key={2} label={'NFT'} />
+                    <Tab key={2} label={'Mint'} />
                 </Tabs>
                 {tab === 0 && <MetadataView metadata={metadata} />}
                 {tab === 1 && <AssetEditor metadata={metadata} setTab={setTab} />}
-                {tab === 2 && <MetadataView />}
+                {tab === 2 && <NftMinter metadata={metadata} />}
             </div>
         </div>
     );

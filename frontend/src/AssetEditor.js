@@ -1,12 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
 import { Button, TextField, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 
 const AssetEditor = ({ metadata, setTab }) => {
-    const { xid } = useParams();
     const [title, setTitle] = useState(null);
-    const [description, setDescription] = useState(null);
-    const [tags, setTags] = useState(null);
     const [collections, setCollections] = useState([]);
     const [selectedCollection, setSelectedCollection] = useState('');
 
@@ -17,8 +13,6 @@ const AssetEditor = ({ metadata, setTab }) => {
                 const profileData = await profileResponse.json();
 
                 setTitle(metadata.asset.title);
-                setDescription(metadata.asset.description);
-                setTags(metadata.asset.tags);
                 setSelectedCollection(metadata.asset.collection || 0);
                 setCollections(profileData.collections || []);
 
@@ -32,7 +26,7 @@ const AssetEditor = ({ metadata, setTab }) => {
         };
 
         fetchMetadata();
-    }, [xid]);
+    }, [metadata]);
 
     if (!metadata) {
         return;
