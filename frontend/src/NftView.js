@@ -17,20 +17,20 @@ const NftView = ({ navigate }) => {
     const [creator, setCreator] = useState(null);
     const [collection, setCollection] = useState(null);
     const [editions, setEditions] = useState(1);
-    const [mintCost, setMintCost] = useState(null);
+    const [storageFee, setStorageFee] = useState(null);
 
     useEffect(() => {
         const fetchMetadata = async () => {
             try {
                 const response = await fetch(`/api/asset/${xid}`);
                 const metadata = await response.json();
-                setMetadata(metadata);
-                setMintCost(calcMintCost());
-
                 const profResp = await fetch(`/api/profile/${metadata.asset.creator}`);
                 const profileData = await profResp.json();
+                
+                setMetadata(metadata);
                 setCreator(profileData.name);
                 setCollection(profileData.collections[metadata.asset.collection || 0].name);
+                setStorageFee(Math.round(metadata.asset.fileSize/1000));
             } catch (error) {
                 console.error('Error fetching image metadata:', error);
             }
@@ -43,10 +43,6 @@ const NftView = ({ navigate }) => {
         return <p>Loading...</p>;
     }
 
-    function calcMintCost() {
-        return metadata.asset.fileSize / 1000 + editions * 100;
-    }
-
     const handleEditionsChange = async (value) => {
         if (value < 1) {
             value = 1;
@@ -56,7 +52,6 @@ const NftView = ({ navigate }) => {
         }
 
         setEditions(value);
-        setMintCost(calcMintCost());
     };
 
     const handleMintClick = async () => {
@@ -92,13 +87,20 @@ const NftView = ({ navigate }) => {
                                 </TableCell>
                             </TableRow>
                             <TableRow>
-                                <TableCell>File size:</TableCell>
-                                <TableCell>{metadata.asset.fileSize} bytes</TableCell>
+                                <TableCell>Storage fee:</TableCell>
+                                <TableCell>{storageFee} sats for {metadata.asset.fileSize} bytes</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell>Minting fee:</TableCell>
+                                <TableCell>{100 * editions} sats for {editions} editions</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell>Total fee:</TableCell>
+                                <TableCell>{storageFee + 100 * editions} sats</TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>
                 </TableContainer>
-                <h2>Mint NFT</h2>
                 <form>
                     <TextField
                         label="Editions (1-100)"
@@ -111,15 +113,6 @@ const NftView = ({ navigate }) => {
                             min: 1, // Set the minimum value to 1
                             max: 100, // Set the maximum value to 100
                         }}
-                    />
-                    <TextField
-                        label=""
-                        value={`mint cost: ${mintCost} sats`}
-                        InputProps={{
-                            readOnly: true, // Set the input to read-only
-                        }}
-                        fullWidth
-                        margin="normal"
                     />
                     <Button variant="contained" color="primary" onClick={handleMintClick}>
                         Mint

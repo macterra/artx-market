@@ -90,7 +90,6 @@ const ImageView = ({ navigate }) => {
                 </Button>
             </div>
             <div style={{ width: '50%', padding: '16px' }}>
-                <h2>Metadata</h2>
                 <Tabs
                     value={0}
                     onChange={handleTabChange}
