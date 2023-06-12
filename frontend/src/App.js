@@ -11,6 +11,7 @@ import ImageGrid from './ImageGrid';
 import ImageView from './ImageView';
 import ImageEditor from './ImageEditor';
 import NftView from './NftView';
+import AssetView from './AssetView';
 import './App.css';
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
         <Route path="/image/meta/:xid" element={<ViewImage />} />
         <Route path="/image/edit/:xid" element={<EditImage />} />
         <Route path="/image/nft/:xid" element={<ViewNft />} />
+        <Route path="/asset/:xid" element={<ViewAsset />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
@@ -145,6 +147,28 @@ function EditProfile() {
             <ProfileEditor navigate={navigate} />
             <CollectionEditor navigate={navigate} />
           </Box>
+        </header>
+      </div>
+    </ThemeProvider>
+  );
+}
+
+function ViewAsset() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const navigate = useNavigate();
+
+  return (
+    <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
+      <div className="App">
+        <AppHeader
+          isAuthenticated={isAuthenticated}
+          setIsAuthenticated={setIsAuthenticated}
+          navigate={navigate}
+        />
+        <header className="App-header">
+          <AssetView navigate={navigate} />
         </header>
       </div>
     </ThemeProvider>
