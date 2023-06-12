@@ -8,6 +8,8 @@ import {
     TableCell,
     TableContainer,
     TableRow,
+    Tabs,
+    Tab,
 } from '@mui/material';
 
 const ImageView = ({ navigate }) => {
@@ -70,6 +72,15 @@ const ImageView = ({ navigate }) => {
         navigate(`/image/edit/${metadata.asset.xid}`)
     };
 
+    const handleTabChange = (event, newIndex) => {
+        if (newIndex === 1) {
+            navigate(`/image/edit/${xid}`)
+        }
+        if (newIndex === 2) {
+            navigate(`/nft/${xid}`);
+        }
+    };
+
     return (
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <div style={{ width: '50%', padding: '16px' }}>
@@ -80,6 +91,18 @@ const ImageView = ({ navigate }) => {
             </div>
             <div style={{ width: '50%', padding: '16px' }}>
                 <h2>Metadata</h2>
+                <Tabs
+                    value={0}
+                    onChange={handleTabChange}
+                    indicatorColor="primary"
+                    textColor="primary"
+                    variant="scrollable"
+                    scrollButtons="auto"
+                >
+                    <Tab key={0} label={'Metadata'} />
+                    <Tab key={1} label={'Edit'} />
+                    <Tab key={2} label={'NFT'} />
+                </Tabs>
                 <TableContainer>
                     <Table>
                         <TableBody>
@@ -116,7 +139,7 @@ const ImageView = ({ navigate }) => {
                             <TableRow>
                                 <TableCell>Collection:</TableCell>
                                 <TableCell>
-                                    <Link to={`/profile/${metadata.asset.creator}/${metadata.asset.collection||0}`}>
+                                    <Link to={`/profile/${metadata.asset.creator}/${metadata.asset.collection || 0}`}>
                                         {collection}
                                     </Link>
                                 </TableCell>
