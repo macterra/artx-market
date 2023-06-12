@@ -5,13 +5,13 @@ const ImageTabs = ({ navigate, xid, index }) => {
     const handleTabChange = (event, newIndex) => {
         switch (newIndex) {
             case 0:
-                navigate(`/image/${xid}`);
+                navigate(`/image/meta/${xid}`);
                 break;
             case 1:
                 navigate(`/image/edit/${xid}`);
                 break;
             case 2:
-                navigate(`/nft/${xid}`);
+                navigate(`/image/nft/${xid}`);
                 break;
             default:
                 break;

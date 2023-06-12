@@ -22,9 +22,9 @@ function App() {
         <Route path="/profile/:userId" element={<ViewProfile />} />
         <Route path="/profile/:userId/:collId" element={<ViewProfile />} />
         <Route path="/profile/edit" element={<EditProfile />} />
-        <Route path="/image/:xid" element={<ViewImage />} />
+        <Route path="/image/meta/:xid" element={<ViewImage />} />
         <Route path="/image/edit/:xid" element={<EditImage />} />
-        <Route path="/nft/:xid" element={<ViewNft />} />
+        <Route path="/image/nft/:xid" element={<ViewNft />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
