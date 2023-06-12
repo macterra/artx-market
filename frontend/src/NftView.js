@@ -8,6 +8,7 @@ import {
     TableCell,
     TableContainer,
     TableRow,
+    TextField,
 } from '@mui/material';
 
 const NftView = ({ navigate }) => {
@@ -15,6 +16,8 @@ const NftView = ({ navigate }) => {
     const [metadata, setMetadata] = useState(null);
     const [creator, setCreator] = useState(null);
     const [collection, setCollection] = useState(null);
+    const [editions, setEditions] = useState(1);
+    const [mintCost, setMintCost] = useState(null);
 
     useEffect(() => {
         const fetchMetadata = async () => {
@@ -22,6 +25,7 @@ const NftView = ({ navigate }) => {
                 const response = await fetch(`/api/asset/${xid}`);
                 const metadata = await response.json();
                 setMetadata(metadata);
+                setMintCost(calcMintCost());
 
                 const profResp = await fetch(`/api/profile/${metadata.asset.creator}`);
                 const profileData = await profResp.json();
@@ -39,8 +43,24 @@ const NftView = ({ navigate }) => {
         return <p>Loading...</p>;
     }
 
-    const handleEditClick = async () => {
-        navigate(`/image/edit/${metadata.asset.xid}`)
+    function calcMintCost() {
+        return metadata.asset.fileSize / 1000 + editions * 100;
+    }
+
+    const handleEditionsChange = async (value) => {
+        if (value < 1) {
+            value = 1;
+        }
+        if (value > 100) {
+            value = 100;
+        }
+
+        setEditions(value);
+        setMintCost(calcMintCost());
+    };
+
+    const handleMintClick = async () => {
+        alert(`Mint ${editions} editions`);
     };
 
     return (
@@ -66,17 +86,45 @@ const NftView = ({ navigate }) => {
                             <TableRow>
                                 <TableCell>Collection:</TableCell>
                                 <TableCell>
-                                    <Link to={`/profile/${metadata.asset.creator}/${metadata.asset.collection||0}`}>
+                                    <Link to={`/profile/${metadata.asset.creator}/${metadata.asset.collection || 0}`}>
                                         {collection}
                                     </Link>
                                 </TableCell>
                             </TableRow>
+                            <TableRow>
+                                <TableCell>File size:</TableCell>
+                                <TableCell>{metadata.asset.fileSize} bytes</TableCell>
+                            </TableRow>
                         </TableBody>
                     </Table>
                 </TableContainer>
-                <Button variant="contained" color="primary" onClick={handleEditClick}>
-                    Mint
-                </Button>
+                <h2>Mint NFT</h2>
+                <form>
+                    <TextField
+                        label="Editions (1-100)"
+                        type="number" // Set the input type to "number"
+                        value={editions}
+                        onChange={(e) => handleEditionsChange(e.target.value)}
+                        fullWidth
+                        margin="normal"
+                        inputProps={{
+                            min: 1, // Set the minimum value to 1
+                            max: 100, // Set the maximum value to 100
+                        }}
+                    />
+                    <TextField
+                        label=""
+                        value={`mint cost: ${mintCost} sats`}
+                        InputProps={{
+                            readOnly: true, // Set the input to read-only
+                        }}
+                        fullWidth
+                        margin="normal"
+                    />
+                    <Button variant="contained" color="primary" onClick={handleMintClick}>
+                        Mint
+                    </Button>
+                </form>
             </div>
         </div>
     );
