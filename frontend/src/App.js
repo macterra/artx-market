@@ -162,7 +162,9 @@ function ViewAsset() {
           navigate={navigate}
         />
         <header className="App-header">
-          <AssetView navigate={navigate} />
+          <AssetView
+            navigate={navigate}
+            isAuthenticated={isAuthenticated} />
         </header>
       </div>
     </ThemeProvider>

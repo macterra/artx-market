@@ -122,9 +122,16 @@ app.get('/logout', (req, res) => {
   });
 });
 
-app.get('/check-auth', (req, res) => {
+app.get('/check-auth/:id?', (req, res) => {
   if (req.isAuthenticated()) {
-    res.json({ message: 'Authenticated' });
+    const userId = req.params.id;
+
+    if (userId) {
+      // Check if the logged-in user's ID is the same as the provided ID
+      res.json({ message: 'Authenticated', sameId: req.user.id === userId });
+    } else {
+      res.json({ message: 'Authenticated' });
+    }
   } else {
     res.status(401).json({ message: 'Unauthorized' });
   }
@@ -261,7 +268,7 @@ app.get('/api/asset/:xid', async (req, res) => {
       const jsonContent = await fs.promises.readFile(assetPath, 'utf-8');
       const assetData = JSON.parse(jsonContent);
       res.json(assetData);
-    } else {      
+    } else {
       res.status(404).json({ message: 'Asset not found' });
     }
   } catch (error) {

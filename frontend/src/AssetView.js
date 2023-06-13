@@ -5,9 +5,11 @@ import MetadataView from './MetadataView'
 import AssetEditor from './AssetEditor';
 import NftMinter from './NftMinter';
 
-const AssetView = ({ navigate }) => {
+const AssetView = ({ navigate, isAuthenticated }) => {
     const { xid } = useParams();
+
     const [metadata, setMetadata] = useState(null);
+    const [isCreator, setIsCreator] = useState(false);
     const [tab, setTab] = useState(0);
 
     useEffect(() => {
@@ -16,13 +18,22 @@ const AssetView = ({ navigate }) => {
                 const response = await fetch(`/api/asset/${xid}`);
                 const metadata = await response.json();
                 setMetadata(metadata);
+
+                if (isAuthenticated) {
+                    const response2 = await fetch(`/check-auth/${metadata.asset.creator}`);
+                    const data = await response2.json();
+                    setIsCreator(data.sameId);
+                } else {
+                    setIsCreator(false);
+                    setTab(0);
+                }
             } catch (error) {
                 console.error('Error fetching image metadata:', error);
             }
         };
 
         fetchMetadata();
-    }, [xid]);
+    }, [xid, isAuthenticated]);
 
     if (!metadata) {
         return;
@@ -47,8 +58,8 @@ const AssetView = ({ navigate }) => {
                     scrollButtons="auto"
                 >
                     <Tab key={0} label={'Metadata'} />
-                    <Tab key={1} label={'Edit'} />
-                    <Tab key={2} label={'Mint'} />
+                    {isCreator && <Tab key={1} label={'Edit'} />}
+                    {isCreator && <Tab key={2} label={'Mint'} />}
                 </Tabs>
                 {tab === 0 && <MetadataView metadata={metadata} />}
                 {tab === 1 && <AssetEditor metadata={metadata} setTab={setTab} />}
