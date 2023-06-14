@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 
 const NftMinter = ({ metadata }) => {
-    const [creator, setCreator] = useState(null);
+    const [owner, setOwner] = useState(null);
     const [collection, setCollection] = useState(null);
     const [editions, setEditions] = useState(1);
     const [storageFee, setStorageFee] = useState(null);
@@ -19,10 +19,10 @@ const NftMinter = ({ metadata }) => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const profResp = await fetch(`/api/profile/${metadata.asset.creator}`);
+                const profResp = await fetch(`/api/profile/${metadata.asset.owner}`);
                 const profileData = await profResp.json();
 
-                setCreator(profileData.name);
+                setOwner(profileData.name);
                 setCollection(profileData.collections[metadata.asset.collection || 0].name);
                 setStorageFee(Math.round(metadata.asset.fileSize / 1000));
             } catch (error) {
@@ -50,7 +50,7 @@ const NftMinter = ({ metadata }) => {
 
     const handleMintClick = async () => {
         //alert(`Mint ${editions} editions`);
-        
+
         try {
             const payload = { xid: metadata.asset.xid, editions: editions };
             const response = await fetch('/api/mint', {
@@ -84,15 +84,15 @@ const NftMinter = ({ metadata }) => {
                             <TableCell>{metadata.asset.title}</TableCell>
                         </TableRow>
                         <TableRow>
-                            <TableCell>Creator:</TableCell>
+                            <TableCell>Owner:</TableCell>
                             <TableCell>
-                                <Link to={`/profile/${metadata.asset.creator}`}>{creator}</Link>
+                                <Link to={`/profile/${metadata.asset.owner}`}>{owner}</Link>
                             </TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>Collection:</TableCell>
                             <TableCell>
-                                <Link to={`/profile/${metadata.asset.creator}/${metadata.asset.collection || 0}`}>
+                                <Link to={`/profile/${metadata.asset.owner}/${metadata.asset.collection || 0}`}>
                                     {collection}
                                 </Link>
                             </TableCell>

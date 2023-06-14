@@ -41,7 +41,7 @@ const ImageCard = ({ metadata }) => {
     return (
         <div style={cardStyle}>
             <div style={imgContainerStyle}>
-                <img src={metadata.asset.path} style={imgStyle} alt={metadata.asset.title || 'untitled'} />
+                <img src={metadata.file.path} style={imgStyle} alt={metadata.asset.title || 'untitled'} />
             </div>
             <p style={titleStyle}>{metadata.asset.title || 'untitled'}</p>
         </div>

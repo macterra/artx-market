@@ -16,8 +16,8 @@ const AssetEditor = ({ metadata, setTab }) => {
                 setSelectedCollection(metadata.asset.collection || 0);
                 setCollections(profileData.collections || []);
 
-                if (profileData.xid !== metadata.asset.creator) {
-                    console.log(`editor ${profileData.xid} creator ${metadata.asset.creator}`);
+                if (profileData.xid !== metadata.asset.owner) {
+                    console.log(`editor ${profileData.xid} owner ${metadata.asset.owner}`);
                     //navigate(`/image/${metadata.asset.xid}`);
                 }
             } catch (error) {

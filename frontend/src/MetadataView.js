@@ -10,18 +10,18 @@ import {
 
 const MetadataView = ({ metadata }) => {
 
-    const [creator, setCreator] = useState(0);
+    const [owner, setOwner] = useState(0);
     const [collection, setCollection] = useState(0);
 
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const profResp = await fetch(`/api/profile/${metadata.asset.creator}`);
+                const profResp = await fetch(`/api/profile/${metadata.asset.owner}`);
                 const profileData = await profResp.json();
-                setCreator(profileData.name);
+                setOwner(profileData.name);
                 setCollection(profileData.collections[metadata.asset.collection || 0].name);
             } catch (error) {
-                console.error('Error fetching asset creator:', error);
+                console.error('Error fetching asset owner:', error);
             }
         };
 
@@ -41,9 +41,9 @@ const MetadataView = ({ metadata }) => {
                         <TableCell>{metadata.asset.title}</TableCell>
                     </TableRow>
                     <TableRow>
-                        <TableCell>Creator:</TableCell>
+                        <TableCell>Owner:</TableCell>
                         <TableCell>
-                            <Link to={`/profile/${metadata.asset.creator}`}>{creator}</Link>
+                            <Link to={`/profile/${metadata.asset.owner}`}>{owner}</Link>
                         </TableCell>
                     </TableRow>
                     <TableRow>
@@ -61,7 +61,7 @@ const MetadataView = ({ metadata }) => {
                     <TableRow>
                         <TableCell>Collection:</TableCell>
                         <TableCell>
-                            <Link to={`/profile/${metadata.asset.creator}/${metadata.asset.collection || 0}`}>
+                            <Link to={`/profile/${metadata.asset.owner}/${metadata.asset.collection || 0}`}>
                                 {collection}
                             </Link>
                         </TableCell>

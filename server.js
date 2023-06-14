@@ -230,14 +230,17 @@ app.post('/api/upload', ensureAuthenticated, upload.single('image'), async (req,
     const metadata = {
       asset: {
         xid: xid,
-        creator: req.user.id,
-        uploadTime: new Date().toISOString(),
+        owner: req.user.id,
+        title: 'untitled',
+        created: new Date().toISOString(),
+        updated: new Date().toISOString(),
+      },
+      file: {
         fileName: assetName,
         originalName: req.file.originalname,
         fileSize: req.file.size,
         hash: fileHash,
-        type: 'image',
-        path: `/${config.assets}/${xid}/${assetName}`
+        path: `/${config.assets}/${xid}/${assetName}`,
       },
       image: {
         width: imageMetadata.width,
@@ -297,7 +300,7 @@ app.post('/api/asset', ensureAuthenticated, async (req, res) => {
       assetData = JSON.parse(assetJsonContent);
     }
 
-    if (userId == assetData.asset.creator) {
+    if (userId == assetData.asset.owner) {
       assetData.asset.title = metadata.asset?.title;
       assetData.asset.description = metadata.asset?.description;
       assetData.asset.tags = metadata.asset?.tags;
