@@ -4,6 +4,7 @@ import { Tab, Tabs } from '@mui/material';
 import MetadataView from './MetadataView'
 import AssetEditor from './AssetEditor';
 import NftMinter from './NftMinter';
+import PfpEditor from './PfpEditor';
 
 const AssetView = ({ navigate, isAuthenticated }) => {
     const { xid } = useParams();
@@ -60,10 +61,12 @@ const AssetView = ({ navigate, isAuthenticated }) => {
                     <Tab key={0} label={'Metadata'} />
                     {isOwner && <Tab key={1} label={'Edit'} />}
                     {isOwner && <Tab key={2} label={'Mint'} />}
+                    {isOwner && <Tab key={3} label={'Pfp'} />}
                 </Tabs>
                 {tab === 0 && <MetadataView metadata={metadata} />}
                 {tab === 1 && <AssetEditor metadata={metadata} setTab={setTab} />}
                 {tab === 2 && <NftMinter metadata={metadata} />}
+                {tab === 3 && <PfpEditor metadata={metadata} setTab={setTab} />}
             </div>
         </div>
     );
