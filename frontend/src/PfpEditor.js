@@ -45,6 +45,17 @@ const PfpEditor = ({ metadata, setTab }) => {
 
     return (
         <div>
+            <img
+                src={metadata.file.path}
+                alt={metadata.asset.title}
+                style={{
+                    width: '200px',
+                    height: '200px',
+                    objectFit: 'cover',
+                    marginTop: '50px',
+                    borderRadius: '50%', // Add this line to create a circular mask
+                }}
+            />
             <form>
                 <Button variant="contained" color="primary" onClick={handleSaveClick}>
                     Set Profile Pic
