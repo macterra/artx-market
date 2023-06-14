@@ -49,7 +49,29 @@ const NftMinter = ({ metadata }) => {
     };
 
     const handleMintClick = async () => {
-        alert(`Mint ${editions} editions`);
+        //alert(`Mint ${editions} editions`);
+        
+        try {
+            const payload = { xid: metadata.asset.xid, editions: editions };
+            const response = await fetch('/api/mint', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (response.ok) {
+                console.log('Asset minted successfully');
+                //setTab(0);
+            } else {
+                const data = await response.json();
+                console.error('Error minting:', data.message);
+                alert(data.message);
+            }
+        } catch (error) {
+            console.error('Error minting:', error);
+        }
     };
 
     return (

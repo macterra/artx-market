@@ -384,6 +384,20 @@ app.post('/api/profile', ensureAuthenticated, async (req, res) => {
   }
 });
 
+app.post('/api/mint', ensureAuthenticated, async (req, res) => {
+  try {
+    const { xid, editions } = req.body;
+    const userId = req.user.id;
+
+    console.log(`mint ${xid} with ${editions} editions`)
+
+    res.json({ message: 'Success' });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ message: 'Error' });
+  }
+});
+
 app.use((req, res, next) => {
   if (!req.path.startsWith('/api')) {
     res.sendFile(path.join(__dirname, 'frontend/build', 'index.html'));
