@@ -344,6 +344,12 @@ const readAssetMetadata = async (xid) => {
   return metadata;
 };
 
+const writeAssetMetadata = async (metadata) => {
+  const assetFolder = path.join(config.assets, metadata.asset.xid);
+  const assetJsonPath = path.join(assetFolder, 'meta.json');
+  await fs.promises.writeFile(assetJsonPath, JSON.stringify(metadata, null, 2));
+};
+
 app.get('/api/collection/:userId/:collectionId', async (req, res) => {
   try {
     const { userId, collectionId } = req.params;
@@ -384,12 +390,67 @@ app.post('/api/profile', ensureAuthenticated, async (req, res) => {
   }
 });
 
+const createNFT = async (owner, asset, edition, editions) => {
+  const xid = uuidv4();
+  const assetFolder = path.join(config.assets, xid);
+  fs.mkdirSync(assetFolder);
+
+  const metadata = {
+    asset: {
+      xid: xid,
+      owner: owner,
+      createTime: new Date().toISOString(),
+      type: 'nft',
+      title: `${edition} of ${editions}`
+    },
+    nft: {
+      asset: asset,
+      edition: edition,
+      editions: editions,
+      price: 0,
+    }
+  };
+
+  // Write the metadata to meta.json
+  const metadataPath = path.join(assetFolder, 'meta.json');
+  await fs.promises.writeFile(metadataPath, JSON.stringify(metadata, null, 2));
+
+  return xid;
+};
+
 app.post('/api/mint', ensureAuthenticated, async (req, res) => {
   try {
     const { xid, editions } = req.body;
     const userId = req.user.id;
 
     console.log(`mint ${xid} with ${editions} editions`)
+
+    // Initialize an array to store the created IDs
+    const createdIds = [];
+
+    // Use a for loop to call createNFT for each edition
+    for (let i = 1; i <= editions; i++) {
+      const createdId = await createNFT(userId, xid, i, editions);
+      createdIds.push(createdId);
+    }
+
+    console.log(createdIds);
+
+    const mintEvent = {
+      type: 'mint',
+      agent: userId,
+      time: new Date().toISOString(),
+    };
+
+    const nftData = {
+      editions: editions,
+      nfts: createdIds,
+      history: [ mintEvent ],
+    };
+
+    let metadata = await readAssetMetadata(xid);
+    metadata.nft = nftData;
+    await writeAssetMetadata(metadata);
 
     res.json({ message: 'Success' });
   } catch (error) {
