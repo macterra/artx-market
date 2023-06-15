@@ -8,7 +8,7 @@ const CollectionView = ({ navigate }) => {
     const { userId, collId } = useParams();
 
     const [profile, setProfile] = useState(null);
-    const [selectedCollectionIndex, setSelectedCollectionIndex] = useState(null);
+    const [tab, setTab] = useState(null);
     const [collection, setCollection] = useState(null);
     const [refreshKey, setRefreshKey] = useState(0);
 
@@ -37,6 +37,7 @@ const CollectionView = ({ navigate }) => {
                     const collectionData = await response2.json();
 
                     setCollection(collectionData);
+                    //setTab(collId);
                 }
             } catch (error) {
                 console.error('Error fetching profile data:', error);
@@ -72,7 +73,7 @@ const CollectionView = ({ navigate }) => {
     };
 
     const handleCollectionChange = (event, newIndex) => {
-        setSelectedCollectionIndex(newIndex);
+        setTab(newIndex);
         navigate(`/profile/${userId}/${newIndex}`);
     };
 
@@ -80,7 +81,7 @@ const CollectionView = ({ navigate }) => {
         <>
             <p style={{ textAlign: 'left' }}>Collections</p>
             <Tabs
-                value={selectedCollectionIndex}
+                value={tab}
                 onChange={handleCollectionChange}
                 indicatorColor="primary"
                 textColor="primary"
@@ -92,7 +93,7 @@ const CollectionView = ({ navigate }) => {
                 ))}
             </Tabs>
             <ImageGrid collection={collection} />
-            <input type="file" onChange={handleUpload} />
+            {tab === 0 && <input type="file" onChange={handleUpload} />}
         </>
     );
 };
