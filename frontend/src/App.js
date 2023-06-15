@@ -4,8 +4,6 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
 import AppHeader from './AppHeader';
-//import ProfileView from './ProfileView';
-//import ImageGrid from './ImageGrid';
 import ProfileEditor from './ProfileEditor';
 import CollectionEditor from './CollectionEditor';
 import AssetView from './AssetView';
@@ -82,7 +80,6 @@ function ViewProfile() {
         {/* Update the styles for the App-header */}
         <header className="App-header" style={{ padding: 0, height: '100%', display: 'flex', flexDirection: 'column' }}>
           <>
-            {/* Wrap the ProfileView and ImageGrid components in a Box container */}
             <Box display="flex" flexDirection="column" flexGrow={1}>
               <ProfileHeader />
               <CollectionView navigate={navigate} />
