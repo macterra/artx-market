@@ -6,9 +6,11 @@ import ImageGrid from './ImageGrid';
 
 const CollectionView = ({ navigate }) => {
     const { userId, collId } = useParams();
+
     const [profile, setProfile] = useState(null);
     const [selectedCollectionIndex, setSelectedCollectionIndex] = useState(null);
     const [collection, setCollection] = useState(null);
+    const [refreshKey, setRefreshKey] = useState(0);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -42,11 +44,32 @@ const CollectionView = ({ navigate }) => {
         };
 
         fetchProfile();
-    }, [navigate, userId, collId]);
+    }, [navigate, userId, collId, refreshKey]);
 
     if (!profile) {
         return <p>Loading profile...</p>;
     }
+
+    const handleUpload = async (event) => {
+        const file = event.target.files[0];
+        const formData = new FormData();
+        formData.append('image', file);
+
+        try {
+            const response = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setRefreshKey((prevKey) => prevKey + 1); // Increment refreshKey after a successful upload
+            }
+        } catch (error) {
+            console.error('Error uploading image:', error);
+        }
+    };
 
     const handleCollectionChange = (event, newIndex) => {
         setSelectedCollectionIndex(newIndex);
@@ -69,6 +92,7 @@ const CollectionView = ({ navigate }) => {
                 ))}
             </Tabs>
             <ImageGrid collection={collection} />
+            <input type="file" onChange={handleUpload} />
         </>
     );
 };

@@ -66,38 +66,9 @@ function Home() {
 }
 
 function ViewProfile() {
-  const [uploadStatus, setUploadStatus] = useState('');
-  const [refreshKey, setRefreshKey] = useState(0);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const navigate = useNavigate();
-
-  const handleUpload = async (event) => {
-    const file = event.target.files[0];
-    const formData = new FormData();
-    formData.append('image', file);
-
-    try {
-      setUploadStatus('Image uploading...');
-
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setRefreshKey((prevKey) => prevKey + 1); // Increment refreshKey after a successful upload
-        setUploadStatus('Image uploaded successfully');
-      } else {
-        setUploadStatus('Image upload failed');
-      }
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      setUploadStatus('Image upload failed');
-    }
-  };
 
   return (
     <ThemeProvider theme={darkTheme}>
@@ -116,8 +87,6 @@ function ViewProfile() {
               <ProfileHeader />
               <CollectionView navigate={navigate} />
             </Box>
-            <input type="file" onChange={handleUpload} />
-            <p>{uploadStatus}</p>
           </>
         </header>
       </div>
