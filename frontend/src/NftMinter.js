@@ -15,16 +15,22 @@ const NftMinter = ({ metadata }) => {
     const [collection, setCollection] = useState(null);
     const [editions, setEditions] = useState(1);
     const [storageFee, setStorageFee] = useState(null);
+    const [collectionId, setCollectionId] = useState(null);
+    const [fileSize, setFileSize] = useState(null);
 
     useEffect(() => {
         const fetchProfile = async () => {
             try {
                 const profResp = await fetch(`/api/profile/${metadata.asset.owner}`);
                 const profileData = await profResp.json();
+                const fileSize = metadata.file.fileSize || 0;
+                const collectionId = metadata.asset.collection || 0;
 
                 setOwner(profileData.name);
-                setCollection(profileData.collections[metadata.asset.collection || 0].name);
-                setStorageFee(Math.round(metadata.asset.fileSize / 1000));
+                setCollection(profileData.collections[collectionId].name);
+                setStorageFee(Math.round(fileSize / 1000));
+                setFileSize(fileSize);
+                setCollectionId(collectionId);
             } catch (error) {
                 console.error('Error fetching image metadata:', error);
             }
@@ -92,14 +98,14 @@ const NftMinter = ({ metadata }) => {
                         <TableRow>
                             <TableCell>Collection:</TableCell>
                             <TableCell>
-                                <Link to={`/profile/${metadata.asset.owner}/${metadata.asset.collection || 0}`}>
+                                <Link to={`/profile/${metadata.asset.owner}/${collectionId}`}>
                                     {collection}
                                 </Link>
                             </TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>Storage fee:</TableCell>
-                            <TableCell>{storageFee} sats for {metadata.asset.fileSize} bytes</TableCell>
+                            <TableCell>{storageFee} sats for {fileSize} bytes</TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>Minting fee:</TableCell>
