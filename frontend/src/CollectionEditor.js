@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button, TextField, List, ListItem, ListItemText } from '@mui/material';
 
-const ProfileEditor = ({ navigate }) => {
+const CollectionEditor = ({ navigate }) => {
     const [profile, setProfile] = useState({});
     const [collections, setCollections] = useState([]);
     const [selectedCollectionIndex, setSelectedCollectionIndex] = useState(null);
@@ -117,4 +117,4 @@ const ProfileEditor = ({ navigate }) => {
     );
 };
 
-export default ProfileEditor;
+export default CollectionEditor;
