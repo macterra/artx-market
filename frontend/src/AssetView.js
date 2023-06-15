@@ -45,7 +45,7 @@ const AssetView = ({ navigate, isAuthenticated }) => {
     };
 
     return (
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
             <div style={{ width: '50%', padding: '16px' }}>
                 <img src={metadata.file.path} alt={metadata.asset.title} style={{ width: '100%', height: 'auto' }} />
             </div>
