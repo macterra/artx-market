@@ -37,7 +37,7 @@ const CollectionView = ({ navigate }) => {
                     const collectionData = await response2.json();
 
                     setCollection(collectionData);
-                    //setTab(collId);
+                    setTab(parseInt(collId, 10));
                 }
             } catch (error) {
                 console.error('Error fetching profile data:', error);
