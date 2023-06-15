@@ -36,3 +36,13 @@
     transform: rotate(360deg);
   }
 }
+
+a {
+  color: white; /* Change this to the desired color for all Link tags */
+  text-decoration: none; /* Optional: remove underline from links */
+}
+
+a:hover {
+  color: lightblue; /* Change this to the desired color for all Link tags on hover */
+  text-decoration: underline; /* Optional: add underline on hover */
+}
