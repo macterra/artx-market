@@ -1,22 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import ImageCard from './ImageCard';
 
 const ImageGrid = ({ collection }) => {
-    const { userId, collId } = useParams();
     const [images, setImages] = useState([]);
 
     useEffect(() => {
         const fetchAssets = async () => {
             try {
-                console.log(`userId=${userId}`);
-                console.log(`collId= ${collId}`);
-                console.log(`collection= ${collection}`);
-
-                if (typeof userId === 'undefined' || typeof collId === 'undefined') {
-                    return;
-                }
-
                 setImages(collection);
             } catch (error) {
                 console.error('Error fetching image metadata:', error);
