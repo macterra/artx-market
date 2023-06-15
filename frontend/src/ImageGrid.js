@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import ImageCard from './ImageCard';
 
-const ImageGrid = ({ refreshKey }) => {
+const ImageGrid = ({ collection }) => {
     const { userId, collId } = useParams();
     const [images, setImages] = useState([]);
 
@@ -11,13 +11,11 @@ const ImageGrid = ({ refreshKey }) => {
             try {
                 console.log(`userId=${userId}`);
                 console.log(`collId= ${collId}`);
+                console.log(`collection= ${collection}`);
 
                 if (typeof userId === 'undefined' || typeof collId === 'undefined') {
                     return;
                 }
-
-                const response = await fetch(`/api/collection/${userId}/${collId}`);
-                const collection = await response.json();
 
                 setImages(collection);
             } catch (error) {
@@ -25,7 +23,7 @@ const ImageGrid = ({ refreshKey }) => {
             }
         };
         fetchAssets();
-    }, [refreshKey, userId, collId]);
+    }, [collection]);
 
     if (!images) {
         return <p>Loading images...</p>;

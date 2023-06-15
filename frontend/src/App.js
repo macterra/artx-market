@@ -4,11 +4,14 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
 import AppHeader from './AppHeader';
-import ProfileView from './ProfileView';
-import ImageGrid from './ImageGrid';
+//import ProfileView from './ProfileView';
+//import ImageGrid from './ImageGrid';
 import ProfileEditor from './ProfileEditor';
 import CollectionEditor from './CollectionEditor';
 import AssetView from './AssetView';
+import ProfileHeader from './ProfileHeader';
+import CollectionView from './CollectionView';
+
 import './App.css';
 
 function App() {
@@ -110,8 +113,8 @@ function ViewProfile() {
           <>
             {/* Wrap the ProfileView and ImageGrid components in a Box container */}
             <Box display="flex" flexDirection="column" flexGrow={1}>
-              <ProfileView navigate={navigate} />
-              <ImageGrid refreshKey={refreshKey} />
+              <ProfileHeader navigate={navigate} />
+              <CollectionView navigate={navigate} />
             </Box>
             <input type="file" onChange={handleUpload} />
             <p>{uploadStatus}</p>
