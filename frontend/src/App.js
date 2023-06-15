@@ -113,7 +113,7 @@ function ViewProfile() {
           <>
             {/* Wrap the ProfileView and ImageGrid components in a Box container */}
             <Box display="flex" flexDirection="column" flexGrow={1}>
-              <ProfileHeader navigate={navigate} />
+              <ProfileHeader />
               <CollectionView navigate={navigate} />
             </Box>
             <input type="file" onChange={handleUpload} />
