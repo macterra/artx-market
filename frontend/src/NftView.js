@@ -10,7 +10,6 @@ import {
 
 const NftView = ({ metadata }) => {
 
-    const [owner, setOwner] = useState(0);
     const [collection, setCollection] = useState(0);
 
     useEffect(() => {
@@ -18,8 +17,19 @@ const NftView = ({ metadata }) => {
             try {
                 const profResp = await fetch(`/api/profile/${metadata.asset.owner}`);
                 const profileData = await profResp.json();
-                setOwner(profileData.name);
                 setCollection(profileData.collections[metadata.asset.collection || 0].name);
+
+                const nfts = [];
+
+                for (const xid of metadata.nft.nfts) {
+                    console.log(xid);
+                    const response = await fetch(`/api/asset/${xid}`);
+                    const asset = await response.json();
+                    nfts.push(asset);
+                }
+
+                console.log(nfts);
+
             } catch (error) {
                 console.error('Error fetching asset owner:', error);
             }

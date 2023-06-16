@@ -10,7 +10,7 @@ import {
     TextField,
 } from '@mui/material';
 
-const NftMinter = ({ metadata }) => {
+const NftMinter = ({ metadata, setTab }) => {
     const [owner, setOwner] = useState(null);
     const [collection, setCollection] = useState(null);
     const [editions, setEditions] = useState(1);
@@ -68,8 +68,7 @@ const NftMinter = ({ metadata }) => {
             });
 
             if (response.ok) {
-                console.log('Asset minted successfully');
-                //setTab(0);
+                setTab("nft");
             } else {
                 const data = await response.json();
                 console.error('Error minting:', data.message);

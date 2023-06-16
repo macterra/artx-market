@@ -75,7 +75,7 @@ const AssetView = ({ navigate, isAuthenticated }) => {
                 {tab === 'meta' && <MetadataView metadata={metadata} />}
                 {tab === 'nft' && <NftView metadata={metadata} />}
                 {tab === 'edit' && <AssetEditor metadata={metadata} setTab={setTab} />}
-                {tab === 'mint' && <NftMinter metadata={metadata} />}
+                {tab === 'mint' && <NftMinter metadata={metadata} setTab={setTab} />}
                 {tab === 'pfp' && <PfpEditor metadata={metadata} setTab={setTab} />}
             </div>
         </div>
