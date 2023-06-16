@@ -68,27 +68,40 @@ const NftView = ({ metadata }) => {
                             <TableCell>Editions:</TableCell>
                             <TableCell>{metadata.nft.editions}</TableCell>
                         </TableRow>
-                    </TableBody>
-                </Table>
-            </TableContainer>
-            <h2>owners</h2>
-            <TableContainer component={Paper} style={{ maxHeight: '300px', overflow: 'auto' }}>
-                <Table>
-                    <TableHead>
                         <TableRow>
-                            <TableCell>Edition</TableCell>
-                            <TableCell>Owner</TableCell>
-                            <TableCell>Price</TableCell>
+                            <TableCell>Owners:</TableCell>
+                            <TableCell>
+                                <TableContainer component={Paper} style={{ maxHeight: '300px', overflow: 'auto' }}>
+                                    <Table>
+                                        <TableHead>
+                                            <TableRow>
+                                                <TableCell>Edition</TableCell>
+                                                <TableCell>Owner</TableCell>
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            {nfts.map((nft, index) => (
+                                                <TableRow key={index}>
+                                                    <TableCell>{nft.asset.title}</TableCell>
+                                                    <TableCell>
+                                                        <img
+                                                            src={nft.owner.pfp}
+                                                            alt=""
+                                                            style={{
+                                                                width: '30px',
+                                                                height: '30px',
+                                                                objectFit: 'cover',
+                                                                marginRight: '16px',
+                                                                borderRadius: '50%',
+                                                            }} /> {nft.owner.name}
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer>
+                            </TableCell>
                         </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {nfts.map((nft, index) => (
-                            <TableRow key={index}>
-                                <TableCell>{nft.asset.title}</TableCell>
-                                <TableCell>{nft.owner.name}</TableCell>
-                                <TableCell>?</TableCell>
-                            </TableRow>
-                        ))}
                     </TableBody>
                 </Table>
             </TableContainer>
