@@ -23,7 +23,7 @@ const NftMinter = ({ metadata, setTab }) => {
             try {
                 const profResp = await fetch(`/api/profile/${metadata.asset.owner}`);
                 const profileData = await profResp.json();
-                const fileSize = metadata.file.fileSize || 0;
+                const fileSize = metadata.file.size || 0;
                 const collectionId = metadata.asset.collection || 0;
 
                 setOwner(profileData.name);

@@ -238,7 +238,7 @@ app.post('/api/upload', ensureAuthenticated, upload.single('image'), async (req,
       file: {
         fileName: assetName,
         originalName: req.file.originalname,
-        fileSize: req.file.size,
+        size: req.file.size,
         hash: fileHash,
         path: `/${config.assets}/${xid}/${assetName}`,
       },
@@ -305,6 +305,7 @@ app.post('/api/asset', ensureAuthenticated, async (req, res) => {
       assetData.asset.description = metadata.asset?.description;
       assetData.asset.tags = metadata.asset?.tags;
       assetData.asset.collection = metadata.asset?.collection;
+      assetData.asset.updated = new Date().toISOString();
 
       // Write the updated agent data to the agent.json file
       await fs.promises.writeFile(assetJsonPath, JSON.stringify(assetData, null, 2));

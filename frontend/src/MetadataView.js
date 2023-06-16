@@ -47,8 +47,16 @@ const MetadataView = ({ metadata }) => {
                         </TableCell>
                     </TableRow>
                     <TableRow>
+                        <TableCell>Created:</TableCell>
+                        <TableCell>{metadata.asset.created}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableCell>Updated:</TableCell>
+                        <TableCell>{metadata.asset.updated}</TableCell>
+                    </TableRow>
+                    <TableRow>
                         <TableCell>File size:</TableCell>
-                        <TableCell>{metadata.asset.fileSize} bytes</TableCell>
+                        <TableCell>{metadata.file.size} bytes</TableCell>
                     </TableRow>
                     <TableRow>
                         <TableCell>Image size:</TableCell>
