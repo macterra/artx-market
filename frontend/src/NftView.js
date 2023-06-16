@@ -11,6 +11,7 @@ import {
 const NftView = ({ metadata }) => {
 
     const [collection, setCollection] = useState(0);
+    const [nfts, setNfts] = useState([]);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -22,13 +23,15 @@ const NftView = ({ metadata }) => {
                 const nfts = [];
 
                 for (const xid of metadata.nft.nfts) {
-                    console.log(xid);
                     const response = await fetch(`/api/asset/${xid}`);
-                    const asset = await response.json();
-                    nfts.push(asset);
+                    const nft = await response.json();
+                    const response2 = await fetch(`/api/profile/${nft.asset.owner}`);
+                    nft.owner = await response2.json();
+                    nfts.push(nft);
                 }
 
                 console.log(nfts);
+                setNfts(nfts);
 
             } catch (error) {
                 console.error('Error fetching asset owner:', error);
@@ -62,6 +65,12 @@ const NftView = ({ metadata }) => {
                         <TableCell>Editions:</TableCell>
                         <TableCell>{metadata.nft.editions}</TableCell>
                     </TableRow>
+                    {nfts.map((nft, index) => (
+                        <TableRow>
+                            <TableCell>{index}</TableCell>
+                            <TableCell>{nft.owner.name}</TableCell>
+                        </TableRow>
+                    ))}
                 </TableBody>
             </Table>
         </TableContainer>
