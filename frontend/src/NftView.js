@@ -10,30 +10,63 @@ import {
     Paper,
 } from '@mui/material';
 
+function convertToRanges(arr) {
+    let result = '';
+    let rangeStart;
+
+    for (let i = 0; i < arr.length; i++) {
+        if (i === 0 || arr[i] !== arr[i - 1] + 1) {
+            if (rangeStart) {
+                result += rangeStart === arr[i - 1] ? `,${rangeStart}` : `-${arr[i - 1]}`;
+            }
+            rangeStart = arr[i];
+            result += `,${rangeStart}`;
+        } else if (i === arr.length - 1 && rangeStart !== arr[i]) {
+            result += `-${arr[i]}`;
+        }
+    }
+
+    return result.substring(1); // Remove the leading comma
+}
+
 const NftView = ({ metadata }) => {
 
     const [collection, setCollection] = useState(0);
     const [nfts, setNfts] = useState([]);
+    const [owned, setOwned] = useState(0);
+    const [ranges, setRanges] = useState(null);
 
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const profResp = await fetch(`/api/profile/${metadata.asset.owner}`);
-                const profileData = await profResp.json();
+                let response = await fetch(`/api/profile/`);
+                const myProfile = await response.json();
+
+                response = await fetch(`/api/profile/${metadata.asset.owner}`);
+                const profileData = await response.json();
                 setCollection(profileData.collections[metadata.asset.collection || 0].name);
 
                 const nfts = [];
+                let owned = 0;
+                const ownedEditions = [];
 
                 for (const xid of metadata.nft.nfts) {
-                    const response = await fetch(`/api/asset/${xid}`);
+                    response = await fetch(`/api/asset/${xid}`);
                     const nft = await response.json();
-                    const response2 = await fetch(`/api/profile/${nft.asset.owner}`);
-                    nft.owner = await response2.json();
+                    response = await fetch(`/api/profile/${nft.asset.owner}`);
+                    nft.owner = await response.json();
                     nfts.push(nft);
+
+                    if (nft.asset.owner === myProfile.id) {
+                        owned += 1;
+                        ownedEditions.push(nft.nft.edition);
+                    }
                 }
 
                 console.log(nfts);
                 setNfts(nfts);
+                setOwned(owned);
+                setRanges(convertToRanges(ownedEditions));
 
             } catch (error) {
                 console.error('Error fetching asset owner:', error);
@@ -67,6 +100,14 @@ const NftView = ({ metadata }) => {
                         <TableRow>
                             <TableCell>Editions:</TableCell>
                             <TableCell>{metadata.nft.editions}</TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell>Owned:</TableCell>
+                            <TableCell>{owned}</TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell>Ranges:</TableCell>
+                            <TableCell>{ranges}</TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>Owners:</TableCell>
