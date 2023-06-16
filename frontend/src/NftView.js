@@ -6,6 +6,8 @@ import {
     TableCell,
     TableContainer,
     TableRow,
+    TableHead,
+    Paper,
 } from '@mui/material';
 
 const NftView = ({ metadata }) => {
@@ -46,34 +48,51 @@ const NftView = ({ metadata }) => {
     }
 
     return (
-        <TableContainer>
-            <Table>
-                <TableBody>
-                    <TableRow>
-                        <TableCell>Title:</TableCell>
-                        <TableCell>{metadata.asset.title}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                        <TableCell>Collection:</TableCell>
-                        <TableCell>
-                            <Link to={`/profile/${metadata.asset.owner}/${metadata.asset.collection || 0}`}>
-                                {collection}
-                            </Link>
-                        </TableCell>
-                    </TableRow>
-                    <TableRow>
-                        <TableCell>Editions:</TableCell>
-                        <TableCell>{metadata.nft.editions}</TableCell>
-                    </TableRow>
-                    {nfts.map((nft, index) => (
+        <>
+            <TableContainer>
+                <Table>
+                    <TableBody>
                         <TableRow>
-                            <TableCell>{index}</TableCell>
-                            <TableCell>{nft.owner.name}</TableCell>
+                            <TableCell>Title:</TableCell>
+                            <TableCell>{metadata.asset.title}</TableCell>
                         </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-        </TableContainer>
+                        <TableRow>
+                            <TableCell>Collection:</TableCell>
+                            <TableCell>
+                                <Link to={`/profile/${metadata.asset.owner}/${metadata.asset.collection || 0}`}>
+                                    {collection}
+                                </Link>
+                            </TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell>Editions:</TableCell>
+                            <TableCell>{metadata.nft.editions}</TableCell>
+                        </TableRow>
+                    </TableBody>
+                </Table>
+            </TableContainer>
+            <h2>owners</h2>
+            <TableContainer component={Paper} style={{ maxHeight: '300px', overflow: 'auto' }}>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Edition</TableCell>
+                            <TableCell>Owner</TableCell>
+                            <TableCell>Price</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {nfts.map((nft, index) => (
+                            <TableRow key={index}>
+                                <TableCell>{nft.asset.title}</TableCell>
+                                <TableCell>{nft.owner.name}</TableCell>
+                                <TableCell>?</TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </TableContainer>
+        </>
     );
 };
 
