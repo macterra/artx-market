@@ -5,12 +5,14 @@ import MetadataView from './MetadataView'
 import AssetEditor from './AssetEditor';
 import NftMinter from './NftMinter';
 import PfpEditor from './PfpEditor';
+import NftView from './NftView';
 
 const AssetView = ({ navigate, isAuthenticated }) => {
     const { xid } = useParams();
 
     const [metadata, setMetadata] = useState(null);
     const [isOwner, setIsOwner] = useState(false);
+    const [isNft, setIsNft] = useState(false);
     const [tab, setTab] = useState(0);
 
     useEffect(() => {
@@ -20,13 +22,19 @@ const AssetView = ({ navigate, isAuthenticated }) => {
                 const metadata = await response.json();
                 setMetadata(metadata);
 
+                if (metadata.nft) {
+                    setIsNft(true);
+                } else {
+                    setIsNft(false);
+                }
+
                 if (isAuthenticated) {
                     const response2 = await fetch(`/check-auth/${metadata.asset.owner}`);
                     const data = await response2.json();
                     setIsOwner(data.sameId);
                 } else {
                     setIsOwner(false);
-                    setTab(0);
+                    setTab("meta");
                 }
             } catch (error) {
                 console.error('Error fetching image metadata:', error);
@@ -40,8 +48,8 @@ const AssetView = ({ navigate, isAuthenticated }) => {
         return;
     }
 
-    const handleTabChange = (event, newIndex) => {
-        setTab(newIndex);
+    const handleTabChange = (event, newTab) => {
+        setTab(newTab);
     };
 
     return (
@@ -58,15 +66,17 @@ const AssetView = ({ navigate, isAuthenticated }) => {
                     variant="scrollable"
                     scrollButtons="auto"
                 >
-                    <Tab key={0} label={'Metadata'} />
-                    {isOwner && <Tab key={1} label={'Edit'} />}
-                    {isOwner && <Tab key={2} label={'Mint'} />}
-                    {isOwner && <Tab key={3} label={'Pfp'} />}
+                    <Tab key="meta" value="meta" label={'Metadata'} />
+                    {isNft && <Tab key="nft" value="nft" label={'NFT'} />}
+                    {isOwner && <Tab key="edit" value="edit" label={'Edit'} />}
+                    {isOwner && !isNft && <Tab key="mint" value="mint" label={'Mint'} />}
+                    {isOwner && <Tab key="pfp" value="pfp" label={'Pfp'} />}
                 </Tabs>
-                {tab === 0 && <MetadataView metadata={metadata} />}
-                {tab === 1 && <AssetEditor metadata={metadata} setTab={setTab} />}
-                {tab === 2 && <NftMinter metadata={metadata} />}
-                {tab === 3 && <PfpEditor metadata={metadata} setTab={setTab} />}
+                {tab === 'meta' && <MetadataView metadata={metadata} />}
+                {tab === 'nft' && <NftView metadata={metadata} />}
+                {tab === 'edit' && <AssetEditor metadata={metadata} setTab={setTab} />}
+                {tab === 'mint' && <NftMinter metadata={metadata} />}
+                {tab === 'pfp' && <PfpEditor metadata={metadata} setTab={setTab} />}
             </div>
         </div>
     );

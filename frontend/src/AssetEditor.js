@@ -47,7 +47,7 @@ const AssetEditor = ({ metadata, setTab }) => {
 
             if (response.ok) {
                 console.log('Metadata updated successfully');
-                setTab(0);
+                setTab("meta");
             } else {
                 const data = await response.json();
                 console.error('Error updating metadata:', data.message);
