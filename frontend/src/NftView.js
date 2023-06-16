@@ -101,14 +101,12 @@ const NftView = ({ metadata }) => {
                             <TableCell>Editions:</TableCell>
                             <TableCell>{metadata.nft.editions}</TableCell>
                         </TableRow>
-                        <TableRow>
-                            <TableCell>Owned:</TableCell>
-                            <TableCell>{owned}</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell>Ranges:</TableCell>
-                            <TableCell>{ranges}</TableCell>
-                        </TableRow>
+                        {owned>0 &&
+                            <TableRow>
+                                <TableCell>Owned:</TableCell>
+                                <TableCell>{owned} ({ranges})</TableCell>
+                            </TableRow>
+                        }
                         <TableRow>
                             <TableCell>Owners:</TableCell>
                             <TableCell>
@@ -125,16 +123,18 @@ const NftView = ({ metadata }) => {
                                                 <TableRow key={index}>
                                                     <TableCell>{nft.asset.title}</TableCell>
                                                     <TableCell>
-                                                        <img
-                                                            src={nft.owner.pfp}
-                                                            alt=""
-                                                            style={{
-                                                                width: '30px',
-                                                                height: '30px',
-                                                                objectFit: 'cover',
-                                                                marginRight: '16px',
-                                                                borderRadius: '50%',
-                                                            }} /> {nft.owner.name}
+                                                        {nft.owner.pfp &&
+                                                            <img
+                                                                src={nft.owner.pfp}
+                                                                alt=""
+                                                                style={{
+                                                                    width: '30px',
+                                                                    height: '30px',
+                                                                    objectFit: 'cover',
+                                                                    marginRight: '16px',
+                                                                    borderRadius: '50%',
+                                                                }}
+                                                            />} {nft.owner.name}
                                                     </TableCell>
                                                 </TableRow>
                                             ))}
