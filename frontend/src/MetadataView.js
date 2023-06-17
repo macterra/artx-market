@@ -6,6 +6,7 @@ import {
     TableCell,
     TableContainer,
     TableRow,
+    Button,
 } from '@mui/material';
 
 function findAdjacentXids(list, targetXid) {
@@ -32,7 +33,7 @@ function findAdjacentXids(list, targetXid) {
     return { firstXid, prevXid, nextXid, lastXid };
 }
 
-const MetadataView = ({ metadata }) => {
+const MetadataView = ({ navigate, metadata }) => {
 
     const [owner, setOwner] = useState(0);
     const [collectionId, setCollectionId] = useState(0);
@@ -131,7 +132,15 @@ const MetadataView = ({ metadata }) => {
                             </Link>
                         </TableCell>
                     </TableRow>
-                    {/* Add any other metadata you want to display */}
+                    <TableRow>
+                        <TableCell>Navigate:</TableCell>
+                        <TableCell>
+                            <Button color="inherit" onClick={() => navigate(`/asset/${firstXid}`)}>First</Button>
+                            <Button color="inherit" onClick={() => navigate(`/asset/${prevXid}`)}>Prev</Button>
+                            <Button color="inherit" onClick={() => navigate(`/asset/${nextXid}`)}>Next</Button>
+                            <Button color="inherit" onClick={() => navigate(`/asset/${lastXid}`)}>Last</Button>
+                        </TableCell>
+                    </TableRow>
                 </TableBody>
             </Table>
         </TableContainer>
