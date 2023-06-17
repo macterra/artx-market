@@ -4,6 +4,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
 import AppHeader from './AppHeader';
+import MainView from './MainView';
 import ProfileEditor from './ProfileEditor';
 import CollectionEditor from './CollectionEditor';
 import AssetView from './AssetView';
@@ -56,7 +57,7 @@ function Home() {
           navigate={navigate}
         />
         <header className="App-header">
-          <h1>{message}</h1>
+          <MainView navigate={navigate} />
         </header>
       </div>
     </ThemeProvider>
