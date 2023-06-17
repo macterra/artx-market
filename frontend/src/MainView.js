@@ -1,18 +1,19 @@
 
 import React, { useState, useEffect } from 'react';
 import { Box } from '@mui/material';
+import ProfileGrid from './ProfileGrid';
 
 const MainView = ({ navigate }) => {
 
-    const [message, setMessage] = useState(null);
+    const [profiles, setProfiles] = useState(null);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                let response = await fetch(`/api/message`);
+                let response = await fetch(`/api/profiles`);
                 const data = await response.json();
 
-                setMessage(data.message);
+                setProfiles(data);
             } catch (error) {
                 console.error('Error fetching profile data:', error);
             }
@@ -21,13 +22,14 @@ const MainView = ({ navigate }) => {
         fetchData();
     }, [navigate]);
 
-    if (!message) {
+    if (!profiles) {
         return <p>Loading...</p>;
     }
 
     return (
         <Box>
-            <p>{message}</p>
+            <h1>Featured Artists</h1>
+            <ProfileGrid collection={profiles} />
         </Box>
     );
 };
