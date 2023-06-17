@@ -85,20 +85,18 @@ const AppHeader = ({ isAuthenticated, setIsAuthenticated, navigate }) => {
         <>
             <AppBar position="static">
                 <Toolbar>
+                    <Button color="inherit" onClick={() => navigate('/')}>
+                        Home
+                    </Button>
                     {isAuthenticated && (
-                        <Button color="inherit" onClick={() => navigate('/')}>
-                            Home
+                        <Button
+                            color="inherit"
+                            aria-controls="profile-menu"
+                            aria-haspopup="true"
+                            onClick={handleProfileMenuClick}
+                        >
+                            Profile
                         </Button>
-                    )}
-                    {isAuthenticated && (
-                      <Button
-                        color="inherit"
-                        aria-controls="profile-menu"
-                        aria-haspopup="true"
-                        onClick={handleProfileMenuClick}
-                      >
-                        Profile
-                      </Button>
                     )}
                     <Menu
                         id="profile-menu"
