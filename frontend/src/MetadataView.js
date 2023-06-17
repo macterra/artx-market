@@ -11,7 +11,8 @@ import {
 const MetadataView = ({ metadata }) => {
 
     const [owner, setOwner] = useState(0);
-    const [collection, setCollection] = useState(0);
+    const [collectionId, setCollectionId] = useState(0);
+    const [collectionName, setCollectionName] = useState(0);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -19,7 +20,12 @@ const MetadataView = ({ metadata }) => {
                 const profResp = await fetch(`/api/profile/${metadata.asset.owner}`);
                 const profileData = await profResp.json();
                 setOwner(profileData.name);
-                setCollection(profileData.collections[metadata.asset.collection || 0].name);
+
+                const collectionId = metadata.asset.collection || 0;
+                const collection = profileData.collections[collectionId];
+
+                setCollectionId(collectionId);
+                setCollectionName(collection.name);
             } catch (error) {
                 console.error('Error fetching asset owner:', error);
             }
@@ -69,8 +75,8 @@ const MetadataView = ({ metadata }) => {
                     <TableRow>
                         <TableCell>Collection:</TableCell>
                         <TableCell>
-                            <Link to={`/profile/${metadata.asset.owner}/${metadata.asset.collection || 0}`}>
-                                {collection}
+                            <Link to={`/profile/${metadata.asset.owner}/${collectionId}`}>
+                                {collectionName}
                             </Link>
                         </TableCell>
                     </TableRow>
