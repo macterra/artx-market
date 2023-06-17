@@ -44,7 +44,8 @@ function findAdjacentXids(list, targetXid) {
 
 const MetadataView = ({ navigate, metadata }) => {
 
-    const [owner, setOwner] = useState(0);
+    const [ownerId, setOwnerId] = useState(0);
+    const [ownerName, setOwnerName] = useState(0);
     const [collectionId, setCollectionId] = useState(0);
     const [collectionName, setCollectionName] = useState(0);
     const [firstXid, setFirstXid] = useState(null);
@@ -64,7 +65,8 @@ const MetadataView = ({ navigate, metadata }) => {
                 const collectionData = await response.json();
                 const { firstXid, prevXid, nextXid, lastXid } = findAdjacentXids(collectionData, metadata.asset.xid);
 
-                setOwner(profileData.name);
+                setOwnerId(ownerId);
+                setOwnerName(profileData.name);
                 setCollectionId(collectionId);
                 setCollectionName(collection.name);
                 setFirstXid(firstXid);
@@ -94,7 +96,7 @@ const MetadataView = ({ navigate, metadata }) => {
                     <TableRow>
                         <TableCell>Owner:</TableCell>
                         <TableCell>
-                            <Link to={`/profile/${metadata.asset.owner}`}>{owner}</Link>
+                            <Link to={`/profile/${ownerId}`}>{ownerName}</Link>
                         </TableCell>
                     </TableRow>
                     <TableRow>
@@ -135,7 +137,7 @@ const MetadataView = ({ navigate, metadata }) => {
                             <Button
                                 color="inherit"
                                 disabled={!collectionName}
-                                onClick={() => navigate(`/profile/${metadata.asset.owner}/${collectionId}`)}>
+                                onClick={() => navigate(`/profile/${ownerId}/${collectionId}`)}>
                                 {collectionName}
                             </Button>
                             <Button
