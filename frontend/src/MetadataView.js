@@ -120,37 +120,35 @@ const MetadataView = ({ navigate, metadata }) => {
                     <TableRow>
                         <TableCell>Collection:</TableCell>
                         <TableCell>
-                            <Link to={`/profile/${metadata.asset.owner}/${collectionId}`}>
-                                {collectionName}
-                            </Link>
-                        </TableCell>
-                    </TableRow>
-                    <TableRow>
-                        <TableCell>Navigate:</TableCell>
-                        <TableCell>
                             <Button
                                 color="inherit"
                                 disabled={!firstXid}
                                 onClick={() => navigate(`/asset/${firstXid}`)}>
-                                First
+                                {'\u003C\u003C'}
                             </Button>
                             <Button
                                 color="inherit"
                                 disabled={!prevXid}
                                 onClick={() => navigate(`/asset/${prevXid}`)}>
-                                Prev
+                                {'\u003C'}
+                            </Button>
+                            <Button
+                                color="inherit"
+                                disabled={!collectionName}
+                                onClick={() => navigate(`/profile/${metadata.asset.owner}/${collectionId}`)}>
+                                {collectionName}
                             </Button>
                             <Button
                                 color="inherit"
                                 disabled={!nextXid}
                                 onClick={() => navigate(`/asset/${nextXid}`)}>
-                                Next
+                                {'\u003E'}
                             </Button>
                             <Button
                                 color="inherit"
                                 disabled={!lastXid}
                                 onClick={() => navigate(`/asset/${lastXid}`)}>
-                                Last
+                                {'\u003E\u003E'}
                             </Button>
                         </TableCell>
                     </TableRow>
