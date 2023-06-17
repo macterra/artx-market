@@ -135,10 +135,30 @@ const MetadataView = ({ navigate, metadata }) => {
                     <TableRow>
                         <TableCell>Navigate:</TableCell>
                         <TableCell>
-                            <Button color="inherit" onClick={() => navigate(`/asset/${firstXid}`)}>First</Button>
-                            <Button color="inherit" onClick={() => navigate(`/asset/${prevXid}`)}>Prev</Button>
-                            <Button color="inherit" onClick={() => navigate(`/asset/${nextXid}`)}>Next</Button>
-                            <Button color="inherit" onClick={() => navigate(`/asset/${lastXid}`)}>Last</Button>
+                            <Button
+                                color="inherit"
+                                disabled={!firstXid}
+                                onClick={() => navigate(`/asset/${firstXid}`)}>
+                                First
+                            </Button>
+                            <Button
+                                color="inherit"
+                                disabled={!prevXid}
+                                onClick={() => navigate(`/asset/${prevXid}`)}>
+                                Prev
+                            </Button>
+                            <Button
+                                color="inherit"
+                                disabled={!nextXid}
+                                onClick={() => navigate(`/asset/${nextXid}`)}>
+                                Next
+                            </Button>
+                            <Button
+                                color="inherit"
+                                disabled={!lastXid}
+                                onClick={() => navigate(`/asset/${lastXid}`)}>
+                                Last
+                            </Button>
                         </TableCell>
                     </TableRow>
                 </TableBody>
