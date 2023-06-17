@@ -28,7 +28,16 @@ function findAdjacentXids(list, targetXid) {
     }
 
     firstXid = list[0].asset.xid;
+
+    if (firstXid === targetXid) {
+        firstXid = null;
+    }
+
     lastXid = list[list.length - 1].asset.xid;
+
+    if (lastXid === targetXid) {
+        lastXid = null;
+    }
 
     return { firstXid, prevXid, nextXid, lastXid };
 }
@@ -87,22 +96,6 @@ const MetadataView = ({ navigate, metadata }) => {
                         <TableCell>
                             <Link to={`/profile/${metadata.asset.owner}`}>{owner}</Link>
                         </TableCell>
-                    </TableRow>
-                    <TableRow>
-                        <TableCell>First:</TableCell>
-                        <TableCell>{firstXid}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                        <TableCell>Prev:</TableCell>
-                        <TableCell>{prevXid}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                        <TableCell>Next:</TableCell>
-                        <TableCell>{nextXid}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                        <TableCell>Last:</TableCell>
-                        <TableCell>{lastXid}</TableCell>
                     </TableRow>
                     <TableRow>
                         <TableCell>Created:</TableCell>
