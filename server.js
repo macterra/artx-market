@@ -320,6 +320,32 @@ app.post('/api/asset', ensureAuthenticated, async (req, res) => {
   }
 });
 
+app.get('/api/profiles/', async (req, res) => {
+  const agentsDir = config.agents;
+  const profiles = [];
+
+  try {
+    const agentFolders = fs.readdirSync(agentsDir, { withFileTypes: true })
+      .filter(dirent => dirent.isDirectory())
+      .map(dirent => dirent.name);
+
+    for (const folder of agentFolders) {
+      const metaFilePath = path.join(agentsDir, folder, 'agent.json');
+
+      if (fs.existsSync(metaFilePath)) {
+        const metaContent = fs.readFileSync(metaFilePath, 'utf-8');
+        const metaData = JSON.parse(metaContent);
+        profiles.push(metaData);
+      }
+    }
+
+    res.json(profiles);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while reading agent profiles.' });
+  }
+});
+
 app.get('/api/profile/:id?', async (req, res) => {
   const userId = req.params.id || req.user?.id;
 
@@ -449,7 +475,7 @@ app.post('/api/mint', ensureAuthenticated, async (req, res) => {
     const nftData = {
       editions: editions,
       nfts: createdIds,
-      history: [ mintEvent ],
+      history: [mintEvent],
     };
 
     let metadata = await readAssetMetadata(xid);
