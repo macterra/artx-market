@@ -12,13 +12,19 @@ const ProfileView = ({ navigate }) => {
                 let response = await fetch(`/api/profile/${userId}`);
                 const profileData = await response.json();
 
+                for (let i = 0; i < profileData.collections.length; i++) {
+                    let collection = profileData.collections[i];
+                    response = await fetch(`/api/collection/${userId}/${i}`);
+                    const collectionData = await response.json();
+                    collection.count = collectionData.length;
+
+                    if (!collection.thumbnail && collection.count > 0) {
+                        collection.thumbnail = collectionData[0].file.path;
+                    }
+                }
+
+                console.log(profileData);
                 setProfile(profileData);
-
-                // const response2 = await fetch(`/api/collection/${userId}/${collId}`);
-                // const collectionData = await response2.json();
-
-                // setCollection(collectionData);
-                // setTab(parseInt(collId, 10));
             } catch (error) {
                 console.error('Error fetching profile data:', error);
             }
@@ -34,8 +40,8 @@ const ProfileView = ({ navigate }) => {
     return (
         <Box>
             <p style={{ textAlign: 'left' }}>Collections</p>
-            <p>{ profile.id }</p>
-            <p>{ profile.name }</p>
+            <p>{profile.id}</p>
+            <p>{profile.name}</p>
         </Box>
     );
 };
