@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Box } from '@mui/material';
+import CollectionGrid from './CollectionGrid';
 
 const ProfileView = ({ navigate }) => {
     const { userId } = useParams();
@@ -39,9 +40,8 @@ const ProfileView = ({ navigate }) => {
 
     return (
         <Box>
-            <p style={{ textAlign: 'left' }}>Collections</p>
-            <p>{profile.id}</p>
-            <p>{profile.name}</p>
+            <p>Collections</p>
+            <CollectionGrid userId={profile.id} list={profile.collections} />
         </Box>
     );
 };
