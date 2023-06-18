@@ -78,17 +78,14 @@ function ViewProfile() {
           setIsAuthenticated={setIsAuthenticated}
           navigate={navigate}
         />
-        {/* Update the styles for the App-header */}
-        <header className="App-header" style={{ padding: 0, height: '100%', display: 'flex', flexDirection: 'column' }}>
-          <>
-            <Box display="flex" flexDirection="column" flexGrow={1}>
-              <ProfileHeader />
-              <CollectionView navigate={navigate} />
-            </Box>
-          </>
+        <header className="App-header">
+          <Box display="flex" flexDirection="column" flexGrow={1}>
+            <ProfileHeader />
+            <CollectionView navigate={navigate} />
+          </Box>
         </header>
       </div>
-    </ThemeProvider>
+    </ThemeProvider >
   );
 }
 
