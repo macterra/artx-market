@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Box } from '@mui/material';
+import { Box, Link } from '@mui/material';
 
 const ProfileHeader = () => {
     const { userId } = useParams();
@@ -31,28 +31,35 @@ const ProfileHeader = () => {
         return <p>Loading profile...</p>;
     }
 
+    const linkStyle = {
+        margin: '8px', // Add a margin around the ImageCard components
+        textDecoration: 'none', // Remove the text decoration from the Link component
+    };
+
     return (
-        <>
-            <Box display="flex" flexDirection="row" alignItems="center" mt={2} mb={2}>
+        <Box display="flex" flexDirection="row" alignItems="center" style={{ minHeight: 'auto' }}>
+            <a href={`/profile/${userId}`} style={linkStyle}>
                 {profile.pfp && (
                     <img
-                      src={profile.pfp}
-                      alt="Profile pic"
-                      style={{
-                        width: '100px',
-                        height: '100px',
-                        objectFit: 'cover',
-                        marginRight: '16px',
-                        borderRadius: '50%', // Add this line to create a circular mask
-                      }}
+                        src={profile.pfp}
+                        alt="Profile pic"
+                        style={{
+                            width: '100px',
+                            height: '100px',
+                            objectFit: 'cover',
+                            marginRight: '16px',
+                            borderRadius: '50%', // Add this line to create a circular mask
+                        }}
                     />
                 )}
-                <div>
-                    <h2 style={{ margin: 0 }}>{profile.name}</h2>
-                    <p style={{ margin: 0 }}>{profile.tagline}</p>
-                </div>
-            </Box>
-        </>
+            </a>
+            <div>
+                <a href={`/profile/${userId}`} style={linkStyle}>
+                    <p>{profile.name}</p>
+                </a>
+                <span style={{ fontSize: '12px', display: 'block' }}>{profile.tagline}</span>
+            </div>
+        </Box>
     );
 };
 
