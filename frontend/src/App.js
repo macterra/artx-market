@@ -18,7 +18,9 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/profile/:userId?/:collId?" element={<ViewProfile />} />
+        <Route path="/profile/" element={<ViewLogin />} />
+        <Route path="/profile/:userId" element={<ViewProfile />} />
+        <Route path="/profile/:userId/:collId" element={<ViewCollection />} />
         <Route path="/profile/edit" element={<EditProfile />} />
         <Route path="/asset/:xid" element={<ViewAsset />} />
         <Route path="*" element={<NotFound />} />
@@ -54,9 +56,70 @@ function Home() {
   );
 }
 
+function ViewLogin() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await fetch(`/api/profile`);
+        const profileData = await response.json();
+
+        if (profileData.id) {
+          navigate(`/profile/${profileData.id}`);
+        }
+      } catch (error) {
+        console.error('Error fetching profile data:', error);
+      }
+    };
+
+    fetchProfile();
+  });
+
+  return (
+    <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
+      <div className="App">
+        <AppHeader
+          isAuthenticated={isAuthenticated}
+          setIsAuthenticated={setIsAuthenticated}
+          navigate={navigate}
+        />
+        <header className="App-header">
+          <p>Login to visit your profile</p>
+        </header>
+      </div>
+    </ThemeProvider>
+  );
+}
+
 function ViewProfile() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const navigate = useNavigate();
 
+  return (
+    <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
+      <div className="App">
+        <AppHeader
+          isAuthenticated={isAuthenticated}
+          setIsAuthenticated={setIsAuthenticated}
+          navigate={navigate}
+        />
+        <header className="App-header">
+          <Box display="flex" flexDirection="column" flexGrow={1}>
+            <ProfileHeader />
+            <h1>ProfileView</h1>
+          </Box>
+        </header>
+      </div>
+    </ThemeProvider >
+  );
+}
+
+function ViewCollection() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
 
   return (
@@ -81,7 +144,6 @@ function ViewProfile() {
 
 function EditProfile() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-
   const navigate = useNavigate();
 
   return (
@@ -106,7 +168,6 @@ function EditProfile() {
 
 function ViewAsset() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-
   const navigate = useNavigate();
 
   return (
