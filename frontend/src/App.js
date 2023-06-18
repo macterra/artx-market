@@ -9,6 +9,7 @@ import ProfileEditor from './ProfileEditor';
 import CollectionEditor from './CollectionEditor';
 import AssetView from './AssetView';
 import ProfileHeader from './ProfileHeader';
+import ProfileView from './ProfileView';
 import CollectionView from './CollectionView';
 
 import './App.css';
@@ -110,7 +111,7 @@ function ViewProfile() {
         <header className="App-header">
           <Box display="flex" flexDirection="column" flexGrow={1}>
             <ProfileHeader />
-            <h1>ProfileView</h1>
+            <ProfileView navigate={navigate} />
           </Box>
         </header>
       </div>
