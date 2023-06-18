@@ -18,9 +18,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/profile/" element={<ViewProfile />} />
-        <Route path="/profile/:userId" element={<ViewProfile />} />
-        <Route path="/profile/:userId/:collId" element={<ViewProfile />} />
+        <Route path="/profile/:userId?/:collId?" element={<ViewProfile />} />
         <Route path="/profile/edit" element={<EditProfile />} />
         <Route path="/asset/:xid" element={<ViewAsset />} />
         <Route path="*" element={<NotFound />} />
@@ -36,16 +34,8 @@ const darkTheme = createTheme({
 });
 
 function Home() {
-  const [message, setMessage] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-
   const navigate = useNavigate();
-
-  useEffect(() => {
-    fetch('/api/data')
-      .then((response) => response.json())
-      .then((data) => setMessage(data.message));
-  }, []);
 
   return (
     <ThemeProvider theme={darkTheme}>
@@ -139,26 +129,11 @@ function ViewAsset() {
 }
 
 function NotFound() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
   const navigate = useNavigate();
 
-  return (
-    <ThemeProvider theme={darkTheme}>
-      <CssBaseline />
-      <div className="App">
-        <AppHeader
-          isAuthenticated={isAuthenticated}
-          setIsAuthenticated={setIsAuthenticated}
-          navigate={navigate}
-        />
-        <header className="App-header">
-          <h1>404 - Not Found</h1>
-          <p>The page you are looking for does not exist.</p>
-        </header>
-      </div>
-    </ThemeProvider>
-  );
+  useEffect(() => {
+    navigate('/');
+  });
 }
 
 export default App;
