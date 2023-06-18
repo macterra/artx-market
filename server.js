@@ -7,6 +7,7 @@ const sharp = require('sharp');
 const passport = require('passport');
 const LnurlAuth = require('passport-lnurl-auth');
 const session = require('express-session');
+const morgan = require('morgan');
 const { v4: uuidv4 } = require('uuid');
 
 const app = express();
@@ -42,6 +43,7 @@ app.use(session({
   saveUninitialized: true,
 }));
 
+app.use(morgan('dev'));
 app.use(express.json());
 
 // Serve the React frontend
