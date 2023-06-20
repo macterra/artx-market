@@ -284,11 +284,7 @@ app.get('/api/asset/:xid', async (req, res) => {
 
 app.post('/api/asset', ensureAuthenticated, async (req, res) => {
   const metadata = req.body;
-  const userId = req.user?.id;
-
-  if (!userId) {
-    return res.status(401).json({ message: 'User not logged in' });
-  }
+  const userId = req.user.id;
 
   try {
     const assetFolder = path.join(config.assets, metadata.asset?.xid);
@@ -303,9 +299,11 @@ app.post('/api/asset', ensureAuthenticated, async (req, res) => {
     }
 
     if (userId == assetData.asset.owner) {
-      assetData.asset.title = metadata.asset?.title;
-      assetData.asset.description = metadata.asset?.description;
-      assetData.asset.tags = metadata.asset?.tags;
+      if (!assetData.mint) {
+        assetData.asset.title = metadata.asset?.title;
+        assetData.asset.description = metadata.asset?.description;
+        assetData.asset.tags = metadata.asset?.tags;
+      }
       assetData.asset.collection = metadata.asset?.collection;
       assetData.asset.updated = new Date().toISOString();
 
