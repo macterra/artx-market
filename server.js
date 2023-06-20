@@ -135,7 +135,7 @@ app.get('/check-auth/:id?', (req, res) => {
       res.json({ message: 'Authenticated' });
     }
   } else {
-    res.status(401).json({ message: 'Unauthorized' });
+    res.json({ message: 'Unauthorized' });
   }
 });
 
