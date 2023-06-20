@@ -6,12 +6,14 @@ import CollectionGrid from './CollectionGrid';
 const ProfileView = ({ navigate }) => {
     const { userId } = useParams();
     const [profile, setProfile] = useState(null);
+    const [collections, setCollections] = useState(null);
 
     useEffect(() => {
         const fetchProfile = async () => {
             try {
                 let response = await fetch(`/api/profile/${userId}`);
                 const profileData = await response.json();
+                const collections = [];
 
                 for (let i = 0; i < profileData.collections.length; i++) {
                     let collection = profileData.collections[i];
@@ -19,13 +21,18 @@ const ProfileView = ({ navigate }) => {
                     const collectionData = await response.json();
                     collection.count = collectionData.length;
 
-                    if (!collection.thumbnail && collection.count > 0) {
-                        collection.thumbnail = collectionData[0].file.path;
+                    if (collection.count > 0) {
+                        if (!collection.thumbnail) {
+                            collection.thumbnail = collectionData[0].file.path;
+                        }
+
+                        collections.push(collection);
                     }
                 }
 
                 console.log(profileData);
                 setProfile(profileData);
+                setCollections(collections);
             } catch (error) {
                 console.error('Error fetching profile data:', error);
             }
@@ -41,7 +48,7 @@ const ProfileView = ({ navigate }) => {
     return (
         <Box>
             <p>Collections</p>
-            <CollectionGrid userId={profile.id} list={profile.collections} />
+            <CollectionGrid userId={profile.id} list={collections} />
         </Box>
     );
 };
