@@ -39,11 +39,14 @@ const CollectionView = ({ navigate }) => {
     }
 
     const handleUpload = async (event) => {
-        const file = event.target.files[0];
-        const formData = new FormData();
-        formData.append('image', file);
-
         try {
+            const files = event.target.files;
+            const formData = new FormData();
+
+            for (const file of files) {
+                formData.append('images', file);
+            }
+            
             const response = await fetch('/api/upload', {
                 method: 'POST',
                 body: formData,
@@ -63,7 +66,9 @@ const CollectionView = ({ navigate }) => {
         <>
             <p>{collectionName}</p>
             <ImageGrid collection={collection} />
-            {collectionId === 0 && <input type="file" onChange={handleUpload} />}
+            {collectionId === 0 &&
+                <input type="file" name="images" accept="image/*" multiple onChange={handleUpload} />
+            }
         </>
     );
 };

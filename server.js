@@ -206,61 +206,65 @@ const addAssetToUploads = async (userId, asset) => {
   await fs.promises.writeFile(jsonPath, JSON.stringify(assetData, null, 2));
 };
 
-app.post('/api/upload', ensureAuthenticated, upload.single('image'), async (req, res) => {
-  if (req.file) {
-    const xid = uuidv4();
+app.post('/api/upload', ensureAuthenticated, upload.array('images', 20), async (req, res) => {
+  try {
+    for (const file of req.files) {
+      const xid = uuidv4();
 
-    // Calculate the Git hash
-    const fileBuffer = fs.readFileSync(req.file.path);
-    const fileHash = gitHash(fileBuffer);
+      // Calculate the Git hash
+      const fileBuffer = fs.readFileSync(file.path);
+      const fileHash = gitHash(fileBuffer);
 
-    // Create the subfolder
-    const assetFolder = path.join(config.assets, xid);
-    if (!fs.existsSync(assetFolder)) {
-      fs.mkdirSync(assetFolder);
-    }
-
-    // Move the file to the subfolder and rename it to "asset"
-    const assetName = '_' + path.extname(req.file.originalname);
-    const newPath = path.join(assetFolder, assetName);
-    fs.renameSync(req.file.path, newPath);
-
-    // Get image metadata using sharp
-    const imageMetadata = await sharp(newPath).metadata();
-
-    // Create the metadata object
-    const metadata = {
-      asset: {
-        xid: xid,
-        owner: req.user.id,
-        title: 'untitled',
-        created: new Date().toISOString(),
-        updated: new Date().toISOString(),
-      },
-      file: {
-        fileName: assetName,
-        originalName: req.file.originalname,
-        size: req.file.size,
-        hash: fileHash,
-        path: `/${config.assets}/${xid}/${assetName}`,
-      },
-      image: {
-        width: imageMetadata.width,
-        height: imageMetadata.height,
-        depth: imageMetadata.depth,
-        format: imageMetadata.format,
+      // Create the subfolder
+      const assetFolder = path.join(config.assets, xid);
+      if (!fs.existsSync(assetFolder)) {
+        fs.mkdirSync(assetFolder);
       }
-    };
 
-    // Write the metadata to meta.json
-    const metadataPath = path.join(assetFolder, 'meta.json');
-    await fs.promises.writeFile(metadataPath, JSON.stringify(metadata, null, 2));
+      // Move the file to the subfolder and rename it to "_"
+      const assetName = '_' + path.extname(file.originalname);
+      const newPath = path.join(assetFolder, assetName);
+      fs.renameSync(file.path, newPath);
 
-    await addAssetToUploads(req.user.id, xid);
+      // Get image metadata using sharp
+      const imageMetadata = await sharp(newPath).metadata();
 
-    res.json({ success: true, message: 'Image uploaded successfully' });
-  } else {
-    res.json({ success: false, message: 'Image upload failed' });
+      // Create the metadata object
+      const metadata = {
+        asset: {
+          xid: xid,
+          owner: req.user.id,
+          title: 'untitled',
+          created: new Date().toISOString(),
+          updated: new Date().toISOString(),
+        },
+        file: {
+          fileName: assetName,
+          originalName: file.originalname,
+          size: file.size,
+          hash: fileHash,
+          path: `/${config.assets}/${xid}/${assetName}`,
+        },
+        image: {
+          width: imageMetadata.width,
+          height: imageMetadata.height,
+          depth: imageMetadata.depth,
+          format: imageMetadata.format,
+        }
+      };
+
+      // Write the metadata to meta.json
+      const metadataPath = path.join(assetFolder, 'meta.json');
+      await fs.promises.writeFile(metadataPath, JSON.stringify(metadata, null, 2));
+
+      await addAssetToUploads(req.user.id, xid);
+    }
+    
+    // Send a success response after processing all files
+    res.status(200).json({ message: 'Files uploaded successfully' });
+  } catch (error) {
+    console.error('Error processing files:', error);
+    res.status(500).json({ message: 'Error processing files' });
   }
 });
 
