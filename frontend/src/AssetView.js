@@ -22,7 +22,7 @@ const AssetView = ({ navigate, isAuthenticated }) => {
                 const metadata = await response.json();
                 setMetadata(metadata);
 
-                if (metadata.mint) {
+                if (metadata.token) {
                     setIsNft(true);
                 } else {
                     setIsNft(false);

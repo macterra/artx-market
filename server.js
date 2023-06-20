@@ -465,11 +465,6 @@ app.post('/api/mint', ensureAuthenticated, async (req, res) => {
       return req.status(401).json({ message: "Unauthorized" });
     }
 
-    const seriesId = uuidv4();
-    assetData.mint = { series: seriesId };
-    await writeAssetMetadata(assetData);
-    // TBD: add to IPFS here, get cid for NFTs
-
     const nfts = [];
     for (let i = 1; i <= editions; i++) {
       const createdId = await createNFT(userId, xid, i, editions);
@@ -484,24 +479,16 @@ app.post('/api/mint', ensureAuthenticated, async (req, res) => {
       time: new Date().toISOString(),
     };
 
-    const seriesData = {
-      asset: {
-        xid: seriesId,
-        owner: userId,
-        created: new Date().toISOString(),
-        updated: new Date().toISOString(),
-        type: 'series',
-        title: `Limited edition series of ${assetData.asset.title}`
-      },
-      series: {
-        asset: xid,
-        editions: nfts.length,
-        nfts: nfts,
-        history: [mintEvent],
-      }
+    assetData.token = {
+      asset: xid, // TBD: add to IPFS here, get cid for NFTs
+      royalty: 0.1,
+      license: "CC BY-SA",
+      editions: editions,
+      nfts: nfts,
+      history: [mintEvent],
     };
 
-    await writeAssetMetadata(seriesData);
+    await writeAssetMetadata(assetData);
 
     res.json({ message: 'Success' });
   } catch (error) {
