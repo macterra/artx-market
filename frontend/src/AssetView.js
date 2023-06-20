@@ -5,14 +5,14 @@ import MetadataView from './MetadataView'
 import AssetEditor from './AssetEditor';
 import TokenMinter from './TokenMinter';
 import PfpEditor from './PfpEditor';
-import NftView from './TokenView';
+import TokenView from './TokenView';
 
 const AssetView = ({ navigate, isAuthenticated }) => {
     const { xid } = useParams();
 
     const [metadata, setMetadata] = useState(null);
     const [isOwner, setIsOwner] = useState(false);
-    const [isNft, setIsNft] = useState(false);
+    const [isToken, setIsToken] = useState(false);
     const [tab, setTab] = useState(0);
 
     useEffect(() => {
@@ -23,9 +23,9 @@ const AssetView = ({ navigate, isAuthenticated }) => {
                 setMetadata(metadata);
 
                 if (metadata.token) {
-                    setIsNft(true);
+                    setIsToken(true);
                 } else {
-                    setIsNft(false);
+                    setIsToken(false);
                 }
 
                 if (isAuthenticated) {
@@ -67,13 +67,13 @@ const AssetView = ({ navigate, isAuthenticated }) => {
                     scrollButtons="auto"
                 >
                     <Tab key="meta" value="meta" label={'Metadata'} />
-                    {isNft && <Tab key="nft" value="nft" label={'NFT'} />}
-                    {isOwner && !isNft && <Tab key="edit" value="edit" label={'Edit'} />}
-                    {isOwner && !isNft && <Tab key="mint" value="mint" label={'Mint'} />}
+                    {isToken && <Tab key="token" value="token" label={'Token'} />}
+                    {isOwner && !isToken && <Tab key="edit" value="edit" label={'Edit'} />}
+                    {isOwner && !isToken && <Tab key="mint" value="mint" label={'Mint'} />}
                     {isOwner && <Tab key="pfp" value="pfp" label={'Pfp'} />}
                 </Tabs>
                 {tab === 'meta' && <MetadataView navigate={navigate} metadata={metadata} />}
-                {tab === 'nft' && <NftView metadata={metadata} />}
+                {tab === 'token' && <TokenView metadata={metadata} />}
                 {tab === 'edit' && <AssetEditor metadata={metadata} setTab={setTab} />}
                 {tab === 'mint' && <TokenMinter metadata={metadata} setTab={setTab} />}
                 {tab === 'pfp' && <PfpEditor metadata={metadata} setTab={setTab} />}

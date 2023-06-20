@@ -55,8 +55,6 @@ const TokenMinter = ({ metadata, setTab }) => {
     };
 
     const handleMintClick = async () => {
-        //alert(`Mint ${editions} editions`);
-
         try {
             const payload = { xid: metadata.asset.xid, editions: editions };
             const response = await fetch('/api/mint', {
@@ -68,7 +66,7 @@ const TokenMinter = ({ metadata, setTab }) => {
             });
 
             if (response.ok) {
-                setTab("nft");
+                setTab("token");
             } else {
                 const data = await response.json();
                 console.error('Error minting:', data.message);

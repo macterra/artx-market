@@ -76,77 +76,75 @@ const TokenView = ({ metadata }) => {
         fetchProfile();
     }, [metadata]);
 
-    if (!metadata) {
+    if (!metadata || !metadata.token) {
         return;
     }
 
     return (
-        <>
-            <TableContainer>
-                <Table>
-                    <TableBody>
+        <TableContainer>
+            <Table>
+                <TableBody>
+                    <TableRow>
+                        <TableCell>Title:</TableCell>
+                        <TableCell>{metadata.asset.title}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableCell>Collection:</TableCell>
+                        <TableCell>
+                            <Link to={`/profile/${metadata.asset.owner}/${metadata.asset.collection || 0}`}>
+                                {collection}
+                            </Link>
+                        </TableCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableCell>Editions:</TableCell>
+                        <TableCell>{metadata.token.editions}</TableCell>
+                    </TableRow>
+                    {owned > 0 &&
                         <TableRow>
-                            <TableCell>Title:</TableCell>
-                            <TableCell>{metadata.asset.title}</TableCell>
+                            <TableCell>Owned:</TableCell>
+                            <TableCell>{owned} ({ranges})</TableCell>
                         </TableRow>
-                        <TableRow>
-                            <TableCell>Collection:</TableCell>
-                            <TableCell>
-                                <Link to={`/profile/${metadata.asset.owner}/${metadata.asset.collection || 0}`}>
-                                    {collection}
-                                </Link>
-                            </TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell>Editions:</TableCell>
-                            <TableCell>{metadata.token.editions}</TableCell>
-                        </TableRow>
-                        {owned>0 &&
-                            <TableRow>
-                                <TableCell>Owned:</TableCell>
-                                <TableCell>{owned} ({ranges})</TableCell>
-                            </TableRow>
-                        }
-                        <TableRow>
-                            <TableCell>Owners:</TableCell>
-                            <TableCell>
-                                <TableContainer component={Paper} style={{ maxHeight: '300px', overflow: 'auto' }}>
-                                    <Table>
-                                        <TableHead>
-                                            <TableRow>
-                                                <TableCell>Edition</TableCell>
-                                                <TableCell>Owner</TableCell>
+                    }
+                    <TableRow>
+                        <TableCell>Owners:</TableCell>
+                        <TableCell>
+                            <TableContainer component={Paper} style={{ maxHeight: '300px', overflow: 'auto' }}>
+                                <Table>
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell>Edition</TableCell>
+                                            <TableCell>Owner</TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {nfts.map((nft, index) => (
+                                            <TableRow key={index}>
+                                                <TableCell>{nft.asset.title}</TableCell>
+                                                <TableCell>
+                                                    {nft.owner.pfp &&
+                                                        <img
+                                                            src={nft.owner.pfp}
+                                                            alt=""
+                                                            style={{
+                                                                width: '30px',
+                                                                height: '30px',
+                                                                objectFit: 'cover',
+                                                                marginRight: '16px',
+                                                                borderRadius: '50%',
+                                                            }}
+                                                        />} {nft.owner.name}
+                                                </TableCell>
                                             </TableRow>
-                                        </TableHead>
-                                        <TableBody>
-                                            {nfts.map((nft, index) => (
-                                                <TableRow key={index}>
-                                                    <TableCell>{nft.asset.title}</TableCell>
-                                                    <TableCell>
-                                                        {nft.owner.pfp &&
-                                                            <img
-                                                                src={nft.owner.pfp}
-                                                                alt=""
-                                                                style={{
-                                                                    width: '30px',
-                                                                    height: '30px',
-                                                                    objectFit: 'cover',
-                                                                    marginRight: '16px',
-                                                                    borderRadius: '50%',
-                                                                }}
-                                                            />} {nft.owner.name}
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                </TableContainer>
-                            </TableCell>
-                        </TableRow>
-                    </TableBody>
-                </Table>
-            </TableContainer>
-        </>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                        </TableCell>
+                    </TableRow>
+                </TableBody>
+            </Table>
+        </TableContainer>
     );
 };
 
