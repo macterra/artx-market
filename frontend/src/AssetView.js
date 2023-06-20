@@ -3,9 +3,9 @@ import { useParams } from 'react-router-dom';
 import { Tab, Tabs } from '@mui/material';
 import MetadataView from './MetadataView'
 import AssetEditor from './AssetEditor';
-import NftMinter from './NftMinter';
+import TokenMinter from './TokenMinter';
 import PfpEditor from './PfpEditor';
-import NftView from './NftView';
+import NftView from './TokenView';
 
 const AssetView = ({ navigate, isAuthenticated }) => {
     const { xid } = useParams();
@@ -75,7 +75,7 @@ const AssetView = ({ navigate, isAuthenticated }) => {
                 {tab === 'meta' && <MetadataView navigate={navigate} metadata={metadata} />}
                 {tab === 'nft' && <NftView metadata={metadata} />}
                 {tab === 'edit' && <AssetEditor metadata={metadata} setTab={setTab} />}
-                {tab === 'mint' && <NftMinter metadata={metadata} setTab={setTab} />}
+                {tab === 'mint' && <TokenMinter metadata={metadata} setTab={setTab} />}
                 {tab === 'pfp' && <PfpEditor metadata={metadata} setTab={setTab} />}
             </div>
         </div>

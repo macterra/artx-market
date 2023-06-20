@@ -10,7 +10,7 @@ import {
     TextField,
 } from '@mui/material';
 
-const NftMinter = ({ metadata, setTab }) => {
+const TokenMinter = ({ metadata, setTab }) => {
     const [owner, setOwner] = useState(null);
     const [collection, setCollection] = useState(null);
     const [editions, setEditions] = useState(1);
@@ -138,4 +138,4 @@ const NftMinter = ({ metadata, setTab }) => {
     );
 };
 
-export default NftMinter;
+export default TokenMinter;

@@ -29,7 +29,7 @@ function convertToRanges(arr) {
     return result.substring(1); // Remove the leading comma
 }
 
-const NftView = ({ metadata }) => {
+const TokenView = ({ metadata }) => {
 
     const [collection, setCollection] = useState(0);
     const [nfts, setNfts] = useState([]);
@@ -150,4 +150,4 @@ const NftView = ({ metadata }) => {
     );
 };
 
-export default NftView;
+export default TokenView;
