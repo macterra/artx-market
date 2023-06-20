@@ -386,6 +386,8 @@ const writeAssetMetadata = async (metadata) => {
 app.get('/api/collection/:userId/:collectionId', async (req, res) => {
   try {
     const { userId, collectionId } = req.params;
+    const authId = req.user?.id;
+    const sameId = (authId == userId);
     const collectionIndex = parseInt(collectionId, 10);
     const assets = await getAssets(userId);
     const assetsInCollection = [];
@@ -393,9 +395,12 @@ app.get('/api/collection/:userId/:collectionId', async (req, res) => {
     for (const assetId of assets) {
       const assetMetadata = await readAssetMetadata(assetId);
       const assetCollection = assetMetadata.asset.collection || 0;
+      const isToken = !!assetMetadata.token;
 
       if (collectionIndex === assetCollection) {
-        assetsInCollection.push(assetMetadata);
+        if (sameId || isToken) {
+          assetsInCollection.push(assetMetadata);
+        }
       }
     }
 
