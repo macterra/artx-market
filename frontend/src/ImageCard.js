@@ -10,7 +10,7 @@ const ImageCard = ({ metadata }) => {
         justifyContent: 'center',
         overflow: 'hidden',
         position: 'relative',
-        border: '1px solid #ccc', // Add a thin border
+        border: metadata.token ? '1px solid #0f0' : '1px solid #ccc', // Conditionally set the border color
         borderRadius: '4px', // Add a border radius
         padding: '8px', // Add padding
     };
