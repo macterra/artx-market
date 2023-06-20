@@ -46,7 +46,9 @@ const CollectionView = ({ navigate }) => {
             for (const file of files) {
                 formData.append('images', file);
             }
-            
+
+            formData.append('collectionId', collectionId);
+
             const response = await fetch('/api/upload', {
                 method: 'POST',
                 body: formData,
@@ -65,10 +67,10 @@ const CollectionView = ({ navigate }) => {
     return (
         <>
             <p>{collectionName}</p>
-            <ImageGrid collection={collection} />
-            {collectionId === 0 &&
+            {profile.isUser &&
                 <input type="file" name="images" accept="image/*" multiple onChange={handleUpload} />
             }
+            <ImageGrid collection={collection} />
         </>
     );
 };

@@ -208,6 +208,9 @@ const addAssetToUploads = async (userId, asset) => {
 
 app.post('/api/upload', ensureAuthenticated, upload.array('images', 20), async (req, res) => {
   try {
+    const { collectionId } = req.body;
+    const collectionIndex = parseInt(collectionId, 10);
+
     for (const file of req.files) {
       const xid = uuidv4();
 
@@ -237,6 +240,7 @@ app.post('/api/upload', ensureAuthenticated, upload.array('images', 20), async (
           title: 'untitled',
           created: new Date().toISOString(),
           updated: new Date().toISOString(),
+          collection: collectionIndex,
         },
         file: {
           fileName: assetName,
@@ -259,7 +263,7 @@ app.post('/api/upload', ensureAuthenticated, upload.array('images', 20), async (
 
       await addAssetToUploads(req.user.id, xid);
     }
-    
+
     // Send a success response after processing all files
     res.status(200).json({ message: 'Files uploaded successfully' });
   } catch (error) {
@@ -361,6 +365,7 @@ app.get('/api/profile/:id?', async (req, res) => {
     const agentData = await getAgent(userId, false);
 
     if (agentData) {
+      agentData.isUser = (req.user?.id == agentData.id);
       res.json(agentData);
     } else {
       res.status(404).json({ message: 'Profile not found' });
