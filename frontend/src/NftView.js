@@ -32,6 +32,7 @@ function convertToRanges(arr) {
 const NftView = ({ metadata }) => {
 
     const [collection, setCollection] = useState(0);
+    const [series, setSeries] = useState(null);
     const [nfts, setNfts] = useState([]);
     const [owned, setOwned] = useState(0);
     const [ranges, setRanges] = useState(null);
@@ -46,11 +47,17 @@ const NftView = ({ metadata }) => {
                 const profileData = await response.json();
                 setCollection(profileData.collections[metadata.asset.collection || 0].name);
 
+                response = await fetch(`/api/asset/${metadata.mint.series}`);
+                const seriesData = await response.json();
+                setSeries(seriesData);
+
+                console.log(seriesData);
+
                 const nfts = [];
                 let owned = 0;
                 const ownedEditions = [];
 
-                for (const xid of metadata.nft.nfts) {
+                for (const xid of seriesData.series.nfts) {
                     response = await fetch(`/api/asset/${xid}`);
                     const nft = await response.json();
                     response = await fetch(`/api/profile/${nft.asset.owner}`);
@@ -76,7 +83,7 @@ const NftView = ({ metadata }) => {
         fetchProfile();
     }, [metadata]);
 
-    if (!metadata) {
+    if (!metadata || !series) {
         return;
     }
 
@@ -87,7 +94,7 @@ const NftView = ({ metadata }) => {
                     <TableBody>
                         <TableRow>
                             <TableCell>Title:</TableCell>
-                            <TableCell>{metadata.asset.title}</TableCell>
+                            <TableCell>{series.asset.title}</TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>Collection:</TableCell>
@@ -99,7 +106,7 @@ const NftView = ({ metadata }) => {
                         </TableRow>
                         <TableRow>
                             <TableCell>Editions:</TableCell>
-                            <TableCell>{metadata.nft.editions}</TableCell>
+                            <TableCell>{series.series.editions}</TableCell>
                         </TableRow>
                         {owned>0 &&
                             <TableRow>
