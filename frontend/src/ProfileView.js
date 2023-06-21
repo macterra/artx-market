@@ -21,11 +21,11 @@ const ProfileView = ({ navigate }) => {
                     const collectionData = await response.json();
                     collection.count = collectionData.length;
 
-                    if (collection.count > 0) {
-                        if (!collection.thumbnail) {
-                            collection.thumbnail = collectionData[0].file.path;
-                        }
+                    if (collection.count > 0 && !collection.thumbnail) {
+                        collection.thumbnail = collectionData[0].file.path;
+                    }
 
+                    if (collection.count > 0 || profileData.isUser) {
                         collections.push(collection);
                     }
                 }
