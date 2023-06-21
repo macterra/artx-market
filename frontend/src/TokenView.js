@@ -9,6 +9,7 @@ import {
     TableHead,
     Paper,
 } from '@mui/material';
+import CollectionNavigator from './CollectionNavigator';
 
 function convertToRanges(arr) {
     let result = '';
@@ -29,7 +30,7 @@ function convertToRanges(arr) {
     return result.substring(1); // Remove the leading comma
 }
 
-const TokenView = ({ metadata }) => {
+const TokenView = ({ navigate, metadata }) => {
 
     const [collection, setCollection] = useState(0);
     const [nfts, setNfts] = useState([]);
@@ -88,6 +89,7 @@ const TokenView = ({ metadata }) => {
                         <TableCell>Title:</TableCell>
                         <TableCell>{metadata.asset.title}</TableCell>
                     </TableRow>
+                    <CollectionNavigator navigate={navigate} metadata={metadata} />
                     <TableRow>
                         <TableCell>Collection:</TableCell>
                         <TableCell>
@@ -108,7 +110,7 @@ const TokenView = ({ metadata }) => {
                             <TableCell>{owned} ({ranges})</TableCell>
                         </TableRow>
                     }
-                    {nfts && nfts.length == 1 &&
+                    {nfts && nfts.length === 1 &&
                         <TableRow>
                             <TableCell>Owner:</TableCell>
                             <TableCell>

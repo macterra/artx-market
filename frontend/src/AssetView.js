@@ -73,7 +73,7 @@ const AssetView = ({ navigate, isAuthenticated }) => {
                     {isOwner && <Tab key="pfp" value="pfp" label={'Pfp'} />}
                 </Tabs>
                 {tab === 'meta' && <MetadataView navigate={navigate} metadata={metadata} />}
-                {tab === 'token' && <TokenView metadata={metadata} />}
+                {tab === 'token' && <TokenView navigate={navigate} metadata={metadata} />}
                 {tab === 'edit' && <AssetEditor metadata={metadata} setTab={setTab} />}
                 {tab === 'mint' && <TokenMinter metadata={metadata} setTab={setTab} />}
                 {tab === 'pfp' && <PfpEditor metadata={metadata} setTab={setTab} />}
