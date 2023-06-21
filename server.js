@@ -265,10 +265,10 @@ app.post('/api/upload', ensureAuthenticated, upload.array('images', 20), async (
     }
 
     // Send a success response after processing all files
-    res.status(200).json({ message: 'Files uploaded successfully' });
+    res.status(200).json({ success: true, message: 'Files uploaded successfully' });
   } catch (error) {
     console.error('Error processing files:', error);
-    res.status(500).json({ message: 'Error processing files' });
+    res.status(500).json({ success: false, message: 'Error processing files' });
   }
 });
 
