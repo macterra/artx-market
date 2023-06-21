@@ -206,10 +206,35 @@ const addAssetToUploads = async (userId, asset) => {
   await fs.promises.writeFile(jsonPath, JSON.stringify(assetData, null, 2));
 };
 
+const getCollection = async (userId, collectionIndex) => {
+  const assets = await getAssets(userId);
+  const assetsInCollection = [];
+
+  for (const assetId of assets) {
+    const assetMetadata = await readAssetMetadata(assetId);
+    const assetCollection = assetMetadata.asset.collection || 0;
+
+    if (collectionIndex === assetCollection) {
+      assetsInCollection.push(assetMetadata);
+    }
+  }
+
+  return assetsInCollection;
+}
+
 app.post('/api/upload', ensureAuthenticated, upload.array('images', 20), async (req, res) => {
   try {
     const { collectionId } = req.body;
     const collectionIndex = parseInt(collectionId, 10);
+
+    let collectionCount = 0;
+    const agentData = await getAgent(req.user.id);
+    const defaultTitle = agentData.collections[collectionIndex].defaultTitle;
+
+    if (defaultTitle) {
+      const collection = await getCollection(req.user.id, collectionIndex);
+      collectionCount = collection.length;
+    }
 
     for (const file of req.files) {
       const xid = uuidv4();
@@ -232,12 +257,19 @@ app.post('/api/upload', ensureAuthenticated, upload.array('images', 20), async (
       // Get image metadata using sharp
       const imageMetadata = await sharp(newPath).metadata();
 
+      let title = 'untitled';
+
+      if (defaultTitle) {
+        collectionCount += 1;
+        title = defaultTitle.replace("%N%", collectionCount);
+      }
+
       // Create the metadata object
       const metadata = {
         asset: {
           xid: xid,
           owner: req.user.id,
-          title: 'untitled',
+          title: title,
           created: new Date().toISOString(),
           updated: new Date().toISOString(),
           collection: collectionIndex,

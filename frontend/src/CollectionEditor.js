@@ -70,6 +70,12 @@ const CollectionEditor = ({ navigate }) => {
         setCollections(newCollections);
     };
 
+    const handleCollectionDefaultTitleChange = (e, index) => {
+        const newCollections = [...collections];
+        newCollections[index].defaultTitle = e.target.value;
+        setCollections(newCollections);
+    };
+
     return (
         <div>
             <h2>Collections</h2>
@@ -101,6 +107,15 @@ const CollectionEditor = ({ navigate }) => {
                         value={collections[selectedCollectionIndex].description}
                         onChange={(e) =>
                             handleCollectionDescriptionChange(e, selectedCollectionIndex)
+                        }
+                        fullWidth
+                        margin="normal"
+                    />
+                    <TextField
+                        label="Default Title"
+                        value={collections[selectedCollectionIndex].defaultTitle}
+                        onChange={(e) =>
+                            handleCollectionDefaultTitleChange(e, selectedCollectionIndex)
                         }
                         fullWidth
                         margin="normal"
