@@ -322,12 +322,12 @@ app.get('/api/asset/:xid', async (req, res) => {
   }
 });
 
-app.post('/api/asset', ensureAuthenticated, async (req, res) => {
-  const metadata = req.body;
+app.patch('/api/asset', ensureAuthenticated, async (req, res) => {
+  const { xid, title, collection } = req.body;
   const userId = req.user.id;
 
   try {
-    const assetFolder = path.join(config.assets, metadata.asset?.xid);
+    const assetFolder = path.join(config.assets, xid);
     const assetJsonPath = path.join(assetFolder, 'meta.json');
 
     let assetData = {};
@@ -338,22 +338,24 @@ app.post('/api/asset', ensureAuthenticated, async (req, res) => {
       assetData = JSON.parse(assetJsonContent);
     }
 
-    if (userId == assetData.asset.owner) {
-      if (!assetData.mint) {
-        assetData.asset.title = metadata.asset?.title;
-        assetData.asset.description = metadata.asset?.description;
-        assetData.asset.tags = metadata.asset?.tags;
-      }
-      assetData.asset.collection = metadata.asset?.collection;
-      assetData.asset.updated = new Date().toISOString();
-
-      // Write the updated agent data to the agent.json file
-      await fs.promises.writeFile(assetJsonPath, JSON.stringify(assetData, null, 2));
-
-      res.json({ message: 'Metadata updated successfully' });
-    } else {
-      res.status(401).json({ message: 'Unauthorized' });
+    if (userId != assetData.asset.owner) {
+      return res.status(401).json({ message: 'Unauthorized' });
     }
+
+    if (!assetData.mint && title) {
+      assetData.asset.title = title;
+      assetData.asset.updated = new Date().toISOString();
+    }
+
+    if (collection) {
+      assetData.asset.collection = collection;
+      assetData.asset.updated = new Date().toISOString();
+    }
+
+    // Write the updated agent data to the agent.json file
+    await fs.promises.writeFile(assetJsonPath, JSON.stringify(assetData, null, 2));
+
+    res.json({ message: 'Metadata updated successfully' });
   } catch (error) {
     console.error('Error updating metadata:', error);
     res.status(500).json({ message: 'Error updating metadata' });

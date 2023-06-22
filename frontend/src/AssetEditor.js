@@ -34,19 +34,23 @@ const AssetEditor = ({ metadata, setTab }) => {
 
     const handleSaveClick = async () => {
         try {
-            metadata.asset.title = title;
-            metadata.asset.collection = selectedCollection;
+            const payload = {
+                xid: metadata.asset.xid,
+                title: title,
+                collection: selectedCollection,
+            };
 
             const response = await fetch('/api/asset', {
-                method: 'POST',
+                method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(metadata),
+                body: JSON.stringify(payload),
             });
 
             if (response.ok) {
-                console.log('Metadata updated successfully');
+                metadata.asset.title = title;
+                metadata.asset.collection = selectedCollection;
                 setTab("meta");
             } else {
                 const data = await response.json();

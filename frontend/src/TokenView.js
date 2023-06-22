@@ -108,7 +108,7 @@ const TokenView = ({ metadata }) => {
                             <TableCell>{owned} ({ranges})</TableCell>
                         </TableRow>
                     }
-                    {nfts && nfts.length == 1 &&
+                    {nfts && nfts.length === 1 &&
                         <TableRow>
                             <TableCell>Owner:</TableCell>
                             <TableCell>
