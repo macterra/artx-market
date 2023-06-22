@@ -342,15 +342,12 @@ app.patch('/api/asset', ensureAuthenticated, async (req, res) => {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    if (!assetData.mint && title) {
+    if (!assetData.mint) {
       assetData.asset.title = title;
-      assetData.asset.updated = new Date().toISOString();
     }
 
-    if (collection) {
-      assetData.asset.collection = collection;
-      assetData.asset.updated = new Date().toISOString();
-    }
+    assetData.asset.collection = collection;
+    assetData.asset.updated = new Date().toISOString();
 
     // Write the updated agent data to the agent.json file
     await fs.promises.writeFile(assetJsonPath, JSON.stringify(assetData, null, 2));
