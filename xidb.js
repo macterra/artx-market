@@ -1,5 +1,6 @@
 const path = require('path');
 const fs = require('fs');
+const { v4: uuidv4 } = require('uuid');
 
 const config = {
     host: process.env.ARTX_HOST || 'localhost',

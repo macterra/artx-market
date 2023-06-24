@@ -226,10 +226,8 @@ app.post('/api/upload', ensureAuthenticated, upload.array('images', 20), async (
         }
       };
 
-      // Write the metadata to meta.json
-      const metadataPath = path.join(assetFolder, 'meta.json');
-      await fs.promises.writeFile(metadataPath, JSON.stringify(metadata, null, 2));
 
+      await writeAssetMetadata(metadata);
       await addAssetToUploads(req.user.id, xid);
     }
 
@@ -244,18 +242,11 @@ app.post('/api/upload', ensureAuthenticated, upload.array('images', 20), async (
 app.get('/api/asset/:xid', async (req, res) => {
   try {
     const { xid } = req.params;
-    const assetPath = path.join(config.assets, xid, 'meta.json');
-
-    if (fs.existsSync(assetPath)) {
-      const jsonContent = await fs.promises.readFile(assetPath, 'utf-8');
-      const assetData = JSON.parse(jsonContent);
-      res.json(assetData);
-    } else {
-      res.status(404).json({ message: 'Asset not found' });
-    }
+    const assetData = await readAssetMetadata(xid);    
+    res.json(assetData);
   } catch (error) {
-    console.error('Error processing asset request:', error);
-    res.status(500).json({ error: 'An error occurred while processing the request.' });
+    console.error('Error reading metadata:', error);
+    res.status(404).json({ message: 'Asset not found' });
   }
 });
 
@@ -264,16 +255,7 @@ app.patch('/api/asset', ensureAuthenticated, async (req, res) => {
   const userId = req.user.id;
 
   try {
-    const assetFolder = path.join(config.assets, xid);
-    const assetJsonPath = path.join(assetFolder, 'meta.json');
-
-    let assetData = {};
-
-    // Check if the agent.json file exists
-    if (fs.existsSync(assetJsonPath)) {
-      const assetJsonContent = await fs.promises.readFile(assetJsonPath, 'utf-8');
-      assetData = JSON.parse(assetJsonContent);
-    }
+    let assetData = await readAssetMetadata(xid);
 
     if (userId != assetData.asset.owner) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -286,8 +268,7 @@ app.patch('/api/asset', ensureAuthenticated, async (req, res) => {
     assetData.asset.collection = collection;
     assetData.asset.updated = new Date().toISOString();
 
-    // Write the updated agent data to the agent.json file
-    await fs.promises.writeFile(assetJsonPath, JSON.stringify(assetData, null, 2));
+    await writeAssetMetadata(assetData);
 
     res.json({ message: 'Metadata updated successfully' });
   } catch (error) {
@@ -394,13 +375,13 @@ app.post('/api/mint', ensureAuthenticated, async (req, res) => {
     const { xid, editions } = req.body;
     const userId = req.user.id;
     const assetData = await readAssetMetadata(xid);
-  
+
     console.log(`mint ${xid} with ${editions} editions`);
 
     if (assetData.asset.owner != userId) {
       return req.status(401).json({ message: "Unauthorized" });
     }
-  
+
     await createToken(userId, xid, editions);
     res.json({ message: 'Success' });
   } catch (error) {
