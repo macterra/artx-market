@@ -2,8 +2,6 @@ const express = require('express');
 const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
-const crypto = require('crypto');
-const sharp = require('sharp');
 const passport = require('passport');
 const LnurlAuth = require('passport-lnurl-auth');
 const session = require('express-session');
@@ -17,6 +15,7 @@ const {
   getAssets,
   addAssetToUploads,
   getCollection,
+  createAssets,
   createToken,
 } = require('./xidb');
 
@@ -65,13 +64,6 @@ app.use('/data', express.static(path.join(__dirname, config.data)));
 app.get('/api/data', (req, res) => {
   res.json({ message: 'Welcome to the ArtX!' });
 });
-
-function gitHash(fileBuffer) {
-  const hasher = crypto.createHash('sha1');
-  hasher.update('blob ' + fileBuffer.length + '\0');
-  hasher.update(fileBuffer);
-  return hasher.digest('hex');
-}
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -164,72 +156,7 @@ app.post('/api/upload', ensureAuthenticated, upload.array('images', 20), async (
     const { collectionId } = req.body;
     const collectionIndex = parseInt(collectionId, 10);
 
-    let collectionCount = 0;
-    const agentData = await getAgent(req.user.id);
-    const defaultTitle = agentData.collections[collectionIndex].defaultTitle;
-
-    if (defaultTitle) {
-      const collection = await getCollection(req.user.id, collectionIndex);
-      collectionCount = collection.length;
-    }
-
-    for (const file of req.files) {
-      const xid = uuidv4();
-
-      // Calculate the Git hash
-      const fileBuffer = fs.readFileSync(file.path);
-      const fileHash = gitHash(fileBuffer);
-
-      // Create the subfolder
-      const assetFolder = path.join(config.assets, xid);
-      if (!fs.existsSync(assetFolder)) {
-        fs.mkdirSync(assetFolder);
-      }
-
-      // Move the file to the subfolder and rename it to "_"
-      const assetName = '_' + path.extname(file.originalname);
-      const newPath = path.join(assetFolder, assetName);
-      fs.renameSync(file.path, newPath);
-
-      // Get image metadata using sharp
-      const imageMetadata = await sharp(newPath).metadata();
-
-      let title = 'untitled';
-
-      if (defaultTitle) {
-        collectionCount += 1;
-        title = defaultTitle.replace("%N%", collectionCount);
-      }
-
-      // Create the metadata object
-      const metadata = {
-        asset: {
-          xid: xid,
-          owner: req.user.id,
-          title: title,
-          created: new Date().toISOString(),
-          updated: new Date().toISOString(),
-          collection: collectionIndex,
-        },
-        file: {
-          fileName: assetName,
-          originalName: file.originalname,
-          size: file.size,
-          hash: fileHash,
-          path: `/${config.assets}/${xid}/${assetName}`,
-        },
-        image: {
-          width: imageMetadata.width,
-          height: imageMetadata.height,
-          depth: imageMetadata.depth,
-          format: imageMetadata.format,
-        }
-      };
-
-
-      await writeAssetMetadata(metadata);
-      await addAssetToUploads(req.user.id, xid);
-    }
+    await createAssets(req.user.id, req.files, collectionIndex);
 
     // Send a success response after processing all files
     res.status(200).json({ success: true, message: 'Files uploaded successfully' });

@@ -1,5 +1,7 @@
 const path = require('path');
 const fs = require('fs');
+const sharp = require('sharp');
+const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
 
 const config = {
@@ -101,6 +103,81 @@ const getCollection = async (userId, collectionIndex) => {
     return assetsInCollection;
 }
 
+function gitHash(fileBuffer) {
+    const hasher = crypto.createHash('sha1');
+    hasher.update('blob ' + fileBuffer.length + '\0');
+    hasher.update(fileBuffer);
+    return hasher.digest('hex');
+}
+
+const createAssets = async (userId, files, collectionIndex) => {
+    let collectionCount = 0;
+    const agentData = await getAgent(userId);
+    const defaultTitle = agentData.collections[collectionIndex].defaultTitle;
+
+    if (defaultTitle) {
+        const collection = await getCollection(userId, collectionIndex);
+        collectionCount = collection.length;
+    }
+
+    for (const file of files) {
+        const xid = uuidv4();
+
+        // Calculate the Git hash
+        const fileBuffer = fs.readFileSync(file.path);
+        const fileHash = gitHash(fileBuffer);
+
+        // Create the subfolder
+        const assetFolder = path.join(config.assets, xid);
+        if (!fs.existsSync(assetFolder)) {
+            fs.mkdirSync(assetFolder);
+        }
+
+        // Move the file to the subfolder and rename it to "_"
+        const assetName = '_' + path.extname(file.originalname);
+        const newPath = path.join(assetFolder, assetName);
+        fs.renameSync(file.path, newPath);
+
+        // Get image metadata using sharp
+        const imageMetadata = await sharp(newPath).metadata();
+
+        let title = 'untitled';
+
+        if (defaultTitle) {
+            collectionCount += 1;
+            title = defaultTitle.replace("%N%", collectionCount);
+        }
+
+        // Create the metadata object
+        const metadata = {
+            asset: {
+                xid: xid,
+                owner: userId,
+                title: title,
+                created: new Date().toISOString(),
+                updated: new Date().toISOString(),
+                collection: collectionIndex,
+            },
+            file: {
+                fileName: assetName,
+                originalName: file.originalname,
+                size: file.size,
+                hash: fileHash,
+                path: `/${config.assets}/${xid}/${assetName}`,
+            },
+            image: {
+                width: imageMetadata.width,
+                height: imageMetadata.height,
+                depth: imageMetadata.depth,
+                format: imageMetadata.format,
+            }
+        };
+
+        await writeAssetMetadata(metadata);
+        await addAssetToUploads(userId, xid);
+    }
+};
+
 const createNFT = async (owner, asset, edition, editions) => {
     const xid = uuidv4();
     const assetFolder = path.join(config.assets, xid);
@@ -167,5 +244,6 @@ module.exports = {
     getAssets,
     addAssetToUploads,
     getCollection,
+    createAssets,
     createToken,
 };
