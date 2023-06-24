@@ -151,9 +151,8 @@ function ensureAuthenticated(req, res, next) {
 app.post('/api/upload', ensureAuthenticated, upload.array('images', 20), async (req, res) => {
   try {
     const { collectionId } = req.body;
-    const collectionIndex = parseInt(collectionId, 10);
 
-    await createAssets(req.user.id, req.files, collectionIndex);
+    await createAssets(req.user.id, req.files, collectionId);
 
     // Send a success response after processing all files
     res.status(200).json({ success: true, message: 'Files uploaded successfully' });
@@ -251,8 +250,25 @@ app.get('/api/profile/:id?', async (req, res) => {
 
 app.get('/api/collections/:xid', async (req, res) => {
   try {
-    const collection = await getAsset(req.params.xid);
-    res.json(collection);
+    const metadata = await getAsset(req.params.xid);
+
+    const authId = req.user?.id;
+    const isOwner = (authId == metadata.asset.owner);
+    const assetsInCollection = [];
+
+    for (const assetId of metadata.collection.assets) {
+      const assetMetadata = await getAsset(assetId);
+      const isToken = !!assetMetadata.token;
+
+      if (isOwner || isToken) {
+        assetsInCollection.push(assetMetadata);
+      }
+    }
+
+    metadata.isOwnedByUser = isOwner;
+    metadata.collection.assets = assetsInCollection;
+
+    res.json(metadata);
   } catch (error) {
     console.error('Error processing request:', error);
     res.status(500).json({ error: 'An error occurred while processing the request.' });

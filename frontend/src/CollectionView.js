@@ -4,38 +4,26 @@ import { useParams } from 'react-router-dom';
 import ImageGrid from './ImageGrid';
 
 const CollectionView = ({ navigate }) => {
-    const { userId, collId } = useParams();
-    const [profile, setProfile] = useState(null);
+    const { xid } = useParams();
     const [collection, setCollection] = useState(null);
-    const [collectionName, setCollectionName] = useState(null);
-    const [collectionId, setCollectionId] = useState(null);
     const [refreshKey, setRefreshKey] = useState(0);
 
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                let response = await fetch(`/api/profile/${userId}`);
-                const profileData = await response.json();
-                setProfile(profileData);
-
-                response = await fetch(`/api/collection/${userId}/${collId}`);
+                const response = await fetch(`/api/collections/${xid}`);
                 const collectionData = await response.json();
-                const collectionId = parseInt(collId, 10);
-                const collectionName = profileData.collections[collectionId].name;
-
                 setCollection(collectionData);
-                setCollectionId(collectionId);
-                setCollectionName(collectionName);
             } catch (error) {
                 console.error('Error fetching profile data:', error);
             }
         };
 
         fetchProfile();
-    }, [navigate, userId, collId, refreshKey]);
+    }, [navigate, xid, refreshKey]);
 
-    if (!profile) {
-        return <p>Loading profile...</p>;
+    if (!collection) {
+        return <p>Loading...</p>;
     }
 
     const handleUpload = async (event) => {
@@ -47,7 +35,7 @@ const CollectionView = ({ navigate }) => {
                 formData.append('images', file);
             }
 
-            formData.append('collectionId', collectionId);
+            formData.append('collectionId', collection.asset.xid);
 
             const response = await fetch('/api/upload', {
                 method: 'POST',
@@ -66,11 +54,11 @@ const CollectionView = ({ navigate }) => {
 
     return (
         <>
-            <p>{collectionName}</p>
-            {profile.isUser &&
+            <p>{collection.asset.title}</p>
+            {collection.isOwnedByUser &&
                 <input type="file" name="images" accept="image/*" multiple onChange={handleUpload} />
             }
-            <ImageGrid collection={collection} />
+            <ImageGrid collection={collection.collection.assets} />
         </>
     );
 };

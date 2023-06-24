@@ -122,15 +122,10 @@ function gitHash(fileBuffer) {
     return hasher.digest('hex');
 }
 
-const createAssets = async (userId, files, collectionIndex) => {
-    let collectionCount = 0;
-    const agentData = await getAgent(userId);
-    const defaultTitle = agentData.collections[collectionIndex].defaultTitle;
-
-    if (defaultTitle) {
-        const collection = await getCollection(userId, collectionIndex);
-        collectionCount = collection.length;
-    }
+const createAssets = async (userId, files, collectionId) => {
+    const collectionData = await getAsset(collectionId);
+    const defaultTitle = collectionData.collection.default.title;
+    let collectionCount = collectionData.collection.assets.length;
 
     for (const file of files) {
         const xid = uuidv4();
@@ -168,7 +163,7 @@ const createAssets = async (userId, files, collectionIndex) => {
                 title: title,
                 created: new Date().toISOString(),
                 updated: new Date().toISOString(),
-                collection: collectionIndex,
+                collection: collectionId,
             },
             file: {
                 fileName: assetName,
@@ -186,7 +181,7 @@ const createAssets = async (userId, files, collectionIndex) => {
         };
 
         await saveAsset(metadata);
-        await addAssetToUploads(userId, xid);
+        await collectionAddAsset(collectionData.asset.xid, metadata.asset.xid);
     }
 };
 
@@ -273,8 +268,8 @@ const createCollection = async (userId, name) => {
 };
 
 const collectionAddAsset = async (xid, assetId) => {
-    let collection = getAsset(xid);
-    let asset = getAsset(assetId);
+    let collection = await getAsset(xid);
+    let asset = await getAsset(assetId);
 
     if (collection.asset.owner == asset.asset.owner) {
         if (!collection.collection.assets.includes(assetId)) {
@@ -288,8 +283,8 @@ const collectionAddAsset = async (xid, assetId) => {
 };
 
 const collectionRemoveAsset = async (xid, assetId) => {
-    let collection = getAsset(xid);
-    let asset = getAsset(assetId);
+    let collection = await getAsset(xid);
+    let asset = await getAsset(assetId);
 
     if (asset.mint) {
         return false;
