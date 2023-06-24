@@ -9,8 +9,8 @@ const morgan = require('morgan');
 const {
   getAgent,
   saveAgent,
-  readAssetMetadata,
-  writeAssetMetadata,
+  getAsset,
+  saveAsset,
   getAssets,
   createAssets,
   createToken,
@@ -166,7 +166,7 @@ app.post('/api/upload', ensureAuthenticated, upload.array('images', 20), async (
 app.get('/api/asset/:xid', async (req, res) => {
   try {
     const { xid } = req.params;
-    const assetData = await readAssetMetadata(xid);
+    const assetData = await getAsset(xid);
     res.json(assetData);
   } catch (error) {
     console.error('Error reading metadata:', error);
@@ -179,7 +179,7 @@ app.patch('/api/asset', ensureAuthenticated, async (req, res) => {
   const userId = req.user.id;
 
   try {
-    let assetData = await readAssetMetadata(xid);
+    let assetData = await getAsset(xid);
 
     if (userId != assetData.asset.owner) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -192,7 +192,7 @@ app.patch('/api/asset', ensureAuthenticated, async (req, res) => {
     assetData.asset.collection = collection;
     assetData.asset.updated = new Date().toISOString();
 
-    await writeAssetMetadata(assetData);
+    await saveAsset(assetData);
 
     res.json({ message: 'Metadata updated successfully' });
   } catch (error) {
@@ -251,7 +251,7 @@ app.get('/api/profile/:id?', async (req, res) => {
 
 app.get('/api/collections/:xid', async (req, res) => {
   try {
-    const collection = await readAssetMetadata(req.params.xid);
+    const collection = await getAsset(req.params.xid);
     res.json(collection);
   } catch (error) {
     console.error('Error processing request:', error);
@@ -280,7 +280,7 @@ app.get('/api/collection/:userId/:collectionId', async (req, res) => {
     const assetsInCollection = [];
 
     for (const assetId of assets) {
-      const assetMetadata = await readAssetMetadata(assetId);
+      const assetMetadata = await getAsset(assetId);
       const assetCollection = assetMetadata.asset.collection || 0;
       const isToken = !!assetMetadata.token;
 
@@ -319,7 +319,7 @@ app.post('/api/mint', ensureAuthenticated, async (req, res) => {
   try {
     const { xid, editions } = req.body;
     const userId = req.user.id;
-    const assetData = await readAssetMetadata(xid);
+    const assetData = await getAsset(xid);
 
     console.log(`mint ${xid} with ${editions} editions`);
 

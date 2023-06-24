@@ -49,14 +49,14 @@ const saveAgent = async (agentData) => {
     await fs.promises.writeFile(agentJsonPath, JSON.stringify(agentData, null, 2));
 };
 
-const readAssetMetadata = async (xid) => {
+const getAsset = async (xid) => {
     const metadataPath = path.join(config.assets, xid, 'meta.json');
     const metadataContent = await fs.promises.readFile(metadataPath, 'utf-8');
     const metadata = JSON.parse(metadataContent);
     return metadata;
 };
 
-const writeAssetMetadata = async (metadata) => {
+const saveAsset = async (metadata) => {
     const assetFolder = path.join(config.assets, metadata.asset.xid);
     const assetJsonPath = path.join(assetFolder, 'meta.json');
     if (!fs.existsSync(assetFolder)) {
@@ -92,7 +92,7 @@ const getCollection = async (userId, collectionIndex) => {
     const assetsInCollection = [];
 
     for (const assetId of assets) {
-        const assetMetadata = await readAssetMetadata(assetId);
+        const assetMetadata = await getAsset(assetId);
         const assetCollection = assetMetadata.asset.collection || 0;
 
         if (collectionIndex === assetCollection) {
@@ -173,12 +173,12 @@ const createAssets = async (userId, files, collectionIndex) => {
             }
         };
 
-        await writeAssetMetadata(metadata);
+        await saveAsset(metadata);
         await addAssetToUploads(userId, xid);
     }
 };
 
-const createNFT = async (owner, asset, edition, editions) => {
+const createEdition = async (owner, asset, edition, editions) => {
     const xid = uuidv4();
     const assetFolder = path.join(config.assets, xid);
     fs.mkdirSync(assetFolder);
@@ -208,11 +208,11 @@ const createNFT = async (owner, asset, edition, editions) => {
 };
 
 const createToken = async (userId, xid, editions) => {
-    let assetData = await readAssetMetadata(xid);
+    let assetData = await getAsset(xid);
 
     const nfts = [];
     for (let i = 1; i <= editions; i++) {
-        const createdId = await createNFT(userId, xid, i, editions);
+        const createdId = await createEdition(userId, xid, i, editions);
         nfts.push(createdId);
     }
 
@@ -233,7 +233,7 @@ const createToken = async (userId, xid, editions) => {
         history: [mintEvent],
     };
 
-    await writeAssetMetadata(assetData);
+    await saveAsset(assetData);
 };
 
 const createCollection = async (userId, name) => {
@@ -256,18 +256,18 @@ const createCollection = async (userId, name) => {
         }
     };
 
-    await writeAssetMetadata(metadata);
+    await saveAsset(metadata);
     return metadata;
 };
 
 const collectionAddAsset = async (xid, assetId) => {
-    let collection = readAssetMetadata(xid);
-    let asset = readAssetMetadata(assetId);
+    let collection = getAsset(xid);
+    let asset = getAsset(assetId);
 
     if (collection.asset.owner == asset.asset.owner) {
         if (!collection.collection.assets.includes(assetId)) {
             collection.collection.assets.push(assetId);
-            await writeAssetMetadata(collection);
+            await saveAsset(collection);
             return true;
         }
     }
@@ -276,8 +276,8 @@ const collectionAddAsset = async (xid, assetId) => {
 };
 
 const collectionRemoveAsset = async (xid, assetId) => {
-    let collection = readAssetMetadata(xid);
-    let asset = readAssetMetadata(assetId);
+    let collection = getAsset(xid);
+    let asset = getAsset(assetId);
 
     if (asset.mint) {
         return false;
@@ -286,7 +286,7 @@ const collectionRemoveAsset = async (xid, assetId) => {
     const assetIndex = collection.collection.assets.indexOf(assetId);
     if (assetIndex !== -1) {
         collection.collection.assets.splice(assetIndex, 1);
-        await writeAssetMetadata(collection);
+        await saveAsset(collection);
         return true;
     }
 
@@ -296,8 +296,8 @@ const collectionRemoveAsset = async (xid, assetId) => {
 module.exports = {
     getAgent,
     saveAgent,
-    readAssetMetadata,
-    writeAssetMetadata,
+    getAsset,
+    saveAsset,
     getAssets,
     addAssetToUploads,
     getCollection,
