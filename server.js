@@ -12,9 +12,12 @@ const { v4: uuidv4 } = require('uuid');
 const {
   getAgent,
   saveAgent,
+  readAssetMetadata,
+  writeAssetMetadata,
   getAssets,
   addAssetToUploads,
   getCollection,
+  createToken,
 } = require('./xidb');
 
 const app = express();
@@ -341,22 +344,6 @@ app.get('/api/profile/:id?', async (req, res) => {
   }
 });
 
-const readAssetMetadata = async (xid) => {
-  const metadataPath = path.join(config.assets, xid, 'meta.json');
-  const metadataContent = await fs.promises.readFile(metadataPath, 'utf-8');
-  const metadata = JSON.parse(metadataContent);
-  return metadata;
-};
-
-const writeAssetMetadata = async (metadata) => {
-  const assetFolder = path.join(config.assets, metadata.asset.xid);
-  const assetJsonPath = path.join(assetFolder, 'meta.json');
-  if (!fs.existsSync(assetFolder)) {
-    fs.mkdirSync(assetFolder);
-  }
-  await fs.promises.writeFile(assetJsonPath, JSON.stringify(metadata, null, 2));
-};
-
 app.get('/api/collection/:userId/:collectionId', async (req, res) => {
   try {
     const { userId, collectionId } = req.params;
@@ -402,73 +389,19 @@ app.post('/api/profile', ensureAuthenticated, async (req, res) => {
   }
 });
 
-const createNFT = async (owner, asset, edition, editions) => {
-  const xid = uuidv4();
-  const assetFolder = path.join(config.assets, xid);
-  fs.mkdirSync(assetFolder);
-
-  const metadata = {
-    asset: {
-      xid: xid,
-      owner: owner,
-      created: new Date().toISOString(),
-      updated: new Date().toISOString(),
-      type: 'nft',
-      title: `${edition} of ${editions}`
-    },
-    nft: {
-      asset: asset,
-      edition: edition,
-      editions: editions,
-      price: 0,
-    }
-  };
-
-  // Write the metadata to meta.json
-  const metadataPath = path.join(assetFolder, 'meta.json');
-  await fs.promises.writeFile(metadataPath, JSON.stringify(metadata, null, 2));
-
-  return xid;
-};
-
 app.post('/api/mint', ensureAuthenticated, async (req, res) => {
   try {
     const { xid, editions } = req.body;
     const userId = req.user.id;
-
+    const assetData = await readAssetMetadata(xid);
+  
     console.log(`mint ${xid} with ${editions} editions`);
-
-    let assetData = await readAssetMetadata(xid);
 
     if (assetData.asset.owner != userId) {
       return req.status(401).json({ message: "Unauthorized" });
     }
-
-    const nfts = [];
-    for (let i = 1; i <= editions; i++) {
-      const createdId = await createNFT(userId, xid, i, editions);
-      nfts.push(createdId);
-    }
-
-    console.log(nfts);
-
-    const mintEvent = {
-      type: 'mint',
-      agent: userId,
-      time: new Date().toISOString(),
-    };
-
-    assetData.token = {
-      asset: xid, // TBD: add to IPFS here, get cid for NFTs
-      royalty: 0.1,
-      license: "CC BY-SA",
-      editions: editions,
-      nfts: nfts,
-      history: [mintEvent],
-    };
-
-    await writeAssetMetadata(assetData);
-
+  
+    await createToken(userId, xid, editions);
     res.json({ message: 'Success' });
   } catch (error) {
     console.error('Error:', error);
