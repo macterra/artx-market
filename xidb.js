@@ -15,8 +15,8 @@ const config = {
 };
 
 const getAgent = async (userId, doCreate) => {
-    const userFolder = path.join(config.agents, userId.toString());
-    const agentJsonPath = path.join(userFolder, 'agent.json');
+    const agentFolder = path.join(config.agents, userId.toString());
+    const agentJsonPath = path.join(agentFolder, 'agent.json');
 
     let agentData = {};
 
@@ -25,26 +25,38 @@ const getAgent = async (userId, doCreate) => {
         const agentJsonContent = await fs.promises.readFile(agentJsonPath, 'utf-8');
         agentData = JSON.parse(agentJsonContent);
     } else if (doCreate) {
+
+        const collCreated = await createCollection(userId, '.created');
+        const collCollected = await createCollection(userId, '.collected');
+        const collDeleted = await createCollection(userId, '.deleted');
+
         agentData = {
             id: userId,
             name: 'anon',
             tagline: '',
             description: '',
             defaultCollection: 0,
-            uploads: [],
-            collections: [{ name: 'uploads', description: '' }],
+            collections: {
+                created: collCreated.asset.xid,
+                collected: collCollected.asset.xid,
+                deleted: collDeleted.asset.xid,
+                custom: [],
+            }
         };
 
-        ensureFolderExists(userFolder);
-        await fs.promises.writeFile(agentJsonPath, JSON.stringify(agentData, null, 2));
+        await saveAgent(agentData);
     }
 
     return agentData;
 };
 
 const saveAgent = async (agentData) => {
-    const userFolder = path.join(config.agents, agentData.id);
-    const agentJsonPath = path.join(userFolder, 'agent.json');
+    const agentFolder = path.join(config.agents, agentData.id);
+    const agentJsonPath = path.join(agentFolder, 'agent.json');
+    
+    if (!fs.existsSync(agentFolder)) {
+        fs.mkdirSync(agentFolder);
+    }
 
     await fs.promises.writeFile(agentJsonPath, JSON.stringify(agentData, null, 2));
 };
@@ -66,8 +78,8 @@ const saveAsset = async (metadata) => {
 };
 
 const getAssets = async (userId) => {
-    const userFolder = path.join(config.agents, userId.toString());
-    const jsonPath = path.join(userFolder, 'assets.json');
+    const agentFolder = path.join(config.agents, userId.toString());
+    const jsonPath = path.join(agentFolder, 'assets.json');
     let assetData = [];
 
     if (fs.existsSync(jsonPath)) {
