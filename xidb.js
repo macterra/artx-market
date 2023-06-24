@@ -236,6 +236,63 @@ const createToken = async (userId, xid, editions) => {
     await writeAssetMetadata(assetData);
 };
 
+const createCollection = async (userId, name) => {
+    const metadata = {
+        asset: {
+            xid: uuidv4(),
+            owner: userId,
+            created: new Date().toISOString(),
+            updated: new Date().toISOString(),
+            title: name,
+        },
+        collection: {
+            assets: [],
+            hidden: false,
+            default: {
+                title: `${name} #%N%`,
+                license: "CC BY-SA",
+                editions: 1,
+            },
+        }
+    };
+
+    await writeAssetMetadata(metadata);
+    return metadata;
+};
+
+const collectionAddAsset = async (xid, assetId) => {
+    let collection = readAssetMetadata(xid);
+    let asset = readAssetMetadata(assetId);
+
+    if (collection.asset.owner == asset.asset.owner) {
+        if (!collection.collection.assets.includes(assetId)) {
+            collection.collection.assets.push(assetId);
+            await writeAssetMetadata(collection);
+            return true;
+        }
+    }
+
+    return false;
+};
+
+const collectionRemoveAsset = async (xid, assetId) => {
+    let collection = readAssetMetadata(xid);
+    let asset = readAssetMetadata(assetId);
+
+    if (asset.mint) {
+        return false;
+    }
+
+    const assetIndex = collection.collection.assets.indexOf(assetId);
+    if (assetIndex !== -1) {
+        collection.collection.assets.splice(assetIndex, 1);
+        await writeAssetMetadata(collection);
+        return true;
+    }
+
+    return false;
+};
+
 module.exports = {
     getAgent,
     saveAgent,
@@ -246,4 +303,7 @@ module.exports = {
     getCollection,
     createAssets,
     createToken,
+    createCollection,
+    collectionAddAsset,
+    collectionRemoveAsset,
 };

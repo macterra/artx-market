@@ -166,7 +166,7 @@ app.post('/api/upload', ensureAuthenticated, upload.array('images', 20), async (
 app.get('/api/asset/:xid', async (req, res) => {
   try {
     const { xid } = req.params;
-    const assetData = await readAssetMetadata(xid);    
+    const assetData = await readAssetMetadata(xid);
     res.json(assetData);
   } catch (error) {
     console.error('Error reading metadata:', error);
@@ -246,6 +246,27 @@ app.get('/api/profile/:id?', async (req, res) => {
   } catch (error) {
     console.error('Error fetching profile data:', error);
     res.status(500).json({ message: 'Error fetching profile data' });
+  }
+});
+
+app.get('/api/collections/:xid', async (req, res) => {
+  try {
+    const collection = await readAssetMetadata(req.params.xid);
+    res.json(collection);
+  } catch (error) {
+    console.error('Error processing request:', error);
+    res.status(500).json({ error: 'An error occurred while processing the request.' });
+  }
+});
+
+app.post('/api/collections/', ensureAuthenticated, async (req, res) => {
+  try {
+    const { name } = req.params;
+    const collection = await createCollection(req.user.id, name);
+    res.json(collection);
+  } catch (error) {
+    console.error('Error processing request:', error);
+    res.status(500).json({ error: 'An error occurred while processing the request.' });
   }
 });
 
