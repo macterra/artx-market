@@ -14,6 +14,7 @@ const {
   getAssets,
   createAssets,
   createToken,
+  createCollection,
 } = require('./xidb');
 
 const app = express();
@@ -277,8 +278,9 @@ app.get('/api/collections/:xid', async (req, res) => {
 
 app.post('/api/collections/', ensureAuthenticated, async (req, res) => {
   try {
-    const { name } = req.params;
+    const { name } = req.body;
     const collection = await createCollection(req.user.id, name);
+    console.log(`created collection ${collection}`);
     res.json(collection);
   } catch (error) {
     console.error('Error processing request:', error);

@@ -10,10 +10,19 @@ const CollectionEditor = ({ navigate }) => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const response = await fetch(`/api/profile`);
-                const data = await response.json();
-                setProfile(data);
-                setCollections(data.collections);
+                let response = await fetch(`/api/profile`);
+                const profileData = await response.json();
+                setProfile(profileData);
+
+                const collections = [];
+
+                for (const xid of profileData.collections.custom) {
+                    response = await fetch(`/api/collections/${xid}`);
+                    const collectionData = await response.json();
+                    collections.push(collectionData);
+                }
+
+                setCollections(collections);
             } catch (error) {
                 console.error('Error fetching profile data:', error);
             }
@@ -24,7 +33,7 @@ const CollectionEditor = ({ navigate }) => {
 
     const handleSaveClick = async () => {
         try {
-            profile.collections = collections;
+            profile.collections.custom = collections.map(collection => collection.asset.xid);
 
             const response = await fetch('/api/profile', {
                 method: 'POST',
@@ -46,33 +55,40 @@ const CollectionEditor = ({ navigate }) => {
         }
     };
 
-    const handleAddCollection = () => {
+    const handleAddCollection = async () => {
+        const response = await fetch('/api/collections', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ name: 'new' }),
+        });
+        const data = await response.json();
+
+        console.log(data);
+
         setCollections([
             ...collections,
-            {
-                name: 'new',
-                description: '',
-                assets: [],
-            },
+            data,
         ]);
         setSelectedCollectionIndex(collections.length);
     };
 
     const handleCollectionNameChange = (e, index) => {
         const newCollections = [...collections];
-        newCollections[index].name = e.target.value;
+        newCollections[index].asset.title = e.target.value;
         setCollections(newCollections);
     };
 
     const handleCollectionDescriptionChange = (e, index) => {
         const newCollections = [...collections];
-        newCollections[index].description = e.target.value;
+        newCollections[index].collection.description = e.target.value;
         setCollections(newCollections);
     };
 
     const handleCollectionDefaultTitleChange = (e, index) => {
         const newCollections = [...collections];
-        newCollections[index].defaultTitle = e.target.value;
+        newCollections[index].collection.default.title = e.target.value;
         setCollections(newCollections);
     };
 
@@ -87,7 +103,7 @@ const CollectionEditor = ({ navigate }) => {
                         onClick={() => setSelectedCollectionIndex(index)}
                         selected={index === selectedCollectionIndex}
                     >
-                        <ListItemText primary={collection.name} />
+                        <ListItemText primary={collection.asset.title} />
                     </ListItem>
                 ))}
             </List>
@@ -95,7 +111,7 @@ const CollectionEditor = ({ navigate }) => {
                 <form>
                     <TextField
                         label="Collection Name"
-                        value={collections[selectedCollectionIndex].name}
+                        value={collections[selectedCollectionIndex].asset.title}
                         onChange={(e) =>
                             handleCollectionNameChange(e, selectedCollectionIndex)
                         }
@@ -104,7 +120,7 @@ const CollectionEditor = ({ navigate }) => {
                     />
                     <TextField
                         label="Collection Description"
-                        value={collections[selectedCollectionIndex].description}
+                        value={collections[selectedCollectionIndex].asset.description}
                         onChange={(e) =>
                             handleCollectionDescriptionChange(e, selectedCollectionIndex)
                         }
@@ -113,7 +129,7 @@ const CollectionEditor = ({ navigate }) => {
                     />
                     <TextField
                         label="Default Title"
-                        value={collections[selectedCollectionIndex].defaultTitle}
+                        value={collections[selectedCollectionIndex].collection.default.title}
                         onChange={(e) =>
                             handleCollectionDefaultTitleChange(e, selectedCollectionIndex)
                         }
