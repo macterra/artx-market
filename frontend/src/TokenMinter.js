@@ -59,13 +59,10 @@ const TokenMinter = ({ metadata, setTab }) => {
 
     const handleMintClick = async () => {
         try {
-            const payload = { xid: metadata.asset.xid, editions: editions };
-            const response = await fetch('/api/mint', {
+            const response = await fetch(`/api/asset/${metadata.asset.xid}/mint`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload),
+                headers: { 'Content-Type': 'application/json', },
+                body: JSON.stringify({ editions: editions }),
             });
 
             if (response.ok) {

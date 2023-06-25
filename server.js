@@ -337,9 +337,10 @@ app.post('/api/profile', ensureAuthenticated, async (req, res) => {
   }
 });
 
-app.post('/api/mint', ensureAuthenticated, async (req, res) => {
+app.post('/api/asset/:xid/mint', ensureAuthenticated, async (req, res) => {
   try {
-    const { xid, editions } = req.body;
+    const xid = req.params.xid;
+    const { editions } = req.body;
     const userId = req.user.id;
     const assetData = await getAsset(xid);
 
