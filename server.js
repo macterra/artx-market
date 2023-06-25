@@ -151,7 +151,7 @@ function ensureAuthenticated(req, res, next) {
   }
 }
 
-app.post('/api/upload', ensureAuthenticated, upload.array('images', 20), async (req, res) => {
+app.post('/api/upload', ensureAuthenticated, upload.array('images', 100), async (req, res) => {
   try {
     const { collectionId } = req.body;
 
