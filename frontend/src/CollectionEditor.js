@@ -16,7 +16,7 @@ const CollectionEditor = ({ navigate }) => {
 
                 const collections = [];
 
-                for (const xid of profileData.collections.custom) {
+                for (const xid of profileData.collections) {
                     response = await fetch(`/api/collections/${xid}`);
                     const collectionData = await response.json();
                     collections.push(collectionData);
@@ -43,7 +43,7 @@ const CollectionEditor = ({ navigate }) => {
                 });
             }
 
-            profile.collections.custom = collections.map(collection => collection.asset.xid);
+            profile.collections = collections.map(collection => collection.asset.xid);
 
             const response = await fetch('/api/profile', {
                 method: 'POST',

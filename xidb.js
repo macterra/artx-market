@@ -26,22 +26,21 @@ const getAgent = async (userId, doCreate) => {
         agentData = JSON.parse(agentJsonContent);
     } else if (doCreate) {
 
-        const collCreated = await createCollection(userId, '.created');
-        const collCollected = await createCollection(userId, '.collected');
-        const collDeleted = await createCollection(userId, '.deleted');
+        const collCreated = await createCollection(userId, 'created');
+        const collCollected = await createCollection(userId, 'collected');
+        const collDeleted = await createCollection(userId, 'deleted');
 
         agentData = {
             id: userId,
             name: 'anon',
             tagline: '',
             description: '',
-            defaultCollection: 0,
-            collections: {
+            assets: {
                 created: collCreated.asset.xid,
                 collected: collCollected.asset.xid,
                 deleted: collDeleted.asset.xid,
-                custom: [],
-            }
+            },
+            collections: [],
         };
 
         await saveAgent(agentData);

@@ -15,25 +15,16 @@ const ProfileView = ({ navigate }) => {
                 const profileData = await response.json();
                 const collections = [];
 
-                const createdId = profileData.collections.created;
+                const createdId = profileData.assets.created;
                 response = await fetch(`/api/collections/${createdId}`);
-                const collectionData = await response.json();
+                let collectionData = await response.json();
                 collections.push(collectionData);
 
-                // for (let i = 0; i < profileData.collections.length; i++) {
-                //     let collection = profileData.collections[i];
-                //     response = await fetch(`/api/collection/${userId}/${i}`);
-                //     const collectionData = await response.json();
-                //     collection.count = collectionData.length;
-
-                //     if (collection.count > 0 && !collection.thumbnail) {
-                //         collection.thumbnail = collectionData[0].file.path;
-                //     }
-
-                //     if (collection.count > 0 || profileData.isUser) {
-                //         collections.push(collection);
-                //     }
-                // }
+                for (const xid of profileData.collections) {
+                    response = await fetch(`/api/collections/${xid}`);
+                    let collectionData = await response.json();
+                    collections.push(collectionData);
+                }
 
                 console.log(profileData);
                 setProfile(profileData);

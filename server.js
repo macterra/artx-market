@@ -269,6 +269,10 @@ app.get('/api/collections/:xid', async (req, res) => {
     metadata.isOwnedByUser = isOwner;
     metadata.collection.assets = assetsInCollection;
 
+    if (assetsInCollection.length > 0 && !metadata.thumbnail) {
+      metadata.thumbnail = assetsInCollection[0].file.path;
+    }
+
     res.json(metadata);
   } catch (error) {
     console.error('Error processing request:', error);
@@ -298,7 +302,7 @@ app.post('/api/collections/:xid', ensureAuthenticated, async (req, res) => {
     }
 
     await saveAsset(updated);
-    res.json({ message: 'Collection updated successfully' });    
+    res.json({ message: 'Collection updated successfully' });
   } catch (error) {
     console.error('Error processing request:', error);
     res.status(500).json({ error: 'An error occurred while processing the request.' });
