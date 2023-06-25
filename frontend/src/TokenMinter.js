@@ -23,11 +23,14 @@ const TokenMinter = ({ metadata, setTab }) => {
             try {
                 const profResp = await fetch(`/api/profile/${metadata.asset.owner}`);
                 const profileData = await profResp.json();
-                const fileSize = metadata.file.size || 0;
-                const collectionId = metadata.asset.collection || 0;
+                const fileSize = metadata.file.size;
+                const collectionId = metadata.asset.collection;
+
+                const collResp = await fetch(`/api/collections/${collectionId}`);
+                const collectionData = await collResp.json();
 
                 setOwner(profileData.name);
-                setCollection(profileData.collections[collectionId].name);
+                setCollection(collectionData.asset.title);
                 setStorageFee(Math.round(fileSize / 1000));
                 setFileSize(fileSize);
                 setCollectionId(collectionId);
@@ -95,7 +98,7 @@ const TokenMinter = ({ metadata, setTab }) => {
                         <TableRow>
                             <TableCell>Collection:</TableCell>
                             <TableCell>
-                                <Link to={`/profile/${metadata.asset.owner}/${collectionId}`}>
+                                <Link to={`/collection/${collectionId}`}>
                                     {collection}
                                 </Link>
                             </TableCell>

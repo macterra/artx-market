@@ -21,7 +21,6 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/profile/" element={<ViewLogin />} />
         <Route path="/profile/:userId" element={<ViewProfile />} />
-        <Route path="/profile/:userId/:collId" element={<ViewCollection />} />
         <Route path="/profile/edit" element={<EditProfile />} />
         <Route path="/collection/:xid" element={<ViewCollection />} />
         <Route path="/asset/:xid" element={<ViewAsset />} />

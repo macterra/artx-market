@@ -42,9 +42,9 @@ const TokenView = ({ metadata }) => {
                 let response = await fetch(`/api/profile/`);
                 const myProfile = await response.json();
 
-                response = await fetch(`/api/profile/${metadata.asset.owner}`);
-                const profileData = await response.json();
-                setCollection(profileData.collections[metadata.asset.collection || 0].name);
+                response = await fetch(`/api/collections/${metadata.asset.collection}`);
+                const collectionData = await response.json();
+                setCollection(collectionData.asset.title);
 
                 const nfts = [];
                 let owned = 0;
@@ -91,7 +91,7 @@ const TokenView = ({ metadata }) => {
                     <TableRow>
                         <TableCell>Collection:</TableCell>
                         <TableCell>
-                            <Link to={`/profile/${metadata.asset.owner}/${metadata.asset.collection || 0}`}>
+                            <Link to={`/collection/${metadata.asset.collection}`}>
                                 {collection}
                             </Link>
                         </TableCell>
