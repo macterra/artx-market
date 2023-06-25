@@ -301,7 +301,13 @@ app.post('/api/collections/:xid', ensureAuthenticated, async (req, res) => {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    await saveAsset(updated);
+    let assets = updated.collection.assets.map(metadata => metadata.asset.xid);
+    updated.collection.assets = assets;
+
+    if (JSON.stringify(updated) !== JSON.stringify(current)) {
+      await saveAsset(updated);
+    }
+
     res.json({ message: 'Collection updated successfully' });
   } catch (error) {
     console.error('Error processing request:', error);
