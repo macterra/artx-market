@@ -74,6 +74,7 @@ const saveAsset = async (metadata) => {
     if (!fs.existsSync(assetFolder)) {
         fs.mkdirSync(assetFolder);
     }
+    metadata.asset.updated = new Date().toISOString();
     await fs.promises.writeFile(assetJsonPath, JSON.stringify(metadata, null, 2));
 };
 

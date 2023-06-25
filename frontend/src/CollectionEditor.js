@@ -33,6 +33,16 @@ const CollectionEditor = ({ navigate }) => {
 
     const handleSaveClick = async () => {
         try {
+            for (const collection of collections) {
+                await fetch(`/api/collections/${collection.asset.xid}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(collection),
+                });
+            }
+
             profile.collections.custom = collections.map(collection => collection.asset.xid);
 
             const response = await fetch('/api/profile', {
