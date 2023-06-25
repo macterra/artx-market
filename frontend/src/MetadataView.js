@@ -59,16 +59,14 @@ const MetadataView = ({ navigate, metadata }) => {
                 const ownerId = metadata.asset.owner;
                 let response = await fetch(`/api/profile/${ownerId}`);
                 const profileData = await response.json();
-                const collectionId = metadata.asset.collection || 0;
-                const collection = profileData.collections[collectionId];
-                response = await fetch(`/api/collection/${ownerId}/${collectionId}`);
+                response = await fetch(`/api/collections/${metadata.asset.collection}`);
                 const collectionData = await response.json();
-                const { firstXid, prevXid, nextXid, lastXid } = findAdjacentXids(collectionData, metadata.asset.xid);
+                const { firstXid, prevXid, nextXid, lastXid } = findAdjacentXids(collectionData.collection.assets, metadata.asset.xid);
 
-                setOwnerId(ownerId);
+                setOwnerId(profileData.id);
                 setOwnerName(profileData.name);
-                setCollectionId(collectionId);
-                setCollectionName(collection.name);
+                setCollectionId(collectionData.asset.xid);
+                setCollectionName(collectionData.asset.title);
                 setFirstXid(firstXid);
                 setPrevXid(prevXid);
                 setNextXid(nextXid);
@@ -120,6 +118,10 @@ const MetadataView = ({ navigate, metadata }) => {
                         <TableCell>{metadata.image.format}</TableCell>
                     </TableRow>
                     <TableRow>
+                        <TableCell>Collection xid:</TableCell>
+                        <TableCell>{metadata.asset.collection}</TableCell>
+                    </TableRow>
+                    <TableRow>
                         <TableCell>Collection:</TableCell>
                         <TableCell>
                             <Button
@@ -137,7 +139,7 @@ const MetadataView = ({ navigate, metadata }) => {
                             <Button
                                 color="inherit"
                                 disabled={!collectionName}
-                                onClick={() => navigate(`/profile/${ownerId}/${collectionId}`)}>
+                                onClick={() => navigate(`/collection/${collectionId}`)}>
                                 {collectionName}
                             </Button>
                             <Button
