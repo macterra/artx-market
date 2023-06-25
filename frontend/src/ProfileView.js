@@ -15,15 +15,27 @@ const ProfileView = ({ navigate }) => {
                 const profileData = await response.json();
                 const collections = [];
 
-                const createdId = profileData.assets.created;
-                response = await fetch(`/api/collections/${createdId}`);
-                let collectionData = await response.json();
-                collections.push(collectionData);
+                if (profileData.isUser) {
+                    response = await fetch(`/api/collections/${profileData.assets.created}`);
+                    const created = await response.json();
+                    collections.push(created);
+
+                    response = await fetch(`/api/collections/${profileData.assets.deleted}`);
+                    const deleted = await response.json();
+                    collections.push(deleted);
+
+                    response = await fetch(`/api/collections/${profileData.assets.collected}`);
+                    const collected = await response.json();
+                    collections.push(collected);
+                }
 
                 for (const xid of profileData.collections) {
                     response = await fetch(`/api/collections/${xid}`);
                     let collectionData = await response.json();
-                    collections.push(collectionData);
+
+                    if (collectionData.collection.assets.length > 0) {
+                        collections.push(collectionData);
+                    }
                 }
 
                 console.log(profileData);
@@ -43,8 +55,15 @@ const ProfileView = ({ navigate }) => {
 
     return (
         <Box>
-            <p>Collections</p>
-            <CollectionGrid userId={profile.id} list={collections} />
+            {collections.length == 0 &&
+                <p>{profile.name} has not yet shared anything. Stay tuned!</p>
+            }
+            {collections.length > 0 &&
+                <div>
+                    <p>Collections</p>
+                    <CollectionGrid userId={profile.id} list={collections} />
+                </div>
+            }
         </Box>
     );
 };
