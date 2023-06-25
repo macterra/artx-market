@@ -33,9 +33,10 @@ const ProfileView = ({ navigate }) => {
                     response = await fetch(`/api/collections/${xid}`);
                     let collectionData = await response.json();
 
-                    if (collectionData.collection.assets.length > 0) {
-                        collections.push(collectionData);
-                    }
+                    // if (collectionData.collection.assets.length > 0) {
+                    //     collections.push(collectionData);
+                    // }
+                    collections.push(collectionData);
                 }
 
                 console.log(profileData);
