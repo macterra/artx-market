@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { useNavigate, useParams, BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
@@ -97,6 +97,7 @@ function ViewLogin() {
 }
 
 function ViewProfile() {
+  const { userId } = useParams();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
 
@@ -111,7 +112,7 @@ function ViewProfile() {
         />
         <header className="App-header">
           <Box display="flex" flexDirection="column" flexGrow={1}>
-            <ProfileHeader />
+            <ProfileHeader userId={userId} />
             <ProfileView navigate={navigate} />
           </Box>
         </header>
@@ -121,8 +122,24 @@ function ViewProfile() {
 }
 
 function ViewCollection() {
+  const { xid } = useParams();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userId, setUserId] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await fetch(`/api/collections/${xid}`);
+        const collectionData = await response.json();
+        setUserId(collectionData.asset.owner);
+      } catch (error) {
+        console.error('Error fetching profile data:', error);
+      }
+    };
+
+    fetchProfile();
+  });
 
   return (
     <ThemeProvider theme={darkTheme}>
@@ -135,7 +152,7 @@ function ViewCollection() {
         />
         <header className="App-header">
           <Box display="flex" flexDirection="column" flexGrow={1}>
-            <ProfileHeader />
+            <ProfileHeader userId={userId} />
             <CollectionView navigate={navigate} />
           </Box>
         </header>

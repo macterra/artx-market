@@ -1,10 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
 import { Box, Link } from '@mui/material';
 
-const ProfileHeader = () => {
-    const { userId } = useParams();
+const ProfileHeader = ({ userId }) => {
     const [profile, setProfile] = useState(null);
 
     useEffect(() => {
@@ -38,7 +36,7 @@ const ProfileHeader = () => {
 
     return (
         <Box display="flex" flexDirection="row" alignItems="center" style={{ minHeight: 'auto' }}>
-            <a href={`/profile/${userId}`} style={linkStyle}>
+            <a href={`/profile/${profile.id}`} style={linkStyle}>
                 {profile.pfp && (
                     <img
                         src={profile.pfp}
@@ -54,7 +52,7 @@ const ProfileHeader = () => {
                 )}
             </a>
             <div>
-                <a href={`/profile/${userId}`} style={linkStyle}>
+                <a href={`/profile/${profile.id}`} style={linkStyle}>
                     <p>{profile.name}</p>
                 </a>
                 <span style={{ fontSize: '12px', display: 'block' }}>{profile.tagline}</span>
