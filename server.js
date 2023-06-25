@@ -15,6 +15,8 @@ const {
   createAssets,
   createToken,
   createCollection,
+  collectionRemoveAsset,
+  collectionAddAsset,
 } = require('./xidb');
 
 const app = express();
@@ -189,8 +191,11 @@ app.patch('/api/asset', ensureAuthenticated, async (req, res) => {
       assetData.asset.title = title;
     }
 
-    assetData.asset.collection = collection;
-    assetData.asset.updated = new Date().toISOString();
+    if (collection && collection !== assetData.asset.collection) {
+      await collectionRemoveAsset(assetData.asset.collection, assetData.asset.xid);
+      assetData.asset.collection = collection;
+      await collectionAddAsset(assetData.asset.collection, assetData.asset.xid);
+    }
 
     await saveAsset(assetData);
 

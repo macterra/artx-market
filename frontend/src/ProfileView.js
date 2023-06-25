@@ -55,7 +55,7 @@ const ProfileView = ({ navigate }) => {
 
     return (
         <Box>
-            {collections.length == 0 &&
+            {collections.length === 0 &&
                 <p>{profile.name} has not yet shared anything. Stay tuned!</p>
             }
             {collections.length > 0 &&

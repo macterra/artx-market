@@ -12,9 +12,17 @@ const AssetEditor = ({ metadata, setTab }) => {
                 const profileResponse = await fetch('/api/profile');
                 const profileData = await profileResponse.json();
 
+                const collections = [];
+
+                for (const xid of profileData.collections) {
+                    let response = await fetch(`/api/collections/${xid}`);
+                    let collectionData = await response.json();
+                    collections.push(collectionData);
+                }
+
                 setTitle(metadata.asset.title);
-                setSelectedCollection(metadata.asset.collection || 0);
-                setCollections(profileData.collections || []);
+                setSelectedCollection(metadata.asset.collection);
+                setCollections(collections);
 
                 if (profileData.xid !== metadata.asset.owner) {
                     console.log(`editor ${profileData.xid} owner ${metadata.asset.owner}`);
@@ -79,8 +87,8 @@ const AssetEditor = ({ metadata, setTab }) => {
                     onChange={(e) => setSelectedCollection(e.target.value)}
                 >
                     {collections.map((collection, index) => (
-                        <MenuItem key={index} value={index}>
-                            {collection.name}
+                        <MenuItem key={index} value={collection.asset.xid}>
+                            {collection.asset.title}
                         </MenuItem>
                     ))}
                 </Select>
