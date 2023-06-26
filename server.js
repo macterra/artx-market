@@ -296,22 +296,24 @@ app.post('/api/collections/', ensureAuthenticated, async (req, res) => {
   }
 });
 
-app.post('/api/collections/:xid', ensureAuthenticated, async (req, res) => {
+app.patch('/api/collections/:xid', ensureAuthenticated, async (req, res) => {
   try {
-    const updated = req.body;
-    const current = await getAsset(req.params.xid);
+    const { title, defaultTitle } = req.body;
+    const collection = await getAsset(req.params.xid);
 
-    if (req.user.id != current.asset.owner) {
+    if (req.user.id != collection.asset.owner) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    let assets = updated.collection.assets.map(metadata => metadata.asset.xid);
-    updated.collection.assets = assets;
-
-    if (JSON.stringify(updated) !== JSON.stringify(current)) {
-      await saveAsset(updated);
+    if (title) {
+      collection.asset.title = title;
     }
 
+    if (defaultTitle) {
+      collection.collection.default.title = defaultTitle;
+    }
+
+    await saveAsset(collection);
     res.json({ message: 'Collection updated successfully' });
   } catch (error) {
     console.error('Error processing request:', error);

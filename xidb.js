@@ -52,7 +52,7 @@ const getAgent = async (userId, doCreate) => {
 const saveAgent = async (agentData) => {
     const agentFolder = path.join(config.agents, agentData.id);
     const agentJsonPath = path.join(agentFolder, 'agent.json');
-    
+
     if (!fs.existsSync(agentFolder)) {
         fs.mkdirSync(agentFolder);
     }
@@ -62,13 +62,25 @@ const saveAgent = async (agentData) => {
 };
 
 const getAsset = async (xid) => {
-    const metadataPath = path.join(config.assets, xid, 'meta.json');
-    const metadataContent = await fs.promises.readFile(metadataPath, 'utf-8');
-    const metadata = JSON.parse(metadataContent);
+    let metadata = null;
+
+    try {
+        const metadataPath = path.join(config.assets, xid, 'meta.json');
+        const metadataContent = await fs.promises.readFile(metadataPath, 'utf-8');
+        metadata = JSON.parse(metadataContent);
+    } catch (error) {
+    }
+
     return metadata;
 };
 
 const saveAsset = async (metadata) => {
+    const current = await getAsset(metadata.asset.xid);
+
+    if (JSON.stringify(metadata) == JSON.stringify(current)) {
+        return;
+    }
+
     const assetFolder = path.join(config.assets, metadata.asset.xid);
     const assetJsonPath = path.join(assetFolder, 'meta.json');
 

@@ -34,10 +34,15 @@ const CollectionEditor = ({ navigate }) => {
     const handleSaveClick = async () => {
         try {
             for (const collection of collections) {
+                const updates = {
+                    title: collection.asset.title,
+                    defaultTitle: collection.collection.default.title,
+                };
+
                 await fetch(`/api/collections/${collection.asset.xid}`, {
-                    method: 'POST',
+                    method: 'PATCH',
                     headers: { 'Content-Type': 'application/json', },
-                    body: JSON.stringify(collection),
+                    body: JSON.stringify(updates),
                 });
             }
 
@@ -64,9 +69,7 @@ const CollectionEditor = ({ navigate }) => {
     const handleAddCollection = async () => {
         const response = await fetch('/api/collections', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json', },
             body: JSON.stringify({ name: 'new' }),
         });
         const data = await response.json();
