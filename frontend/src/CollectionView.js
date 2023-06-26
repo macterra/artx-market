@@ -57,7 +57,8 @@ const CollectionView = ({ navigate }) => {
             <span>{collection.asset.title}</span>
             <span style={{ fontSize: '12px' }}>({collection.collection.assets.length} items)</span>
             {collection.isOwnedByUser &&
-                <input type="file" name="images" accept="image/*" multiple onChange={handleUpload} />
+                <span style={{ fontSize: '14px' }}>Upload: <input type="file" name="images" accept="image/*" multiple onChange={handleUpload} />
+                </span>
             }
             <ImageGrid collection={collection.collection.assets} />
         </>
