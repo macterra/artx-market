@@ -49,6 +49,8 @@ const AssetEditor = ({ metadata, setTab }) => {
             });
 
             if (response.ok) {
+                metadata.asset.title = title;
+                metadata.asset.collection = selectedCollection;
                 setTab("meta");
             } else {
                 const data = await response.json();

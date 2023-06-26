@@ -54,7 +54,8 @@ const CollectionView = ({ navigate }) => {
 
     return (
         <>
-            <p>{collection.asset.title}</p>
+            <span>{collection.asset.title}</span>
+            <span style={{ fontSize: '12px' }}>({collection.collection.assets.length} items)</span>
             {collection.isOwnedByUser &&
                 <input type="file" name="images" accept="image/*" multiple onChange={handleUpload} />
             }

@@ -53,7 +53,7 @@ const ProfileHeader = ({ userId }) => {
             </a>
             <div>
                 <a href={`/profile/${profile.id}`} style={linkStyle}>
-                    <p>{profile.name}</p>
+                    <span>{profile.name}</span>
                 </a>
                 <span style={{ fontSize: '12px', display: 'block' }}>{profile.tagline}</span>
             </div>
