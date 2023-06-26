@@ -42,23 +42,13 @@ const AssetEditor = ({ metadata, setTab }) => {
 
     const handleSaveClick = async () => {
         try {
-            const payload = {
-                xid: metadata.asset.xid,
-                title: title,
-                collection: selectedCollection,
-            };
-
-            const response = await fetch('/api/asset', {
+            const response = await fetch(`/api/asset/${metadata.asset.xid}`, {
                 method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title: title, collection: selectedCollection }),
             });
 
             if (response.ok) {
-                metadata.asset.title = title;
-                metadata.asset.collection = selectedCollection;
                 setTab("meta");
             } else {
                 const data = await response.json();
@@ -72,32 +62,32 @@ const AssetEditor = ({ metadata, setTab }) => {
 
     return (
         <form>
-            <TextField
-                label="Title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                fullWidth
-                margin="normal"
-            />
-            <FormControl fullWidth margin="normal">
-                <InputLabel id="collection-select-label">Collection</InputLabel>
-                <Select
-                    labelId="collection-select-label"
-                    value={selectedCollection}
-                    onChange={(e) => setSelectedCollection(e.target.value)}
-                >
-                    {collections.map((collection, index) => (
-                        <MenuItem key={index} value={collection.asset.xid}>
-                            {collection.asset.title}
-                        </MenuItem>
-                    ))}
-                </Select>
+        <TextField
+        label="Title"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        fullWidth
+        margin="normal"
+        />
+        <FormControl fullWidth margin="normal">
+        <InputLabel id="collection-select-label">Collection</InputLabel>
+        <Select
+        labelId="collection-select-label"
+        value={selectedCollection}
+        onChange={(e) => setSelectedCollection(e.target.value)}
+        >
+        {collections.map((collection, index) => (
+            <MenuItem key={index} value={collection.asset.xid}>
+            {collection.asset.title}
+            </MenuItem>
+            ))}
+            </Select>
             </FormControl>
             <Button variant="contained" color="primary" onClick={handleSaveClick}>
-                Save
+            Save
             </Button>
-        </form>
-    );
-};
+            </form>
+            );
+        };
 
-export default AssetEditor;
+        export default AssetEditor;

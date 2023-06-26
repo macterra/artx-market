@@ -175,8 +175,9 @@ app.get('/api/asset/:xid', async (req, res) => {
   }
 });
 
-app.patch('/api/asset', ensureAuthenticated, async (req, res) => {
-  const { xid, title, collection } = req.body;
+app.patch('/api/asset/:xid', ensureAuthenticated, async (req, res) => {
+  const { xid } = req.params;
+  const { title, collection } = req.body;
   const userId = req.user.id;
 
   try {
@@ -202,6 +203,27 @@ app.patch('/api/asset', ensureAuthenticated, async (req, res) => {
   } catch (error) {
     console.error('Error updating metadata:', error);
     res.status(500).json({ message: 'Error updating metadata' });
+  }
+});
+
+app.post('/api/asset/:xid/mint', ensureAuthenticated, async (req, res) => {
+  try {
+    const xid = req.params.xid;
+    const { editions } = req.body;
+    const userId = req.user.id;
+    const assetData = await getAsset(xid);
+
+    console.log(`mint ${xid} with ${editions} editions`);
+
+    if (assetData.asset.owner != userId) {
+      return req.status(401).json({ message: "Unauthorized" });
+    }
+
+    await createToken(userId, xid, editions);
+    res.json({ message: 'Success' });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ message: 'Error' });
   }
 });
 
@@ -350,27 +372,6 @@ app.patch('/api/profile/', ensureAuthenticated, async (req, res) => {
   } catch (error) {
     console.error('Error updating metadata:', error);
     res.status(500).json({ message: 'Error updating metadata' });
-  }
-});
-
-app.post('/api/asset/:xid/mint', ensureAuthenticated, async (req, res) => {
-  try {
-    const xid = req.params.xid;
-    const { editions } = req.body;
-    const userId = req.user.id;
-    const assetData = await getAsset(xid);
-
-    console.log(`mint ${xid} with ${editions} editions`);
-
-    if (assetData.asset.owner != userId) {
-      return req.status(401).json({ message: "Unauthorized" });
-    }
-
-    await createToken(userId, xid, editions);
-    res.json({ message: 'Success' });
-  } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ message: 'Error' });
   }
 });
 
