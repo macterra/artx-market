@@ -11,7 +11,6 @@ const {
   saveAgent,
   getAsset,
   saveAsset,
-  getAssets,
   createAssets,
   createToken,
   createCollection,
@@ -320,13 +319,28 @@ app.post('/api/collections/:xid', ensureAuthenticated, async (req, res) => {
   }
 });
 
-app.post('/api/profile', ensureAuthenticated, async (req, res) => {
+app.patch('/api/profile/', ensureAuthenticated, async (req, res) => {
   try {
-    const agentData = req.body;
+    const { name, tagline, collections } = req.body;
     const userId = req.user.id;
+
+    const agentData = await getAgent(userId);
 
     if (userId != agentData.id) {
       return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    if (name) {
+      agentData.name = name;
+    }
+
+    if (tagline !== undefined) {
+      agentData.tagline = tagline;
+    }
+
+    if (collections) {
+      // TBD verify collections
+      agentData.collections = collections;
     }
 
     await saveAgent(agentData);

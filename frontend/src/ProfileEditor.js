@@ -25,18 +25,15 @@ const ProfileEditor = ({ navigate }) => {
 
     const handleSaveClick = async () => {
         try {
-            profile.name = name;
-            profile.tagline = tagline;
-
             const response = await fetch('/api/profile', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(profile),
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', },
+                body: JSON.stringify({ name: name, tagline: tagline }),
             });
 
             if (response.ok) {
+                profile.name = name;
+                profile.tagline = tagline;
                 console.log('Profile updated successfully');
             } else {
                 const data = await response.json();

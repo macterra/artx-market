@@ -57,6 +57,7 @@ const saveAgent = async (agentData) => {
         fs.mkdirSync(agentFolder);
     }
 
+    agentData.updated = new Date().toISOString();
     await fs.promises.writeFile(agentJsonPath, JSON.stringify(agentData, null, 2));
 };
 
@@ -70,50 +71,14 @@ const getAsset = async (xid) => {
 const saveAsset = async (metadata) => {
     const assetFolder = path.join(config.assets, metadata.asset.xid);
     const assetJsonPath = path.join(assetFolder, 'meta.json');
+
     if (!fs.existsSync(assetFolder)) {
         fs.mkdirSync(assetFolder);
     }
+
     metadata.asset.updated = new Date().toISOString();
     await fs.promises.writeFile(assetJsonPath, JSON.stringify(metadata, null, 2));
 };
-
-const getAssets = async (userId) => {
-    const agentFolder = path.join(config.agents, userId.toString());
-    const jsonPath = path.join(agentFolder, 'assets.json');
-    let assetData = [];
-
-    if (fs.existsSync(jsonPath)) {
-        const jsonContent = await fs.promises.readFile(jsonPath, 'utf-8');
-        assetData = JSON.parse(jsonContent);
-    }
-
-    return assetData;
-}
-
-const addAssetToUploads = async (userId, asset) => {
-    let assetData = await getAssets(userId);
-
-    assetData.push(asset);
-
-    const jsonPath = path.join(config.agents, userId, 'assets.json');
-    await fs.promises.writeFile(jsonPath, JSON.stringify(assetData, null, 2));
-};
-
-const getCollection = async (userId, collectionIndex) => {
-    const assets = await getAssets(userId);
-    const assetsInCollection = [];
-
-    for (const assetId of assets) {
-        const assetMetadata = await getAsset(assetId);
-        const assetCollection = assetMetadata.asset.collection || 0;
-
-        if (collectionIndex === assetCollection) {
-            assetsInCollection.push(assetMetadata);
-        }
-    }
-
-    return assetsInCollection;
-}
 
 function gitHash(fileBuffer) {
     const hasher = crypto.createHash('sha1');
@@ -305,9 +270,6 @@ module.exports = {
     saveAgent,
     getAsset,
     saveAsset,
-    getAssets,
-    addAssetToUploads,
-    getCollection,
     createAssets,
     createToken,
     createCollection,

@@ -36,21 +36,17 @@ const CollectionEditor = ({ navigate }) => {
             for (const collection of collections) {
                 await fetch(`/api/collections/${collection.asset.xid}`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json', },
                     body: JSON.stringify(collection),
                 });
             }
 
-            profile.collections = collections.map(collection => collection.asset.xid);
+            const collectionXids = collections.map(collection => collection.asset.xid);
 
             const response = await fetch('/api/profile', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(profile),
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', },
+                body: JSON.stringify({ collections: collectionXids }),
             });
 
             if (response.ok) {
