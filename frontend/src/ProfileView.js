@@ -6,20 +6,13 @@ import CollectionGrid from './CollectionGrid';
 const ProfileView = ({ navigate }) => {
     const { userId } = useParams();
     const [profile, setProfile] = useState(null);
-    const [collections, setCollections] = useState(null);
 
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                let response = await fetch(`/api/profile/${userId}`);
+                const response = await fetch(`/api/profile/${userId}`);
                 const profileData = await response.json();
-                const collections = Object.values(profileData.collections);
-
-                console.log(profileData);
-                console.log(collections);
-
                 setProfile(profileData);
-                setCollections(collections);
             } catch (error) {
                 console.error('Error fetching profile data:', error);
             }
@@ -34,13 +27,13 @@ const ProfileView = ({ navigate }) => {
 
     return (
         <Box>
-            {collections.length === 0 &&
+            {profile.collections.length === 0 &&
                 <p>{profile.name} has not yet shared anything. Stay tuned!</p>
             }
-            {collections.length > 0 &&
+            {profile.collections.length > 0 &&
                 <div>
                     <p>Collections</p>
-                    <CollectionGrid userId={profile.id} list={collections} />
+                    <CollectionGrid userId={profile.id} list={profile.collections} />
                 </div>
             }
         </Box>

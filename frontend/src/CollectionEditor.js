@@ -13,16 +13,7 @@ const CollectionEditor = ({ navigate }) => {
                 let response = await fetch(`/api/profile`);
                 const profileData = await response.json();
                 setProfile(profileData);
-
-                const collections = [];
-
-                for (const xid of profileData.collections) {
-                    response = await fetch(`/api/collections/${xid}`);
-                    const collectionData = await response.json();
-                    collections.push(collectionData);
-                }
-
-                setCollections(collections);
+                setCollections(profileData.collections);
             } catch (error) {
                 console.error('Error fetching profile data:', error);
             }
@@ -89,12 +80,6 @@ const CollectionEditor = ({ navigate }) => {
         setCollections(newCollections);
     };
 
-    const handleCollectionDescriptionChange = (e, index) => {
-        const newCollections = [...collections];
-        newCollections[index].collection.description = e.target.value;
-        setCollections(newCollections);
-    };
-
     const handleCollectionDefaultTitleChange = (e, index) => {
         const newCollections = [...collections];
         newCollections[index].collection.default.title = e.target.value;
@@ -123,15 +108,6 @@ const CollectionEditor = ({ navigate }) => {
                         value={collections[selectedCollectionIndex].asset.title}
                         onChange={(e) =>
                             handleCollectionNameChange(e, selectedCollectionIndex)
-                        }
-                        fullWidth
-                        margin="normal"
-                    />
-                    <TextField
-                        label="Collection Description"
-                        value={collections[selectedCollectionIndex].asset.description}
-                        onChange={(e) =>
-                            handleCollectionDescriptionChange(e, selectedCollectionIndex)
                         }
                         fullWidth
                         margin="normal"
