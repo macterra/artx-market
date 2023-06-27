@@ -21,17 +21,14 @@ const PfpEditor = ({ metadata, setTab }) => {
 
     const handleSaveClick = async () => {
         try {
-            profile.pfp = metadata.file.path;
-
             const response = await fetch('/api/profile', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(profile),
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', },
+                body: JSON.stringify({ pfp: metadata.file.path }),
             });
 
             if (response.ok) {
+                profile.pfp = metadata.file.path;
                 console.log('Profile updated successfully');
             } else {
                 const data = await response.json();

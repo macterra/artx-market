@@ -357,7 +357,7 @@ app.patch('/api/collections/:xid', ensureAuthenticated, async (req, res) => {
 
 app.patch('/api/profile/', ensureAuthenticated, async (req, res) => {
   try {
-    const { name, tagline, collections } = req.body;
+    const { name, tagline, pfp, collections } = req.body;
     const userId = req.user.id;
 
     const agentData = await getAgent(userId);
@@ -372,6 +372,10 @@ app.patch('/api/profile/', ensureAuthenticated, async (req, res) => {
 
     if (tagline !== undefined) {
       agentData.tagline = tagline;
+    }
+
+    if (pfp) {
+      agentData.pfp = pfp;
     }
 
     if (collections) {
