@@ -13,33 +13,11 @@ const ProfileView = ({ navigate }) => {
             try {
                 let response = await fetch(`/api/profile/${userId}`);
                 const profileData = await response.json();
-                const collections = [];
-
-                if (profileData.isUser) {
-                    response = await fetch(`/api/collections/${profileData.assets.created}`);
-                    const created = await response.json();
-                    collections.push(created);
-
-                    response = await fetch(`/api/collections/${profileData.assets.deleted}`);
-                    const deleted = await response.json();
-                    collections.push(deleted);
-
-                    response = await fetch(`/api/collections/${profileData.assets.collected}`);
-                    const collected = await response.json();
-                    collections.push(collected);
-                }
-
-                for (const xid of profileData.collections) {
-                    response = await fetch(`/api/collections/${xid}`);
-                    let collectionData = await response.json();
-
-                    // if (collectionData.collection.assets.length > 0) {
-                    //     collections.push(collectionData);
-                    // }
-                    collections.push(collectionData);
-                }
+                const collections = Object.values(profileData.collections);
 
                 console.log(profileData);
+                console.log(collections);
+
                 setProfile(profileData);
                 setCollections(collections);
             } catch (error) {

@@ -308,6 +308,9 @@ app.get('/api/collections/:xid', async (req, res) => {
       metadata.thumbnail = metadata.collection.assets[0].file.path;
     }
 
+    const userId = req.user?.id;
+    metadata.isOwnedByUser = (userId == metadata.asset.owner);
+
     res.json(metadata);
   } catch (error) {
     console.error('Error processing request:', error);
