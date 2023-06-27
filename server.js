@@ -9,6 +9,8 @@ const morgan = require('morgan');
 const {
   getAgent,
   saveAgent,
+  getAgentAndCollections,
+  getCollection,
   getAsset,
   saveAsset,
   createAssets,
@@ -261,7 +263,7 @@ app.get('/api/profile/:id?', async (req, res) => {
   }
 
   try {
-    const agentData = await getAgent(userId, false);
+    const agentData = await getAgentAndCollections(userId);
 
     if (agentData) {
       agentData.isUser = (req.user?.id == agentData.id);
@@ -277,26 +279,33 @@ app.get('/api/profile/:id?', async (req, res) => {
 
 app.get('/api/collections/:xid', async (req, res) => {
   try {
-    const metadata = await getAsset(req.params.xid);
+    // const metadata = await getAsset(req.params.xid);
 
-    const authId = req.user?.id;
-    const isOwner = (authId == metadata.asset.owner);
-    const assetsInCollection = [];
+    // const authId = req.user?.id;
+    // const isOwner = (authId == metadata.asset.owner);
+    // const assetsInCollection = [];
 
-    for (const assetId of metadata.collection.assets) {
-      const assetMetadata = await getAsset(assetId);
-      const isToken = !!assetMetadata.token;
+    // for (const assetId of metadata.collection.assets) {
+    //   const assetMetadata = await getAsset(assetId);
+    //   const isToken = !!assetMetadata.token;
 
-      if (isOwner || isToken) {
-        assetsInCollection.push(assetMetadata);
-      }
-    }
+    //   if (isOwner || isToken) {
+    //     assetsInCollection.push(assetMetadata);
+    //   }
+    // }
 
-    metadata.isOwnedByUser = isOwner;
-    metadata.collection.assets = assetsInCollection;
+    // metadata.isOwnedByUser = isOwner;
+    // metadata.collection.assets = assetsInCollection;
 
-    if (assetsInCollection.length > 0 && !metadata.thumbnail) {
-      metadata.thumbnail = assetsInCollection[0].file.path;
+    // if (assetsInCollection.length > 0 && !metadata.thumbnail) {
+    //   metadata.thumbnail = assetsInCollection[0].file.path;
+    // }
+
+    const metadata = await getCollection(req.params.xid);
+    const count = metadata.collection.assets.length;
+
+    if (count > 0 && !metadata.thumbnail) {
+      metadata.thumbnail = metadata.collection.assets[0].file.path;
     }
 
     res.json(metadata);

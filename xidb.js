@@ -61,6 +61,85 @@ const saveAgent = async (agentData) => {
     await fs.promises.writeFile(agentJsonPath, JSON.stringify(agentData, null, 2));
 };
 
+const agentGetAssets = async (userId) => {
+    const agentFolder = path.join(config.agents, userId);
+    const jsonPath = path.join(agentFolder, 'assets.json');
+
+    let assetData = {};
+
+    // Check if the agent.json file exists
+    if (fs.existsSync(jsonPath)) {
+        const jsonContent = await fs.promises.readFile(jsonPath, 'utf-8');
+        assetData = JSON.parse(jsonContent);
+    }
+    else {
+        assetData.owner = userId;
+        assetData.created = [];
+        assetData.collected = [];
+    }
+
+    return assetData;
+};
+
+const agentSaveAssets = async (assetData) => {
+    const agentFolder = path.join(config.agents, assetData.owner);
+    const jsonPath = path.join(agentFolder, 'assets.json');
+
+    assetData.updated = new Date().toISOString();
+
+    await fs.promises.writeFile(jsonPath, JSON.stringify(assetData, null, 2));
+};
+
+const agentAddAsset = async (metadata) => {
+    let assetData = await agentGetAssets(metadata.asset.owner);
+
+    if (metadata.file) {
+        assetData.created.push(metadata.asset.xid);
+    } else {
+        assetData.collected.push(metadata.asset.xid);
+    }
+
+    await agentSaveAssets(assetData);
+};
+
+const getAgentAndCollections = async (userId) => {
+    let agentData = await getAgent(userId, false);
+    const assets = await agentGetAssets(userId);
+
+    let collections = {};
+
+    for (const collectionId of agentData.collections) {
+        let collectionData = await getAsset(collectionId);
+        collectionData.collection.assets = [];
+        collections[collectionId] = collectionData;
+    }
+
+    let deleted = {};
+    deleted.assets = [];
+
+    for (const assetId of assets.created) {
+        let assetData = await getAsset(assetId);
+
+        if (assetData.asset.collection in collections) {
+            collections[assetData.asset.collection].collection.assets.push(assetData);
+        } else {
+            deleted.assets.push(assetData);
+        }
+    }
+
+    agentData.collections = collections;
+    agentData.deleted = deleted;
+
+    return agentData;
+};
+
+const getCollection = async (collectionId) => {
+    const collection = await getAsset(collectionId);
+    const agentData = await getAgentAndCollections(collection.asset.owner);
+
+    return agentData.collections[collectionId];
+};
+
 const getAsset = async (xid) => {
     let metadata = null;
 
@@ -158,7 +237,8 @@ const createAssets = async (userId, files, collectionId) => {
         };
 
         await saveAsset(metadata);
-        await collectionAddAsset(collectionData.asset.xid, metadata.asset.xid);
+        //await collectionAddAsset(collectionData.asset.xid, metadata.asset.xid);
+        await agentAddAsset(metadata);
     }
 };
 
@@ -280,6 +360,8 @@ const collectionRemoveAsset = async (xid, assetId) => {
 module.exports = {
     getAgent,
     saveAgent,
+    getAgentAndCollections,
+    getCollection,
     getAsset,
     saveAsset,
     createAssets,
