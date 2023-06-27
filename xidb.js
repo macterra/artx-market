@@ -120,8 +120,16 @@ const getAgentAndCollections = async (userId) => {
         }
     }
 
+    for (let xid in collections) {
+        const count = collections[xid].collection.assets.length;
+    
+        if (count > 0 && !collections[xid].thumbnail) {
+            collections[xid].thumbnail = collections[xid].collection.assets[0].file.path;
+        }        
+    }
+
     agentData.collections = collections;
-    agentData.deleted = deleted;
+    //agentData.deleted = deleted;
 
     return agentData;
 };

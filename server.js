@@ -303,11 +303,6 @@ app.get('/api/collections/:xid', async (req, res) => {
     // }
 
     const metadata = await getCollection(req.params.xid);
-    const count = metadata.collection.assets.length;
-
-    if (count > 0 && !metadata.thumbnail) {
-      metadata.thumbnail = metadata.collection.assets[0].file.path;
-    }
 
     const userId = req.user?.id;
     metadata.isOwnedByUser = (userId == metadata.asset.owner);
