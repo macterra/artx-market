@@ -95,9 +95,17 @@ const agentAddAsset = async (metadata) => {
     await agentSaveAssets(assetData);
 };
 
-const getAgentAndCollections = async (userId) => {
-    let agentData = await getAgent(userId, false);
-    const assets = await agentGetAssets(userId);
+const getAgentAndCollections = async (profileId, userId) => {
+    if (!profileId) {
+        profileId = userId;
+    }
+
+    if (!profileId) {
+        return;
+    }
+
+    let agentData = await getAgent(profileId, false);
+    const assets = await agentGetAssets(profileId);
 
     let collections = {};
 
@@ -122,10 +130,20 @@ const getAgentAndCollections = async (userId) => {
 
     for (let xid in collections) {
         const count = collections[xid].collection.assets.length;
-    
+
         if (count > 0 && !collections[xid].thumbnail) {
             collections[xid].thumbnail = collections[xid].collection.assets[0].file.path;
-        }        
+        }
+    }
+
+    if (profileId !== userId) {
+        for (let xid in collections) {
+            const count = collections[xid].collection.assets.length;
+
+            if (count === 0) {
+                delete collections[xid];
+            }
+        }
     }
 
     agentData.collections = collections;
@@ -134,11 +152,14 @@ const getAgentAndCollections = async (userId) => {
     return agentData;
 };
 
-const getCollection = async (collectionId) => {
-    const collection = await getAsset(collectionId);
-    const agentData = await getAgentAndCollections(collection.asset.owner);
+const getCollection = async (collectionId, userId) => {
+    let collection = await getAsset(collectionId);
+    const agentData = await getAgentAndCollections(collection.asset.owner, userId);
 
-    return agentData.collections[collectionId];
+    collection = agentData.collections[collectionId];
+    collection.isOwnedByUser = (userId == collection.asset.owner);
+
+    return collection;
 };
 
 const getAsset = async (xid) => {

@@ -256,16 +256,13 @@ app.get('/api/profiles/', async (req, res) => {
 });
 
 app.get('/api/profile/:id?', async (req, res) => {
-  const userId = req.params.id || req.user?.id;
-
-  if (!userId) {
-    return res.status(404).json({ message: 'Profile not found' });
-  }
+  const profileId = req.params.id;
+  const userId = req.user?.id;
 
   try {
-    const agentData = await getAgentAndCollections(userId);
+    const agentData = await getAgentAndCollections(profileId, userId);
 
-    if (agentData) {      
+    if (agentData) {
       agentData.collections = Object.values(agentData.collections);
       agentData.isUser = (req.user?.id == agentData.id);
       res.json(agentData);
@@ -302,12 +299,9 @@ app.get('/api/collections/:xid', async (req, res) => {
     //   metadata.thumbnail = assetsInCollection[0].file.path;
     // }
 
-    const metadata = await getCollection(req.params.xid);
-
     const userId = req.user?.id;
-    metadata.isOwnedByUser = (userId == metadata.asset.owner);
-
-    res.json(metadata);
+    const collection = await getCollection(req.params.xid, userId);
+    res.json(collection);
   } catch (error) {
     console.error('Error processing request:', error);
     res.status(500).json({ error: 'An error occurred while processing the request.' });
