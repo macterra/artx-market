@@ -118,13 +118,24 @@ const getAgentAndCollections = async (profileId, userId) => {
     let deleted = {};
     deleted.assets = [];
 
-    for (const assetId of assets.created) {
-        let assetData = await getAsset(assetId);
-
-        if (assetData.asset.collection in collections) {
-            collections[assetData.asset.collection].collection.assets.push(assetData);
-        } else {
-            deleted.assets.push(assetData);
+    if (profileId === userId) {
+        for (const assetId of assets.created) {
+            let assetData = await getAsset(assetId);
+    
+            if (assetData.asset.collection in collections) {
+                collections[assetData.asset.collection].collection.assets.push(assetData);
+            } else {
+                deleted.assets.push(assetData);
+            }
+        }
+    }
+    else {
+        for (const assetId of assets.created) {
+            let assetData = await getAsset(assetId);
+    
+            if (assetData.token && assetData.asset.collection in collections) {
+                collections[assetData.asset.collection].collection.assets.push(assetData);
+            } 
         }
     }
 
@@ -154,9 +165,10 @@ const getAgentAndCollections = async (profileId, userId) => {
 
 const getCollection = async (collectionId, userId) => {
     let collection = await getAsset(collectionId);
-    const agentData = await getAgentAndCollections(collection.asset.owner, userId);
 
-    collection = agentData.collections[collectionId];
+    const agentData = await getAgentAndCollections(collection.asset.owner, userId);    
+    collection = agentData.collections[collectionId];    
+    
     collection.isOwnedByUser = (userId == collection.asset.owner);
 
     return collection;

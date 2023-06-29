@@ -277,28 +277,6 @@ app.get('/api/profile/:id?', async (req, res) => {
 
 app.get('/api/collections/:xid', async (req, res) => {
   try {
-    // const metadata = await getAsset(req.params.xid);
-
-    // const authId = req.user?.id;
-    // const isOwner = (authId == metadata.asset.owner);
-    // const assetsInCollection = [];
-
-    // for (const assetId of metadata.collection.assets) {
-    //   const assetMetadata = await getAsset(assetId);
-    //   const isToken = !!assetMetadata.token;
-
-    //   if (isOwner || isToken) {
-    //     assetsInCollection.push(assetMetadata);
-    //   }
-    // }
-
-    // metadata.isOwnedByUser = isOwner;
-    // metadata.collection.assets = assetsInCollection;
-
-    // if (assetsInCollection.length > 0 && !metadata.thumbnail) {
-    //   metadata.thumbnail = assetsInCollection[0].file.path;
-    // }
-
     const userId = req.user?.id;
     const collection = await getCollection(req.params.xid, userId);
     res.json(collection);

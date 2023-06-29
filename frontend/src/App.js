@@ -70,6 +70,9 @@ function ViewLogin() {
         if (profileData.id) {
           navigate(`/profile/${profileData.id}`);
         }
+        else {
+          navigate('/');
+        }
       } catch (error) {
         console.error('Error fetching profile data:', error);
       }
@@ -131,7 +134,13 @@ function ViewCollection() {
       try {
         const response = await fetch(`/api/collections/${xid}`);
         const collectionData = await response.json();
-        setUserId(collectionData.asset.owner);
+
+        if (collectionData.error) {
+          navigate('/');
+        }
+        else {
+          setUserId(collectionData.asset.owner);
+        }
       } catch (error) {
         console.error('Error fetching profile data:', error);
       }
