@@ -315,6 +315,9 @@ const createToken = async (userId, xid, editions) => {
     }
 
     console.log(nfts);
+    let assets = await agentGetAssets(userId);
+    assets.collected.push(...nfts);
+    agentSaveAssets(assets);
 
     const mintEvent = {
         type: 'mint',
