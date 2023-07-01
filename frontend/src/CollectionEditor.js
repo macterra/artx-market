@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { Button, TextField, List, ListItem, ListItemText } from '@mui/material';
 
 const CollectionEditor = ({ navigate }) => {
-    const [profile, setProfile] = useState({});
     const [collections, setCollections] = useState([]);
     const [selectedCollectionIndex, setSelectedCollectionIndex] = useState(null);
 
@@ -12,7 +11,6 @@ const CollectionEditor = ({ navigate }) => {
             try {
                 let response = await fetch(`/api/profile`);
                 const profileData = await response.json();
-                setProfile(profileData);
                 setCollections(profileData.collections);
             } catch (error) {
                 console.error('Error fetching profile data:', error);
