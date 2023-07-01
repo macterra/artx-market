@@ -18,16 +18,28 @@ const config = {
 // Create a simple-git instance
 const simpleGit = gitP(config.data);
 
+// Function to initialize the repository if it's not already a Git repository
+const initRepo = async () => {
+    const isRepo = await simpleGit.checkIsRepo();
+    
+    if (!isRepo) {
+        await simpleGit.init();
+        console.log('Data repository initialized');
+    }
+};
+
+initRepo();
+
 // Function to add all changes, commit, and push
 const commitChanges = async (commitMessage) => {
-  try {
-    await simpleGit.add('.');
-    await simpleGit.commit(commitMessage);
-    //await simpleGit.push('origin', 'master'); // Replace 'origin' and 'master' with your remote and branch if they are different
-    console.log(`Changes committed successfully: ${commitMessage}`);
-  } catch (err) {
-    console.error('Failed to commit changes:', err);
-  }
+    try {
+        await simpleGit.add('.');
+        await simpleGit.commit(commitMessage);
+        //await simpleGit.push('origin', 'master'); // Replace 'origin' and 'master' with your remote and branch if they are different
+        console.log(`Changes committed successfully: ${commitMessage}`);
+    } catch (err) {
+        console.error('Failed to commit changes:', err);
+    }
 };
 
 const getAgent = async (userId, doCreate) => {
@@ -49,7 +61,7 @@ const getAgent = async (userId, doCreate) => {
             name: 'anon',
             tagline: '',
             description: '',
-            collections: [ gallery.asset.xid ],
+            collections: [gallery.asset.xid],
         };
 
         await saveAgent(agentData);
@@ -137,7 +149,7 @@ const getAgentAndCollections = async (profileId, userId) => {
     if (profileId === userId) {
         for (const assetId of assets.created) {
             let assetData = await getAsset(assetId);
-    
+
             if (assetData.asset.collection in collections) {
                 collections[assetData.asset.collection].collection.assets.push(assetData);
             } else {
@@ -148,10 +160,10 @@ const getAgentAndCollections = async (profileId, userId) => {
     else {
         for (const assetId of assets.created) {
             let assetData = await getAsset(assetId);
-    
+
             if (assetData.token && assetData.asset.collection in collections) {
                 collections[assetData.asset.collection].collection.assets.push(assetData);
-            } 
+            }
         }
     }
 
@@ -174,7 +186,7 @@ const getAgentAndCollections = async (profileId, userId) => {
     }
 
     let tokens = {};
-    
+
     for (const assetId of assets.collected) {
         const editionData = await getAsset(assetId);
         const tokenId = editionData.nft.asset;
@@ -186,7 +198,7 @@ const getAgentAndCollections = async (profileId, userId) => {
 
     agentData.collections = collections;
     agentData.collected = tokens;
-    
+
     if (profileId === userId) {
         agentData.deleted = deleted;
     }
@@ -197,9 +209,9 @@ const getAgentAndCollections = async (profileId, userId) => {
 const getCollection = async (collectionId, userId) => {
     let collection = await getAsset(collectionId);
 
-    const agentData = await getAgentAndCollections(collection.asset.owner, userId);    
-    collection = agentData.collections[collectionId];    
-    
+    const agentData = await getAgentAndCollections(collection.asset.owner, userId);
+    collection = agentData.collections[collectionId];
+
     collection.isOwnedByUser = (userId == collection.asset.owner);
 
     return collection;
@@ -305,7 +317,7 @@ const createAssets = async (userId, files, collectionId) => {
         //await collectionAddAsset(collectionData.asset.xid, metadata.asset.xid);
         await agentAddAsset(metadata);
     }
-    
+
     await commitChanges(`Assets (${files.length}) created by ${userId}`);
 };
 
