@@ -35,9 +35,7 @@ const CollectionView = ({ navigate }) => {
                 formData.append('images', file);
             }
 
-            formData.append('collectionId', collection.asset.xid);
-
-            const response = await fetch('/api/upload', {
+            const response = await fetch(`/api/collections/${collection.asset.xid}/upload`, {
                 method: 'POST',
                 body: formData,
             });

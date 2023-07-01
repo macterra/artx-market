@@ -152,20 +152,6 @@ function ensureAuthenticated(req, res, next) {
   }
 }
 
-app.post('/api/upload', ensureAuthenticated, upload.array('images', 100), async (req, res) => {
-  try {
-    const { collectionId } = req.body;
-
-    await createAssets(req.user.id, req.files, collectionId);
-
-    // Send a success response after processing all files
-    res.status(200).json({ success: true, message: 'Files uploaded successfully' });
-  } catch (error) {
-    console.error('Error processing files:', error);
-    res.status(500).json({ success: false, message: 'Error processing files' });
-  }
-});
-
 app.get('/api/asset/:xid', async (req, res) => {
   try {
     const { xid } = req.params;
@@ -321,6 +307,20 @@ app.patch('/api/collections/:xid', ensureAuthenticated, async (req, res) => {
   } catch (error) {
     console.error('Error processing request:', error);
     res.status(500).json({ error: 'An error occurred while processing the request.' });
+  }
+});
+
+app.post('/api/collections/:xid/upload', ensureAuthenticated, upload.array('images', 100), async (req, res) => {
+  try {
+    const collectionId = req.params.xid;
+
+    await createAssets(req.user.id, req.files, collectionId);
+
+    // Send a success response after processing all files
+    res.status(200).json({ success: true, message: 'Files uploaded successfully' });
+  } catch (error) {
+    console.error('Error processing files:', error);
+    res.status(500).json({ success: false, message: 'Error processing files' });
   }
 });
 
