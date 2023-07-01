@@ -20,9 +20,7 @@ const simpleGit = gitP(config.data);
 
 // Function to initialize the repository if it's not already a Git repository
 const initRepo = async () => {
-    const isRepo = await simpleGit.checkIsRepo();
-
-    if (!isRepo) {
+    if (!fs.existsSync(path.join(config.data, '.git'))) {
         await simpleGit.init();
         console.log('Data repository initialized');
     }
@@ -257,6 +255,11 @@ const saveAsset = async (metadata) => {
     await fs.promises.writeFile(assetJsonPath, JSON.stringify(metadata, null, 2));
 };
 
+const commitAsset = async (metadata) => {
+    await saveAsset(metadata);
+    await commitChanges(`Updated asset ${metadata.asset.xid}`);
+};
+
 function gitHash(fileBuffer) {
     const hasher = crypto.createHash('sha1');
     hasher.update('blob ' + fileBuffer.length + '\0');
@@ -368,7 +371,7 @@ const createToken = async (userId, xid, editions) => {
         nfts.push(createdId);
     }
 
-    console.log(nfts);
+    //console.log(nfts);
     let assets = await agentGetAssets(userId);
     assets.collected.push(...nfts);
     agentSaveAssets(assets);
@@ -448,7 +451,7 @@ module.exports = {
     getAgentAndCollections,
     getCollection,
     getAsset,
-    saveAsset,
+    commitAsset,
     createAssets,
     createToken,
     createCollection,

@@ -12,7 +12,7 @@ const {
   getAgentAndCollections,
   getCollection,
   getAsset,
-  saveAsset,
+  commitAsset,
   createAssets,
   createToken,
   createCollection,
@@ -199,7 +199,7 @@ app.patch('/api/asset/:xid', ensureAuthenticated, async (req, res) => {
       await collectionAddAsset(assetData.asset.collection, assetData.asset.xid);
     }
 
-    await saveAsset(assetData);
+    await commitAsset(assetData);
 
     res.json({ message: 'Metadata updated successfully' });
   } catch (error) {
@@ -316,7 +316,7 @@ app.patch('/api/collections/:xid', ensureAuthenticated, async (req, res) => {
       collection.collection.default.title = defaultTitle;
     }
 
-    await saveAsset(collection);
+    await commitAsset(collection);
     res.json({ message: 'Collection updated successfully' });
   } catch (error) {
     console.error('Error processing request:', error);
