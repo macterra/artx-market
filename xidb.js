@@ -21,7 +21,7 @@ const simpleGit = gitP(config.data);
 // Function to initialize the repository if it's not already a Git repository
 const initRepo = async () => {
     const isRepo = await simpleGit.checkIsRepo();
-    
+
     if (!isRepo) {
         await simpleGit.init();
         console.log('Data repository initialized');
@@ -73,13 +73,22 @@ const getAgent = async (userId, doCreate) => {
 const saveAgent = async (agentData) => {
     const agentFolder = path.join(config.agents, agentData.id);
     const agentJsonPath = path.join(agentFolder, 'agent.json');
+    let newAgent = false;
 
     if (!fs.existsSync(agentFolder)) {
         fs.mkdirSync(agentFolder);
+        newAgent = true;
     }
 
     agentData.updated = new Date().toISOString();
     await fs.promises.writeFile(agentJsonPath, JSON.stringify(agentData, null, 2));
+
+    if (newAgent) {
+        await commitChanges(`Created agent ${agentData.id}`);
+    }
+    else {
+        await commitChanges(`Updated agent ${agentData.id}`);
+    }
 };
 
 const agentGetAssets = async (userId) => {
@@ -364,23 +373,16 @@ const createToken = async (userId, xid, editions) => {
     assets.collected.push(...nfts);
     agentSaveAssets(assets);
 
-    const mintEvent = {
-        type: 'mint',
-        agent: userId,
-        time: new Date().toISOString(),
-    };
-
     assetData.token = {
         asset: xid, // TBD: add to IPFS here, get cid for NFTs
         royalty: 0.1,
         license: "CC BY-SA",
         editions: editions,
         nfts: nfts,
-        history: [mintEvent],
     };
 
     await saveAsset(assetData);
-    await commitChanges(`minted ${editions} edition(s) of ${xid}`);
+    await commitChanges(`Minted ${editions} edition(s) of ${xid}`);
 };
 
 const createCollection = async (userId, name) => {
