@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Box, Tab, Tabs } from '@mui/material';
 import CollectionGrid from './CollectionGrid';
+import ImageGrid from './ImageGrid';
 
 const ProfileView = ({ navigate }) => {
     const { userId } = useParams();
@@ -53,9 +54,10 @@ const ProfileView = ({ navigate }) => {
             {tab === 'collected' &&
                 <div>
                     <p>Collected</p>
+                    <ImageGrid collection={profile.collected} />
                 </div>
             }
-            {tab === 'deleted' && 
+            {tab === 'deleted' &&
                 <div>
                     <p>Deleted</p>
                 </div>
