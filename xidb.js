@@ -3,6 +3,7 @@ const fs = require('fs');
 const sharp = require('sharp');
 const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
+const gitP = require('simple-git');
 
 const config = {
     host: process.env.ARTX_HOST || 'localhost',
@@ -12,6 +13,21 @@ const config = {
     uploads: 'data/uploads',
     assets: 'data/assets',
     agents: 'data/agents',
+};
+
+// Create a simple-git instance
+const simpleGit = gitP(config.data);
+
+// Function to add all changes, commit, and push
+const commitChanges = async (commitMessage) => {
+  try {
+    await simpleGit.add('.');
+    await simpleGit.commit(commitMessage);
+    //await simpleGit.push('origin', 'master'); // Replace 'origin' and 'master' with your remote and branch if they are different
+    console.log(`Changes committed successfully: ${commitMessage}`);
+  } catch (err) {
+    console.error('Failed to commit changes:', err);
+  }
 };
 
 const getAgent = async (userId, doCreate) => {
@@ -289,6 +305,8 @@ const createAssets = async (userId, files, collectionId) => {
         //await collectionAddAsset(collectionData.asset.xid, metadata.asset.xid);
         await agentAddAsset(metadata);
     }
+    
+    await commitChanges(`Assets (${files.length}) created by ${userId}`);
 };
 
 const createEdition = async (owner, asset, edition, editions) => {
@@ -350,6 +368,7 @@ const createToken = async (userId, xid, editions) => {
     };
 
     await saveAsset(assetData);
+    await commitChanges(`minted ${editions} edition(s) of ${xid}`);
 };
 
 const createCollection = async (userId, name) => {
