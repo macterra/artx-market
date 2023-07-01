@@ -157,8 +157,23 @@ const getAgentAndCollections = async (profileId, userId) => {
         }
     }
 
+    let tokens = {};
+    
+    for (const assetId of assets.collected) {
+        const editionData = await getAsset(assetId);
+        const tokenId = editionData.nft.asset;
+
+        if (!(tokenId in tokens)) {
+            tokens[tokenId] = await getAsset(tokenId);
+        }
+    }
+
     agentData.collections = collections;
-    //agentData.deleted = deleted;
+    agentData.collected = tokens;
+    
+    if (profileId === userId) {
+        agentData.deleted = deleted;
+    }
 
     return agentData;
 };

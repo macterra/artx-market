@@ -264,6 +264,7 @@ app.get('/api/profile/:id?', async (req, res) => {
 
     if (agentData) {
       agentData.collections = Object.values(agentData.collections);
+      agentData.collected = Object.values(agentData.collected);
       agentData.isUser = (req.user?.id == agentData.id);
       res.json(agentData);
     } else {
