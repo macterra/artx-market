@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Box } from '@mui/material';
+import { Box, Tab, Tabs } from '@mui/material';
 import CollectionGrid from './CollectionGrid';
 
 const ProfileView = ({ navigate }) => {
     const { userId } = useParams();
     const [profile, setProfile] = useState(null);
+    const [tab, setTab] = useState("created");
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -25,15 +26,38 @@ const ProfileView = ({ navigate }) => {
         return <p>Loading profile...</p>;
     }
 
+    const handleTabChange = (event, newTab) => {
+        setTab(newTab);
+    };
+
     return (
         <Box>
-            {profile.collections.length === 0 &&
-                <p>{profile.name} has not yet shared anything. Stay tuned!</p>
-            }
-            {profile.collections.length > 0 &&
+            <Tabs
+                value={tab}
+                onChange={handleTabChange}
+                indicatorColor="primary"
+                textColor="primary"
+                variant="scrollable"
+                scrollButtons="auto"
+            >
+                <Tab key="created" value="created" label={'Created'} />
+                <Tab key="collected" value="collected" label={'Collected'} />
+                {profile.isUser && <Tab key="deleted" value="deleted" label={'Deleted'} />}
+            </Tabs>
+            {tab === 'created' &&
                 <div>
                     <p>Collections</p>
                     <CollectionGrid userId={profile.id} list={profile.collections} />
+                </div>
+            }
+            {tab === 'collected' &&
+                <div>
+                    <p>Collected</p>
+                </div>
+            }
+            {tab === 'deleted' && 
+                <div>
+                    <p>Deleted</p>
                 </div>
             }
         </Box>
