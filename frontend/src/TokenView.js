@@ -96,6 +96,26 @@ const TokenView = ({ metadata }) => {
                             </Link>
                         </TableCell>
                     </TableRow>
+                    <TableRow>
+                        <TableCell>IPFS CID:</TableCell>
+                        <TableCell>
+                            <Link to={`https://ipfs.io/ipfs/${metadata.token.cid}`}>
+                                {metadata.token.cid}
+                            </Link>
+                        </TableCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableCell>License:</TableCell>
+                        <TableCell>
+                            {metadata.token.license}
+                        </TableCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableCell>Royalty:</TableCell>
+                        <TableCell>
+                            {metadata.token.royalty * 100}%
+                        </TableCell>
+                    </TableRow>
                     {metadata.token.editions > 1 &&
                         <TableRow>
                             <TableCell>Editions:</TableCell>
