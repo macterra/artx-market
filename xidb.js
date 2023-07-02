@@ -4,6 +4,7 @@ const sharp = require('sharp');
 const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
 const gitP = require('simple-git');
+const { execSync } = require('node:child_process');
 
 const config = {
     host: process.env.ARTX_HOST || 'localhost',
@@ -365,6 +366,10 @@ const createEdition = async (owner, asset, edition, editions) => {
 const createToken = async (userId, xid, editions) => {
     let assetData = await getAsset(xid);
 
+    const assetFolder = path.join(config.assets, xid);
+    const stdout = execSync(`ipfs add -r -Q ${assetFolder}`);
+    const cid = stdout.toString().trim();
+
     const nfts = [];
     for (let i = 1; i <= editions; i++) {
         const createdId = await createEdition(userId, xid, i, editions);
@@ -377,7 +382,8 @@ const createToken = async (userId, xid, editions) => {
     agentSaveAssets(assets);
 
     assetData.token = {
-        asset: xid, // TBD: add to IPFS here, get cid for NFTs
+        cid: cid,
+        url: `https://ipfs.io/ipfs/${cid}/${assetData.file.fileName}`,
         royalty: 0.1,
         license: "CC BY-SA",
         editions: editions,
