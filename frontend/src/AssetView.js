@@ -6,6 +6,7 @@ import AssetEditor from './AssetEditor';
 import TokenMinter from './TokenMinter';
 import PfpEditor from './PfpEditor';
 import TokenView from './TokenView';
+import TokenTrader from './TokenTrader';
 
 const AssetView = ({ navigate, isAuthenticated }) => {
     const { xid } = useParams();
@@ -68,12 +69,14 @@ const AssetView = ({ navigate, isAuthenticated }) => {
                 >
                     <Tab key="meta" value="meta" label={'Metadata'} />
                     {isToken && <Tab key="token" value="token" label={'Token'} />}
+                    {isToken && <Tab key="trade" value="trade" label={'Trade'} />}
                     {isOwner && !isToken && <Tab key="edit" value="edit" label={'Edit'} />}
                     {isOwner && !isToken && <Tab key="mint" value="mint" label={'Mint'} />}
                     {isOwner && <Tab key="pfp" value="pfp" label={'Pfp'} />}
                 </Tabs>
                 {tab === 'meta' && <MetadataView navigate={navigate} metadata={metadata} />}
                 {tab === 'token' && <TokenView metadata={metadata} />}
+                {tab === 'trade' && <TokenTrader />}
                 {tab === 'edit' && <AssetEditor metadata={metadata} setTab={setTab} />}
                 {tab === 'mint' && <TokenMinter metadata={metadata} setTab={setTab} />}
                 {tab === 'pfp' && <PfpEditor metadata={metadata} setTab={setTab} />}

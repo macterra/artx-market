@@ -116,16 +116,16 @@ const TokenView = ({ metadata }) => {
                             {metadata.token.royalty * 100}%
                         </TableCell>
                     </TableRow>
-                    {metadata.token.editions > 1 &&
-                        <TableRow>
-                            <TableCell>Editions:</TableCell>
-                            <TableCell>{metadata.token.editions}</TableCell>
-                        </TableRow>
-                    }
+                    <TableRow>
+                        <TableCell>Editions:</TableCell>
+                        <TableCell>{metadata.token.editions > 1 ? metadata.token.editions : "1 of 1"}</TableCell>
+                    </TableRow>
                     {metadata.token.editions > 1 && owned > 0 &&
                         <TableRow>
                             <TableCell>Owned:</TableCell>
-                            <TableCell>{owned} ({ranges})</TableCell>
+                            <TableCell>
+                                {owned == metadata.token.editions ? "all" : `${owned} (${ranges})`}
+                            </TableCell>
                         </TableRow>
                     }
                     {nfts && nfts.length === 1 &&

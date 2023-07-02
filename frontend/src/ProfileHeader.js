@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Box, Link } from '@mui/material';
+import { Box } from '@mui/material';
 
 const ProfileHeader = ({ userId }) => {
     const [profile, setProfile] = useState(null);
