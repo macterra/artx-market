@@ -7,6 +7,8 @@ import {
   TableRow,
   TableHead,
   Paper,
+  TextField,
+  Button,
 } from '@mui/material';
 
 const TokenTrader = ({ metadata }) => {
@@ -78,7 +80,25 @@ const TokenTrader = ({ metadata }) => {
                       {ownedNfts.map((nft, index) => (
                         <TableRow key={index}>
                           <TableCell>{nft.asset.title}</TableCell>
-                          <TableCell>{nft.nft.price}</TableCell>
+                          <TableCell>
+                            <TextField
+                              defaultValue={nft.nft.price}
+                              onChange={(event) => {
+                                // Handle price change
+                                // This could be something like: handlePriceChange(index, event.target.value)
+                              }}
+                            />
+                            <Button
+                              variant="contained"
+                              color="primary"
+                              onClick={() => {
+                                // Handle set price
+                                // This could be something like: handleSetPrice(index)
+                              }}
+                            >
+                              List
+                            </Button>
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
