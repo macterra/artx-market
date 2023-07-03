@@ -73,7 +73,7 @@ const TokenTrader = ({ metadata }) => {
     };
 
     // Create a new component for the table row
-    function NftTableRow({ nft, handleListClick }) {
+    function NftTableRow({ nft }) {
         const [newPrice, setNewPrice] = useState(nft.nft.price);
 
         return (
@@ -84,7 +84,7 @@ const TokenTrader = ({ metadata }) => {
                         defaultValue={nft.nft.price}
                         type="number"
                         onChange={(event) => {
-                            nft.nft.newPrice = parseInt(event.target.value,10);
+                            nft.nft.newPrice = parseInt(event.target.value, 10);
                             setNewPrice(nft.nft.newPrice);
                         }}
                         inputProps={{ min: 0 }}
@@ -93,10 +93,14 @@ const TokenTrader = ({ metadata }) => {
                     <Button
                         variant="contained"
                         color="primary"
-                        onClick={ async () => { 
+                        onClick={async () => {
                             await handleListClick(nft);
                             setNewPrice(nft.nft.price);
-                         }}
+                            console.log(`price = ${nft.nft.price}`);
+                            console.log(`newPrice = ${newPrice}`);
+                            console.log(`disable === ${nft.nft.price === newPrice}`);
+                            console.log(`disable == ${nft.nft.price == newPrice}`);
+                        }}
                         disabled={nft.nft.price === newPrice}
                     >
                         List
@@ -132,7 +136,7 @@ const TokenTrader = ({ metadata }) => {
                                         </TableHead>
                                         <TableBody>
                                             {ownedNfts.map((nft, index) => (
-                                                <NftTableRow key={index} nft={nft} handleListClick={handleListClick} />
+                                                <NftTableRow key={index} nft={nft} />
                                             ))}
                                         </TableBody>
                                     </Table>
