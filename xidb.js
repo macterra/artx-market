@@ -256,9 +256,9 @@ const saveAsset = async (metadata) => {
     await fs.promises.writeFile(assetJsonPath, JSON.stringify(metadata, null, 2));
 };
 
-const commitAsset = async (metadata) => {
+const commitAsset = async (metadata, action) => {
     await saveAsset(metadata);
-    await commitChanges(`Updated asset ${metadata.asset.xid}`);
+    await commitChanges(`${action || 'Updated'} asset ${metadata.asset.xid}`);
 };
 
 function gitHash(fileBuffer) {

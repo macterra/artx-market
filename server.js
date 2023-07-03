@@ -215,6 +215,33 @@ app.post('/api/asset/:xid/mint', ensureAuthenticated, async (req, res) => {
   }
 });
 
+app.post('/api/asset/:xid/list', ensureAuthenticated, async (req, res) => {
+  try {
+    const xid = req.params.xid;
+    const { price } = req.body;
+    const userId = req.user.id;
+    const assetData = await getAsset(xid);
+
+    console.log(`list ${xid} with price=${price}`);
+
+    if (assetData.asset.owner != userId) {
+      return req.status(401).json({ message: "Unauthorized" });
+    }
+
+    if (!assetData.nft) {
+      res.status(500).json({ message: 'Error' });
+    }
+
+    assetData.nft.price = parseInt(price, 10);
+    await commitAsset(assetData, 'Listed');
+
+    res.json({ ok: true, message: 'Success' });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ message: 'Error' });
+  }
+});
+
 app.get('/api/profiles/', async (req, res) => {
   const agentsDir = config.agents;
   const profiles = [];
