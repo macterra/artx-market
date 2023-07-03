@@ -57,7 +57,7 @@ const TokenTrader = ({ metadata }) => {
             const response = await fetch(`/api/asset/${nft.asset.xid}/list`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', },
-                body: JSON.stringify({ price: nft.nft.price }),
+                body: JSON.stringify({ price: nft.nft.newPrice }),
             });
 
             if (response.ok) {
@@ -70,6 +70,36 @@ const TokenTrader = ({ metadata }) => {
         } catch (error) {
             console.error('Error listing:', error);
         }
+    };
+
+    // Create a new component for the table row
+    function NftTableRow({ nft, handleListClick }) {
+        const [newPrice, setNewPrice] = useState(nft.nft.price);
+
+        return (
+            <TableRow>
+                <TableCell>{nft.asset.title}</TableCell>
+                <TableCell>
+                    <TextField
+                        defaultValue={nft.nft.price}
+                        type="number"
+                        onChange={(event) => {
+                            setNewPrice(event.target.value);
+                        }}
+                        inputProps={{ min: 0 }}
+                        sx={{ width: '10ch', marginRight: 1 }}
+                    />
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => { handleListClick(nft) }}
+                        disabled={nft.nft.price == newPrice}
+                    >
+                        List
+                    </Button>
+                </TableCell>
+            </TableRow>
+        );
     };
 
     return (
@@ -98,25 +128,7 @@ const TokenTrader = ({ metadata }) => {
                                         </TableHead>
                                         <TableBody>
                                             {ownedNfts.map((nft, index) => (
-                                                <TableRow key={index}>
-                                                    <TableCell>{nft.asset.title}</TableCell>
-                                                    <TableCell>
-                                                        <TextField
-                                                            defaultValue={nft.nft.price}
-                                                            type="number"
-                                                            onChange={(event) => {
-                                                                nft.nft.price = event.target.value;
-                                                            }}
-                                                        />
-                                                        <Button
-                                                            variant="contained"
-                                                            color="primary"
-                                                            onClick={() => { handleListClick(nft) }}
-                                                        >
-                                                            List
-                                                        </Button>
-                                                    </TableCell>
-                                                </TableRow>
+                                                <NftTableRow key={index} nft={nft} handleListClick={handleListClick} />
                                             ))}
                                         </TableBody>
                                     </Table>

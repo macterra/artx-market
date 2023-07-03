@@ -371,6 +371,7 @@ const createToken = async (userId, xid, editions) => {
     const cid = stdout.toString().trim();
 
     const nfts = [];
+    editions = parseInt(editions, 10);
     for (let i = 1; i <= editions; i++) {
         const createdId = await createEdition(userId, xid, i, editions);
         nfts.push(createdId);

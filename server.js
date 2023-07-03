@@ -232,8 +232,12 @@ app.post('/api/asset/:xid/list', ensureAuthenticated, async (req, res) => {
       res.status(500).json({ message: 'Error' });
     }
 
-    assetData.nft.price = parseInt(price, 10);
-    await commitAsset(assetData, 'Listed');
+    const newPrice = parseInt(price, 10);
+    
+    if (newPrice !== assetData.nft.price) {
+      assetData.nft.price = newPrice;
+      await commitAsset(assetData, 'Listed');
+    }
 
     res.json({ ok: true, message: 'Success' });
   } catch (error) {
