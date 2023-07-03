@@ -408,6 +408,7 @@ const transferAsset = async (xid, nextOwnerId) => {
     agentSaveAssets(assetsNextOwner);
 
     assetData.asset.owner = nextOwnerId;
+    assetData.nft.price = 0;
     await saveAsset(assetData);
     
     await commitChanges(`Transferred ${xid} from ${prevOwnerId} to ${nextOwnerId}`);

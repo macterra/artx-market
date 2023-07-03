@@ -73,7 +73,7 @@ const TokenTrader = ({ metadata, setTab }) => {
     };
 
     // Create a new component for the table row
-    function NftTableRow({ nft }) {
+    function SellerTableRow({ nft }) {
         const [disableList, setDisableList] = useState(true);
 
         return (
@@ -166,7 +166,7 @@ const TokenTrader = ({ metadata, setTab }) => {
                     </TableRow>
                     {ownedNfts.length > 0 &&
                         <TableRow>
-                            <TableCell>Listings:</TableCell>
+                            <TableCell>Sell:</TableCell>
                             <TableCell>
                                 <TableContainer component={Paper} style={{ maxHeight: '300px', overflow: 'auto' }}>
                                     <Table>
@@ -178,7 +178,7 @@ const TokenTrader = ({ metadata, setTab }) => {
                                         </TableHead>
                                         <TableBody>
                                             {ownedNfts.map((nft, index) => (
-                                                <NftTableRow key={index} nft={nft} />
+                                                <SellerTableRow key={index} nft={nft} />
                                             ))}
                                         </TableBody>
                                     </Table>
@@ -188,7 +188,7 @@ const TokenTrader = ({ metadata, setTab }) => {
                     }
                     {unownedNfts.length > 0 &&
                         <TableRow>
-                            <TableCell>Listings:</TableCell>
+                            <TableCell>Buy:</TableCell>
                             <TableCell>
                                 <TableContainer component={Paper} style={{ maxHeight: '300px', overflow: 'auto' }}>
                                     <Table>
