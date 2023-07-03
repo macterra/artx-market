@@ -74,7 +74,7 @@ const TokenTrader = ({ metadata }) => {
 
     // Create a new component for the table row
     function NftTableRow({ nft }) {
-        const [newPrice, setNewPrice] = useState(nft.nft.price);
+        const [disableList, setDisableList] = useState(true);
 
         return (
             <TableRow>
@@ -84,8 +84,8 @@ const TokenTrader = ({ metadata }) => {
                         defaultValue={nft.nft.price}
                         type="number"
                         onChange={(event) => {
-                            nft.nft.newPrice = parseInt(event.target.value, 10);
-                            setNewPrice(nft.nft.newPrice);
+                            nft.nft.newPrice = parseInt(event.target.value, 10) || 0;
+                            setDisableList(nft.nft.price === nft.nft.newPrice);
                         }}
                         inputProps={{ min: 0 }}
                         sx={{ width: '20ch', marginRight: 1 }}
@@ -93,15 +93,11 @@ const TokenTrader = ({ metadata }) => {
                     <Button
                         variant="contained"
                         color="primary"
-                        onClick={async () => {
-                            await handleListClick(nft);
-                            setNewPrice(nft.nft.price);
-                            console.log(`price = ${nft.nft.price}`);
-                            console.log(`newPrice = ${newPrice}`);
-                            console.log(`disable === ${nft.nft.price === newPrice}`);
-                            console.log(`disable == ${nft.nft.price == newPrice}`);
+                        onClick={() => {
+                            handleListClick(nft);
+                            setDisableList(true);
                         }}
-                        disabled={nft.nft.price === newPrice}
+                        disabled={disableList}
                     >
                         List
                     </Button>
