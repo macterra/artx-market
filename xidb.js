@@ -395,6 +395,24 @@ const createToken = async (userId, xid, editions) => {
     await commitChanges(`Minted ${editions} edition(s) of ${xid}`);
 };
 
+const transferAsset = async (xid, nextOwnerId) => {
+    let assetData = await getAsset(xid);
+    const prevOwnerId = assetData.asset.owner;
+
+    let assetsPrevOwner = await agentGetAssets(prevOwnerId);
+    assetsPrevOwner.collected = assetsPrevOwner.collected.filter(item => item !== xid);
+    agentSaveAssets(assetsPrevOwner);
+
+    let assetsNextOwner = await agentGetAssets(nextOwnerId);
+    assetsNextOwner.collected.push(xid);
+    agentSaveAssets(assetsNextOwner);
+
+    assetData.asset.owner = nextOwnerId;
+    await saveAsset(assetData);
+    
+    await commitChanges(`Transferred ${xid} from ${prevOwnerId} to ${nextOwnerId}`);
+};
+
 const createCollection = async (userId, name) => {
     const metadata = {
         asset: {
@@ -460,6 +478,7 @@ module.exports = {
     getAsset,
     commitAsset,
     createAssets,
+    transferAsset,
     createToken,
     createCollection,
     collectionAddAsset,

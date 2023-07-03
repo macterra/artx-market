@@ -124,7 +124,7 @@ const TokenView = ({ metadata }) => {
                         <TableRow>
                             <TableCell>Owned:</TableCell>
                             <TableCell>
-                                {owned == metadata.token.editions ? "all" : `${owned} (${ranges})`}
+                                {owned === metadata.token.editions ? "all" : `${owned} (${ranges})`}
                             </TableCell>
                         </TableRow>
                     }

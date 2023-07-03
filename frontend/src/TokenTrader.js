@@ -11,7 +11,7 @@ import {
     Button,
 } from '@mui/material';
 
-const TokenTrader = ({ metadata }) => {
+const TokenTrader = ({ metadata, setTab }) => {
     const [ownedNfts, setOwnedNfts] = useState(0);
     const [unownedNfts, setUnownedNfts] = useState(0);
 
@@ -106,6 +106,52 @@ const TokenTrader = ({ metadata }) => {
         );
     };
 
+    const handleBuyClick = async (nft) => {
+        try {
+            const response = await fetch(`/api/asset/${nft.asset.xid}/buy`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', },
+                body: JSON.stringify({ price: nft.nft.newPrice }),
+            });
+
+            if (response.ok) {
+                setTab('token');
+            } else {
+                const data = await response.json();
+                console.error('Error listing:', data.message);
+                alert(data.message);
+            }
+        } catch (error) {
+            console.error('Error listing:', error);
+        }
+    };
+
+    function BuyerTableRow({ nft }) {
+        return (
+            <TableRow>
+                <TableCell>{nft.asset.title}</TableCell>
+                <TableCell>
+                    <TextField
+                        defaultValue={nft.nft.price}
+                        type="number"
+                        disabled={true}
+                        sx={{ width: '20ch', marginRight: 1 }}
+                    />
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => {
+                            handleBuyClick(nft);
+                        }}
+                        disabled={nft.nft.price < 1}
+                    >
+                        Buy
+                    </Button>
+                </TableCell>
+            </TableRow>
+        );
+    };
+
     return (
         <TableContainer>
             <Table>
@@ -133,6 +179,28 @@ const TokenTrader = ({ metadata }) => {
                                         <TableBody>
                                             {ownedNfts.map((nft, index) => (
                                                 <NftTableRow key={index} nft={nft} />
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer>
+                            </TableCell>
+                        </TableRow>
+                    }
+                    {unownedNfts.length > 0 &&
+                        <TableRow>
+                            <TableCell>Listings:</TableCell>
+                            <TableCell>
+                                <TableContainer component={Paper} style={{ maxHeight: '300px', overflow: 'auto' }}>
+                                    <Table>
+                                        <TableHead>
+                                            <TableRow>
+                                                <TableCell>Edition</TableCell>
+                                                <TableCell>Price</TableCell>
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            {unownedNfts.map((nft, index) => (
+                                                <BuyerTableRow nft={nft} />
                                             ))}
                                         </TableBody>
                                     </Table>

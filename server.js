@@ -14,6 +14,7 @@ const {
   getAsset,
   commitAsset,
   createAssets,
+  transferAsset,
   createToken,
   createCollection,
   collectionRemoveAsset,
@@ -225,7 +226,7 @@ app.post('/api/asset/:xid/list', ensureAuthenticated, async (req, res) => {
     console.log(`list ${xid} with price=${price}`);
 
     if (assetData.asset.owner != userId) {
-      return req.status(401).json({ message: "Unauthorized" });
+      return res.status(401).json({ message: "Unauthorized" });
     }
 
     if (!assetData.nft) {
@@ -233,11 +234,36 @@ app.post('/api/asset/:xid/list', ensureAuthenticated, async (req, res) => {
     }
 
     const newPrice = parseInt(price, 10);
-    
+
     if (newPrice !== assetData.nft.price) {
       assetData.nft.price = newPrice;
       await commitAsset(assetData, 'Listed');
     }
+
+    res.json({ ok: true, message: 'Success' });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ message: 'Error' });
+  }
+});
+
+app.post('/api/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
+  try {
+    const xid = req.params.xid;
+    const userId = req.user.id;
+    const assetData = await getAsset(xid);
+
+    if (!assetData.nft) {
+      res.status(500).json({ message: 'Error' });
+    }
+
+    if (assetData.asset.owner == userId) {
+      return res.status(500).json({ message: "Already owned" });
+    }
+
+    console.log(`buy ${xid} for ${assetData.nft.price}`);
+
+    await transferAsset(xid, userId);
 
     res.json({ ok: true, message: 'Success' });
   } catch (error) {
