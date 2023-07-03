@@ -61,7 +61,7 @@ const TokenTrader = ({ metadata }) => {
             });
 
             if (response.ok) {
-                //setTab("token");
+                nft.nft.price = nft.nft.newPrice;
             } else {
                 const data = await response.json();
                 console.error('Error listing:', data.message);
@@ -84,16 +84,20 @@ const TokenTrader = ({ metadata }) => {
                         defaultValue={nft.nft.price}
                         type="number"
                         onChange={(event) => {
-                            setNewPrice(event.target.value);
+                            nft.nft.newPrice = parseInt(event.target.value,10);
+                            setNewPrice(nft.nft.newPrice);
                         }}
                         inputProps={{ min: 0 }}
-                        sx={{ width: '10ch', marginRight: 1 }}
+                        sx={{ width: '20ch', marginRight: 1 }}
                     />
                     <Button
                         variant="contained"
                         color="primary"
-                        onClick={() => { handleListClick(nft) }}
-                        disabled={nft.nft.price == newPrice}
+                        onClick={ async () => { 
+                            await handleListClick(nft);
+                            setNewPrice(nft.nft.price);
+                         }}
+                        disabled={nft.nft.price === newPrice}
                     >
                         List
                     </Button>
