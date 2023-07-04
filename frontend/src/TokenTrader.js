@@ -13,7 +13,7 @@ import {
 
 const TokenTrader = ({ metadata, setRefreshKey }) => {
     const [ownedNfts, setOwnedNfts] = useState(0);
-    const [unownedNfts, setUnownedNfts] = useState(0);
+    const [listedNfts, setListedNfts] = useState(0);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -22,7 +22,7 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
                 const myProfile = await response.json();
 
                 const ownedNfts = [];
-                const unownedNfts = [];
+                const listedNfts = [];
 
                 for (const xid of metadata.token.nfts) {
                     response = await fetch(`/api/asset/${xid}`);
@@ -33,13 +33,13 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
                     if (nft.asset.owner === myProfile.id) {
                         ownedNfts.push(nft);
                     }
-                    else {
-                        unownedNfts.push(nft);
+                    else if (nft.nft.price > 0) {
+                        listedNfts.push(nft);
                     }
                 }
 
                 setOwnedNfts(ownedNfts);
-                setUnownedNfts(unownedNfts);
+                setListedNfts(listedNfts);
             } catch (error) {
                 console.error('Error fetching asset owner:', error);
             }
@@ -116,7 +116,7 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
 
             if (response.ok) {
                 //setTab('token');
-                setRefreshKey((prevKey) => prevKey + 1); 
+                setRefreshKey((prevKey) => prevKey + 1);
             } else {
                 const data = await response.json();
                 console.error('Error listing:', data.message);
@@ -165,10 +165,10 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
                         <TableCell>Editions:</TableCell>
                         <TableCell>{metadata.token.editions > 1 ? metadata.token.editions : "1 of 1"}</TableCell>
                     </TableRow>
-                    {ownedNfts.length > 0 &&
-                        <TableRow>
-                            <TableCell>Sell:</TableCell>
-                            <TableCell>
+                    <TableRow>
+                        <TableCell>Sell:</TableCell>
+                        <TableCell>
+                            {ownedNfts.length > 0 &&
                                 <TableContainer component={Paper} style={{ maxHeight: '300px', overflow: 'auto' }}>
                                     <Table>
                                         <TableHead>
@@ -182,15 +182,17 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
                                                 <SellerTableRow key={index} nft={nft} />
                                             ))}
                                         </TableBody>
+
                                     </Table>
                                 </TableContainer>
-                            </TableCell>
-                        </TableRow>
-                    }
-                    {unownedNfts.length > 0 &&
-                        <TableRow>
-                            <TableCell>Buy:</TableCell>
-                            <TableCell>
+                            }                            
+                            {ownedNfts.length < 1 && "None currently owned"}
+                        </TableCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableCell>Buy:</TableCell>
+                        <TableCell>
+                            {listedNfts.length > 0 &&
                                 <TableContainer component={Paper} style={{ maxHeight: '300px', overflow: 'auto' }}>
                                     <Table>
                                         <TableHead>
@@ -200,15 +202,17 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
-                                            {unownedNfts.map((nft, index) => (
+                                            {listedNfts.map((nft, index) => (
                                                 <BuyerTableRow nft={nft} />
                                             ))}
                                         </TableBody>
+
                                     </Table>
                                 </TableContainer>
-                            </TableCell>
-                        </TableRow>
-                    }
+                            }
+                            {listedNfts.length < 1 && "None currently listed"}
+                        </TableCell>
+                    </TableRow>
                 </TableBody>
             </Table>
         </TableContainer>
