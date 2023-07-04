@@ -327,7 +327,6 @@ const createAssets = async (userId, files, collectionId) => {
         };
 
         await saveAsset(metadata);
-        //await collectionAddAsset(collectionData.asset.xid, metadata.asset.xid);
         await agentAddAsset(metadata);
     }
 
@@ -438,39 +437,6 @@ const createCollection = async (userId, name) => {
     return metadata;
 };
 
-const collectionAddAsset = async (xid, assetId) => {
-    let collection = await getAsset(xid);
-    let asset = await getAsset(assetId);
-
-    if (collection.asset.owner == asset.asset.owner) {
-        if (!collection.collection.assets.includes(assetId)) {
-            collection.collection.assets.push(assetId);
-            await saveAsset(collection);
-            return true;
-        }
-    }
-
-    return false;
-};
-
-const collectionRemoveAsset = async (xid, assetId) => {
-    let collection = await getAsset(xid);
-    let asset = await getAsset(assetId);
-
-    if (asset.mint) {
-        return false;
-    }
-
-    const assetIndex = collection.collection.assets.indexOf(assetId);
-    if (assetIndex !== -1) {
-        collection.collection.assets.splice(assetIndex, 1);
-        await saveAsset(collection);
-        return true;
-    }
-
-    return false;
-};
-
 module.exports = {
     getAgent,
     saveAgent,
@@ -482,6 +448,4 @@ module.exports = {
     transferAsset,
     createToken,
     createCollection,
-    collectionAddAsset,
-    collectionRemoveAsset,
 };
