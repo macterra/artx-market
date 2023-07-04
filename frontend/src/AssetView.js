@@ -15,6 +15,7 @@ const AssetView = ({ navigate, isAuthenticated }) => {
     const [isOwner, setIsOwner] = useState(false);
     const [isToken, setIsToken] = useState(false);
     const [tab, setTab] = useState(0);
+    const [refreshKey, setRefreshKey] = useState(0);
 
     useEffect(() => {
         const fetchMetadata = async () => {
@@ -35,15 +36,16 @@ const AssetView = ({ navigate, isAuthenticated }) => {
                     setIsOwner(data.sameId);
                 } else {
                     setIsOwner(false);
-                    setTab("meta");
                 }
+                
+                setTab("meta");
             } catch (error) {
                 console.error('Error fetching image metadata:', error);
             }
         };
 
         fetchMetadata();
-    }, [xid, isAuthenticated]);
+    }, [xid, isAuthenticated, refreshKey]);
 
     if (!metadata) {
         return;
@@ -76,9 +78,9 @@ const AssetView = ({ navigate, isAuthenticated }) => {
                 </Tabs>
                 {tab === 'meta' && <MetadataView navigate={navigate} metadata={metadata} />}
                 {tab === 'token' && <TokenView metadata={metadata} />}
-                {tab === 'trade' && <TokenTrader metadata={metadata} setTable={setTab} />}
+                {tab === 'trade' && <TokenTrader metadata={metadata} setTab={setTab} />}
                 {tab === 'edit' && <AssetEditor metadata={metadata} setTab={setTab} />}
-                {tab === 'mint' && <TokenMinter metadata={metadata} setTab={setTab} />}
+                {tab === 'mint' && <TokenMinter metadata={metadata} setRefreshKey={setRefreshKey} />}
                 {tab === 'pfp' && <PfpEditor metadata={metadata} setTab={setTab} />}
             </div>
         </div>
