@@ -202,10 +202,14 @@ app.post('/api/asset/:xid/mint', ensureAuthenticated, async (req, res) => {
     const userId = req.user.id;
     const assetData = await getAsset(xid);
 
-    console.log(`mint ${xid} with ${editions} editions`);
-
     if (assetData.asset.owner != userId) {
-      return req.status(401).json({ message: "Unauthorized" });
+      console.log('mint unauthorized');
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    if (assetData.token) {
+      console.log('already minted');
+      return res.status(500).json({ message: 'Error' });
     }
 
     await createToken(userId, xid, editions);
