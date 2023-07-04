@@ -36,9 +36,9 @@ const AssetView = ({ navigate, isAuthenticated }) => {
                     setIsOwner(data.sameId);
                 } else {
                     setIsOwner(false);
+                    setTab("meta");
                 }
                 
-                setTab("meta");
             } catch (error) {
                 console.error('Error fetching image metadata:', error);
             }
@@ -78,9 +78,9 @@ const AssetView = ({ navigate, isAuthenticated }) => {
                 </Tabs>
                 {tab === 'meta' && <MetadataView navigate={navigate} metadata={metadata} />}
                 {tab === 'token' && <TokenView metadata={metadata} />}
-                {tab === 'trade' && <TokenTrader metadata={metadata} setTab={setTab} />}
+                {tab === 'trade' && <TokenTrader metadata={metadata} setRefreshKey={setRefreshKey} />}
                 {tab === 'edit' && <AssetEditor metadata={metadata} setTab={setTab} />}
-                {tab === 'mint' && <TokenMinter metadata={metadata} setRefreshKey={setRefreshKey} />}
+                {tab === 'mint' && <TokenMinter metadata={metadata} setTab={setTab} setRefreshKey={setRefreshKey} />}
                 {tab === 'pfp' && <PfpEditor metadata={metadata} setTab={setTab} />}
             </div>
         </div>

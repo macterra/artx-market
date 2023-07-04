@@ -11,7 +11,7 @@ import {
     Button,
 } from '@mui/material';
 
-const TokenTrader = ({ metadata, setTab }) => {
+const TokenTrader = ({ metadata, setRefreshKey }) => {
     const [ownedNfts, setOwnedNfts] = useState(0);
     const [unownedNfts, setUnownedNfts] = useState(0);
 
@@ -115,7 +115,8 @@ const TokenTrader = ({ metadata, setTab }) => {
             });
 
             if (response.ok) {
-                setTab('token');
+                //setTab('token');
+                setRefreshKey((prevKey) => prevKey + 1); 
             } else {
                 const data = await response.json();
                 console.error('Error listing:', data.message);

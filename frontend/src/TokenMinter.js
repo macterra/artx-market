@@ -10,7 +10,7 @@ import {
     TextField,
 } from '@mui/material';
 
-const TokenMinter = ({ metadata, setRefreshKey }) => {
+const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
     const [owner, setOwner] = useState(null);
     const [collection, setCollection] = useState(null);
     const [editions, setEditions] = useState(1);
@@ -66,7 +66,8 @@ const TokenMinter = ({ metadata, setRefreshKey }) => {
             });
 
             if (response.ok) {
-                setRefreshKey((prevKey) => prevKey + 1); 
+                setTab('token');
+                setRefreshKey((prevKey) => prevKey + 1);
             } else {
                 const data = await response.json();
                 console.error('Error minting:', data.message);
