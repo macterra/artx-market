@@ -54,15 +54,23 @@ const getAgent = async (userId, doCreate) => {
     } else if (doCreate) {
 
         const gallery = await createCollection(userId, 'gallery');
+        const xid = uuidv4();
 
         agentData = {
             id: userId,
+            xid: xid,            
             name: 'anon',
             tagline: '',
             description: '',
             collections: [gallery.asset.xid],
         };
 
+        await saveAgent(agentData);
+    }
+
+    // temp
+    if (!agentData.xid) {
+        agentData.xid = uuidv4();
         await saveAgent(agentData);
     }
 

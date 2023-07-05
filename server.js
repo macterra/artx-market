@@ -89,10 +89,12 @@ passport.deserializeUser(function (id, done) {
   done(null, map.user.get(id) || null);
 });
 
-passport.use(new LnurlAuth.Strategy(function (linkingPublicKey, done) {
+passport.use(new LnurlAuth.Strategy(async function (linkingPublicKey, done) {
   let user = map.user.get(linkingPublicKey);
   if (!user) {
-    user = { id: linkingPublicKey };
+    const agentData = await getAgent(linkingPublicKey, true);
+    console.log(`passport ${linkingPublicKey} ${agentData.xid}`);
+    user = { id: linkingPublicKey, xid: agentData.xid, };
     map.user.set(linkingPublicKey, user);
   }
   done(null, user);
@@ -104,7 +106,6 @@ app.get('/login',
   function (req, res, next) {
     if (req.user) {
       // Already authenticated.
-      const agentData = getAgent(req.user.id, true);
       return res.redirect('/profile');
     }
     next();
@@ -302,6 +303,9 @@ app.get('/api/profiles/', async (req, res) => {
 app.get('/api/profile/:id?', async (req, res) => {
   const profileId = req.params.id;
   const userId = req.user?.id;
+  const agentXid = req.user?.xid;
+
+  console.log(`profile ${userId} ${agentXid}`);
 
   try {
     const agentData = await getAgentAndCollections(profileId, userId);
