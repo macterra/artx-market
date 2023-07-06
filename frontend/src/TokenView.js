@@ -57,7 +57,7 @@ const TokenView = ({ metadata }) => {
                     nft.owner = await response.json();
                     nfts.push(nft);
 
-                    if (nft.asset.owner === myProfile.id) {
+                    if (nft.asset.owner === myProfile.xid) {
                         owned += 1;
                         ownedEditions.push(nft.nft.edition);
                     }

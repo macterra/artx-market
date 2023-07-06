@@ -30,7 +30,7 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
                     response = await fetch(`/api/profile/${nft.asset.owner}`);
                     nft.owner = await response.json();
 
-                    if (nft.asset.owner === myProfile.id) {
+                    if (nft.asset.owner === myProfile.xid) {
                         ownedNfts.push(nft);
                     }
                     else if (nft.nft.price > 0) {
@@ -185,7 +185,7 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
 
                                     </Table>
                                 </TableContainer>
-                            }                            
+                            }
                             {ownedNfts.length < 1 && "None currently owned"}
                         </TableCell>
                     </TableRow>

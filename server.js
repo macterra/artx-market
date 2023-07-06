@@ -129,11 +129,11 @@ app.get('/logout', (req, res) => {
 
 app.get('/check-auth/:id?', (req, res) => {
   if (req.isAuthenticated()) {
-    const userId = req.params.id;
+    const userId = req.params.xid;
 
     if (userId) {
       // Check if the logged-in user's ID is the same as the provided ID
-      res.json({ message: 'Authenticated', sameId: req.user.id === userId });
+      res.json({ message: 'Authenticated', sameId: req.user.xid === userId });
     } else {
       res.json({ message: 'Authenticated' });
     }
@@ -166,7 +166,7 @@ app.get('/api/asset/:xid', async (req, res) => {
 app.patch('/api/asset/:xid', ensureAuthenticated, async (req, res) => {
   const { xid } = req.params;
   const { title, collection } = req.body;
-  const userId = req.user.id;
+  const userId = req.user.xid;
 
   try {
     let assetData = await getAsset(xid);
@@ -197,7 +197,7 @@ app.post('/api/asset/:xid/mint', ensureAuthenticated, async (req, res) => {
   try {
     const xid = req.params.xid;
     const { editions } = req.body;
-    const userId = req.user.id;
+    const userId = req.user.xid;
     const assetData = await getAsset(xid);
 
     if (assetData.asset.owner != userId) {
@@ -222,7 +222,7 @@ app.post('/api/asset/:xid/list', ensureAuthenticated, async (req, res) => {
   try {
     const xid = req.params.xid;
     const { price } = req.body;
-    const userId = req.user.id;
+    const userId = req.user.xid;
     const assetData = await getAsset(xid);
 
     console.log(`list ${xid} with price=${price}`);
@@ -252,7 +252,7 @@ app.post('/api/asset/:xid/list', ensureAuthenticated, async (req, res) => {
 app.post('/api/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
   try {
     const xid = req.params.xid;
-    const userId = req.user.id;
+    const userId = req.user.xid;
     const assetData = await getAsset(xid);
 
     if (!assetData.nft) {
@@ -359,7 +359,7 @@ app.patch('/api/profile/', ensureAuthenticated, async (req, res) => {
 
 app.get('/api/collections/:xid', async (req, res) => {
   try {
-    const userId = req.user?.id;
+    const userId = req.user?.xid;
     const collection = await getCollection(req.params.xid, userId);
     res.json(collection);
   } catch (error) {
@@ -371,7 +371,7 @@ app.get('/api/collections/:xid', async (req, res) => {
 app.post('/api/collections/', ensureAuthenticated, async (req, res) => {
   try {
     const { name } = req.body;
-    const collection = await createCollection(req.user.id, name);
+    const collection = await createCollection(req.user.xid, name);
     console.log(`created collection ${collection}`);
     res.json(collection);
   } catch (error) {
@@ -385,7 +385,7 @@ app.patch('/api/collections/:xid', ensureAuthenticated, async (req, res) => {
     const { title, defaultTitle } = req.body;
     const collection = await getAsset(req.params.xid);
 
-    if (req.user.id != collection.asset.owner) {
+    if (req.user.xid != collection.asset.owner) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
@@ -409,7 +409,7 @@ app.post('/api/collections/:xid/upload', ensureAuthenticated, upload.array('imag
   try {
     const collectionId = req.params.xid;
 
-    await createAssets(req.user.id, req.files, collectionId);
+    await createAssets(req.user.xid, req.files, collectionId);
 
     // Send a success response after processing all files
     res.status(200).json({ success: true, message: 'Files uploaded successfully' });
