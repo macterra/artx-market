@@ -82,11 +82,11 @@ const map = {
 };
 
 passport.serializeUser(function (user, done) {
-  done(null, user.id);
+  done(null, user.key);
 });
 
-passport.deserializeUser(function (id, done) {
-  done(null, map.user.get(id) || null);
+passport.deserializeUser(function (key, done) {
+  done(null, map.user.get(key) || null);
 });
 
 passport.use(new LnurlAuth.Strategy(async function (linkingPublicKey, done) {
@@ -94,7 +94,7 @@ passport.use(new LnurlAuth.Strategy(async function (linkingPublicKey, done) {
   if (!user) {
     const agentData = await getAgentFromKey(linkingPublicKey);
     console.log(`passport ${linkingPublicKey} ${agentData.xid}`);
-    user = { id: linkingPublicKey, xid: agentData.xid, };
+    user = { key: linkingPublicKey, xid: agentData.xid, };
     map.user.set(linkingPublicKey, user);
   }
   done(null, user);
