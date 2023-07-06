@@ -28,7 +28,7 @@ const ProfileGrid = ({ collection }) => {
     return (
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'left' }}>
             {profiles.map((profile, index) => (
-                <Link key={index} to={`/profile/${profile.id}`} style={imageCardStyle}>
+                <Link key={index} to={`/profile/${profile.xid}`} style={imageCardStyle}>
                     <ProfileCard key={index} profile={profile} />
                 </Link>
             ))}

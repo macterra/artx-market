@@ -67,8 +67,8 @@ function ViewLogin() {
         const response = await fetch(`/api/profile`);
         const profileData = await response.json();
 
-        if (profileData.id) {
-          navigate(`/profile/${profileData.id}`);
+        if (profileData.xid) {
+          navigate(`/profile/${profileData.xid}`);
         }
         else {
           navigate('/');

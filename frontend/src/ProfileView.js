@@ -48,7 +48,7 @@ const ProfileView = ({ navigate }) => {
             {tab === 'created' &&
                 <div>
                     <p>Collections</p>
-                    <CollectionGrid userId={profile.id} list={profile.collections} />
+                    <CollectionGrid userId={profile.xid} list={profile.collections} />
                 </div>
             }
             {tab === 'collected' &&

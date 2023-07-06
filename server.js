@@ -300,12 +300,9 @@ app.get('/api/profiles/', async (req, res) => {
   }
 });
 
-app.get('/api/profile/:id?', async (req, res) => {
-  const profileId = req.params.id;
-  const userId = req.user?.id;
-  const agentXid = req.user?.xid;
-
-  console.log(`profile ${userId} ${agentXid}`);
+app.get('/api/profile/:xid?', async (req, res) => {
+  const profileId = req.params.xid;
+  const userId = req.user?.xid;
 
   try {
     const agentData = await getAgentAndCollections(profileId, userId);
@@ -313,7 +310,7 @@ app.get('/api/profile/:id?', async (req, res) => {
     if (agentData) {
       agentData.collections = Object.values(agentData.collections);
       agentData.collected = Object.values(agentData.collected);
-      agentData.isUser = (req.user?.xid == agentData.xid);
+      agentData.isUser = (userId === agentData.xid);
       res.json(agentData);
     } else {
       res.status(404).json({ message: 'Profile not found' });
@@ -321,6 +318,42 @@ app.get('/api/profile/:id?', async (req, res) => {
   } catch (error) {
     console.error('Error fetching profile data:', error);
     res.status(500).json({ message: 'Error fetching profile data' });
+  }
+});
+
+app.patch('/api/profile/', ensureAuthenticated, async (req, res) => {
+  try {
+    const { name, tagline, pfp, collections } = req.body;
+    const userId = req.user.xid;
+
+    const agentData = await getAgent(userId);
+
+    if (userId != agentData.xid) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    if (name) {
+      agentData.name = name;
+    }
+
+    if (tagline !== undefined) {
+      agentData.tagline = tagline;
+    }
+
+    if (pfp) {
+      agentData.pfp = pfp;
+    }
+
+    if (collections) {
+      // TBD verify collections
+      agentData.collections = collections;
+    }
+
+    await saveAgent(agentData);
+    res.json({ message: 'Metadata updated successfully' });
+  } catch (error) {
+    console.error('Error updating metadata:', error);
+    res.status(500).json({ message: 'Error updating metadata' });
   }
 });
 
@@ -383,42 +416,6 @@ app.post('/api/collections/:xid/upload', ensureAuthenticated, upload.array('imag
   } catch (error) {
     console.error('Error processing files:', error);
     res.status(500).json({ success: false, message: 'Error processing files' });
-  }
-});
-
-app.patch('/api/profile/', ensureAuthenticated, async (req, res) => {
-  try {
-    const { name, tagline, pfp, collections } = req.body;
-    const userId = req.user.xid;
-
-    const agentData = await getAgent(userId);
-
-    if (userId != agentData.xid) {
-      return res.status(401).json({ message: 'Unauthorized' });
-    }
-
-    if (name) {
-      agentData.name = name;
-    }
-
-    if (tagline !== undefined) {
-      agentData.tagline = tagline;
-    }
-
-    if (pfp) {
-      agentData.pfp = pfp;
-    }
-
-    if (collections) {
-      // TBD verify collections
-      agentData.collections = collections;
-    }
-
-    await saveAgent(agentData);
-    res.json({ message: 'Metadata updated successfully' });
-  } catch (error) {
-    console.error('Error updating metadata:', error);
-    res.status(500).json({ message: 'Error updating metadata' });
   }
 });
 

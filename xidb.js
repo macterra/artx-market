@@ -56,7 +56,7 @@ const getAgentFromKey = async (key) => {
     }
 
     const agentId = keyData[key];
-    let agentData = await getAgent(agentId, true);
+    let agentData = await getAgent(agentId);
 
     if (!agentData) {
         const gallery = await createCollection(agentId, 'gallery');
@@ -161,7 +161,7 @@ const getAgentAndCollections = async (profileId, userId) => {
         return;
     }
 
-    let agentData = await getAgent(profileId, false);
+    let agentData = await getAgent(profileId);
     const assets = await agentGetAssets(profileId);
 
     let collections = {};

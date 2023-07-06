@@ -63,7 +63,7 @@ const MetadataView = ({ navigate, metadata }) => {
                 const collectionData = await response.json();
                 const { firstXid, prevXid, nextXid, lastXid } = findAdjacentXids(collectionData.collection.assets, metadata.asset.xid);
 
-                setOwnerId(profileData.id);
+                setOwnerId(profileData.xid);
                 setOwnerName(profileData.name);
                 setCollectionId(collectionData.asset.xid);
                 setCollectionName(collectionData.asset.title);

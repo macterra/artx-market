@@ -36,7 +36,7 @@ const ProfileHeader = ({ userId }) => {
 
     return (
         <Box display="flex" flexDirection="row" alignItems="center" style={{ minHeight: 'auto' }}>
-            <a href={`/profile/${profile.id}`} style={linkStyle}>
+            <a href={`/profile/${profile.xid}`} style={linkStyle}>
                 {profile.pfp && (
                     <img
                         src={profile.pfp}
@@ -52,7 +52,7 @@ const ProfileHeader = ({ userId }) => {
                 )}
             </a>
             <div>
-                <a href={`/profile/${profile.id}`} style={linkStyle}>
+                <a href={`/profile/${profile.xid}`} style={linkStyle}>
                     <span>{profile.name}</span>
                 </a>
                 <span style={{ fontSize: '12px', display: 'block' }}>{profile.tagline}</span>
