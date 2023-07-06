@@ -13,7 +13,10 @@ const CollectionView = ({ navigate }) => {
             try {
                 const response = await fetch(`/api/collections/${xid}`);
                 const collectionData = await response.json();
-                setCollection(collectionData);
+
+                if (!collectionData.error) {
+                    setCollection(collectionData);
+                }
             } catch (error) {
                 console.error('Error fetching profile data:', error);
             }

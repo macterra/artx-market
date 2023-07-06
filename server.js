@@ -127,7 +127,7 @@ app.get('/logout', (req, res) => {
   });
 });
 
-app.get('/check-auth/:id?', (req, res) => {
+app.get('/check-auth/:xid?', (req, res) => {
   if (req.isAuthenticated()) {
     const userId = req.params.xid;
 
