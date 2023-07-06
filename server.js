@@ -7,6 +7,7 @@ const LnurlAuth = require('passport-lnurl-auth');
 const session = require('express-session');
 const morgan = require('morgan');
 const {
+  getAgentFromKey,
   getAgent,
   saveAgent,
   getAgentAndCollections,
@@ -24,16 +25,14 @@ const app = express();
 const config = {
   host: process.env.ARTX_HOST || 'localhost',
   port: process.env.ARTX_PORT || 5000,
-  url: null,
   data: 'data',
   uploads: 'data/uploads',
   assets: 'data/assets',
   agents: 'data/agents',
+  id: 'data/id',
 };
 
-if (!config.url) {
-  config.url = 'http://' + config.host + ':' + config.port;
-}
+config.url = 'http://' + config.host + ':' + config.port;
 
 const ensureFolderExists = (folderPath) => {
   if (!fs.existsSync(folderPath)) {
@@ -45,6 +44,7 @@ ensureFolderExists(config.data);
 ensureFolderExists(config.uploads);
 ensureFolderExists(config.assets);
 ensureFolderExists(config.agents);
+ensureFolderExists(config.id);
 
 app.use(session({
   secret: 'Satoshi',
@@ -92,7 +92,7 @@ passport.deserializeUser(function (id, done) {
 passport.use(new LnurlAuth.Strategy(async function (linkingPublicKey, done) {
   let user = map.user.get(linkingPublicKey);
   if (!user) {
-    const agentData = await getAgent(linkingPublicKey, true);
+    const agentData = await getAgentFromKey(linkingPublicKey);
     console.log(`passport ${linkingPublicKey} ${agentData.xid}`);
     user = { id: linkingPublicKey, xid: agentData.xid, };
     map.user.set(linkingPublicKey, user);
@@ -313,7 +313,7 @@ app.get('/api/profile/:id?', async (req, res) => {
     if (agentData) {
       agentData.collections = Object.values(agentData.collections);
       agentData.collected = Object.values(agentData.collected);
-      agentData.isUser = (req.user?.id == agentData.id);
+      agentData.isUser = (req.user?.xid == agentData.xid);
       res.json(agentData);
     } else {
       res.status(404).json({ message: 'Profile not found' });
@@ -389,11 +389,11 @@ app.post('/api/collections/:xid/upload', ensureAuthenticated, upload.array('imag
 app.patch('/api/profile/', ensureAuthenticated, async (req, res) => {
   try {
     const { name, tagline, pfp, collections } = req.body;
-    const userId = req.user.id;
+    const userId = req.user.xid;
 
     const agentData = await getAgent(userId);
 
-    if (userId != agentData.id) {
+    if (userId != agentData.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 

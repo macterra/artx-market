@@ -9,11 +9,11 @@ const { execSync } = require('node:child_process');
 const config = {
     host: process.env.ARTX_HOST || 'localhost',
     port: process.env.ARTX_PORT || 5000,
-    url: null,
     data: 'data',
     uploads: 'data/uploads',
     assets: 'data/assets',
     agents: 'data/agents',
+    id: 'data/id',
 };
 
 // Create a simple-git instance
@@ -41,24 +41,29 @@ const commitChanges = async (commitMessage) => {
     }
 };
 
-const getAgent = async (userId, doCreate) => {
-    const agentFolder = path.join(config.agents, userId.toString());
-    const agentJsonPath = path.join(agentFolder, 'agent.json');
+const getAgentFromKey = async (key) => {
+    const keyPath = path.join(config.id, 'pubkey.json');
+    let keyData = {};
 
-    let agentData = {};
+    if (fs.existsSync(keyPath)) {
+        const keyJsonContent = await fs.promises.readFile(keyPath, 'utf-8');
+        keyData = JSON.parse(keyJsonContent);
+    }
 
-    // Check if the agent.json file exists
-    if (fs.existsSync(agentJsonPath)) {
-        const agentJsonContent = await fs.promises.readFile(agentJsonPath, 'utf-8');
-        agentData = JSON.parse(agentJsonContent);
-    } else if (doCreate) {
+    if (!(key in keyData)) {
+        keyData[key] = uuidv4();        
+        await fs.promises.writeFile(keyPath, JSON.stringify(keyData, null, 2));
+    }
 
-        const gallery = await createCollection(userId, 'gallery');
-        const xid = uuidv4();
+    const agentId = keyData[key];
+    let agentData = await getAgent(agentId, true);
+
+    if (!agentData) {
+        const gallery = await createCollection(agentId, 'gallery');
 
         agentData = {
-            id: userId,
-            xid: xid,            
+            xid: agentId,
+            pubkey: key,
             name: 'anon',
             tagline: '',
             description: '',
@@ -68,17 +73,25 @@ const getAgent = async (userId, doCreate) => {
         await saveAgent(agentData);
     }
 
-    // temp
-    if (!agentData.xid) {
-        agentData.xid = uuidv4();
-        await saveAgent(agentData);
+    return agentData;
+};
+
+const getAgent = async (xid) => {
+    const agentJsonPath = path.join(config.agents, xid, 'agent.json');
+
+    // Check if the agent.json file exists
+    if (!fs.existsSync(agentJsonPath)) {
+        return null;
     }
+
+    const agentJsonContent = await fs.promises.readFile(agentJsonPath, 'utf-8');
+    const agentData = JSON.parse(agentJsonContent);
 
     return agentData;
 };
 
 const saveAgent = async (agentData) => {
-    const agentFolder = path.join(config.agents, agentData.id);
+    const agentFolder = path.join(config.agents, agentData.xid);
     const agentJsonPath = path.join(agentFolder, 'agent.json');
     let newAgent = false;
 
@@ -91,10 +104,10 @@ const saveAgent = async (agentData) => {
     await fs.promises.writeFile(agentJsonPath, JSON.stringify(agentData, null, 2));
 
     if (newAgent) {
-        await commitChanges(`Created agent ${agentData.id}`);
+        await commitChanges(`Created agent ${agentData.xid}`);
     }
     else {
-        await commitChanges(`Updated agent ${agentData.id}`);
+        await commitChanges(`Updated agent ${agentData.xid}`);
     }
 };
 
@@ -446,6 +459,7 @@ const createCollection = async (userId, name) => {
 };
 
 module.exports = {
+    getAgentFromKey,
     getAgent,
     saveAgent,
     getAgentAndCollections,
