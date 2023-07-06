@@ -11,13 +11,23 @@ import {
     Button,
 } from '@mui/material';
 
+const fetchExchangeRate = async () => {
+    const xrResp = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
+    const xrData = await xrResp.json();
+    return xrData.bitcoin;
+};
+
 const TokenTrader = ({ metadata, setRefreshKey }) => {
     const [ownedNfts, setOwnedNfts] = useState(0);
     const [listedNfts, setListedNfts] = useState(0);
+    const [exchangeRate, setExchangeRate] = useState(null);
 
     useEffect(() => {
         const fetchProfile = async () => {
             try {
+                const xrates = await fetchExchangeRate();
+                setExchangeRate(xrates.usd);
+
                 let response = await fetch(`/api/profile/`);
                 const myProfile = await response.json();
 
@@ -75,6 +85,16 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
     // Create a new component for the table row
     function SellerTableRow({ nft }) {
         const [disableList, setDisableList] = useState(true);
+        const [usdPrice, setUsdPrice] = useState(0);
+
+        const updatePrice = (price) => {
+            const usdPrice = price * exchangeRate / 100000000;
+            setUsdPrice(usdPrice);
+        };
+
+        useEffect(() => {
+            updatePrice(nft.nft.price);
+        }, [nft]);
 
         return (
             <TableRow>
@@ -86,6 +106,7 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
                         onChange={(event) => {
                             nft.nft.newPrice = parseInt(event.target.value, 10) || 0;
                             setDisableList(nft.nft.price === nft.nft.newPrice);
+                            updatePrice(nft.nft.newPrice);
                         }}
                         inputProps={{ min: 0 }}
                         sx={{ width: '20ch', marginRight: 1 }}
@@ -102,6 +123,7 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
                         List
                     </Button>
                 </TableCell>
+                <TableCell>{usdPrice.toFixed(2)}</TableCell>
             </TableRow>
         );
     };
@@ -166,6 +188,10 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
                         <TableCell>{metadata.token.editions > 1 ? metadata.token.editions : "1 of 1"}</TableCell>
                     </TableRow>
                     <TableRow>
+                        <TableCell>Exchange rate:</TableCell>
+                        <TableCell>{exchangeRate} USD/BTC</TableCell>
+                    </TableRow>
+                    <TableRow>
                         <TableCell>Sell:</TableCell>
                         <TableCell>
                             {ownedNfts.length > 0 &&
@@ -174,7 +200,8 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
                                         <TableHead>
                                             <TableRow>
                                                 <TableCell>Edition</TableCell>
-                                                <TableCell>Price</TableCell>
+                                                <TableCell>Price (sats)</TableCell>
+                                                <TableCell>Price (USD)</TableCell>
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
