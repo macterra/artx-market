@@ -99,6 +99,7 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
         return (
             <TableRow>
                 <TableCell>{nft.asset.title}</TableCell>
+                <TableCell>{usdPrice.toFixed(2)}</TableCell>
                 <TableCell>
                     <TextField
                         defaultValue={nft.nft.price}
@@ -109,7 +110,7 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
                             updatePrice(nft.nft.newPrice);
                         }}
                         inputProps={{ min: 0 }}
-                        sx={{ width: '20ch', marginRight: 1 }}
+                        sx={{ width: '14ch', marginRight: 1 }}
                     />
                     <Button
                         variant="contained"
@@ -123,7 +124,6 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
                         List
                     </Button>
                 </TableCell>
-                <TableCell>{usdPrice.toFixed(2)}</TableCell>
             </TableRow>
         );
     };
@@ -150,15 +150,27 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
     };
 
     function BuyerTableRow({ nft }) {
+        const [usdPrice, setUsdPrice] = useState(0);
+
+        const updatePrice = (price) => {
+            const usdPrice = price * exchangeRate / 100000000;
+            setUsdPrice(usdPrice);
+        };
+
+        useEffect(() => {
+            updatePrice(nft.nft.price);
+        }, [nft]);
+
         return (
             <TableRow>
                 <TableCell>{nft.asset.title}</TableCell>
+                <TableCell>{usdPrice.toFixed(2)}</TableCell>
                 <TableCell>
                     <TextField
                         defaultValue={nft.nft.price}
                         type="number"
                         disabled={true}
-                        sx={{ width: '20ch', marginRight: 1 }}
+                        sx={{ width: '14ch', marginRight: 1 }}
                     />
                     <Button
                         variant="contained"
@@ -200,8 +212,8 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
                                         <TableHead>
                                             <TableRow>
                                                 <TableCell>Edition</TableCell>
-                                                <TableCell>Price (sats)</TableCell>
                                                 <TableCell>Price (USD)</TableCell>
+                                                <TableCell>Price (sats)</TableCell>
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
@@ -225,7 +237,8 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
                                         <TableHead>
                                             <TableRow>
                                                 <TableCell>Edition</TableCell>
-                                                <TableCell>Price</TableCell>
+                                                <TableCell>Price (USD)</TableCell>
+                                                <TableCell>Price (sats)</TableCell>
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
@@ -233,7 +246,6 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
                                                 <BuyerTableRow nft={nft} />
                                             ))}
                                         </TableBody>
-
                                     </Table>
                                 </TableContainer>
                             }
