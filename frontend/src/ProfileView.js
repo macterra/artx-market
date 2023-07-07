@@ -60,6 +60,7 @@ const ProfileView = ({ navigate }) => {
             {tab === 'deleted' &&
                 <div>
                     <p>Deleted</p>
+                    <ImageGrid collection={profile.deleted} />
                 </div>
             }
         </Box>

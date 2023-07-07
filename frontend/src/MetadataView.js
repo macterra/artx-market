@@ -118,10 +118,6 @@ const MetadataView = ({ navigate, metadata }) => {
                         <TableCell>{metadata.image.format}</TableCell>
                     </TableRow>
                     <TableRow>
-                        <TableCell>Collection xid:</TableCell>
-                        <TableCell>{metadata.asset.collection}</TableCell>
-                    </TableRow>
-                    <TableRow>
                         <TableCell>Collection:</TableCell>
                         <TableCell>
                             <Button

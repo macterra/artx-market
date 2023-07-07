@@ -51,7 +51,7 @@ const getAgentFromKey = async (key) => {
     }
 
     if (!(key in keyData)) {
-        keyData[key] = uuidv4();        
+        keyData[key] = uuidv4();
         await fs.promises.writeFile(keyPath, JSON.stringify(keyData, null, 2));
     }
 
@@ -172,8 +172,7 @@ const getAgentAndCollections = async (profileId, userId) => {
         collections[collectionId] = collectionData;
     }
 
-    let deleted = {};
-    deleted.assets = [];
+    const deleted = [];
 
     if (profileId === userId) {
         for (const assetId of assets.created) {
@@ -182,7 +181,7 @@ const getAgentAndCollections = async (profileId, userId) => {
             if (assetData.asset.collection in collections) {
                 collections[assetData.asset.collection].collection.assets.push(assetData);
             } else {
-                deleted.assets.push(assetData);
+                deleted.push(assetData);
             }
         }
     }
@@ -430,7 +429,7 @@ const transferAsset = async (xid, nextOwnerId) => {
     assetData.asset.owner = nextOwnerId;
     assetData.nft.price = 0;
     await saveAsset(assetData);
-    
+
     await commitChanges(`Transferred ${xid} from ${prevOwnerId} to ${nextOwnerId}`);
 };
 

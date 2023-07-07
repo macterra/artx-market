@@ -49,6 +49,27 @@ const AssetEditor = ({ metadata, setTab }) => {
         }
     };
 
+    const handleDeleteClick = async () => {
+        try {
+            const response = await fetch(`/api/asset/${metadata.asset.xid}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ collection: 'deleted' }),
+            });
+
+            if (response.ok) {
+                metadata.asset.collection = 'deleted';
+                setTab("meta");
+            } else {
+                const data = await response.json();
+                console.error('Error updating metadata:', data.message);
+                alert(data.message);
+            }
+        } catch (error) {
+            console.error('Error updating metadata:', error);
+        }
+    };
+
     return (
         <form>
         <TextField
@@ -74,6 +95,9 @@ const AssetEditor = ({ metadata, setTab }) => {
             </FormControl>
             <Button variant="contained" color="primary" onClick={handleSaveClick}>
             Save
+            </Button>
+            <Button variant="contained" color="primary" onClick={handleDeleteClick}>
+            Delete
             </Button>
             </form>
             );
