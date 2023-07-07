@@ -52,6 +52,7 @@ const MetadataView = ({ navigate, metadata }) => {
     const [prevXid, setPrevXid] = useState(null);
     const [nextXid, setNextXid] = useState(null);
     const [lastXid, setLastXid] = useState(null);
+    const [isDeleted, setIsDeleted] = useState(false);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -59,18 +60,25 @@ const MetadataView = ({ navigate, metadata }) => {
                 const ownerId = metadata.asset.owner;
                 let response = await fetch(`/api/profile/${ownerId}`);
                 const profileData = await response.json();
-                response = await fetch(`/api/collections/${metadata.asset.collection}`);
-                const collectionData = await response.json();
-                const { firstXid, prevXid, nextXid, lastXid } = findAdjacentXids(collectionData.collection.assets, metadata.asset.xid);
 
                 setOwnerId(profileData.xid);
                 setOwnerName(profileData.name);
-                setCollectionId(collectionData.asset.xid);
-                setCollectionName(collectionData.asset.title);
-                setFirstXid(firstXid);
-                setPrevXid(prevXid);
-                setNextXid(nextXid);
-                setLastXid(lastXid);
+
+                if (metadata.asset.collection === 'deleted') {
+                    setIsDeleted(true);
+                }
+                else {
+                    response = await fetch(`/api/collections/${metadata.asset.collection}`);
+                    const collectionData = await response.json();
+                    const { firstXid, prevXid, nextXid, lastXid } = findAdjacentXids(collectionData.collection.assets, metadata.asset.xid);
+
+                    setCollectionId(collectionData.asset.xid);
+                    setCollectionName(collectionData.asset.title);
+                    setFirstXid(firstXid);
+                    setPrevXid(prevXid);
+                    setNextXid(nextXid);
+                    setLastXid(lastXid);
+                }
             } catch (error) {
                 console.error('Error fetching metadata:', error);
             }
@@ -117,41 +125,43 @@ const MetadataView = ({ navigate, metadata }) => {
                         <TableCell>Image format:</TableCell>
                         <TableCell>{metadata.image.format}</TableCell>
                     </TableRow>
-                    <TableRow>
-                        <TableCell>Collection:</TableCell>
-                        <TableCell>
-                            <Button
-                                color="inherit"
-                                disabled={!firstXid}
-                                onClick={() => navigate(`/asset/${firstXid}`)}>
-                                {'\u003C\u003C'}
-                            </Button>
-                            <Button
-                                color="inherit"
-                                disabled={!prevXid}
-                                onClick={() => navigate(`/asset/${prevXid}`)}>
-                                {'\u003C'}
-                            </Button>
-                            <Button
-                                color="inherit"
-                                disabled={!collectionName}
-                                onClick={() => navigate(`/collection/${collectionId}`)}>
-                                {collectionName}
-                            </Button>
-                            <Button
-                                color="inherit"
-                                disabled={!nextXid}
-                                onClick={() => navigate(`/asset/${nextXid}`)}>
-                                {'\u003E'}
-                            </Button>
-                            <Button
-                                color="inherit"
-                                disabled={!lastXid}
-                                onClick={() => navigate(`/asset/${lastXid}`)}>
-                                {'\u003E\u003E'}
-                            </Button>
-                        </TableCell>
-                    </TableRow>
+                    {!isDeleted &&
+                        <TableRow>
+                            <TableCell>Collection:</TableCell>
+                            <TableCell>
+                                <Button
+                                    color="inherit"
+                                    disabled={!firstXid}
+                                    onClick={() => navigate(`/asset/${firstXid}`)}>
+                                    {'\u003C\u003C'}
+                                </Button>
+                                <Button
+                                    color="inherit"
+                                    disabled={!prevXid}
+                                    onClick={() => navigate(`/asset/${prevXid}`)}>
+                                    {'\u003C'}
+                                </Button>
+                                <Button
+                                    color="inherit"
+                                    disabled={!collectionName}
+                                    onClick={() => navigate(`/collection/${collectionId}`)}>
+                                    {collectionName}
+                                </Button>
+                                <Button
+                                    color="inherit"
+                                    disabled={!nextXid}
+                                    onClick={() => navigate(`/asset/${nextXid}`)}>
+                                    {'\u003E'}
+                                </Button>
+                                <Button
+                                    color="inherit"
+                                    disabled={!lastXid}
+                                    onClick={() => navigate(`/asset/${lastXid}`)}>
+                                    {'\u003E\u003E'}
+                                </Button>
+                            </TableCell>
+                        </TableRow>
+                    }
                 </TableBody>
             </Table>
         </TableContainer>

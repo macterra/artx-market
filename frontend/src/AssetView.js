@@ -14,6 +14,7 @@ const AssetView = ({ navigate, isAuthenticated }) => {
     const [metadata, setMetadata] = useState(null);
     const [isOwner, setIsOwner] = useState(false);
     const [isToken, setIsToken] = useState(false);
+    const [isDeleted, setIsDeleted] = useState(false);
     const [tab, setTab] = useState(0);
     const [refreshKey, setRefreshKey] = useState(0);
 
@@ -30,6 +31,12 @@ const AssetView = ({ navigate, isAuthenticated }) => {
                     setIsToken(false);
                 }
 
+                if (metadata.asset.collection === 'deleted') {
+                    setIsDeleted(true);
+                } else {
+                    setIsDeleted(false);
+                }
+
                 if (isAuthenticated) {
                     const response2 = await fetch(`/check-auth/${metadata.asset.owner}`);
                     const data = await response2.json();
@@ -38,7 +45,7 @@ const AssetView = ({ navigate, isAuthenticated }) => {
                     setIsOwner(false);
                     setTab("meta");
                 }
-                
+
             } catch (error) {
                 console.error('Error fetching image metadata:', error);
             }
@@ -71,10 +78,10 @@ const AssetView = ({ navigate, isAuthenticated }) => {
                 >
                     <Tab key="meta" value="meta" label={'Metadata'} />
                     {isToken && <Tab key="token" value="token" label={'Token'} />}
-                    {isToken && isAuthenticated && <Tab key="trade" value="trade" label={'Trade'} />}
+                    {isToken && isAuthenticated && !isDeleted && <Tab key="trade" value="trade" label={'Trade'} />}
                     {isOwner && !isToken && <Tab key="edit" value="edit" label={'Edit'} />}
-                    {isOwner && !isToken && <Tab key="mint" value="mint" label={'Mint'} />}
-                    {isOwner && <Tab key="pfp" value="pfp" label={'Pfp'} />}
+                    {isOwner && !isToken && !isDeleted && <Tab key="mint" value="mint" label={'Mint'} />}
+                    {isOwner && !isDeleted && <Tab key="pfp" value="pfp" label={'Pfp'} />}
                 </Tabs>
                 {tab === 'meta' && <MetadataView navigate={navigate} metadata={metadata} />}
                 {tab === 'token' && <TokenView metadata={metadata} />}
