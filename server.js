@@ -175,7 +175,11 @@ app.patch('/api/asset/:xid', ensureAuthenticated, async (req, res) => {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    if (!assetData.mint) {
+    if (assetData.mint) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    if (title) {
       assetData.asset.title = title;
     }
 

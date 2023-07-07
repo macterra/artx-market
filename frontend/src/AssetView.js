@@ -86,7 +86,7 @@ const AssetView = ({ navigate, isAuthenticated }) => {
                 {tab === 'meta' && <MetadataView navigate={navigate} metadata={metadata} />}
                 {tab === 'token' && <TokenView metadata={metadata} />}
                 {tab === 'trade' && <TokenTrader metadata={metadata} setRefreshKey={setRefreshKey} />}
-                {tab === 'edit' && <AssetEditor metadata={metadata} setTab={setTab} />}
+                {tab === 'edit' && <AssetEditor metadata={metadata} setTab={setTab} setRefreshKey={setRefreshKey} />}
                 {tab === 'mint' && <TokenMinter metadata={metadata} setTab={setTab} setRefreshKey={setRefreshKey} />}
                 {tab === 'pfp' && <PfpEditor metadata={metadata} setTab={setTab} />}
             </div>

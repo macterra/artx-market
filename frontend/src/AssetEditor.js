@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button, TextField, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 
-const AssetEditor = ({ metadata, setTab }) => {
+const AssetEditor = ({ metadata, setTab, setRefreshKey }) => {
     const [title, setTitle] = useState(null);
     const [collections, setCollections] = useState([]);
     const [selectedCollection, setSelectedCollection] = useState('');
@@ -60,6 +60,7 @@ const AssetEditor = ({ metadata, setTab }) => {
             if (response.ok) {
                 metadata.asset.collection = 'deleted';
                 setTab("meta");
+                setRefreshKey((prevKey) => prevKey + 1);
             } else {
                 const data = await response.json();
                 console.error('Error updating metadata:', data.message);
