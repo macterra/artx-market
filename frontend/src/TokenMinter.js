@@ -8,6 +8,7 @@ import {
     TableContainer,
     TableRow,
     TextField,
+    Modal,
 } from '@mui/material';
 
 const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
@@ -17,6 +18,9 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
     const [storageFee, setStorageFee] = useState(null);
     const [collectionId, setCollectionId] = useState(null);
     const [fileSize, setFileSize] = useState(null);
+    const [charge, setCharge] = useState(null);
+    const [modalOpen, setModalOpen] = useState(false);
+    const [invoiceUrl, setInvoiceUrl] = useState('');
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -59,19 +63,48 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
 
     const handleMintClick = async () => {
         try {
-            const response = await fetch(`/api/asset/${metadata.asset.xid}/mint`, {
+            const response = await fetch('/api/charge', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', },
-                body: JSON.stringify({ editions: editions }),
+                body: JSON.stringify({ description: 'mint', amount: storageFee + 100 * editions }),
             });
 
-            if (response.ok) {
-                setTab('token');
-                setRefreshKey((prevKey) => prevKey + 1);
-            } else {
-                const data = await response.json();
-                console.error('Error minting:', data.message);
-                alert(data.message);
+            const chargeData = await response.json();
+            console.log(chargeData);
+
+            if (chargeData.url) {
+                setCharge(chargeData);
+                setInvoiceUrl(chargeData.url);
+                setModalOpen(true);
+            }
+        } catch (error) {
+            console.error('Error minting:', error);
+        }
+    };
+
+    const handleInvoiceClose = async () => {
+        setModalOpen(false);
+
+        try {
+            const response = await fetch(`/api/charge/${charge.id}`);
+            const chargeData = await response.json();
+            console.log(chargeData);
+
+            if (chargeData.paid) {
+                const response = await fetch(`/api/asset/${metadata.asset.xid}/mint`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', },
+                    body: JSON.stringify({ editions: editions }),
+                });
+
+                if (response.ok) {
+                    setTab('token');
+                    setRefreshKey((prevKey) => prevKey + 1);
+                } else {
+                    const data = await response.json();
+                    console.error('Error minting:', data.message);
+                    alert(data.message);
+                }
             }
         } catch (error) {
             console.error('Error minting:', error);
@@ -133,6 +166,26 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
                     Mint
                 </Button>
             </form>
+            <Modal
+                open={modalOpen}
+                onClose={() => handleInvoiceClose()}
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                }}
+            >
+                <div style={{ backgroundColor: '#282c34', padding: '1em', width: '50vw', height: '100vh', overflow: 'auto' }}>
+                    <iframe
+                        src={invoiceUrl}
+                        title="Invoice"
+                        width="100%"
+                        height="90%"
+                        style={{ border: 'none' }}
+                    />
+                    <Button onClick={() => handleInvoiceClose()}>Close</Button>
+                </div>
+            </Modal>
         </>
     );
 };
