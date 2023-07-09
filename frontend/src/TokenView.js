@@ -63,7 +63,6 @@ const TokenView = ({ metadata }) => {
                     }
                 }
 
-                console.log(nfts);
                 setNfts(nfts);
                 setOwned(owned);
                 setRanges(convertToRanges(ownedEditions));

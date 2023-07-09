@@ -70,7 +70,6 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
             });
 
             const chargeData = await response.json();
-            console.log(chargeData);
 
             if (chargeData.url) {
                 setCharge(chargeData);
@@ -88,7 +87,6 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
         try {
             const response = await fetch(`/api/charge/${charge.id}`);
             const chargeData = await response.json();
-            console.log(chargeData);
 
             if (chargeData.paid) {
                 const response = await fetch(`/api/asset/${metadata.asset.xid}/mint`, {

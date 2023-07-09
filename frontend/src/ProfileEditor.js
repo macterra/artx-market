@@ -34,7 +34,6 @@ const ProfileEditor = ({ navigate }) => {
             if (response.ok) {
                 profile.name = name;
                 profile.tagline = tagline;
-                console.log('Profile updated successfully');
             } else {
                 const data = await response.json();
                 console.error('Error updating profile:', data.message);

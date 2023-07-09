@@ -29,7 +29,6 @@ const PfpEditor = ({ metadata, setTab }) => {
 
             if (response.ok) {
                 profile.pfp = metadata.file.path;
-                console.log('Profile updated successfully');
             } else {
                 const data = await response.json();
                 console.error('Error updating profile:', data.message);

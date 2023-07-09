@@ -144,7 +144,6 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
             });
 
             const chargeData = await response.json();
-            console.log(chargeData);
 
             if (chargeData.url) {
                 setCharge(chargeData);
@@ -162,7 +161,6 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
         try {
             const response = await fetch(`/api/charge/${charge.id}`);
             const chargeData = await response.json();
-            console.log(chargeData);
 
             if (chargeData.paid) {
                 const response = await fetch(`/api/asset/${nftSale.asset.xid}/buy`, {
@@ -181,27 +179,6 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
             }
         } catch (error) {
             console.error('Error:', error);
-        }
-    };
-
-    const handleBuyClickX = async (nft) => {
-        try {
-            const response = await fetch(`/api/asset/${nft.asset.xid}/buy`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', },
-                body: JSON.stringify({ price: nft.nft.newPrice }),
-            });
-
-            if (response.ok) {
-                //setTab('token');
-                setRefreshKey((prevKey) => prevKey + 1);
-            } else {
-                const data = await response.json();
-                console.error('Error listing:', data.message);
-                alert(data.message);
-            }
-        } catch (error) {
-            console.error('Error listing:', error);
         }
     };
 

@@ -44,7 +44,7 @@ const CollectionEditor = ({ navigate }) => {
             });
 
             if (response.ok) {
-                console.log('Profile updated successfully');
+                //console.log('Profile updated successfully');
             } else {
                 const data = await response.json();
                 console.error('Error updating profile:', data.message);
@@ -61,9 +61,8 @@ const CollectionEditor = ({ navigate }) => {
             headers: { 'Content-Type': 'application/json', },
             body: JSON.stringify({ name: 'new' }),
         });
+        
         const data = await response.json();
-
-        console.log(data);
 
         setCollections([
             ...collections,
