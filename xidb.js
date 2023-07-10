@@ -221,6 +221,12 @@ const getAgentAndCollections = async (profileId, userId) => {
 
         if (!(tokenId in tokens)) {
             tokens[tokenId] = await getAsset(tokenId);
+            tokens[tokenId].owned = 1;
+            tokens[tokenId].label = editionData.asset.title;
+        }
+        else {
+            tokens[tokenId].owned += 1;
+            tokens[tokenId].label = `${tokens[tokenId].owned} editions`;
         }
     }
 

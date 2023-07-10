@@ -44,6 +44,9 @@ const ImageCard = ({ metadata }) => {
                 <img src={metadata.file.path} style={imgStyle} alt={metadata.asset.title || 'untitled'} />
             </div>
             <p style={titleStyle}>{metadata.asset.title || 'untitled'}</p>
+            {metadata.label &&
+                <p style={titleStyle}>{metadata.label}</p>
+            }
         </div>
     );
 };
