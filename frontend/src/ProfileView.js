@@ -42,6 +42,7 @@ const ProfileView = ({ navigate }) => {
                 scrollButtons="auto"
             >
                 <Tab key="created" value="created" label={'Created'} />
+                <Tab key="minted" value="minted" label={'Minted'} />
                 <Tab key="collected" value="collected" label={'Collected'} />
                 {profile.isUser && <Tab key="deleted" value="deleted" label={'Deleted'} />}
             </Tabs>
@@ -49,6 +50,12 @@ const ProfileView = ({ navigate }) => {
                 <div>
                     <p>Collections</p>
                     <CollectionGrid userId={profile.xid} list={profile.collections} />
+                </div>
+            }
+            {tab === 'minted' &&
+                <div>
+                    <p>Minted</p>
+                    <ImageGrid collection={profile.minted} />
                 </div>
             }
             {tab === 'collected' &&

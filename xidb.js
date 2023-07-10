@@ -225,7 +225,11 @@ const getAgentAndCollections = async (profileId, userId) => {
     }
 
     agentData.collections = collections;
-    agentData.collected = tokens;
+
+    const tokensArray = Object.values(tokens);
+    
+    agentData.minted = tokensArray.filter(token => token.asset.owner === profileId);
+    agentData.collected = tokensArray.filter(token => token.asset.owner !== profileId);
 
     if (profileId === userId) {
         agentData.deleted = deleted;
