@@ -1,11 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
-import { Button, TextField } from '@mui/material';
+import { Box, Button, TextField, Tab, Tabs } from '@mui/material';
+import CollectionEditor from './CollectionEditor';
 
 const ProfileEditor = ({ navigate }) => {
     const [profile, setProfile] = useState({});
     const [name, setName] = useState('');
     const [tagline, setTagline] = useState('');
+    const [tab, setTab] = useState(null);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -15,6 +17,7 @@ const ProfileEditor = ({ navigate }) => {
                 setProfile(data);
                 setName(data.name);
                 setTagline(data.tagline);
+                setTab("name");
             } catch (error) {
                 console.error('Error fetching profile data:', error);
             }
@@ -45,28 +48,50 @@ const ProfileEditor = ({ navigate }) => {
     };
 
     return (
-        <div>
+        <Box>
             <h2>Edit Profile</h2>
-            <form>
-                <TextField
-                    label="Name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    fullWidth
-                    margin="normal"
-                />
-                <TextField
-                    label="Tagline"
-                    value={tagline}
-                    onChange={(e) => setTagline(e.target.value)}
-                    fullWidth
-                    margin="normal"
-                />
-                <Button variant="contained" color="primary" onClick={handleSaveClick}>
-                    Save
-                </Button>
-            </form>
-        </div >
+            <Tabs
+                value={tab}
+                onChange={(event, newTab) => { setTab(newTab) }}
+                indicatorColor="primary"
+                textColor="primary"
+                variant="scrollable"
+                scrollButtons="auto"
+            >
+                <Tab key="name" value="name" label={'Name'} />
+                <Tab key="coll" value="coll" label={'Collections'} />
+                <Tab key="links" value="links" label={'Links'} />
+                <Tab key="ln" value="ln" label={'Lightning'} />
+            </Tabs>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <Box style={{ width: '50vw' }}>
+                    {tab === 'name' &&
+                        <form>
+                            <TextField
+                                label="Name"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                fullWidth
+                                margin="normal"
+                            />
+                            <TextField
+                                label="Tagline"
+                                value={tagline}
+                                onChange={(e) => setTagline(e.target.value)}
+                                fullWidth
+                                margin="normal"
+                            />
+                            <Button variant="contained" color="primary" onClick={handleSaveClick}>
+                                Save
+                            </Button>
+                        </form>
+                    }
+                    {tab === 'coll' &&
+                        <CollectionEditor />
+                    }
+                </Box>
+            </div>
+        </Box >
     );
 };
 

@@ -6,7 +6,6 @@ import Box from '@mui/material/Box';
 import AppHeader from './AppHeader';
 import MainView from './MainView';
 import ProfileEditor from './ProfileEditor';
-import CollectionEditor from './CollectionEditor';
 import AssetView from './AssetView';
 import ProfileHeader from './ProfileHeader';
 import ProfileView from './ProfileView';
@@ -183,9 +182,8 @@ function EditProfile() {
           navigate={navigate}
         />
         <header className="App-header">
-          <Box display="flex">
+          <Box display="flex" flexDirection="column" flexGrow={1}>
             <ProfileEditor navigate={navigate} />
-            <CollectionEditor navigate={navigate} />
           </Box>
         </header>
       </div>
