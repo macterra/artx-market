@@ -329,7 +329,7 @@ app.get('/api/profile/:xid?', async (req, res) => {
 
 app.patch('/api/profile/', ensureAuthenticated, async (req, res) => {
   try {
-    const { name, tagline, pfp, collections } = req.body;
+    const { name, tagline, pfp, deposit, collections } = req.body;
     const userId = req.user.xid;
 
     const agentData = await getAgent(userId);
@@ -348,6 +348,10 @@ app.patch('/api/profile/', ensureAuthenticated, async (req, res) => {
 
     if (pfp) {
       agentData.pfp = pfp;
+    }
+
+    if (deposit) {
+      agentData.deposit = deposit;
     }
 
     if (collections) {

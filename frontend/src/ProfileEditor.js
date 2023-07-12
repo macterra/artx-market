@@ -7,6 +7,7 @@ const ProfileEditor = ({ navigate }) => {
     const [profile, setProfile] = useState({});
     const [name, setName] = useState('');
     const [tagline, setTagline] = useState('');
+    const [address, setAddress] = useState('');
     const [tab, setTab] = useState(null);
 
     useEffect(() => {
@@ -17,6 +18,7 @@ const ProfileEditor = ({ navigate }) => {
                 setProfile(data);
                 setName(data.name);
                 setTagline(data.tagline);
+                setAddress(data.deposit);
                 setTab("name");
             } catch (error) {
                 console.error('Error fetching profile data:', error);
@@ -37,6 +39,26 @@ const ProfileEditor = ({ navigate }) => {
             if (response.ok) {
                 profile.name = name;
                 profile.tagline = tagline;
+            } else {
+                const data = await response.json();
+                console.error('Error updating profile:', data.message);
+                alert(data.message);
+            }
+        } catch (error) {
+            console.error('Error updating profile:', error);
+        }
+    };
+
+    const handleSaveAddress = async () => {
+        try {
+            const response = await fetch('/api/profile', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', },
+                body: JSON.stringify({ deposit: address }),
+            });
+
+            if (response.ok) {
+                profile.deposit = address;
             } else {
                 const data = await response.json();
                 console.error('Error updating profile:', data.message);
@@ -88,6 +110,20 @@ const ProfileEditor = ({ navigate }) => {
                     }
                     {tab === 'coll' &&
                         <CollectionEditor />
+                    }
+                    {tab === 'ln' &&
+                        <form>
+                            <TextField
+                                label="Lightning Address"
+                                value={address}
+                                onChange={(e) => setAddress(e.target.value)}
+                                fullWidth
+                                margin="normal"
+                            />
+                            <Button variant="contained" color="primary" onClick={handleSaveAddress}>
+                                Save
+                            </Button>
+                        </form>
                     }
                 </Box>
             </div>
