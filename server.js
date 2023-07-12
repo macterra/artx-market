@@ -386,8 +386,8 @@ app.post('/api/profile/:xid/invoice', async (req, res) => {
       res.status(404).json({ message: 'Profile not found' });
     }
   } catch (error) {
-    console.error('Error fetching profile data:', error);
-    res.status(500).json({ message: 'Error fetching profile data' });
+    console.error('Error creating invoice:', error);
+    res.status(500).json({ message: 'Error creating invoice' });
   }
 });
 

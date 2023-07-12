@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Box, Button, TextField, Tab, Tabs } from '@mui/material';
+import { Box, Button, Grid, TextField, Tab, Tabs } from '@mui/material';
 import CollectionEditor from './CollectionEditor';
 
 const ProfileEditor = ({ navigate }) => {
@@ -61,6 +61,7 @@ const ProfileEditor = ({ navigate }) => {
 
             if (response.ok) {
                 profile.deposit = address;
+                setInvoice(null);
             } else {
                 const data = await response.json();
                 console.error('Error updating profile:', data.message);
@@ -136,26 +137,47 @@ const ProfileEditor = ({ navigate }) => {
                     }
                     {tab === 'ln' &&
                         <form>
-                            <TextField
-                                label="Lightning Address"
-                                value={address}
-                                onChange={(e) => setAddress(e.target.value)}
-                                fullWidth
-                                margin="normal"
-                            />
-                            <Button variant="contained" color="primary" onClick={handleSaveAddress}>
-                                Save
-                            </Button>
-                            {address &&
-                                <Button variant="contained" color="primary" onClick={handleTestAddress}>
-                                    Test
-                                </Button>
-                            }
-                            {invoice &&
-                                <div>
-                                    <a href={invoice}>zap!</a>
-                                </div>
-                            }
+                            <Grid container direction="column" alignItems="center">
+                                <Grid item>
+                                    <TextField
+                                        label="Lightning Address"
+                                        value={address}
+                                        onChange={(e) => setAddress(e.target.value)}
+                                        fullWidth
+                                        margin="normal"
+                                        sx={{ width: '20ch' }}
+                                    />
+                                </Grid>
+                                <Grid item>
+                                    <Box sx={{ marginTop: 2 }}>
+                                        <Grid container spacing={2}>
+                                            <Grid item>
+                                                <Button variant="contained" color="primary" onClick={handleSaveAddress}>
+                                                    Save
+                                                </Button>
+                                            </Grid>
+                                            {address &&
+                                                <Grid item>
+                                                    <Button
+                                                        variant="contained"
+                                                        color="primary"
+                                                        onClick={handleTestAddress}
+                                                        disabled={!!invoice}>
+                                                        Test
+                                                    </Button>
+                                                </Grid>
+                                            }
+                                        </Grid>
+                                    </Box>
+                                </Grid>
+                                {invoice &&
+                                    <Grid item>
+                                        <div>
+                                            <a href={invoice} onClick={() => setInvoice(null)}>⚡ zap 10 sats ⚡</a>
+                                        </div>
+                                    </Grid>
+                                }
+                            </Grid>
                         </form>
                     }
                 </Box>
