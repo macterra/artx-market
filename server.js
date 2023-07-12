@@ -7,6 +7,8 @@ const LnurlAuth = require('passport-lnurl-auth');
 const session = require('express-session');
 const morgan = require('morgan');
 const dotenv = require('dotenv');
+const { requestInvoice } = require('lnurl-pay');
+
 const {
   getAgentFromKey,
   getAgent,
@@ -364,6 +366,28 @@ app.patch('/api/profile/', ensureAuthenticated, async (req, res) => {
   } catch (error) {
     console.error('Error updating metadata:', error);
     res.status(500).json({ message: 'Error updating metadata' });
+  }
+});
+
+app.post('/api/profile/:xid/invoice', async (req, res) => {
+  const profileId = req.params.xid;
+  const { amount } = req.body;
+
+  try {
+    const agentData = await getAgent(profileId);
+
+    if (agentData) {
+      const { invoice } = await requestInvoice({
+        lnUrlOrAddress: agentData.deposit,
+        tokens: amount,
+      });
+      res.json({ invoice: invoice });
+    } else {
+      res.status(404).json({ message: 'Profile not found' });
+    }
+  } catch (error) {
+    console.error('Error fetching profile data:', error);
+    res.status(500).json({ message: 'Error fetching profile data' });
   }
 });
 

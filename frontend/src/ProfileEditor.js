@@ -8,6 +8,7 @@ const ProfileEditor = ({ navigate }) => {
     const [name, setName] = useState('');
     const [tagline, setTagline] = useState('');
     const [address, setAddress] = useState('');
+    const [invoice, setInvoice] = useState(null);
     const [tab, setTab] = useState(null);
 
     useEffect(() => {
@@ -22,6 +23,7 @@ const ProfileEditor = ({ navigate }) => {
                 setTab("name");
             } catch (error) {
                 console.error('Error fetching profile data:', error);
+                //navigate('/');
             }
         };
 
@@ -66,6 +68,27 @@ const ProfileEditor = ({ navigate }) => {
             }
         } catch (error) {
             console.error('Error updating profile:', error);
+        }
+    };
+
+    const handleTestAddress = async () => {
+        try {
+            const response = await fetch(`/api/profile/${profile.xid}/invoice`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', },
+                body: JSON.stringify({ amount: 10 }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setInvoice(`lightning:${data.invoice}`);
+            } else {
+                const data = await response.json();
+                console.error('Error:', data.message);
+                alert(data.message);
+            }
+        } catch (error) {
+            console.error('Error:', error);
         }
     };
 
@@ -123,6 +146,16 @@ const ProfileEditor = ({ navigate }) => {
                             <Button variant="contained" color="primary" onClick={handleSaveAddress}>
                                 Save
                             </Button>
+                            {address &&
+                                <Button variant="contained" color="primary" onClick={handleTestAddress}>
+                                    Test
+                                </Button>
+                            }
+                            {invoice &&
+                                <div>
+                                    <a href={invoice}>zap!</a>
+                                </div>
+                            }
                         </form>
                     }
                 </Box>
