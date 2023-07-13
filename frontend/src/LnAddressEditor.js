@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Button, Grid, TextField } from '@mui/material';
+import axios from 'axios';
 
 const LnAddressEditor = ({ profile }) => {
     const [address, setAddress] = useState(profile.deposit);
@@ -7,43 +8,32 @@ const LnAddressEditor = ({ profile }) => {
 
     const handleSaveAddress = async () => {
         try {
-            const response = await fetch('/api/v1/profile', {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json', },
-                body: JSON.stringify({ deposit: address }),
-            });
+            const response = await axios.patch('/api/v1/profile', { deposit: address });
 
-            if (response.ok) {
+            if (response.status === 200) {
                 profile.deposit = address;
                 setInvoice(null);
             } else {
-                const data = await response.json();
-                console.error('Error updating profile:', data.message);
-                alert(data.message);
+                alert(response.data.message);
             }
         } catch (error) {
-            console.error('Error updating profile:', error);
+            console.error('Error:', error);
         }
     };
 
     const handleTestAddress = async () => {
         try {
-            const response = await fetch(`/api/v1/profile/${profile.xid}/invoice`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', },
-                body: JSON.stringify({ amount: 10 }),
-            });
+            const response = await axios.post(`/api/v1/profile/${profile.xid}/invoice`, { amount: 10 });
 
-            if (response.ok) {
-                const data = await response.json();
-                setInvoice(`lightning:${data.invoice}`);
+            if (response.status === 200) {
+                setInvoice(`lightning:${response.data.invoice}`);
             } else {
-                const data = await response.json();
-                console.error('Error:', data.message);
-                alert(data.message);
+                console.error('Status Error:', response.data.message);
+                alert(response.data.message);
             }
         } catch (error) {
-            console.error('Error:', error);
+            console.error('Catch Error:', error);
+            alert(error.message);
         }
     };
 
