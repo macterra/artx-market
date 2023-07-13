@@ -58,7 +58,7 @@ const MetadataView = ({ navigate, metadata }) => {
         const fetchProfile = async () => {
             try {
                 const ownerId = metadata.asset.owner;
-                let response = await fetch(`/api/profile/${ownerId}`);
+                let response = await fetch(`/api/v1/profile/${ownerId}`);
                 const profileData = await response.json();
 
                 setOwnerId(profileData.xid);
@@ -68,7 +68,7 @@ const MetadataView = ({ navigate, metadata }) => {
                     setIsDeleted(true);
                 }
                 else {
-                    response = await fetch(`/api/collections/${metadata.asset.collection}`);
+                    response = await fetch(`/api/v1/collections/${metadata.asset.collection}`);
                     const collectionData = await response.json();
                     const { firstXid, prevXid, nextXid, lastXid } = findAdjacentXids(collectionData.collection.assets, metadata.asset.xid);
 

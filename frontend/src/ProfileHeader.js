@@ -9,11 +9,11 @@ const ProfileHeader = ({ userId }) => {
         const fetchProfile = async () => {
             try {
                 if (!userId) {
-                    const response = await fetch(`/api/profile`);
+                    const response = await fetch(`/api/v1/profile`);
                     const profileData = await response.json();
                     setProfile(profileData);
                 } else {
-                    const response = await fetch(`/api/profile/${userId}`);
+                    const response = await fetch(`/api/v1/profile/${userId}`);
                     const profileData = await response.json();
                     setProfile(profileData);
                 }

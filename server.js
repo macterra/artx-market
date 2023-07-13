@@ -66,7 +66,7 @@ app.use(express.static(path.join(__dirname, 'frontend/build')));
 // Serve the assets
 app.use('/data', express.static(path.join(__dirname, config.data)));
 
-app.get('/api/data', (req, res) => {
+app.get('/api/v1/data', (req, res) => {
   res.json({ message: 'Welcome to the ArtX!' });
 });
 
@@ -157,7 +157,7 @@ function ensureAuthenticated(req, res, next) {
   }
 }
 
-app.get('/api/asset/:xid', async (req, res) => {
+app.get('/api/v1/asset/:xid', async (req, res) => {
   try {
     const { xid } = req.params;
     const assetData = await getAsset(xid);
@@ -168,7 +168,7 @@ app.get('/api/asset/:xid', async (req, res) => {
   }
 });
 
-app.patch('/api/asset/:xid', ensureAuthenticated, async (req, res) => {
+app.patch('/api/v1/asset/:xid', ensureAuthenticated, async (req, res) => {
   const { xid } = req.params;
   const { title, collection } = req.body;
   const userId = req.user.xid;
@@ -202,7 +202,7 @@ app.patch('/api/asset/:xid', ensureAuthenticated, async (req, res) => {
   }
 });
 
-app.post('/api/asset/:xid/mint', ensureAuthenticated, async (req, res) => {
+app.post('/api/v1/asset/:xid/mint', ensureAuthenticated, async (req, res) => {
   try {
     const xid = req.params.xid;
     const { editions } = req.body;
@@ -227,7 +227,7 @@ app.post('/api/asset/:xid/mint', ensureAuthenticated, async (req, res) => {
   }
 });
 
-app.post('/api/asset/:xid/list', ensureAuthenticated, async (req, res) => {
+app.post('/api/v1/asset/:xid/list', ensureAuthenticated, async (req, res) => {
   try {
     const xid = req.params.xid;
     const { price } = req.body;
@@ -258,7 +258,7 @@ app.post('/api/asset/:xid/list', ensureAuthenticated, async (req, res) => {
   }
 });
 
-app.post('/api/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
+app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
   try {
     const xid = req.params.xid;
     const userId = req.user.xid;
@@ -283,7 +283,7 @@ app.post('/api/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
   }
 });
 
-app.get('/api/profiles/', async (req, res) => {
+app.get('/api/v1/profiles/', async (req, res) => {
   const agentsDir = config.agents;
   const profiles = [];
 
@@ -309,7 +309,7 @@ app.get('/api/profiles/', async (req, res) => {
   }
 });
 
-app.get('/api/profile/:xid?', async (req, res) => {
+app.get('/api/v1/profile/:xid?', async (req, res) => {
   const profileId = req.params.xid;
   const userId = req.user?.xid;
 
@@ -329,7 +329,7 @@ app.get('/api/profile/:xid?', async (req, res) => {
   }
 });
 
-app.patch('/api/profile/', ensureAuthenticated, async (req, res) => {
+app.patch('/api/v1/profile/', ensureAuthenticated, async (req, res) => {
   try {
     const { name, tagline, pfp, deposit, collections } = req.body;
     const userId = req.user.xid;
@@ -369,7 +369,7 @@ app.patch('/api/profile/', ensureAuthenticated, async (req, res) => {
   }
 });
 
-app.post('/api/profile/:xid/invoice', async (req, res) => {
+app.post('/api/v1/profile/:xid/invoice', async (req, res) => {
   const profileId = req.params.xid;
   const { amount } = req.body;
 
@@ -391,7 +391,7 @@ app.post('/api/profile/:xid/invoice', async (req, res) => {
   }
 });
 
-app.get('/api/collections/:xid', async (req, res) => {
+app.get('/api/v1/collections/:xid', async (req, res) => {
   try {
     const userId = req.user?.xid;
     const collection = await getCollection(req.params.xid, userId);
@@ -402,7 +402,7 @@ app.get('/api/collections/:xid', async (req, res) => {
   }
 });
 
-app.post('/api/collections/', ensureAuthenticated, async (req, res) => {
+app.post('/api/v1/collections/', ensureAuthenticated, async (req, res) => {
   try {
     const { name } = req.body;
     const collection = await createCollection(req.user.xid, name);
@@ -414,7 +414,7 @@ app.post('/api/collections/', ensureAuthenticated, async (req, res) => {
   }
 });
 
-app.patch('/api/collections/:xid', ensureAuthenticated, async (req, res) => {
+app.patch('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => {
   try {
     const { title, defaultTitle } = req.body;
     const collection = await getAsset(req.params.xid);
@@ -439,7 +439,7 @@ app.patch('/api/collections/:xid', ensureAuthenticated, async (req, res) => {
   }
 });
 
-app.post('/api/collections/:xid/upload', ensureAuthenticated, upload.array('images', 100), async (req, res) => {
+app.post('/api/v1/collections/:xid/upload', ensureAuthenticated, upload.array('images', 100), async (req, res) => {
   try {
     const collectionId = req.params.xid;
 
@@ -453,7 +453,7 @@ app.post('/api/collections/:xid/upload', ensureAuthenticated, upload.array('imag
   }
 });
 
-app.get('/api/charge/:chargeId', ensureAuthenticated, async (req, res) => {
+app.get('/api/v1/charge/:chargeId', ensureAuthenticated, async (req, res) => {
   try {
     const chargeId = req.params.chargeId;
 
@@ -474,7 +474,7 @@ app.get('/api/charge/:chargeId', ensureAuthenticated, async (req, res) => {
   }
 });
 
-app.post('/api/charge', ensureAuthenticated, async (req, res) => {
+app.post('/api/v1/charge', ensureAuthenticated, async (req, res) => {
   try {
     const { description, amount } = req.body;
 

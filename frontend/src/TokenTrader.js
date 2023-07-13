@@ -33,16 +33,16 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
                 const xrates = await fetchExchangeRate();
                 setExchangeRate(xrates.usd);
 
-                let response = await fetch(`/api/profile/`);
+                let response = await fetch(`/api/v1/profile/`);
                 const myProfile = await response.json();
 
                 const ownedNfts = [];
                 const listedNfts = [];
 
                 for (const xid of metadata.token.nfts) {
-                    response = await fetch(`/api/asset/${xid}`);
+                    response = await fetch(`/api/v1/asset/${xid}`);
                     const nft = await response.json();
-                    response = await fetch(`/api/profile/${nft.asset.owner}`);
+                    response = await fetch(`/api/v1/profile/${nft.asset.owner}`);
                     nft.owner = await response.json();
 
                     if (nft.asset.owner === myProfile.xid) {
@@ -69,7 +69,7 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
 
     const handleListClick = async (nft) => {
         try {
-            const response = await fetch(`/api/asset/${nft.asset.xid}/list`, {
+            const response = await fetch(`/api/v1/asset/${nft.asset.xid}/list`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', },
                 body: JSON.stringify({ price: nft.nft.newPrice }),
@@ -137,7 +137,7 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
         setNftSale(nft);
 
         try {
-            const response = await fetch('/api/charge', {
+            const response = await fetch('/api/v1/charge', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', },
                 body: JSON.stringify({ description: 'buy NFT', amount: nft.nft.price }),
@@ -159,11 +159,11 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
         setModalOpen(false);
 
         try {
-            const response = await fetch(`/api/charge/${charge.id}`);
+            const response = await fetch(`/api/v1/charge/${charge.id}`);
             const chargeData = await response.json();
 
             if (chargeData.paid) {
-                const response = await fetch(`/api/asset/${nftSale.asset.xid}/buy`, {
+                const response = await fetch(`/api/v1/asset/${nftSale.asset.xid}/buy`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', },
                     body: JSON.stringify({ price: nftSale.nft.price, chargeId: charge.id }),

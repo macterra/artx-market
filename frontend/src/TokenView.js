@@ -39,10 +39,10 @@ const TokenView = ({ metadata }) => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                let response = await fetch(`/api/profile/`);
+                let response = await fetch(`/api/v1/profile/`);
                 const myProfile = await response.json();
 
-                response = await fetch(`/api/collections/${metadata.asset.collection}`);
+                response = await fetch(`/api/v1/collections/${metadata.asset.collection}`);
                 const collectionData = await response.json();
                 setCollection(collectionData.asset.title);
 
@@ -51,9 +51,9 @@ const TokenView = ({ metadata }) => {
                 const ownedEditions = [];
 
                 for (const xid of metadata.token.nfts) {
-                    response = await fetch(`/api/asset/${xid}`);
+                    response = await fetch(`/api/v1/asset/${xid}`);
                     const nft = await response.json();
-                    response = await fetch(`/api/profile/${nft.asset.owner}`);
+                    response = await fetch(`/api/v1/profile/${nft.asset.owner}`);
                     nft.owner = await response.json();
                     nfts.push(nft);
 

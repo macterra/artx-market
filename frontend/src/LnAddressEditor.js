@@ -7,7 +7,7 @@ const LnAddressEditor = ({ profile }) => {
 
     const handleSaveAddress = async () => {
         try {
-            const response = await fetch('/api/profile', {
+            const response = await fetch('/api/v1/profile', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json', },
                 body: JSON.stringify({ deposit: address }),
@@ -28,7 +28,7 @@ const LnAddressEditor = ({ profile }) => {
 
     const handleTestAddress = async () => {
         try {
-            const response = await fetch(`/api/profile/${profile.xid}/invoice`, {
+            const response = await fetch(`/api/v1/profile/${profile.xid}/invoice`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', },
                 body: JSON.stringify({ amount: 10 }),

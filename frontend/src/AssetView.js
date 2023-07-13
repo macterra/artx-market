@@ -21,7 +21,7 @@ const AssetView = ({ navigate, isAuthenticated }) => {
     useEffect(() => {
         const fetchMetadata = async () => {
             try {
-                const response = await fetch(`/api/asset/${xid}`);
+                const response = await fetch(`/api/v1/asset/${xid}`);
                 const metadata = await response.json();
                 setMetadata(metadata);
 

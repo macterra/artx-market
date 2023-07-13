@@ -9,7 +9,7 @@ const CollectionEditor = ({ navigate }) => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                let response = await fetch(`/api/profile`);
+                let response = await fetch(`/api/v1/profile`);
                 const profileData = await response.json();
                 setCollections(profileData.collections);
             } catch (error) {
@@ -28,7 +28,7 @@ const CollectionEditor = ({ navigate }) => {
                     defaultTitle: collection.collection.default.title,
                 };
 
-                await fetch(`/api/collections/${collection.asset.xid}`, {
+                await fetch(`/api/v1/collections/${collection.asset.xid}`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json', },
                     body: JSON.stringify(updates),
@@ -37,7 +37,7 @@ const CollectionEditor = ({ navigate }) => {
 
             const collectionXids = collections.map(collection => collection.asset.xid);
 
-            const response = await fetch('/api/profile', {
+            const response = await fetch('/api/v1/profile', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json', },
                 body: JSON.stringify({ collections: collectionXids }),
@@ -56,7 +56,7 @@ const CollectionEditor = ({ navigate }) => {
     };
 
     const handleAddCollection = async () => {
-        const response = await fetch('/api/collections', {
+        const response = await fetch('/api/v1/collections', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', },
             body: JSON.stringify({ name: 'new' }),

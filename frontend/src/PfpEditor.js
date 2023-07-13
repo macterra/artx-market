@@ -8,7 +8,7 @@ const PfpEditor = ({ metadata, setTab }) => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const response = await fetch(`/api/profile`);
+                const response = await fetch(`/api/v1/profile`);
                 const data = await response.json();
                 setProfile(data);
             } catch (error) {
@@ -21,7 +21,7 @@ const PfpEditor = ({ metadata, setTab }) => {
 
     const handleSaveClick = async () => {
         try {
-            const response = await fetch('/api/profile', {
+            const response = await fetch('/api/v1/profile', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json', },
                 body: JSON.stringify({ pfp: metadata.file.path }),

@@ -11,7 +11,7 @@ const CollectionView = ({ navigate }) => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const response = await fetch(`/api/collections/${xid}`);
+                const response = await fetch(`/api/v1/collections/${xid}`);
                 const collectionData = await response.json();
 
                 if (!collectionData.error) {
@@ -38,7 +38,7 @@ const CollectionView = ({ navigate }) => {
                 formData.append('images', file);
             }
 
-            const response = await fetch(`/api/collections/${collection.asset.xid}/upload`, {
+            const response = await fetch(`/api/v1/collections/${collection.asset.xid}/upload`, {
                 method: 'POST',
                 body: formData,
             });

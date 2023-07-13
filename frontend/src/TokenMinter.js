@@ -25,12 +25,12 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const profResp = await fetch(`/api/profile/${metadata.asset.owner}`);
+                const profResp = await fetch(`/api/v1/profile/${metadata.asset.owner}`);
                 const profileData = await profResp.json();
                 const fileSize = metadata.file.size;
                 const collectionId = metadata.asset.collection;
 
-                const collResp = await fetch(`/api/collections/${collectionId}`);
+                const collResp = await fetch(`/api/v1/collections/${collectionId}`);
                 const collectionData = await collResp.json();
 
                 setOwner(profileData.name);
@@ -63,7 +63,7 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
 
     const handleMintClick = async () => {
         try {
-            const response = await fetch('/api/charge', {
+            const response = await fetch('/api/v1/charge', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', },
                 body: JSON.stringify({ description: 'mint', amount: storageFee + 100 * editions }),
@@ -85,11 +85,11 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
         setModalOpen(false);
 
         try {
-            const response = await fetch(`/api/charge/${charge.id}`);
+            const response = await fetch(`/api/v1/charge/${charge.id}`);
             const chargeData = await response.json();
 
             if (chargeData.paid) {
-                const response = await fetch(`/api/asset/${metadata.asset.xid}/mint`, {
+                const response = await fetch(`/api/v1/asset/${metadata.asset.xid}/mint`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', },
                     body: JSON.stringify({ editions: editions }),

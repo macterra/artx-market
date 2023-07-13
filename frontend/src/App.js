@@ -63,7 +63,7 @@ function ViewLogin() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await fetch(`/api/profile`);
+        const response = await fetch(`/api/v1/profile`);
         const profileData = await response.json();
 
         if (profileData.xid) {
@@ -131,7 +131,7 @@ function ViewCollection() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await fetch(`/api/collections/${xid}`);
+        const response = await fetch(`/api/v1/collections/${xid}`);
         const collectionData = await response.json();
 
         if (collectionData.error) {

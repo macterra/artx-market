@@ -9,7 +9,7 @@ const AssetEditor = ({ metadata, setTab, setRefreshKey }) => {
     useEffect(() => {
         const fetchMetadata = async () => {
             try {
-                const profileResponse = await fetch('/api/profile');
+                const profileResponse = await fetch('/api/v1/profile');
                 const profileData = await profileResponse.json();
 
                 setTitle(metadata.asset.title);
@@ -29,7 +29,7 @@ const AssetEditor = ({ metadata, setTab, setRefreshKey }) => {
 
     const handleSaveClick = async () => {
         try {
-            const response = await fetch(`/api/asset/${metadata.asset.xid}`, {
+            const response = await fetch(`/api/v1/asset/${metadata.asset.xid}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ title: title, collection: selectedCollection }),
@@ -51,7 +51,7 @@ const AssetEditor = ({ metadata, setTab, setRefreshKey }) => {
 
     const handleDeleteClick = async () => {
         try {
-            const response = await fetch(`/api/asset/${metadata.asset.xid}`, {
+            const response = await fetch(`/api/v1/asset/${metadata.asset.xid}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ collection: 'deleted' }),

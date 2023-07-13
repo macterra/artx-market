@@ -13,7 +13,7 @@ const ProfileEditor = ({ navigate }) => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const response = await fetch(`/api/profile`);
+                const response = await fetch(`/api/v1/profile`);
                 const data = await response.json();
                 setProfile(data);
                 setTab("name");

@@ -12,7 +12,7 @@ const ProfileView = ({ navigate }) => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const response = await fetch(`/api/profile/${userId}`);
+                const response = await fetch(`/api/v1/profile/${userId}`);
                 const profileData = await response.json();
                 setProfile(profileData);
             } catch (error) {

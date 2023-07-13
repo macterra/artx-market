@@ -8,7 +8,7 @@ const NameEditor = ({ profile }) => {
 
     const handleSaveClick = async () => {
         try {
-            const response = await fetch('/api/profile', {
+            const response = await fetch('/api/v1/profile', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json', },
                 body: JSON.stringify({ name: name, tagline: tagline }),
