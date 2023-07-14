@@ -9,7 +9,7 @@ const morgan = require('morgan');
 const dotenv = require('dotenv');
 const { requestInvoice } = require('lnurl-pay');
 
-const { createCharge } = require('./satspay');
+const { createCharge, checkCharge } = require('./satspay');
 const {
   getAgentFromKey,
   getAgent,
@@ -456,18 +456,18 @@ app.post('/api/v1/collections/:xid/upload', ensureAuthenticated, upload.array('i
 
 app.get('/api/v1/charge/:chargeId', ensureAuthenticated, async (req, res) => {
   try {
-    const chargeId = req.params.chargeId;
+    const chargeData = await checkCharge(req.params.chargeId);
 
-    const response = await fetch(`${process.env.SATSPAY_HOST}/satspay/api/v1/charge/${chargeId}`, {
-      method: 'GET',
-      headers: {
-        'X-API-KEY': process.env.SATSPAY_API_KEY,
-      },
-    });
-
-    const chargeData = await response.json();
     console.log(chargeData);
-    res.status(200).json({ paid: chargeData.paid });
+    
+    res.status(200).json({
+      id: chargeData.id,
+      description: chargeData.description,
+      amount: chargeData.amount,
+      paid: chargeData.paid,
+      time_elapsed: chargeData.time_elapsed,
+      time_left: chargeData.time_left,
+    });
   }
   catch (error) {
     console.error('Error:', error);
@@ -479,7 +479,7 @@ app.post('/api/v1/charge', ensureAuthenticated, async (req, res) => {
   try {
     const { description, amount } = req.body;
     const chargeData = await createCharge(description, amount);
-    
+
     res.status(200).json({
       ok: true,
       id: chargeData.id,

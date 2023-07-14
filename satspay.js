@@ -30,6 +30,20 @@ const createCharge = async (description, amount) => {
     return chargeData;
 };
 
+const checkCharge = async (chargeId) => {
+
+    const response = await fetch(`${process.env.SATSPAY_HOST}/satspay/api/v1/charge/${chargeId}`, {
+        method: 'GET',
+        headers: {
+            'X-API-KEY': process.env.SATSPAY_API_KEY,
+        },
+    });
+
+    const chargeData = await response.json();
+
+    return chargeData;
+};
+
 const sendPayment = async (address, amount) => {
     try {
         const { invoice } = await requestInvoice({
@@ -61,5 +75,6 @@ const sendPayment = async (address, amount) => {
 
 module.exports = {
     createCharge,
+    checkCharge,
     sendPayment,
 };
