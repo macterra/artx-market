@@ -9,7 +9,7 @@ const morgan = require('morgan');
 const dotenv = require('dotenv');
 const { requestInvoice } = require('lnurl-pay');
 
-const { createCharge, checkCharge } = require('./satspay');
+const { createCharge, checkCharge, sendPayment } = require('./satspay');
 const {
   getAgentFromKey,
   getAgent,
@@ -263,19 +263,44 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
   try {
     const xid = req.params.xid;
     const userId = req.user.xid;
+    const { price, chargeId } = req.body;
+
     const assetData = await getAsset(xid);
 
     if (!assetData.nft) {
-      res.status(500).json({ message: 'Error' });
+      return res.status(500).json({ message: 'Error' });
     }
 
     if (assetData.asset.owner == userId) {
       return res.status(500).json({ message: "Already owned" });
     }
 
+    const seller = await getAgent(assetData.asset.owner);
+
+    if (!seller.deposit) {
+      console.log(`seller does not have a deposit address`);
+      return res.status(500).json({ message: 'Error' });
+    }
+
+    // TBD associate this charge with this asset for validation
+    const chargeData = await checkCharge(chargeId);
+
+    if (!chargeData.paid) {
+      console.log(`charge ${chargeId} not paid`);
+      return res.status(500).json({ message: 'Error' });
+    }
+
+    if (chargeData.amount != assetData.nft.price) {
+      console.log(`price mismatch between charge ${chargeId.amount} and nft ${assetData.nft.price}`);
+      return res.status(500).json({ message: 'Error' });
+    }
+
     console.log(`buy ${xid} for ${assetData.nft.price}`);
 
     await transferAsset(xid, userId);
+
+    // TBD payout should include royalty and market overhead
+    await sendPayment(seller.deposit, chargeData.amount);
 
     res.json({ ok: true, message: 'Success' });
   } catch (error) {
@@ -459,7 +484,7 @@ app.get('/api/v1/charge/:chargeId', ensureAuthenticated, async (req, res) => {
     const chargeData = await checkCharge(req.params.chargeId);
 
     console.log(chargeData);
-    
+
     res.status(200).json({
       id: chargeData.id,
       description: chargeData.description,
