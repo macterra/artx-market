@@ -9,6 +9,7 @@ const morgan = require('morgan');
 const dotenv = require('dotenv');
 const { requestInvoice } = require('lnurl-pay');
 
+const { createCharge } = require('./satspay');
 const {
   getAgentFromKey,
   getAgent,
@@ -477,34 +478,8 @@ app.get('/api/v1/charge/:chargeId', ensureAuthenticated, async (req, res) => {
 app.post('/api/v1/charge', ensureAuthenticated, async (req, res) => {
   try {
     const { description, amount } = req.body;
-
-    const data = {
-      onchainwallet: "",
-      lnbitswallet: process.env.SATSPAY_LN_WALLET,
-      description: description,
-      webhook: "",
-      completelink: "",
-      completelinktext: "",
-      custom_css: "",
-      time: 3,
-      amount: amount,
-      extra: "{\"mempool_endpoint\": \"https://mempool.space\", \"network\": \"Mainnet\"}",
-    };
-
-    console.log(JSON.stringify(data));
-
-    const response = await fetch(`${process.env.SATSPAY_HOST}/satspay/api/v1/charge`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-KEY': process.env.SATSPAY_API_KEY,
-      },
-      body: JSON.stringify(data),
-    });
-
-    const chargeData = await response.json();
-    console.log(chargeData);
-
+    const chargeData = await createCharge(description, amount);
+    
     res.status(200).json({
       ok: true,
       id: chargeData.id,
