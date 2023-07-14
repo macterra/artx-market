@@ -483,7 +483,7 @@ app.post('/api/v1/charge', ensureAuthenticated, async (req, res) => {
     res.status(200).json({
       ok: true,
       id: chargeData.id,
-      url: `${process.env.SATSPAY_HOST}/satspay/${chargeData.id}`,
+      url: chargeData.url,
     });
   } catch (error) {
     console.error('Error:', error);

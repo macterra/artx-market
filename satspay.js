@@ -13,29 +13,28 @@ const createCharge = async (description, amount) => {
         time: 3,
         amount: amount,
         extra: "{\"mempool_endpoint\": \"https://mempool.space\", \"network\": \"Mainnet\"}",
-      };
-  
-      //console.log(JSON.stringify(data));
-  
-      const response = await fetch(`${process.env.SATSPAY_HOST}/satspay/api/v1/charge`, {
+    };
+
+    const response = await fetch(`${process.env.SATSPAY_HOST}/satspay/api/v1/charge`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'X-API-KEY': process.env.SATSPAY_API_KEY,
+            'Content-Type': 'application/json',
+            'X-API-KEY': process.env.SATSPAY_API_KEY,
         },
         body: JSON.stringify(data),
-      });
-  
-      const chargeData = await response.json();
-      //console.log(chargeData);
-      return chargeData;
+    });
+
+    const chargeData = await response.json();
+    chargeData.url = `${process.env.SATSPAY_HOST}/satspay/${chargeData.id}`;
+
+    return chargeData;
 };
 
 const sendPayment = async (address, amount) => {
     try {
         const { invoice } = await requestInvoice({
-             lnUrlOrAddress: address,
-             tokens: amount,
+            lnUrlOrAddress: address,
+            tokens: amount,
         });
 
         const data = {
