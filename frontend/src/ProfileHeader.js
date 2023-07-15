@@ -55,9 +55,12 @@ const ProfileHeader = ({ userId }) => {
                 <a href={`/profile/${profile.xid}`} style={linkStyle}>
                     <span>{profile.name}</span>
                 </a>
+                {profile.deposit &&
+                    <a href={`lightning:${profile.deposit}`} style={linkStyle}>⚡</a>
+                }
                 <span style={{ fontSize: '12px', display: 'block' }}>{profile.tagline}</span>
             </div>
-        </Box>
+        </Box >
     );
 };
 
