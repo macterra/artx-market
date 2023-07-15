@@ -31,6 +31,8 @@ dotenv.config();
 const config = {
   host: process.env.ARTX_HOST || 'localhost',
   port: process.env.ARTX_PORT || 5000,
+  txnFeeDeposit: process.env.TXN_FEE_DEPOSIT,
+  txnFeeRate: process.env.TXN_FEE_RATE || 0.025,
   data: 'data',
   uploads: 'data/uploads',
   assets: 'data/assets',
@@ -263,7 +265,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
   try {
     const xid = req.params.xid;
     const userId = req.user.xid;
-    const { price, chargeId } = req.body;
+    const { chargeId } = req.body;
 
     const assetData = await getAsset(xid);
 
@@ -295,12 +297,34 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
       return res.status(500).json({ message: 'Error' });
     }
 
-    console.log(`buy ${xid} for ${assetData.nft.price}`);
-
     await transferAsset(xid, userId);
+    console.log(`audit: buy ${xid} for ${assetData.nft.price}`);
 
-    // TBD payout should include royalty and market overhead
-    await sendPayment(seller.deposit, chargeData.amount);
+    const price = chargeData.amount;
+    const tokenData = await getAsset(assetData.nft.asset);
+    const royaltyRate = tokenData.token?.royalty || 0;
+    const royalty = Math.round(price * royaltyRate);
+
+    if (royalty > 0) {
+      const creator = await getAgent(tokenData.asset.owner);
+
+      if (creator.deposit) {
+        await sendPayment(creator.deposit, royalty);
+        console.log(`audit: royalty ${royalty} to ${creator.deposit}`);
+      }
+    }
+
+    const txnFee = Math.round(config.txnFeeRate * price);
+
+    if (txnFee > 0 && config.txnFeeDeposit) {
+      await sendPayment(config.txnFeeDeposit, txnFee);
+      console.log(`audit: txn fee ${txnFee} to ${config.txnFeeDeposit}`);
+    }
+
+    const payout = price - royalty - txnFee;
+
+    await sendPayment(seller.deposit, payout);
+    console.log(`audit: payout ${payout} to ${seller.deposit}`);
 
     res.json({ ok: true, message: 'Success' });
   } catch (error) {
@@ -482,8 +506,6 @@ app.post('/api/v1/collections/:xid/upload', ensureAuthenticated, upload.array('i
 app.get('/api/v1/charge/:chargeId', ensureAuthenticated, async (req, res) => {
   try {
     const chargeData = await checkCharge(req.params.chargeId);
-
-    console.log(chargeData);
 
     res.status(200).json({
       id: chargeData.id,
