@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+  app:
+    image: macterra/artx-market
+    ports:
+      - '5000:5000'
+    volumes:
+      - ./data:/app/data
+    environment:
+      SATSPAY_HOST: ${SATSPAY_HOST}
+      SATSPAY_ADMIN_KEY: ${SATSPAY_ADMIN_KEY}
+      SATSPAY_API_KEY: ${SATSPAY_API_KEY}
+      SATSPAY_LN_WALLET: ${SATSPAY_LN_WALLET}
