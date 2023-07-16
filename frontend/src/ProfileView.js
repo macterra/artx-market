@@ -44,6 +44,8 @@ const ProfileView = ({ navigate }) => {
                 <Tab key="created" value="created" label={'Created'} />
                 <Tab key="minted" value="minted" label={'Minted'} />
                 <Tab key="collected" value="collected" label={'Collected'} />
+                <Tab key="listed" value="listed" label={'Listed'} />
+                <Tab key="unlisted" value="unlisted" label={'Unlisted'} />
                 {profile.isUser && <Tab key="deleted" value="deleted" label={'Deleted'} />}
             </Tabs>
             {tab === 'created' &&
@@ -62,6 +64,18 @@ const ProfileView = ({ navigate }) => {
                 <div>
                     <p>Collected</p>
                     <ImageGrid collection={profile.collected} />
+                </div>
+            }
+            {tab === 'listed' &&
+                <div>
+                    <p>Listed</p>
+                    <ImageGrid collection={profile.listed} />
+                </div>
+            }
+            {tab === 'unlisted' &&
+                <div>
+                    <p>Listed</p>
+                    <ImageGrid collection={profile.unlisted} />
                 </div>
             }
             {tab === 'deleted' &&

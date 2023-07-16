@@ -223,19 +223,23 @@ const getAgentAndCollections = async (profileId, userId) => {
             tokens[tokenId] = await getAsset(tokenId);
             tokens[tokenId].owned = 1;
             tokens[tokenId].label = editionData.asset.title;
+            tokens[tokenId].maxprice = editionData.nft.price;
         }
         else {
             tokens[tokenId].owned += 1;
             tokens[tokenId].label = `${tokens[tokenId].owned} editions`;
+            tokens[tokenId].maxprice = Math.max(editionData.nft.price, tokens[tokenId].maxprice);
         }
     }
 
     agentData.collections = collections;
 
     const tokensArray = Object.values(tokens);
-    
+
     agentData.minted = tokensArray.filter(token => token.asset.owner === profileId);
     agentData.collected = tokensArray.filter(token => token.asset.owner !== profileId);
+    agentData.listed = tokensArray.filter(token => token.maxprice > 0);
+    agentData.unlisted = tokensArray.filter(token => token.maxprice < 1);
 
     if (profileId === userId) {
         agentData.deleted = deleted;
