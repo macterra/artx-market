@@ -293,11 +293,6 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
 
     const seller = await getAgent(assetData.asset.owner);
 
-    if (!seller.deposit) {
-      console.log(`seller does not have a deposit address`);
-      return res.status(500).json({ message: 'Error' });
-    }
-
     // TBD associate this charge with this asset for validation
     const chargeData = await checkCharge(chargeId);
 
@@ -306,15 +301,16 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
       return res.status(500).json({ message: 'Error' });
     }
 
-    if (chargeData.amount != assetData.nft.price) {
-      console.log(`price mismatch between charge ${chargeId.amount} and nft ${assetData.nft.price}`);
+    const price = chargeData.amount;
+
+    if (price != assetData.nft.price) {
+      console.log(`price mismatch between charge ${price} and nft ${assetData.nft.price}`);
       return res.status(500).json({ message: 'Error' });
     }
 
     await transferAsset(xid, userId);
-    console.log(`audit: buy ${xid} for ${assetData.nft.price}`);
+    console.log(`audit: buy ${xid} for ${price}`);
 
-    const price = chargeData.amount;
     const tokenData = await getAsset(assetData.nft.asset);
     const royaltyRate = tokenData.token?.royalty || 0;
     const royalty = Math.round(price * royaltyRate);
@@ -323,22 +319,23 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
       const creator = await getAgent(tokenData.asset.owner);
 
       if (creator.deposit) {
-        await sendPayment(creator.deposit, royalty);
+        await sendPayment(creator.deposit, royalty, `royalty for asset ${xid}`);
         console.log(`audit: royalty ${royalty} to ${creator.deposit}`);
       }
     }
 
     const txnFee = Math.round(config.txnFeeRate * price);
-
-    if (txnFee > 0 && config.txnFeeDeposit) {
-      await sendPayment(config.txnFeeDeposit, txnFee);
-      console.log(`audit: txn fee ${txnFee} to ${config.txnFeeDeposit}`);
-    }
-
     const payout = price - royalty - txnFee;
 
-    await sendPayment(seller.deposit, payout);
-    console.log(`audit: payout ${payout} to ${seller.deposit}`);
+    if (seller.deposit) {
+      await sendPayment(seller.deposit, payout, `sale of asset ${xid}`);
+      console.log(`audit: payout ${payout} to ${seller.deposit}`);
+    }
+
+    if (txnFee > 0 && config.txnFeeDeposit) {
+      await sendPayment(config.txnFeeDeposit, txnFee, `txn fee for asset ${xid}`);
+      console.log(`audit: txn fee ${txnFee} to ${config.txnFeeDeposit}`);
+    }
 
     res.json({ ok: true, message: 'Success' });
   } catch (error) {

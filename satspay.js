@@ -44,11 +44,12 @@ const checkCharge = async (chargeId) => {
     return chargeData;
 };
 
-const sendPayment = async (address, amount) => {
+const sendPayment = async (address, amount, comment) => {
     try {
         const { invoice } = await requestInvoice({
             lnUrlOrAddress: address,
             tokens: amount,
+            comment: comment,
         });
 
         const data = {
