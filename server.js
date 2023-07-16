@@ -22,6 +22,7 @@ const {
   transferAsset,
   createToken,
   createCollection,
+  isOwner,
 } = require('./xidb');
 
 const app = express();
@@ -162,8 +163,8 @@ function ensureAuthenticated(req, res, next) {
 
 app.get('/api/v1/asset/:xid', async (req, res) => {
   try {
-    const { xid } = req.params;
-    const assetData = await getAsset(xid);
+    const assetData = await getAsset(req.params.xid);
+    assetData.userIsOwner = await isOwner(assetData, req.user?.xid);
     res.json(assetData);
   } catch (error) {
     console.error('Error reading metadata:', error);

@@ -291,6 +291,30 @@ const commitAsset = async (metadata, action) => {
     await commitChanges(`${action || 'Updated'} asset ${metadata.asset.xid}`);
 };
 
+const isOwner = async (metadata, agentId) => {
+    if (!agentId) {
+        return false;
+    }
+
+    if (metadata.asset.owner === agentId) {
+        return true;
+    }
+
+    if (!metadata.token) {
+        return false;
+    }
+
+    for (const editionId of metadata.token.nfts) {
+        const edition = await getAsset(editionId);
+
+        if (edition.asset.owner === agentId) {
+            return true;
+        }
+    }
+
+    return false;
+};
+
 function gitHash(fileBuffer) {
     const hasher = crypto.createHash('sha1');
     hasher.update('blob ' + fileBuffer.length + '\0');
@@ -475,6 +499,7 @@ module.exports = {
     getCollection,
     getAsset,
     commitAsset,
+    isOwner,
     createAssets,
     transferAsset,
     createToken,

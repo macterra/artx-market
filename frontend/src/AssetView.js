@@ -38,9 +38,7 @@ const AssetView = ({ navigate, isAuthenticated }) => {
                 }
 
                 if (isAuthenticated) {
-                    const response2 = await fetch(`/check-auth/${metadata.asset.owner}`);
-                    const data = await response2.json();
-                    setIsOwner(data.sameId);
+                    setIsOwner(metadata.userIsOwner);
                 } else {
                     setIsOwner(false);
                     setTab("meta");
