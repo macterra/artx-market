@@ -15,29 +15,41 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
     const [owner, setOwner] = useState(null);
     const [collection, setCollection] = useState(null);
     const [editions, setEditions] = useState(1);
-    const [storageFee, setStorageFee] = useState(null);
     const [collectionId, setCollectionId] = useState(null);
-    const [fileSize, setFileSize] = useState(null);
+    const [fileSize, setFileSize] = useState(0);
     const [charge, setCharge] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
     const [invoiceUrl, setInvoiceUrl] = useState('');
+    const [exchangeRate, setExchangeRate] = useState(0);
+    const [editionRate, setEditionRate] = useState(0);
+    const [editionFee, setEditionFee] = useState(0);
+    const [storageFee, setStorageFee] = useState(0);
+    const [totalFee, setTotalFee] = useState(0);
+    const [usdPrice, setUsdPrice] = useState(0);
 
     useEffect(() => {
         const fetchProfile = async () => {
             try {
+                const ratesData = await fetch('/api/v1/rates');
+                const rates = await ratesData.json();
+                console.log(`rates ${ratesData}`);
+                setExchangeRate(rates.bitcoin.usd);
+                setEditionRate(rates.editionRate);
+
                 const profResp = await fetch(`/api/v1/profile/${metadata.asset.owner}`);
                 const profileData = await profResp.json();
                 const fileSize = metadata.file.size;
                 const collectionId = metadata.asset.collection;
-
                 const collResp = await fetch(`/api/v1/collections/${collectionId}`);
                 const collectionData = await collResp.json();
 
                 setOwner(profileData.name);
                 setCollection(collectionData.asset.title);
-                setStorageFee(Math.round(fileSize / 1000));
+                setStorageFee(Math.round(fileSize * rates.storageRate));
                 setFileSize(fileSize);
                 setCollectionId(collectionId);
+
+                updateFees(1);
             } catch (error) {
                 console.error('Error fetching image metadata:', error);
             }
@@ -50,15 +62,26 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
         return;
     }
 
+    const updateFees = async (editions) => {
+        setEditions(editions);
+        const editionFee = editions * editionRate;
+        setEditionFee(editionFee);
+        const totalFee = storageFee + editionFee;
+        setTotalFee(totalFee);
+        const usdPrice = totalFee * exchangeRate / 100000000;
+        setUsdPrice(usdPrice);
+    };
+
     const handleEditionsChange = async (value) => {
         if (value < 1) {
             value = 1;
         }
+
         if (value > 100) {
             value = 100;
         }
 
-        setEditions(value);
+        updateFees(value);
     };
 
     const handleMintClick = async () => {
@@ -133,16 +156,20 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
                             </TableCell>
                         </TableRow>
                         <TableRow>
+                            <TableCell>Exchange rate:</TableCell>
+                            <TableCell>{exchangeRate} USD/BTC</TableCell>
+                        </TableRow>
+                        <TableRow>
                             <TableCell>Storage fee:</TableCell>
                             <TableCell>{storageFee} sats for {fileSize} bytes</TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>Minting fee:</TableCell>
-                            <TableCell>{100 * editions} sats for {editions} editions</TableCell>
+                            <TableCell>{editionFee} sats for {editions} editions</TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>Total fee:</TableCell>
-                            <TableCell>{storageFee + 100 * editions} sats</TableCell>
+                            <TableCell>{totalFee} sats (${usdPrice.toFixed(2)})</TableCell>
                         </TableRow>
                     </TableBody>
                 </Table>

@@ -161,6 +161,19 @@ function ensureAuthenticated(req, res, next) {
   }
 }
 
+app.get('/api/v1/rates', async (req, res) => {
+  try {
+    const xrResp = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
+    const xrData = await xrResp.json();
+    xrData.storageRate = 0.001;
+    xrData.editionRate = 100;
+    res.json(xrData);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ message: 'Error fetching exchange rates' });
+  }
+});
+
 app.get('/api/v1/asset/:xid', async (req, res) => {
   try {
     const assetData = await getAsset(req.params.xid);
