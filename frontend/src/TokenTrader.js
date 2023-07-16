@@ -12,12 +12,6 @@ import {
     Modal,
 } from '@mui/material';
 
-const fetchExchangeRate = async () => {
-    const xrResp = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
-    const xrData = await xrResp.json();
-    return xrData.bitcoin;
-};
-
 const TokenTrader = ({ metadata, setRefreshKey }) => {
     const [ownedNfts, setOwnedNfts] = useState(0);
     const [listedNfts, setListedNfts] = useState(0);
@@ -30,10 +24,11 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const xrates = await fetchExchangeRate();
-                setExchangeRate(xrates.usd);
+                let response = await fetch('/api/v1/rates');
+                const xrates = await response.json();
+                setExchangeRate(xrates.bitcoin.usd);
 
-                let response = await fetch(`/api/v1/profile/`);
+                response = await fetch(`/api/v1/profile/`);
                 const myProfile = await response.json();
 
                 const ownedNfts = [];
