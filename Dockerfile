@@ -39,6 +39,9 @@ RUN npm ci
 # Copy the production build to the working directory
 COPY . .
 
+# Build client
+RUN npm run build-frontend
+
 # Expose the port the app will run on
 EXPOSE 5000
 
