@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 import {
     Button,
     Table,
@@ -30,26 +31,32 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const ratesData = await fetch('/api/v1/rates');
-                const rates = await ratesData.json();
-                console.log(`rates ${ratesData}`);
-                setExchangeRate(rates.bitcoin.usd);
-                setEditionRate(rates.editionRate);
-
-                const profResp = await fetch(`/api/v1/profile/${metadata.asset.owner}`);
-                const profileData = await profResp.json();
+                const profile = await axios.get(`/api/v1/profile/${metadata.asset.owner}`);
                 const fileSize = metadata.file.size;
                 const collectionId = metadata.asset.collection;
-                const collResp = await fetch(`/api/v1/collections/${collectionId}`);
-                const collectionData = await collResp.json();
+                const collection = await axios.get(`/api/v1/collections/${collectionId}`);
+                const collectionName = collection.data.asset.title;
 
-                setOwner(profileData.name);
-                setCollection(collectionData.asset.title);
-                setStorageFee(Math.round(fileSize * rates.storageRate));
+                setOwner(profile.data.name);
+                setCollection(collectionName);
                 setFileSize(fileSize);
                 setCollectionId(collectionId);
 
-                updateFees(1);
+                const rates = await axios.get('/api/v1/rates');
+
+                setExchangeRate(rates.data.bitcoin.usd);
+                setEditionRate(rates.data.editionRate);
+
+                const editions = 1;
+                setEditions(editions);
+                const editionFee = editions * rates.data.editionRate;
+                setEditionFee(editionFee);
+                const storageFee = Math.round(fileSize * rates.data.storageRate);
+                setStorageFee(storageFee);
+                const totalFee = storageFee + editionFee;
+                setTotalFee(totalFee);
+                const usdPrice = totalFee * rates.data.bitcoin.usd / 100000000;
+                setUsdPrice(usdPrice);
             } catch (error) {
                 console.error('Error fetching image metadata:', error);
             }
@@ -62,16 +69,6 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
         return;
     }
 
-    const updateFees = async (editions) => {
-        setEditions(editions);
-        const editionFee = editions * editionRate;
-        setEditionFee(editionFee);
-        const totalFee = storageFee + editionFee;
-        setTotalFee(totalFee);
-        const usdPrice = totalFee * exchangeRate / 100000000;
-        setUsdPrice(usdPrice);
-    };
-
     const handleEditionsChange = async (value) => {
         if (value < 1) {
             value = 1;
@@ -81,18 +78,24 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
             value = 100;
         }
 
-        updateFees(value);
+        const editions = value;
+        setEditions(editions);
+        const editionFee = editions * editionRate;
+        setEditionFee(editionFee);
+        const totalFee = storageFee + editionFee;
+        setTotalFee(totalFee);
+        const usdPrice = totalFee * exchangeRate / 100000000;
+        setUsdPrice(usdPrice);
     };
 
     const handleMintClick = async () => {
         try {
-            const response = await fetch('/api/v1/charge', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', },
-                body: JSON.stringify({ description: 'mint', amount: storageFee + 100 * editions }),
+            const response = await axios.post('/api/v1/charge', {
+                description: 'mint',
+                amount: storageFee + 100 * editions
             });
 
-            const chargeData = await response.json();
+            const chargeData = response.data;
 
             if (chargeData.url) {
                 setCharge(chargeData);
@@ -108,27 +111,28 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
         setModalOpen(false);
 
         try {
-            const response = await fetch(`/api/v1/charge/${charge.id}`);
-            const chargeData = await response.json();
+            const chargeResponse = await axios.get(`/api/v1/charge/${charge.id}`);
+            const chargeData = chargeResponse.data;
 
             if (chargeData.paid) {
-                const response = await fetch(`/api/v1/asset/${metadata.asset.xid}/mint`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', },
-                    body: JSON.stringify({ editions: editions }),
-                });
+                try {
+                    const mintResponse = await axios.post(`/api/v1/asset/${metadata.asset.xid}/mint`, {
+                        editions: editions
+                    });
 
-                if (response.ok) {
-                    setTab('token');
-                    setRefreshKey((prevKey) => prevKey + 1);
-                } else {
-                    const data = await response.json();
-                    console.error('Error minting:', data.message);
-                    alert(data.message);
+                    if (mintResponse.status === 200) {
+                        setTab('token');
+                        setRefreshKey((prevKey) => prevKey + 1);
+                    } else {
+                        console.error('Error minting:', mintResponse.data.message);
+                        alert(mintResponse.data.message);
+                    }
+                } catch (error) {
+                    console.error('Error minting:', error);
                 }
             }
         } catch (error) {
-            console.error('Error minting:', error);
+            console.error('Error:', error);
         }
     };
 
