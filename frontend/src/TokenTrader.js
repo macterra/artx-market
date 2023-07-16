@@ -86,6 +86,7 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
     function SellerTableRow({ nft }) {
         const [disableList, setDisableList] = useState(true);
         const [usdPrice, setUsdPrice] = useState(0);
+        const [listed, setListed] = useState(false);
 
         const updatePrice = (price) => {
             const usdPrice = price * exchangeRate / 100000000;
@@ -94,12 +95,13 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
 
         useEffect(() => {
             updatePrice(nft.nft.price);
+            setListed(nft.nft.price > 0);
         }, [nft]);
 
         return (
             <TableRow>
                 <TableCell>{nft.asset.title}</TableCell>
-                <TableCell>{usdPrice.toFixed(2)}</TableCell>
+                <TableCell align="right">${usdPrice.toFixed(2)}</TableCell>
                 <TableCell>
                     <TextField
                         defaultValue={nft.nft.price}
@@ -118,12 +120,14 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
                         onClick={() => {
                             handleListClick(nft);
                             setDisableList(true);
+                            setListed(usdPrice > 0);
                         }}
                         disabled={disableList}
                     >
-                        List
+                        Save
                     </Button>
                 </TableCell>
+                <TableCell>{listed ? '✔' : ''}</TableCell>
             </TableRow>
         );
     };
@@ -243,6 +247,7 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
                                                     <TableCell>Edition</TableCell>
                                                     <TableCell>Price (USD)</TableCell>
                                                     <TableCell>Price (sats)</TableCell>
+                                                    <TableCell>Listed</TableCell>
                                                 </TableRow>
                                             </TableHead>
                                             <TableBody>
