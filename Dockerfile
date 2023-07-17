@@ -40,7 +40,7 @@ RUN npm ci
 COPY . .
 
 # Build client
-RUN npm run build-frontend
+RUN cd frontend && npm ci && npm run build
 
 # Expose the port the app will run on
 EXPOSE 5000
