@@ -291,6 +291,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
       return res.status(500).json({ message: "Already owned" });
     }
 
+    const buyer = await getAgent(userId);
     const seller = await getAgent(assetData.asset.owner);
 
     // TBD associate this charge with this asset for validation
@@ -309,17 +310,20 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
     }
 
     await transferAsset(xid, userId);
-    console.log(`audit: buy ${xid} for ${price}`);
 
     const tokenData = await getAsset(assetData.nft.asset);
+    const assetName = `"${tokenData.asset.title}" (${assetData.asset.title})`;
+    console.log(`audit: ${buyer.name} buying ${assetName} for ${price} from ${seller.name}`);
+
     const royaltyRate = tokenData.token?.royalty || 0;
-    const royalty = Math.round(price * royaltyRate);
+    let royalty = 0;
 
-    if (royalty > 0) {
+    if (tokenData.asset.owner !== seller.xid) {
       const creator = await getAgent(tokenData.asset.owner);
+      royalty = Math.round(price * royaltyRate);
 
-      if (creator.deposit) {
-        await sendPayment(creator.deposit, royalty, `royalty for asset ${xid}`);
+      if (creator.deposit && royalty > 0) {
+        sendPayment(creator.deposit, royalty, `royalty for asset ${assetName}`);
         console.log(`audit: royalty ${royalty} to ${creator.deposit}`);
       }
     }
@@ -328,12 +332,12 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
     const payout = price - royalty - txnFee;
 
     if (seller.deposit) {
-      await sendPayment(seller.deposit, payout, `sale of asset ${xid}`);
+      sendPayment(seller.deposit, payout, `sale of asset ${assetName}`);
       console.log(`audit: payout ${payout} to ${seller.deposit}`);
     }
 
     if (txnFee > 0 && config.txnFeeDeposit) {
-      await sendPayment(config.txnFeeDeposit, txnFee, `txn fee for asset ${xid}`);
+      sendPayment(config.txnFeeDeposit, txnFee, `txn fee for asset ${assetName}`);
       console.log(`audit: txn fee ${txnFee} to ${config.txnFeeDeposit}`);
     }
 
