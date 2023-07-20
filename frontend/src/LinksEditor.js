@@ -66,12 +66,14 @@ const LinksEditor = ({ navigate }) => {
         const newLinks = [...links];
         newLinks[index].name = e.target.value;
         setLinks(newLinks);
+        setSaved(false);
     };
 
     const handleLinkUrlChange = (e, index) => {
         const newLinks = [...links];
         newLinks[index].url = e.target.value;
         setLinks(newLinks);
+        setSaved(false);
     };
 
     return (

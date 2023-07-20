@@ -34,6 +34,12 @@ const ProfileHeader = ({ userId }) => {
         textDecoration: 'none', // Remove the text decoration from the Link component
     };
 
+    const minilinkStyle = {
+        margin: '8px',
+        textDecoration: 'none',
+        fontSize: '12px',
+    };
+
     return (
         <Box display="flex" flexDirection="row" alignItems="center" style={{ minHeight: 'auto' }}>
             <a href={`/profile/${profile.xid}`} style={linkStyle}>
@@ -60,6 +66,15 @@ const ProfileHeader = ({ userId }) => {
                 }
                 <span style={{ fontSize: '12px', display: 'block' }}>{profile.tagline}</span>
             </div>
+            {profile.links &&
+                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
+                    {profile.links.map((link, index) => (
+                        <a href={`${link.url}`} target="_blank" rel="noopener noreferrer" style={minilinkStyle}>
+                            {link.name}🔗
+                        </a>
+                    ))}
+                </div>
+            }
         </Box >
     );
 };
