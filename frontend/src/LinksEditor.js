@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, TextField, List, ListItem, ListItemText, Grid, Paper } from '@mui/material';
+import { Button, TextField, List, ListItem, ListItemText, Grid } from '@mui/material';
 
 const LinksEditor = ({ navigate }) => {
     const [links, setLinks] = useState([]);
@@ -73,25 +73,24 @@ const LinksEditor = ({ navigate }) => {
 
     return (
         <div>
-            <h2>Links</h2>
-            <Box border={1} width="80%">
-                <Grid container direction="row" alignItems="left" spacing={3} >
-                    <Grid item>
-                        <List component={Paper} style={{ width: '200px', maxHeight: '300px', overflow: 'auto' }}>
-                            {links && links.map((link, index) => (
-                                <ListItem
-                                    button
-                                    key={index}
-                                    onClick={() => setSelectedLinkIndex(index)}
-                                    selected={index === selectedLinkIndex}
-                                >
-                                    <ListItemText primary={link.name} />
-                                </ListItem>
-                            ))}
-                        </List>
-                    </Grid>
-                    <Grid item>
-                        {selectedLinkIndex !== null && (
+            <Grid container direction="row" alignItems="left" spacing={3} >
+                <Grid item xs={4}>
+                    <List>
+                        {links && links.map((link, index) => (
+                            <ListItem
+                                button
+                                key={index}
+                                onClick={() => setSelectedLinkIndex(index)}
+                                selected={index === selectedLinkIndex}
+                            >
+                                <ListItemText primary={link.name} />
+                            </ListItem>
+                        ))}
+                    </List>
+                </Grid>
+                <Grid item xs={8}>
+                    <Grid container direction="column" justifyContent="flex-start" alignItems="center" spacing={3} >
+                        {selectedLinkIndex !== null &&
                             <form style={{ width: '300px' }}>
                                 <TextField
                                     label="Link Name"
@@ -112,27 +111,27 @@ const LinksEditor = ({ navigate }) => {
                                     margin="normal"
                                 />
                             </form>
-                        )}
+                        }
+                        <Grid container direction="row" justifyContent="center" alignItems="center" spacing={3} >
+                            <Grid item>
+                                <Button variant="contained" color="primary" onClick={handleAddLink} disabled={links.length > 5}>
+                                    Add Link
+                                </Button>
+                            </Grid>
+                            <Grid item>
+                                <Button variant="contained" color="primary" onClick={handleRemoveLink} disabled={links.length < 2}>
+                                    Remove
+                                </Button>
+                            </Grid>
+                            <Grid item>
+                                <Button variant="contained" color="primary" onClick={handleSaveClick}>
+                                    Save
+                                </Button>
+                            </Grid>
+                        </Grid>
                     </Grid>
                 </Grid>
-                <Grid container direction="row" alignItems="center" spacing={3} >
-                    <Grid item>
-                        <Button variant="contained" color="primary" onClick={handleAddLink} mr={2}>
-                            Add Link
-                        </Button>
-                    </Grid>
-                    <Grid item>
-                        <Button variant="contained" color="primary" onClick={handleRemoveLink} mr={2}>
-                            Remove
-                        </Button>
-                    </Grid>
-                    <Grid item>
-                        <Button variant="contained" color="primary" onClick={handleSaveClick}>
-                            Save
-                        </Button>
-                    </Grid>
-                </Grid>
-            </Box>
+            </Grid>
         </div >
     );
 };

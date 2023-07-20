@@ -61,7 +61,7 @@ const CollectionEditor = ({ navigate }) => {
             headers: { 'Content-Type': 'application/json', },
             body: JSON.stringify({ name: 'new' }),
         });
-        
+
         const data = await response.json();
 
         setCollections([
@@ -85,7 +85,6 @@ const CollectionEditor = ({ navigate }) => {
 
     return (
         <div>
-            <h2>Collections</h2>
             <List>
                 {collections.map((collection, index) => (
                     <ListItem
