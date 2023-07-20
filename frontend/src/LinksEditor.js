@@ -4,6 +4,7 @@ import { Button, TextField, Grid, Select, MenuItem } from '@mui/material';
 const LinksEditor = ({ navigate }) => {
     const [links, setLinks] = useState([]);
     const [selectedLinkIndex, setSelectedLinkIndex] = useState(null);
+    const [saved, setSaved] = useState(true);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -35,7 +36,7 @@ const LinksEditor = ({ navigate }) => {
             });
 
             if (response.ok) {
-                //console.log('Profile updated successfully');
+                setSaved(true);
             } else {
                 const data = await response.json();
                 console.error('Error updating profile:', data.message);
@@ -52,11 +53,13 @@ const LinksEditor = ({ navigate }) => {
             { name: "name", url: "https://" },
         ]);
         setSelectedLinkIndex(links.length);
+        setSaved(false);
     };
 
     const handleRemoveLink = async () => {
         setLinks(links.filter((_, index) => index !== selectedLinkIndex));
         setSelectedLinkIndex(0);
+        setSaved(false);
     };
 
     const handleLinkNameChange = (e, index) => {
@@ -123,7 +126,7 @@ const LinksEditor = ({ navigate }) => {
                     </Button>
                 </Grid>
                 <Grid item>
-                    <Button variant="contained" color="primary" onClick={handleSaveClick}>
+                    <Button variant="contained" color="primary" onClick={handleSaveClick} disabled={saved}>
                         Save
                     </Button>
                 </Grid>

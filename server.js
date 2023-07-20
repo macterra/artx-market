@@ -396,7 +396,7 @@ app.get('/api/v1/profile/:xid?', async (req, res) => {
 
 app.patch('/api/v1/profile/', ensureAuthenticated, async (req, res) => {
   try {
-    const { name, tagline, pfp, deposit, collections } = req.body;
+    const { name, tagline, pfp, deposit, collections, links } = req.body;
     const userId = req.user.xid;
 
     const agentData = await getAgent(userId);
@@ -424,6 +424,10 @@ app.patch('/api/v1/profile/', ensureAuthenticated, async (req, res) => {
     if (collections) {
       // TBD verify collections
       agentData.collections = collections;
+    }
+
+    if (links) {
+      agentData.links = links;
     }
 
     await saveAgent(agentData);
