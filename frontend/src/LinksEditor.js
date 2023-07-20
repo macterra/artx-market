@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, TextField, List, ListItem, ListItemText, Grid } from '@mui/material';
+import { Button, TextField, Grid, Select, MenuItem } from '@mui/material';
 
 const LinksEditor = ({ navigate }) => {
     const [links, setLinks] = useState([]);
@@ -15,7 +15,7 @@ const LinksEditor = ({ navigate }) => {
                     setLinks(profileData.links);
                 }
                 else {
-                    setLinks([{ name: "name", url: "http://" }]);
+                    setLinks([{ name: "name", url: "https://" }]);
                 }
                 setSelectedLinkIndex(0);
             } catch (error) {
@@ -49,7 +49,7 @@ const LinksEditor = ({ navigate }) => {
     const handleAddLink = async () => {
         setLinks([
             ...links,
-            { name: "name", url: "http://" },
+            { name: "name", url: "https://" },
         ]);
         setSelectedLinkIndex(links.length);
     };
@@ -72,67 +72,63 @@ const LinksEditor = ({ navigate }) => {
     };
 
     return (
-        <div>
-            <Grid container direction="row" alignItems="left" spacing={3} >
-                <Grid item xs={4}>
-                    <List>
-                        {links && links.map((link, index) => (
-                            <ListItem
-                                button
-                                key={index}
-                                onClick={() => setSelectedLinkIndex(index)}
-                                selected={index === selectedLinkIndex}
-                            >
-                                <ListItemText primary={link.name} />
-                            </ListItem>
-                        ))}
-                    </List>
+        <Grid container direction="column" justifyContent="flex-start" alignItems="center" spacing={3} >
+            <Grid item>
+                <Select
+                    style={{ width: '300px' }}
+                    value={selectedLinkIndex}
+                    fullWidth
+                    onChange={(event) => setSelectedLinkIndex(event.target.value)}
+                >
+                    {links && links.map((link, index) => (
+                        <MenuItem value={index} key={index}>
+                            {link.name}
+                        </MenuItem>
+                    ))}
+                </Select>
+            </Grid>
+            <Grid item>
+                {selectedLinkIndex !== null &&
+                    <form style={{ width: '300px' }}>
+                        <TextField
+                            label="Link Name"
+                            value={links[selectedLinkIndex].name}
+                            onChange={(e) =>
+                                handleLinkNameChange(e, selectedLinkIndex)
+                            }
+                            fullWidth
+                            margin="normal"
+                        />
+                        <TextField
+                            label="URL"
+                            value={links[selectedLinkIndex].url}
+                            onChange={(e) =>
+                                handleLinkUrlChange(e, selectedLinkIndex)
+                            }
+                            fullWidth
+                            margin="normal"
+                        />
+                    </form>
+                }
+            </Grid>
+            <Grid container direction="row" justifyContent="center" alignItems="center" spacing={3} >
+                <Grid item>
+                    <Button variant="contained" color="primary" onClick={handleAddLink} disabled={links.length > 5}>
+                        Add Link
+                    </Button>
                 </Grid>
-                <Grid item xs={8}>
-                    <Grid container direction="column" justifyContent="flex-start" alignItems="center" spacing={3} >
-                        {selectedLinkIndex !== null &&
-                            <form style={{ width: '300px' }}>
-                                <TextField
-                                    label="Link Name"
-                                    value={links[selectedLinkIndex].name}
-                                    onChange={(e) =>
-                                        handleLinkNameChange(e, selectedLinkIndex)
-                                    }
-                                    fullWidth
-                                    margin="normal"
-                                />
-                                <TextField
-                                    label="URL"
-                                    value={links[selectedLinkIndex].url}
-                                    onChange={(e) =>
-                                        handleLinkUrlChange(e, selectedLinkIndex)
-                                    }
-                                    fullWidth
-                                    margin="normal"
-                                />
-                            </form>
-                        }
-                        <Grid container direction="row" justifyContent="center" alignItems="center" spacing={3} >
-                            <Grid item>
-                                <Button variant="contained" color="primary" onClick={handleAddLink} disabled={links.length > 5}>
-                                    Add Link
-                                </Button>
-                            </Grid>
-                            <Grid item>
-                                <Button variant="contained" color="primary" onClick={handleRemoveLink} disabled={links.length < 2}>
-                                    Remove
-                                </Button>
-                            </Grid>
-                            <Grid item>
-                                <Button variant="contained" color="primary" onClick={handleSaveClick}>
-                                    Save
-                                </Button>
-                            </Grid>
-                        </Grid>
-                    </Grid>
+                <Grid item>
+                    <Button variant="contained" color="primary" onClick={handleRemoveLink} disabled={links.length < 2}>
+                        Remove
+                    </Button>
+                </Grid>
+                <Grid item>
+                    <Button variant="contained" color="primary" onClick={handleSaveClick}>
+                        Save
+                    </Button>
                 </Grid>
             </Grid>
-        </div >
+        </Grid>
     );
 };
 
