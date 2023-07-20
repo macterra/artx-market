@@ -5,6 +5,7 @@ import { Box, Tab, Tabs } from '@mui/material';
 import NameEditor from './NameEditor';
 import CollectionEditor from './CollectionEditor';
 import LnAddressEditor from './LnAddressEditor';
+import LinksEditor from './LinksEditor';
 
 const ProfileEditor = ({ navigate }) => {
     const [profile, setProfile] = useState({});
@@ -49,6 +50,9 @@ const ProfileEditor = ({ navigate }) => {
                     }
                     {tab === 'coll' &&
                         <CollectionEditor />
+                    }
+                    {tab === 'links' &&
+                        <LinksEditor />
                     }
                     {tab === 'ln' &&
                         <LnAddressEditor profile={profile} />
