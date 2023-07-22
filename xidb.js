@@ -198,8 +198,8 @@ const getAgentAndCollections = async (profileId, userId) => {
     for (let xid in collections) {
         const count = collections[xid].collection.assets.length;
 
-        if (count > 0 && !collections[xid].thumbnail) {
-            collections[xid].thumbnail = collections[xid].collection.assets[0].file.path;
+        if (count > 0 && !collections[xid].collection.thumbnail) {
+            collections[xid].collection.thumbnail = collections[xid].collection.assets[0].file.path;
         }
     }
 

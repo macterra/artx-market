@@ -470,7 +470,7 @@ app.post('/api/v1/collections/', ensureAuthenticated, async (req, res) => {
 
 app.patch('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => {
   try {
-    const { title, defaultTitle } = req.body;
+    const { title, defaultTitle, thumbnail } = req.body;
     const collection = await getAsset(req.params.xid);
 
     if (req.user.xid != collection.asset.owner) {
@@ -483,6 +483,10 @@ app.patch('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => {
 
     if (defaultTitle) {
       collection.collection.default.title = defaultTitle;
+    }
+
+    if (thumbnail) {
+      collection.collection.thumbnail = thumbnail;
     }
 
     await commitAsset(collection);

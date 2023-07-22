@@ -4,6 +4,8 @@ import { Button } from '@mui/material';
 
 const PfpEditor = ({ metadata, setTab }) => {
     const [profile, setProfile] = useState({});
+    const [disablePfp, setDisablePfp] = useState(false);
+    const [disableThumbnail, setDisableThumbnail] = useState(false);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -19,7 +21,7 @@ const PfpEditor = ({ metadata, setTab }) => {
         fetchProfile();
     }, [metadata]);
 
-    const handleSaveClick = async () => {
+    const handleSavePfp = async () => {
         try {
             const response = await fetch('/api/v1/profile', {
                 method: 'PATCH',
@@ -29,6 +31,27 @@ const PfpEditor = ({ metadata, setTab }) => {
 
             if (response.ok) {
                 profile.pfp = metadata.file.path;
+                setDisablePfp(true);
+            } else {
+                const data = await response.json();
+                console.error('Error updating profile:', data.message);
+                alert(data.message);
+            }
+        } catch (error) {
+            console.error('Error updating profile:', error);
+        }
+    };
+
+    const handleSaveThumbnail = async () => {
+        try {
+            const response = await fetch(`/api/v1/collections/${metadata.asset.collection}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', },
+                body: JSON.stringify({ thumbnail: metadata.file.path }),
+            });
+
+            if (response.ok) {
+                setDisableThumbnail(true);
             } else {
                 const data = await response.json();
                 console.error('Error updating profile:', data.message);
@@ -53,8 +76,20 @@ const PfpEditor = ({ metadata, setTab }) => {
                 }}
             />
             <form>
-                <Button variant="contained" color="primary" onClick={handleSaveClick}>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleSavePfp}
+                    disabled={disablePfp}>
                     Set Profile Pic
+                </Button>
+                <br></br>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleSaveThumbnail}
+                    disabled={disableThumbnail}>
+                    Set Collection Thumbnail
                 </Button>
             </form>
         </div >
