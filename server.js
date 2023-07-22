@@ -23,6 +23,7 @@ const {
   createToken,
   createCollection,
   isOwner,
+  getAllAgents,
 } = require('./xidb');
 
 const app = express();
@@ -349,24 +350,8 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
 });
 
 app.get('/api/v1/profiles/', async (req, res) => {
-  const agentsDir = config.agents;
-  const profiles = [];
-
   try {
-    const agentFolders = fs.readdirSync(agentsDir, { withFileTypes: true })
-      .filter(dirent => dirent.isDirectory())
-      .map(dirent => dirent.name);
-
-    for (const folder of agentFolders) {
-      const metaFilePath = path.join(agentsDir, folder, 'agent.json');
-
-      if (fs.existsSync(metaFilePath)) {
-        const metaContent = fs.readFileSync(metaFilePath, 'utf-8');
-        const metaData = JSON.parse(metaContent);
-        profiles.push(metaData);
-      }
-    }
-
+    const profiles = await getAllAgents();
     res.json(profiles);
   } catch (error) {
     console.error(error);

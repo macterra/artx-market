@@ -248,6 +248,24 @@ const getAgentAndCollections = async (profileId, userId) => {
     return agentData;
 };
 
+const getAllAgents = async () => {
+    const agentFolders = fs.readdirSync(config.agents, { withFileTypes: true })
+        .filter(dirent => dirent.isDirectory())
+        .map(dirent => dirent.name);
+
+    const profiles = [];
+
+    for (const profileId of agentFolders) {
+        const agentData = await getAgentAndCollections(profileId);
+
+        if (agentData.minted && agentData.minted.length > 0) {
+            profiles.push(agentData);
+        }
+    }
+
+    return profiles;
+};
+
 const getCollection = async (collectionId, userId) => {
     let collection = await getAsset(collectionId);
 
@@ -500,6 +518,7 @@ module.exports = {
     getAgent,
     saveAgent,
     getAgentAndCollections,
+    getAllAgents,
     getCollection,
     getAsset,
     commitAsset,
