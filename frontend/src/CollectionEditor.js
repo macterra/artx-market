@@ -1,17 +1,23 @@
 
 import React, { useState, useEffect } from 'react';
-import { Button, TextField, List, ListItem, ListItemText } from '@mui/material';
+import { Button, TextField, Grid, Select, MenuItem } from '@mui/material';
 
 const CollectionEditor = ({ navigate }) => {
+    const [profile, setProfile] = useState(null);
     const [collections, setCollections] = useState([]);
-    const [selectedCollectionIndex, setSelectedCollectionIndex] = useState(null);
+    const [selectedIndex, setSelectedIndex] = useState(null);
+    const [saved, setSaved] = useState(true);
+    const [removeable, setRemoveable] = useState(false);
 
     useEffect(() => {
         const fetchProfile = async () => {
             try {
                 let response = await fetch(`/api/v1/profile`);
                 const profileData = await response.json();
+                setProfile(profileData);
                 setCollections(profileData.collections);
+                setRemoveable(false);
+                setSelectedIndex(0);
             } catch (error) {
                 console.error('Error fetching profile data:', error);
             }
@@ -44,7 +50,7 @@ const CollectionEditor = ({ navigate }) => {
             });
 
             if (response.ok) {
-                //console.log('Profile updated successfully');
+                setSaved(true);
             } else {
                 const data = await response.json();
                 console.error('Error updating profile:', data.message);
@@ -68,64 +74,88 @@ const CollectionEditor = ({ navigate }) => {
             ...collections,
             data,
         ]);
-        setSelectedCollectionIndex(collections.length);
+        setSelectedIndex(collections.length);
+        setSaved(false);
+    };
+
+    const handleRemoveCollection = async () => {
+        setCollections(collections.filter((_, index) => index !== selectedIndex));
+        setSelectedIndex(0);
+        setSaved(false);
     };
 
     const handleCollectionNameChange = (e, index) => {
         const newCollections = [...collections];
         newCollections[index].asset.title = e.target.value;
         setCollections(newCollections);
+        setSaved(false);
     };
 
     const handleCollectionDefaultTitleChange = (e, index) => {
         const newCollections = [...collections];
         newCollections[index].collection.default.title = e.target.value;
         setCollections(newCollections);
+        setSaved(false);
     };
 
     return (
-        <div>
-            <List>
-                {collections.map((collection, index) => (
-                    <ListItem
-                        button
-                        key={index}
-                        onClick={() => setSelectedCollectionIndex(index)}
-                        selected={index === selectedCollectionIndex}
-                    >
-                        <ListItemText primary={collection.asset.title} />
-                    </ListItem>
-                ))}
-            </List>
-            {selectedCollectionIndex !== null && (
-                <form>
-                    <TextField
-                        label="Collection Name"
-                        value={collections[selectedCollectionIndex].asset.title}
-                        onChange={(e) =>
-                            handleCollectionNameChange(e, selectedCollectionIndex)
-                        }
-                        fullWidth
-                        margin="normal"
-                    />
-                    <TextField
-                        label="Default Title"
-                        value={collections[selectedCollectionIndex].collection.default.title}
-                        onChange={(e) =>
-                            handleCollectionDefaultTitleChange(e, selectedCollectionIndex)
-                        }
-                        fullWidth
-                        margin="normal"
-                    />
-                </form>
-            )}
-            <Button variant="contained" color="primary" onClick={handleAddCollection} mr={2}>
-                Add Collection
-            </Button>
-            <Button variant="contained" color="primary" onClick={handleSaveClick}>
-                Save
-            </Button>
-        </div >
+        <Grid container direction="column" justifyContent="flex-start" alignItems="center" spacing={3} >
+            <Grid item>
+                <Select
+                    style={{ width: '300px' }}
+                    value={selectedIndex}
+                    fullWidth
+                    onChange={(event) => setSelectedIndex(event.target.value)}
+                >
+                    {collections.map((collection, index) => (
+                        <MenuItem value={index} key={index}>
+                            {collection.asset.title}
+                        </MenuItem>
+                    ))}
+                </Select>
+            </Grid>
+            <Grid item>
+                {selectedIndex !== null && (
+                    <form style={{ width: '300px' }}>
+                        <TextField
+                            label="Collection Name"
+                            value={collections[selectedIndex].asset.title}
+                            onChange={(e) =>
+                                handleCollectionNameChange(e, selectedIndex)
+                            }
+                            fullWidth
+                            margin="normal"
+                        />
+                        <TextField
+                            label="Default Title"
+                            value={collections[selectedIndex].collection.default.title}
+                            onChange={(e) =>
+                                handleCollectionDefaultTitleChange(e, selectedIndex)
+                            }
+                            fullWidth
+                            margin="normal"
+                        />
+                    </form>
+                )}
+            </Grid>
+            <Grid container direction="row" justifyContent="center" alignItems="center" spacing={3}>
+                <Grid item>
+                    <Button variant="contained" color="primary" onClick={handleAddCollection}>
+                        Add Collection
+                    </Button>
+                </Grid>
+                <Grid item>
+                    <Button variant="contained" color="primary" onClick={handleRemoveCollection} disabled={!removeable}>
+                        Remove
+                    </Button>
+                </Grid>
+                <Grid item>
+                    <Button variant="contained" color="primary" onClick={handleSaveClick} disabled={saved}>
+                        Save
+                    </Button>
+                </Grid>
+            </Grid>
+        </Grid>
     );
 };
 
