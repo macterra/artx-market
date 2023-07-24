@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { Button, TextField, Grid, Select, MenuItem } from '@mui/material';
 
 const CollectionEditor = ({ navigate }) => {
-    const [profile, setProfile] = useState(null);
     const [collections, setCollections] = useState([]);
     const [selectedIndex, setSelectedIndex] = useState(null);
     const [saved, setSaved] = useState(true);
@@ -14,7 +13,6 @@ const CollectionEditor = ({ navigate }) => {
             try {
                 let response = await fetch(`/api/v1/profile`);
                 const profileData = await response.json();
-                setProfile(profileData);
                 setCollections(profileData.collections);
                 setRemoveable(false);
                 setSelectedIndex(0);
@@ -61,6 +59,12 @@ const CollectionEditor = ({ navigate }) => {
         }
     };
 
+    const handleCollectionSelected = async (index) => {
+        const items = collections[index].collection?.assets?.length;
+        setRemoveable(items == 0);
+        setSelectedIndex(index);
+    };
+
     const handleAddCollection = async () => {
         const response = await fetch('/api/v1/collections', {
             method: 'POST',
@@ -76,12 +80,14 @@ const CollectionEditor = ({ navigate }) => {
         ]);
         setSelectedIndex(collections.length);
         setSaved(false);
+        setRemoveable(true);
     };
 
     const handleRemoveCollection = async () => {
         setCollections(collections.filter((_, index) => index !== selectedIndex));
         setSelectedIndex(0);
         setSaved(false);
+        setRemoveable(false);
     };
 
     const handleCollectionNameChange = (e, index) => {
@@ -105,7 +111,7 @@ const CollectionEditor = ({ navigate }) => {
                     style={{ width: '300px' }}
                     value={selectedIndex}
                     fullWidth
-                    onChange={(event) => setSelectedIndex(event.target.value)}
+                    onChange={(event) => handleCollectionSelected(event.target.value)}
                 >
                     {collections.map((collection, index) => (
                         <MenuItem value={index} key={index}>
@@ -113,6 +119,13 @@ const CollectionEditor = ({ navigate }) => {
                         </MenuItem>
                     ))}
                 </Select>
+            </Grid>
+            <Grid item>
+                {selectedIndex !== null && (
+                    <span style={{ fontSize: '12px', display: 'block' }}>
+                        {collections[selectedIndex].collection?.assets?.length} items
+                    </span>
+                )}
             </Grid>
             <Grid item>
                 {selectedIndex !== null && (
