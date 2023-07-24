@@ -5,6 +5,7 @@ import { Button, TextField, Grid, Select, MenuItem } from '@mui/material';
 const CollectionEditor = ({ navigate }) => {
     const [collections, setCollections] = useState([]);
     const [selectedIndex, setSelectedIndex] = useState(null);
+    const [selectedCollection, setSelectedCollection] = useState(null);
     const [saved, setSaved] = useState(true);
     const [removeable, setRemoveable] = useState(false);
 
@@ -16,6 +17,7 @@ const CollectionEditor = ({ navigate }) => {
                 setCollections(profileData.collections);
                 setRemoveable(false);
                 setSelectedIndex(0);
+                setSelectedCollection(profileData.collections[0]);
             } catch (error) {
                 console.error('Error fetching profile data:', error);
             }
@@ -26,18 +28,19 @@ const CollectionEditor = ({ navigate }) => {
 
     const handleSaveClick = async () => {
         try {
-            for (const collection of collections) {
-                const updates = {
-                    title: collection.asset.title,
-                    defaultTitle: collection.collection.default.title,
-                };
+            const updates = {
+                title: selectedCollection.asset.title,
+                defaultTitle: selectedCollection.collection.default.title,
+                defaultLicense: selectedCollection.collection.default.license,
+                defaultRoyalty: selectedCollection.collection.default.royalty,
+                defaultEditions: selectedCollection.collection.default.editions,
+            };
 
-                await fetch(`/api/v1/collections/${collection.asset.xid}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json', },
-                    body: JSON.stringify(updates),
-                });
-            }
+            await fetch(`/api/v1/collections/${selectedCollection.asset.xid}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', },
+                body: JSON.stringify(updates),
+            });
 
             const collectionXids = collections.map(collection => collection.asset.xid);
 
@@ -61,8 +64,9 @@ const CollectionEditor = ({ navigate }) => {
 
     const handleCollectionSelected = async (index) => {
         const items = collections[index].collection?.assets?.length;
-        setRemoveable(items == 0);
+        setRemoveable(items === 0);
         setSelectedIndex(index);
+        setSelectedCollection(collections[index]);
     };
 
     const handleAddCollection = async () => {
@@ -73,34 +77,62 @@ const CollectionEditor = ({ navigate }) => {
         });
 
         const data = await response.json();
+        const newCollections = [...collections, data];
+        const newIndex = newCollections.length-1;
 
-        setCollections([
-            ...collections,
-            data,
-        ]);
-        setSelectedIndex(collections.length);
+        setCollections(newCollections);
+        setSelectedIndex(newIndex);
+        setSelectedCollection(newCollections[newIndex]);
         setSaved(false);
         setRemoveable(true);
     };
 
     const handleRemoveCollection = async () => {
-        setCollections(collections.filter((_, index) => index !== selectedIndex));
+        const newCollections = collections.filter((_, index) => index !== selectedIndex);
+        setCollections(newCollections);
         setSelectedIndex(0);
+        setSelectedCollection(newCollections[0]);
         setSaved(false);
         setRemoveable(false);
     };
 
-    const handleCollectionNameChange = (e, index) => {
+    const handleNameChange = (e, index) => {
         const newCollections = [...collections];
         newCollections[index].asset.title = e.target.value;
         setCollections(newCollections);
+        setSelectedCollection(newCollections[index]);
         setSaved(false);
     };
 
-    const handleCollectionDefaultTitleChange = (e, index) => {
+    const handleDefaultTitleChange = (e, index) => {
         const newCollections = [...collections];
         newCollections[index].collection.default.title = e.target.value;
         setCollections(newCollections);
+        setSelectedCollection(newCollections[index]);
+        setSaved(false);
+    };
+
+    const handleDefaultLicenseChange = (e, index) => {
+        const newCollections = [...collections];
+        newCollections[index].collection.default.license = e.target.value;
+        setCollections(newCollections);
+        setSelectedCollection(newCollections[index]);
+        setSaved(false);
+    };
+
+    const handleDefaultRoyaltyChange = (e, index) => {
+        const newCollections = [...collections];
+        newCollections[index].collection.default.royalty = e.target.value;
+        setCollections(newCollections);
+        setSelectedCollection(newCollections[index]);
+        setSaved(false);
+    };
+
+    const handleDefaultEditionsChange = (e, index) => {
+        const newCollections = [...collections];
+        newCollections[index].collection.default.editions = e.target.value;
+        setCollections(newCollections);
+        setSelectedCollection(newCollections[index]);
         setSaved(false);
     };
 
@@ -121,32 +153,67 @@ const CollectionEditor = ({ navigate }) => {
                 </Select>
             </Grid>
             <Grid item>
-                {selectedIndex !== null && (
+                {selectedCollection !== null && (
                     <span style={{ fontSize: '12px', display: 'block' }}>
-                        {collections[selectedIndex].collection?.assets?.length} items
+                        {selectedCollection.collection?.assets?.length} items
                     </span>
                 )}
             </Grid>
             <Grid item>
-                {selectedIndex !== null && (
+                {selectedCollection !== null && (
                     <form style={{ width: '300px' }}>
                         <TextField
                             label="Collection Name"
-                            value={collections[selectedIndex].asset.title}
+                            value={selectedCollection.asset.title}
                             onChange={(e) =>
-                                handleCollectionNameChange(e, selectedIndex)
+                                handleNameChange(e, selectedIndex)
                             }
                             fullWidth
                             margin="normal"
                         />
                         <TextField
                             label="Default Title"
-                            value={collections[selectedIndex].collection.default.title}
+                            value={selectedCollection.collection.default.title}
                             onChange={(e) =>
-                                handleCollectionDefaultTitleChange(e, selectedIndex)
+                                handleDefaultTitleChange(e, selectedIndex)
                             }
                             fullWidth
                             margin="normal"
+                        />
+                        <TextField
+                            label="Default License"
+                            value={selectedCollection.collection.default.license}
+                            onChange={(e) =>
+                                handleDefaultLicenseChange(e, selectedIndex)
+                            }
+                            fullWidth
+                            margin="normal"
+                        />
+                        <TextField
+                            label="Default Royalty (0-25%)"
+                            type="number"
+                            value={selectedCollection.collection.default.royalty || 0}
+                            onChange={(e) =>
+                                handleDefaultRoyaltyChange(e, selectedIndex)
+                            }
+                            fullWidth
+                            margin="normal"
+                            inputProps={{
+                                min: 0,
+                                max: 25,
+                            }}
+                        />
+                        <TextField
+                            label="Default Editions (1-100)"
+                            type="number"
+                            value={selectedCollection.collection.default.editions || 1}
+                            onChange={(e) => handleDefaultEditionsChange(e.target.value)}
+                            fullWidth
+                            margin="normal"
+                            inputProps={{
+                                min: 1,
+                                max: 100,
+                            }}
                         />
                     </form>
                 )}

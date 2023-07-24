@@ -505,6 +505,7 @@ const createCollection = async (userId, name) => {
                 title: `${name} #%N%`,
                 license: "CC BY-SA",
                 editions: 1,
+                royalty: 10,
             },
         }
     };
