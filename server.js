@@ -472,7 +472,7 @@ app.get('/api/v1/collections/:xid', async (req, res) => {
 app.post('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => {
   try {
     const collection = req.body;
-    
+
     if (req.user.xid != collection.asset.owner) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
@@ -489,11 +489,32 @@ app.post('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => {
   }
 });
 
+app.patch('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => {
+  try {
+    const { thumbnail } = req.body;
+    const collection = await getAsset(req.params.xid);
+
+    if (req.user.xid != collection.asset.owner) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    if (thumbnail) {
+      collection.collection.thumbnail = thumbnail;
+    }
+
+    await commitAsset(collection);
+    res.json({ message: 'Collection updated successfully' });
+  } catch (error) {
+    console.error('Error processing request:', error);
+    res.status(500).json({ error: 'An error occurred while processing the request.' });
+  }
+});
+
 app.delete('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => {
   try {
     const userId = req.user?.xid;
     const collection = await getCollection(req.params.xid, userId);
-    
+
     if (req.user.xid != collection.asset.owner) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
