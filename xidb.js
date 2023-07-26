@@ -517,12 +517,24 @@ const saveCollection = async (collection) => {
     const agentData = await getAgent(collection.asset.owner);
     const collectionId = collection.asset.xid;
 
-    if (!(collectionId in agentData.collections)) {
+    if (!agentData.collections.includes(collectionId)) {
         agentData.collections.push(collectionId);
         await saveAgent(agentData);
     }
 
     commitAsset(collection);
+};
+
+const removeCollection = async (collection) => {
+    const agentData = await getAgent(collection.asset.owner);
+    const collectionId = collection.asset.xid;
+
+    if (agentData.collections.includes(collectionId)) {
+        agentData.collections = agentData.collections.filter(xid => xid !== collectionId);
+        await saveAgent(agentData);
+    }
+
+    // TBD remove collection folder?
 };
 
 module.exports = {
@@ -540,4 +552,5 @@ module.exports = {
     createToken,
     createCollection,
     saveCollection,
+    removeCollection,
 };

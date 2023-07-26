@@ -27,29 +27,7 @@ const CollectionEditor = ({ navigate }) => {
     }, []);
 
     const handleSaveClick = async () => {
-        try {
-            // const updates = {
-            //     title: selectedCollection.asset.title,
-            //     defaultTitle: selectedCollection.collection.default.title,
-            //     defaultLicense: selectedCollection.collection.default.license,
-            //     defaultRoyalty: selectedCollection.collection.default.royalty,
-            //     defaultEditions: selectedCollection.collection.default.editions,
-            // };
-
-            // await fetch(`/api/v1/collections/${selectedCollection.asset.xid}`, {
-            //     method: 'PATCH',
-            //     headers: { 'Content-Type': 'application/json', },
-            //     body: JSON.stringify(updates),
-            // });
-
-            // const collectionXids = collections.map(collection => collection.asset.xid);
-
-            // const response = await fetch('/api/v1/profile', {
-            //     method: 'PATCH',
-            //     headers: { 'Content-Type': 'application/json', },
-            //     body: JSON.stringify({ collections: collectionXids }),
-            // });
-            
+        try {            
             const response = await fetch(`/api/v1/collections/${selectedCollection.asset.xid}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', },
@@ -77,7 +55,6 @@ const CollectionEditor = ({ navigate }) => {
 
     const handleAddCollection = async () => {
         const response = await fetch(`/api/v1/collections/`);
-
         const data = await response.json();
         const newCollections = [...collections, data];
         const newIndex = newCollections.length-1;
@@ -89,13 +66,20 @@ const CollectionEditor = ({ navigate }) => {
         setRemoveable(true);
     };
 
-    const handleRemoveCollection = async () => {
-        const newCollections = collections.filter((_, index) => index !== selectedIndex);
-        setCollections(newCollections);
-        setSelectedIndex(0);
-        setSelectedCollection(newCollections[0]);
-        setSaved(false);
-        setRemoveable(false);
+    const handleRemoveCollection = async () => {    
+        const response = await fetch(`/api/v1/collections/${selectedCollection.asset.xid}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json', },
+        });
+
+        if (response.ok) {
+            const newCollections = collections.filter((_, index) => index !== selectedIndex);
+            setCollections(newCollections);
+            setSelectedIndex(0);
+            setSelectedCollection(newCollections[0]);
+            setSaved(false);
+            setRemoveable(false);
+        }
     };
 
     const handleNameChange = (e, index) => {

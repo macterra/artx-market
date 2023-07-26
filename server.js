@@ -23,6 +23,7 @@ const {
   createToken,
   createCollection,
   saveCollection,
+  removeCollection,
   isOwner,
   getAllAgents,
 } = require('./xidb');
@@ -482,6 +483,27 @@ app.post('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => {
 
     const ok = await saveCollection(collection);
     res.json({ message: 'Collection updated successfully' });
+  } catch (error) {
+    console.error('Error processing request:', error);
+    res.status(500).json({ error: 'An error occurred while processing the request.' });
+  }
+});
+
+app.delete('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => {
+  try {
+    const userId = req.user?.xid;
+    const collection = await getCollection(req.params.xid, userId);
+    
+    if (req.user.xid != collection.asset.owner) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    if (collection.collection.assets.length > 0) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const ok = await removeCollection(collection);
+    res.json({ message: 'Collection removed successfully' });
   } catch (error) {
     console.error('Error processing request:', error);
     res.status(500).json({ error: 'An error occurred while processing the request.' });
