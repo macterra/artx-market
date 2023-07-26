@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Button, TextField } from '@mui/material';
+import { Grid, Button, TextField } from '@mui/material';
 
 const NameEditor = ({ profile }) => {
     const [name, setName] = useState(profile.name);
@@ -28,25 +28,29 @@ const NameEditor = ({ profile }) => {
     };
 
     return (
-        <form>
-            <TextField
-                label="Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                fullWidth
-                margin="normal"
-            />
-            <TextField
-                label="Tagline"
-                value={tagline}
-                onChange={(e) => setTagline(e.target.value)}
-                fullWidth
-                margin="normal"
-            />
-            <Button variant="contained" color="primary" onClick={handleSaveClick}>
-                Save
-            </Button>
-        </form>
+        <Grid container direction="column" justifyContent="flex-start" alignItems="center" spacing={3} >
+            <Grid item>
+                <form style={{ width: '300px' }}>
+                    <TextField
+                        label="Name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        fullWidth
+                        margin="normal"
+                    />
+                    <TextField
+                        label="Tagline"
+                        value={tagline}
+                        onChange={(e) => setTagline(e.target.value)}
+                        fullWidth
+                        margin="normal"
+                    />
+                    <Button variant="contained" color="primary" onClick={handleSaveClick}>
+                        Save
+                    </Button>
+                </form>
+            </Grid>
+        </Grid>
     );
 };
 
