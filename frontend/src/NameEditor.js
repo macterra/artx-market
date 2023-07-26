@@ -5,6 +5,7 @@ import { Grid, Button, TextField } from '@mui/material';
 const NameEditor = ({ profile }) => {
     const [name, setName] = useState(profile.name);
     const [tagline, setTagline] = useState(profile.tagline);
+    const [saved, setSaved] = useState(true);
 
     const handleSaveClick = async () => {
         try {
@@ -17,6 +18,7 @@ const NameEditor = ({ profile }) => {
             if (response.ok) {
                 profile.name = name;
                 profile.tagline = tagline;
+                setSaved(true);
             } else {
                 const data = await response.json();
                 console.error('Error updating profile:', data.message);
@@ -34,18 +36,24 @@ const NameEditor = ({ profile }) => {
                     <TextField
                         label="Name"
                         value={name}
-                        onChange={(e) => setName(e.target.value)}
+                        onChange={(e) => {
+                            setName(e.target.value);
+                            setSaved(false);
+                        }}
                         fullWidth
                         margin="normal"
                     />
                     <TextField
                         label="Tagline"
                         value={tagline}
-                        onChange={(e) => setTagline(e.target.value)}
+                        onChange={(e) => {
+                            setTagline(e.target.value);
+                            setSaved(false);
+                        }}
                         fullWidth
                         margin="normal"
                     />
-                    <Button variant="contained" color="primary" onClick={handleSaveClick}>
+                    <Button variant="contained" color="primary" onClick={handleSaveClick} disabled={saved}>
                         Save
                     </Button>
                 </form>
