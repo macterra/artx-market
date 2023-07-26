@@ -35,8 +35,10 @@ dotenv.config();
 const config = {
   host: process.env.ARTX_HOST || 'localhost',
   port: process.env.ARTX_PORT || 5000,
-  txnFeeDeposit: process.env.TXN_FEE_DEPOSIT,
+  depositAddress: process.env.TXN_FEE_DEPOSIT,
   txnFeeRate: process.env.TXN_FEE_RATE || 0.025,
+  storageRate: process.env.STORAGE_RATE || 0.001,
+  editionRate: process.env.EDITION_RATE || 100,
   data: 'data',
   uploads: 'data/uploads',
   assets: 'data/assets',
@@ -168,8 +170,8 @@ app.get('/api/v1/rates', async (req, res) => {
   try {
     const xrResp = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
     const xrData = await xrResp.json();
-    xrData.storageRate = 0.001;
-    xrData.editionRate = 100;
+    xrData.storageRate = config.storageRate;
+    xrData.editionRate = config.editionRate;
     res.json(xrData);
   } catch (error) {
     console.error('Error:', error);
@@ -339,9 +341,9 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
       console.log(`audit: payout ${payout} to ${seller.deposit}`);
     }
 
-    if (txnFee > 0 && config.txnFeeDeposit) {
-      sendPayment(config.txnFeeDeposit, txnFee, `txn fee for asset ${assetName}`);
-      console.log(`audit: txn fee ${txnFee} to ${config.txnFeeDeposit}`);
+    if (txnFee > 0 && config.depositAddress) {
+      sendPayment(config.depositAddress, txnFee, `txn fee for asset ${assetName}`);
+      console.log(`audit: txn fee ${txnFee} to ${config.depositAddress}`);
     }
 
     res.json({ ok: true, message: 'Success' });
