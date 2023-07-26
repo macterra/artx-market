@@ -22,6 +22,7 @@ const {
   transferAsset,
   createToken,
   createCollection,
+  saveCollection,
   isOwner,
   getAllAgents,
 } = require('./xidb');
@@ -445,6 +446,17 @@ app.post('/api/v1/profile/:xid/invoice', async (req, res) => {
   }
 });
 
+app.get('/api/v1/collections/', async (req, res) => {
+  try {
+    const userId = req.user?.xid;
+    const collection = await createCollection(userId, "new");
+    res.json(collection);
+  } catch (error) {
+    console.error('Error processing request:', error);
+    res.status(500).json({ error: 'An error occurred while processing the request.' });
+  }
+});
+
 app.get('/api/v1/collections/:xid', async (req, res) => {
   try {
     const userId = req.user?.xid;
@@ -456,12 +468,20 @@ app.get('/api/v1/collections/:xid', async (req, res) => {
   }
 });
 
-app.post('/api/v1/collections/', ensureAuthenticated, async (req, res) => {
+app.post('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => {
   try {
-    const { name } = req.body;
-    const collection = await createCollection(req.user.xid, name);
-    console.log(`created collection ${collection}`);
-    res.json(collection);
+    const collection = req.body;
+    
+    if (req.user.xid != collection.asset.owner) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    if (req.params.xid != collection.asset.xid) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const ok = await saveCollection(collection);
+    res.json({ message: 'Collection updated successfully' });
   } catch (error) {
     console.error('Error processing request:', error);
     res.status(500).json({ error: 'An error occurred while processing the request.' });

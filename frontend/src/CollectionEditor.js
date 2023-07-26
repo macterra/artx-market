@@ -28,26 +28,32 @@ const CollectionEditor = ({ navigate }) => {
 
     const handleSaveClick = async () => {
         try {
-            const updates = {
-                title: selectedCollection.asset.title,
-                defaultTitle: selectedCollection.collection.default.title,
-                defaultLicense: selectedCollection.collection.default.license,
-                defaultRoyalty: selectedCollection.collection.default.royalty,
-                defaultEditions: selectedCollection.collection.default.editions,
-            };
+            // const updates = {
+            //     title: selectedCollection.asset.title,
+            //     defaultTitle: selectedCollection.collection.default.title,
+            //     defaultLicense: selectedCollection.collection.default.license,
+            //     defaultRoyalty: selectedCollection.collection.default.royalty,
+            //     defaultEditions: selectedCollection.collection.default.editions,
+            // };
 
-            await fetch(`/api/v1/collections/${selectedCollection.asset.xid}`, {
-                method: 'PATCH',
+            // await fetch(`/api/v1/collections/${selectedCollection.asset.xid}`, {
+            //     method: 'PATCH',
+            //     headers: { 'Content-Type': 'application/json', },
+            //     body: JSON.stringify(updates),
+            // });
+
+            // const collectionXids = collections.map(collection => collection.asset.xid);
+
+            // const response = await fetch('/api/v1/profile', {
+            //     method: 'PATCH',
+            //     headers: { 'Content-Type': 'application/json', },
+            //     body: JSON.stringify({ collections: collectionXids }),
+            // });
+            
+            const response = await fetch(`/api/v1/collections/${selectedCollection.asset.xid}`, {
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json', },
-                body: JSON.stringify(updates),
-            });
-
-            const collectionXids = collections.map(collection => collection.asset.xid);
-
-            const response = await fetch('/api/v1/profile', {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json', },
-                body: JSON.stringify({ collections: collectionXids }),
+                body: JSON.stringify(selectedCollection),
             });
 
             if (response.ok) {
@@ -70,11 +76,7 @@ const CollectionEditor = ({ navigate }) => {
     };
 
     const handleAddCollection = async () => {
-        const response = await fetch('/api/v1/collections', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', },
-            body: JSON.stringify({ name: 'new' }),
-        });
+        const response = await fetch(`/api/v1/collections/`);
 
         const data = await response.json();
         const newCollections = [...collections, data];

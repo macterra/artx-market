@@ -510,8 +510,19 @@ const createCollection = async (userId, name) => {
         }
     };
 
-    await saveAsset(metadata);
     return metadata;
+};
+
+const saveCollection = async (collection) => {
+    const agentData = await getAgent(collection.asset.owner);
+    const collectionId = collection.asset.xid;
+
+    if (!(collectionId in agentData.collections)) {
+        agentData.collections.push(collectionId);
+        await saveAgent(agentData);
+    }
+
+    commitAsset(collection);
 };
 
 module.exports = {
@@ -528,4 +539,5 @@ module.exports = {
     transferAsset,
     createToken,
     createCollection,
+    saveCollection,
 };
