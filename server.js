@@ -510,54 +510,6 @@ app.delete('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => 
   }
 });
 
-app.patch('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => {
-  try {
-    const {
-      title,
-      defaultTitle,
-      defaultLicense,
-      defaultRoyalty,
-      defaultEditions,
-      thumbnail
-    } = req.body;
-    const collection = await getAsset(req.params.xid);
-
-    if (req.user.xid != collection.asset.owner) {
-      return res.status(401).json({ message: 'Unauthorized' });
-    }
-
-    if (title) {
-      collection.asset.title = title;
-    }
-
-    if (defaultTitle) {
-      collection.collection.default.title = defaultTitle;
-    }
-
-    if (defaultLicense) {
-      collection.collection.default.license = defaultLicense;
-    }
-
-    if (defaultRoyalty) {
-      collection.collection.default.royalty = defaultRoyalty;
-    }
-
-    if (defaultEditions) {
-      collection.collection.default.editions = defaultEditions;
-    }
-
-    if (thumbnail) {
-      collection.collection.thumbnail = thumbnail;
-    }
-
-    await commitAsset(collection);
-    res.json({ message: 'Collection updated successfully' });
-  } catch (error) {
-    console.error('Error processing request:', error);
-    res.status(500).json({ error: 'An error occurred while processing the request.' });
-  }
-});
-
 app.post('/api/v1/collections/:xid/upload', ensureAuthenticated, upload.array('images', 100), async (req, res) => {
   try {
     const collectionId = req.params.xid;

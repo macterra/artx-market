@@ -193,7 +193,7 @@ const CollectionEditor = ({ navigate }) => {
                             label="Default Editions (1-100)"
                             type="number"
                             value={selectedCollection.collection.default.editions || 1}
-                            onChange={(e) => handleDefaultEditionsChange(e.target.value)}
+                            onChange={(e) => handleDefaultEditionsChange(e, selectedIndex)}
                             fullWidth
                             margin="normal"
                             inputProps={{
