@@ -5,14 +5,16 @@ import { Button } from '@mui/material';
 const PfpEditor = ({ metadata, setTab }) => {
     const [profile, setProfile] = useState({});
     const [disablePfp, setDisablePfp] = useState(false);
+    const [showThumbnailButton, setShowThumbnailButton] = useState(true);
     const [disableThumbnail, setDisableThumbnail] = useState(false);
 
     useEffect(() => {
         const fetchProfile = async () => {
             try {
                 const response = await fetch(`/api/v1/profile`);
-                const data = await response.json();
-                setProfile(data);
+                const profile = await response.json();
+                setProfile(profile);
+                setShowThumbnailButton(metadata.asset.owner === profile.xid);
             } catch (error) {
                 console.error('Error fetching profile data:', error);
             }
@@ -84,13 +86,15 @@ const PfpEditor = ({ metadata, setTab }) => {
                     Set Profile Pic
                 </Button>
                 <br></br>
-                <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={handleSaveThumbnail}
-                    disabled={disableThumbnail}>
-                    Set Collection Thumbnail
-                </Button>
+                {showThumbnailButton &&
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleSaveThumbnail}
+                        disabled={disableThumbnail}>
+                        Set Collection Thumbnail
+                    </Button>
+                }
             </form>
         </div >
     );
