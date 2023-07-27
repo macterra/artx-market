@@ -27,7 +27,7 @@ const CollectionEditor = ({ navigate }) => {
     }, []);
 
     const handleSaveClick = async () => {
-        try {            
+        try {
             const response = await fetch(`/api/v1/collections/${selectedCollection.asset.xid}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', },
@@ -57,7 +57,7 @@ const CollectionEditor = ({ navigate }) => {
         const response = await fetch(`/api/v1/collections/`);
         const data = await response.json();
         const newCollections = [...collections, data];
-        const newIndex = newCollections.length-1;
+        const newIndex = newCollections.length - 1;
 
         setCollections(newCollections);
         setSelectedIndex(newIndex);
@@ -66,7 +66,7 @@ const CollectionEditor = ({ navigate }) => {
         setRemoveable(true);
     };
 
-    const handleRemoveCollection = async () => {    
+    const handleRemoveCollection = async () => {
         const response = await fetch(`/api/v1/collections/${selectedCollection.asset.xid}`, {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json', },
@@ -82,43 +82,43 @@ const CollectionEditor = ({ navigate }) => {
         }
     };
 
-    const handleNameChange = (e, index) => {
+    const handleNameChange = (val) => {
         const newCollections = [...collections];
-        newCollections[index].asset.title = e.target.value;
+        newCollections[selectedIndex].asset.title = val;
         setCollections(newCollections);
-        setSelectedCollection(newCollections[index]);
+        setSelectedCollection(newCollections[selectedIndex]);
         setSaved(false);
     };
 
-    const handleDefaultTitleChange = (e, index) => {
+    const handleDefaultTitleChange = (val) => {
         const newCollections = [...collections];
-        newCollections[index].collection.default.title = e.target.value;
+        newCollections[selectedIndex].collection.default.title = val;
         setCollections(newCollections);
-        setSelectedCollection(newCollections[index]);
+        setSelectedCollection(newCollections[selectedIndex]);
         setSaved(false);
     };
 
-    const handleDefaultLicenseChange = (e, index) => {
+    const handleDefaultLicenseChange = (val) => {
         const newCollections = [...collections];
-        newCollections[index].collection.default.license = e.target.value;
+        newCollections[selectedIndex].collection.default.license = val;
         setCollections(newCollections);
-        setSelectedCollection(newCollections[index]);
+        setSelectedCollection(newCollections[selectedIndex]);
         setSaved(false);
     };
 
-    const handleDefaultRoyaltyChange = (e, index) => {
+    const handleDefaultRoyaltyChange = (val) => {
         const newCollections = [...collections];
-        newCollections[index].collection.default.royalty = e.target.value;
+        newCollections[selectedIndex].collection.default.royalty = val;
         setCollections(newCollections);
-        setSelectedCollection(newCollections[index]);
+        setSelectedCollection(newCollections[selectedIndex]);
         setSaved(false);
     };
 
-    const handleDefaultEditionsChange = (e, index) => {
+    const handleDefaultEditionsChange = (val) => {
         const newCollections = [...collections];
-        newCollections[index].collection.default.editions = e.target.value;
+        newCollections[selectedIndex].collection.default.editions = val;
         setCollections(newCollections);
-        setSelectedCollection(newCollections[index]);
+        setSelectedCollection(newCollections[selectedIndex]);
         setSaved(false);
     };
 
@@ -152,7 +152,7 @@ const CollectionEditor = ({ navigate }) => {
                             label="Collection Name"
                             value={selectedCollection.asset.title}
                             onChange={(e) =>
-                                handleNameChange(e, selectedIndex)
+                                handleNameChange(e.target.value)
                             }
                             fullWidth
                             margin="normal"
@@ -161,26 +161,32 @@ const CollectionEditor = ({ navigate }) => {
                             label="Default Title"
                             value={selectedCollection.collection.default.title}
                             onChange={(e) =>
-                                handleDefaultTitleChange(e, selectedIndex)
+                                handleDefaultTitleChange(e.target.value)
                             }
                             fullWidth
                             margin="normal"
                         />
-                        <TextField
+                        <Select
                             label="Default License"
                             value={selectedCollection.collection.default.license}
-                            onChange={(e) =>
-                                handleDefaultLicenseChange(e, selectedIndex)
-                            }
+                            onChange={(e) => handleDefaultLicenseChange(e.target.value)}
                             fullWidth
                             margin="normal"
-                        />
+                        >
+                            <MenuItem value="CC BY">CC BY</MenuItem>
+                            <MenuItem value="CC BY-SA">CC BY-SA</MenuItem>
+                            <MenuItem value="CC BY-NC">CC BY-NC</MenuItem>
+                            <MenuItem value="CC BY-NC-SA">CC BY-NC-SA</MenuItem>
+                            <MenuItem value="CC BY-ND">CC BY-NC-SA</MenuItem>
+                            <MenuItem value="CC BY-NC-ND">CC BY-NC-SA</MenuItem>
+                            <MenuItem value="CC0">CC0 (public domain)</MenuItem>
+                        </Select>
                         <TextField
                             label="Default Royalty (0-25%)"
                             type="number"
                             value={selectedCollection.collection.default.royalty || 0}
                             onChange={(e) =>
-                                handleDefaultRoyaltyChange(e, selectedIndex)
+                                handleDefaultRoyaltyChange(e.target.value)
                             }
                             fullWidth
                             margin="normal"
@@ -193,7 +199,7 @@ const CollectionEditor = ({ navigate }) => {
                             label="Default Editions (1-100)"
                             type="number"
                             value={selectedCollection.collection.default.editions || 1}
-                            onChange={(e) => handleDefaultEditionsChange(e, selectedIndex)}
+                            onChange={(e) => handleDefaultEditionsChange(e.target.value)}
                             fullWidth
                             margin="normal"
                             inputProps={{
