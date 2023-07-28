@@ -12,6 +12,7 @@ const { requestInvoice } = require('lnurl-pay');
 const { createCharge, checkCharge, sendPayment } = require('./satspay');
 const {
   getAdmin,
+  saveAdmin,
   getAgentFromKey,
   getAgent,
   saveAgent,
@@ -184,11 +185,31 @@ app.get('/api/v1/admin', ensureAuthenticated, async (req, res) => {
   try {
     const adminData = await getAdmin();
 
+    console.log(`getAdmin ${JSON.stringify(adminData, null, 2)}`);
+
     if (adminData.owner && adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
     res.json(adminData);
+  } catch (error) {
+    console.error('Error reading metadata:', error);
+    res.status(404).json({ message: 'Asset not found' });
+  }
+});
+
+app.get('/api/v1/admin/claim', ensureAuthenticated, async (req, res) => {
+  try {
+    const adminData = await getAdmin();
+
+    if (adminData.owner) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    adminData.owner = req.user.xid;
+    const savedAdmin = await saveAdmin(adminData);
+    console.log(`getAdmin ${JSON.stringify(savedAdmin, null, 2)}`);
+    res.json(savedAdmin);
   } catch (error) {
     console.error('Error reading metadata:', error);
     res.status(404).json({ message: 'Asset not found' });

@@ -59,6 +59,14 @@ const getAdmin = async (xid) => {
     return jsonData;
 };
 
+const saveAdmin = async (adminData) => {
+    const jsonPath = path.join(config.data, 'meta.json');
+    adminData.updated = new Date().toISOString();
+    adminData.githash = await simpleGit.revparse('HEAD');
+    await fs.promises.writeFile(jsonPath, JSON.stringify(adminData, null, 2));
+    return adminData;
+};
+
 const getAgentFromKey = async (key) => {
     const keyPath = path.join(config.id, 'pubkey.json');
     let keyData = {};
@@ -557,6 +565,7 @@ const removeCollection = async (collection) => {
 
 module.exports = {
     getAdmin,
+    saveAdmin,
     getAgentFromKey,
     getAgent,
     saveAgent,
