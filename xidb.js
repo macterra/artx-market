@@ -41,6 +41,24 @@ const commitChanges = async (commitMessage) => {
     }
 };
 
+const getAdmin = async (xid) => {
+    const jsonPath = path.join(config.data, 'meta.json');
+
+    // Check if the agent.json file exists
+    if (!fs.existsSync(jsonPath)) {
+        return {
+            xid: uuidv4(),
+            created: new Date().toISOString(),
+            updated: new Date().toISOString(),
+        };
+    }
+
+    const jsonContent = await fs.promises.readFile(jsonPath, 'utf-8');
+    const jsonData = JSON.parse(jsonContent);
+
+    return jsonData;
+};
+
 const getAgentFromKey = async (key) => {
     const keyPath = path.join(config.id, 'pubkey.json');
     let keyData = {};
@@ -538,6 +556,7 @@ const removeCollection = async (collection) => {
 };
 
 module.exports = {
+    getAdmin,
     getAgentFromKey,
     getAgent,
     saveAgent,

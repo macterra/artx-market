@@ -11,6 +11,7 @@ const { requestInvoice } = require('lnurl-pay');
 
 const { createCharge, checkCharge, sendPayment } = require('./satspay');
 const {
+  getAdmin,
   getAgentFromKey,
   getAgent,
   saveAgent,
@@ -176,6 +177,21 @@ app.get('/api/v1/rates', async (req, res) => {
   } catch (error) {
     console.error('Error:', error);
     res.status(500).json({ message: 'Error fetching exchange rates' });
+  }
+});
+
+app.get('/api/v1/admin', ensureAuthenticated, async (req, res) => {
+  try {
+    const adminData = await getAdmin();
+
+    if (adminData.owner && adminData.owner !== req.user.xid) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    res.json(adminData);
+  } catch (error) {
+    console.error('Error reading metadata:', error);
+    res.status(404).json({ message: 'Asset not found' });
   }
 });
 

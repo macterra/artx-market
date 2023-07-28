@@ -10,6 +10,7 @@ import AssetView from './AssetView';
 import ProfileHeader from './ProfileHeader';
 import ProfileView from './ProfileView';
 import CollectionView from './CollectionView';
+import AdminView from './AdminView';
 
 import './App.css';
 
@@ -18,6 +19,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/admin/" element={<ViewAdmin />} />
         <Route path="/profile/" element={<ViewLogin />} />
         <Route path="/profile/:userId" element={<ViewProfile />} />
         <Route path="/profile/edit" element={<EditProfile />} />
@@ -206,6 +208,29 @@ function ViewAsset() {
         />
         <header className="App-header">
           <AssetView
+            navigate={navigate}
+            isAuthenticated={isAuthenticated} />
+        </header>
+      </div>
+    </ThemeProvider>
+  );
+}
+
+function ViewAdmin() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const navigate = useNavigate();
+
+  return (
+    <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
+      <div className="App">
+        <AppHeader
+          isAuthenticated={isAuthenticated}
+          setIsAuthenticated={setIsAuthenticated}
+          navigate={navigate}
+        />
+        <header className="App-header">
+          <AdminView
             navigate={navigate}
             isAuthenticated={isAuthenticated} />
         </header>
