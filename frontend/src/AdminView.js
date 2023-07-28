@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Button } from '@mui/material';
-import axios from 'axios';
 
 const AdminView = ({ navigate }) => {
 
@@ -9,15 +8,15 @@ const AdminView = ({ navigate }) => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const admin = await axios.get('/api/v1/admin');
+                const response = await fetch(`/api/v1/admin`);
 
-                console.log(`admin ${admin}`);
+                if (response.status === 401) {
+                    navigate('/');
+                    return;
+                }
 
-                // if (!admin.xid) {
-                //     navigate('/');
-                // }
-
-                setAdmin(admin.data);
+                const admin = await response.json();
+                setAdmin(admin);
             } catch (error) {
                 console.error('Error fetching admin data:', error);
             }
@@ -32,7 +31,8 @@ const AdminView = ({ navigate }) => {
 
     const handleClaim = async () => {
         try {
-            const admin = await axios.get('/api/v1/admin/claim');
+            const response = await fetch('/api/v1/admin/claim');
+            const admin = await response.json();
             setAdmin(admin);
         } catch (error) {
             console.error('Error fetching admin data:', error);

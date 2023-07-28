@@ -10,7 +10,7 @@ const MainView = ({ navigate }) => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                let response = await fetch(`/api/v1/profiles`);
+                const response = await fetch(`/api/v1/profiles`);
                 const data = await response.json();
 
                 setProfiles(data);
