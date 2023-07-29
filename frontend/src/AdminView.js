@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button } from '@mui/material';
+import { Box, Button, Table, TableBody, TableRow, TableCell } from '@mui/material';
 
 const AdminView = ({ navigate }) => {
 
@@ -39,10 +39,19 @@ const AdminView = ({ navigate }) => {
         }
     };
 
+    const handleSave = async () => {
+        try {
+            const response = await fetch('/api/v1/admin/save');
+            const admin = await response.json();
+            setAdmin(admin);
+        } catch (error) {
+            console.error('Error fetching admin data:', error);
+        }
+    };
+
     return (
         <Box>
             <h1>Admin</h1>
-            <p>xid: {admin.xid}</p>
             {!admin.owner &&
                 <Button variant="contained" color="primary" onClick={handleClaim}>
                     Claim Admin
@@ -50,10 +59,37 @@ const AdminView = ({ navigate }) => {
             }
             {admin.owner &&
                 <Box>
-                    <p>owner: {admin.owner}</p>
-                    <p>created: {admin.created}</p>
-                    <p>updated: {admin.updated}</p>
-                    <p>githash: {admin.githash}</p>
+                    <Table>
+                        <TableBody>
+                            <TableRow>
+                                <TableCell>XID</TableCell>
+                                <TableCell>{admin.xid}</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell>Owner</TableCell>
+                                <TableCell>{admin.owner}</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell>Created</TableCell>
+                                <TableCell>{admin.created}</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell>Updated</TableCell>
+                                <TableCell>{admin.updated}</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell>Githash</TableCell>
+                                <TableCell>{admin.githash}</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell>CID</TableCell>
+                                <TableCell>{admin.cid}</TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                    <Button variant="contained" color="primary" onClick={handleSave}>
+                        Save All
+                    </Button>
                 </Box>
             }
         </Box>

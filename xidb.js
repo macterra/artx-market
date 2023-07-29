@@ -60,9 +60,14 @@ const getAdmin = async (xid) => {
 };
 
 const saveAdmin = async (adminData) => {
+    const stdout = execSync(`ipfs add -r -Q ${config.data}`);
+    const cid = stdout.toString().trim();
     const jsonPath = path.join(config.data, 'meta.json');
+
     adminData.updated = new Date().toISOString();
     adminData.githash = await simpleGit.revparse('HEAD');
+    adminData.cid = cid;
+    
     await fs.promises.writeFile(jsonPath, JSON.stringify(adminData, null, 2));
     return adminData;
 };
