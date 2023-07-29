@@ -74,7 +74,7 @@ const ProfileView = ({ navigate }) => {
             }
             {tab === 'unlisted' &&
                 <div>
-                    <p>Listed</p>
+                    <p>Unlisted</p>
                     <ImageGrid collection={profile.unlisted} />
                 </div>
             }
