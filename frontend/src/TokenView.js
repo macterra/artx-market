@@ -35,6 +35,7 @@ const TokenView = ({ metadata }) => {
     const [nfts, setNfts] = useState([]);
     const [owned, setOwned] = useState(0);
     const [ranges, setRanges] = useState(null);
+    const [licenseUrl, setLicenseUrl] = useState(null);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -45,6 +46,10 @@ const TokenView = ({ metadata }) => {
                 response = await fetch(`/api/v1/collections/${metadata.asset.collection}`);
                 const collectionData = await response.json();
                 setCollection(collectionData.asset.title);
+
+                response = await fetch('/api/v1/licenses');
+                const licenses = await response.json();
+                setLicenseUrl(licenses[metadata.token.license]);
 
                 const nfts = [];
                 let owned = 0;
@@ -106,7 +111,9 @@ const TokenView = ({ metadata }) => {
                     <TableRow>
                         <TableCell>License:</TableCell>
                         <TableCell>
-                            {metadata.token.license}
+                            <Link to={`${licenseUrl}`}>
+                                {metadata.token.license}
+                            </Link>
                         </TableCell>
                     </TableRow>
                     <TableRow>
@@ -191,7 +198,7 @@ const TokenView = ({ metadata }) => {
                     }
                 </TableBody>
             </Table>
-        </TableContainer>
+        </TableContainer >
     );
 };
 

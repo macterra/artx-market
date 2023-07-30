@@ -181,6 +181,20 @@ app.get('/api/v1/rates', async (req, res) => {
   }
 });
 
+app.get('/api/v1/licenses', async (req, res) => {
+  licenses = {
+    "CC BY": "https://creativecommons.org/licenses/by/4.0/",
+    "CC BY-SA": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "CC BY-NC": "https://creativecommons.org/licenses/by-nc/4.0/",
+    "CC BY-ND": "https://creativecommons.org/licenses/by-nd/4.0/",
+    "CC BY-NC-SA": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+    "CC BY-NC-ND": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+    "CC0": "https://creativecommons.org/publicdomain/zero/1.0/",
+  };
+
+  res.json(licenses);
+});
+
 app.get('/api/v1/admin', ensureAuthenticated, async (req, res) => {
   try {
     const adminData = await getAdmin();
@@ -291,7 +305,7 @@ app.post('/api/v1/asset/:xid/mint', ensureAuthenticated, async (req, res) => {
       return res.status(500).json({ message: 'Error' });
     }
 
-    await createToken(userId, xid, editions, license, royalty/100);
+    await createToken(userId, xid, editions, license, royalty / 100);
     res.json({ message: 'Success' });
   } catch (error) {
     console.error('Error:', error);

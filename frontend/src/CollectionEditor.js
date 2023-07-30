@@ -8,6 +8,7 @@ const CollectionEditor = ({ navigate }) => {
     const [selectedCollection, setSelectedCollection] = useState(null);
     const [saved, setSaved] = useState(true);
     const [removeable, setRemoveable] = useState(false);
+    const [licenses, setLicenses] = useState([]);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -18,6 +19,10 @@ const CollectionEditor = ({ navigate }) => {
                 setRemoveable(false);
                 setSelectedIndex(0);
                 setSelectedCollection(profileData.collections[0]);
+
+                response = await fetch('/api/v1/licenses');
+                const licenses = await response.json();
+                setLicenses(Object.keys(licenses));
             } catch (error) {
                 console.error('Error fetching profile data:', error);
             }
@@ -173,13 +178,11 @@ const CollectionEditor = ({ navigate }) => {
                             fullWidth
                             margin="normal"
                         >
-                            <MenuItem value="CC BY">CC BY</MenuItem>
-                            <MenuItem value="CC BY-SA">CC BY-SA</MenuItem>
-                            <MenuItem value="CC BY-ND">CC BY-ND</MenuItem>
-                            <MenuItem value="CC BY-NC">CC BY-NC</MenuItem>
-                            <MenuItem value="CC BY-NC-SA">CC BY-NC-SA</MenuItem>
-                            <MenuItem value="CC BY-NC-ND">CC BY-NC-ND</MenuItem>
-                            <MenuItem value="CC0">CC0 (public domain)</MenuItem>
+                            {licenses.map((licenseName, index) => (
+                                <MenuItem key={index} value={licenseName}>
+                                    {licenseName}
+                                </MenuItem>
+                            ))}
                         </Select>
                         <TextField
                             label="Default Royalty (0-25%)"

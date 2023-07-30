@@ -31,6 +31,7 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
     const [usdPrice, setUsdPrice] = useState(0);
     const [royalty, setRoyalty] = useState(0);
     const [license, setLicense] = useState(null);
+    const [licenses, setLicenses] = useState([]);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -55,6 +56,9 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
 
                 setExchangeRate(rates.data.bitcoin.usd);
                 setEditionRate(rates.data.editionRate);
+
+                const licenses = await axios.get('/api/v1/licenses');
+                setLicenses(Object.keys(licenses.data));
 
                 const editions = defaultEditions;
                 setEditions(editions);
@@ -207,13 +211,11 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
                                     margin="normal"
                                     sx={{ width: '20ch' }}
                                 >
-                                    <MenuItem value="CC BY">CC BY</MenuItem>
-                                    <MenuItem value="CC BY-SA">CC BY-SA</MenuItem>
-                                    <MenuItem value="CC BY-ND">CC BY-ND</MenuItem>
-                                    <MenuItem value="CC BY-NC">CC BY-NC</MenuItem>
-                                    <MenuItem value="CC BY-NC-SA">CC BY-NC-SA</MenuItem>
-                                    <MenuItem value="CC BY-NC-ND">CC BY-NC-ND</MenuItem>
-                                    <MenuItem value="CC0">CC0 (public domain)</MenuItem>
+                                    {licenses.map((licenseName, index) => (
+                                        <MenuItem key={index} value={licenseName}>
+                                            {licenseName}
+                                        </MenuItem>
+                                    ))}
                                 </Select>
                             </TableCell>
                         </TableRow>
