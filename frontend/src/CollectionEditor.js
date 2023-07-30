@@ -175,10 +175,10 @@ const CollectionEditor = ({ navigate }) => {
                         >
                             <MenuItem value="CC BY">CC BY</MenuItem>
                             <MenuItem value="CC BY-SA">CC BY-SA</MenuItem>
+                            <MenuItem value="CC BY-ND">CC BY-ND</MenuItem>
                             <MenuItem value="CC BY-NC">CC BY-NC</MenuItem>
                             <MenuItem value="CC BY-NC-SA">CC BY-NC-SA</MenuItem>
-                            <MenuItem value="CC BY-ND">CC BY-NC-SA</MenuItem>
-                            <MenuItem value="CC BY-NC-ND">CC BY-NC-SA</MenuItem>
+                            <MenuItem value="CC BY-NC-ND">CC BY-NC-ND</MenuItem>
                             <MenuItem value="CC0">CC0 (public domain)</MenuItem>
                         </Select>
                         <TextField

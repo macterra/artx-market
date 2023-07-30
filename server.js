@@ -277,7 +277,7 @@ app.patch('/api/v1/asset/:xid', ensureAuthenticated, async (req, res) => {
 app.post('/api/v1/asset/:xid/mint', ensureAuthenticated, async (req, res) => {
   try {
     const xid = req.params.xid;
-    const { editions } = req.body;
+    const { editions, license, royalty } = req.body;
     const userId = req.user.xid;
     const assetData = await getAsset(xid);
 
@@ -291,7 +291,7 @@ app.post('/api/v1/asset/:xid/mint', ensureAuthenticated, async (req, res) => {
       return res.status(500).json({ message: 'Error' });
     }
 
-    await createToken(userId, xid, editions);
+    await createToken(userId, xid, editions, license, royalty/100);
     res.json({ message: 'Success' });
   } catch (error) {
     console.error('Error:', error);

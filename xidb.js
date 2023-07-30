@@ -67,7 +67,7 @@ const saveAdmin = async (adminData) => {
     adminData.updated = new Date().toISOString();
     adminData.githash = await simpleGit.revparse('HEAD');
     adminData.cid = cid;
-    
+
     await fs.promises.writeFile(jsonPath, JSON.stringify(adminData, null, 2));
     return adminData;
 };
@@ -469,7 +469,7 @@ const createEdition = async (owner, asset, edition, editions) => {
     return xid;
 };
 
-const createToken = async (userId, xid, editions) => {
+const createToken = async (userId, xid, editions, license, royalty) => {
     let assetData = await getAsset(xid);
 
     const assetFolder = path.join(config.assets, xid);
@@ -488,11 +488,13 @@ const createToken = async (userId, xid, editions) => {
     assets.collected.push(...nfts);
     agentSaveAssets(assets);
 
+    royalty = parseFloat(royalty);
+
     assetData.token = {
         cid: cid,
         url: `https://ipfs.io/ipfs/${cid}/${assetData.file.fileName}`,
-        royalty: 0.1,
-        license: "CC BY-SA",
+        royalty: royalty,
+        license: license,
         editions: editions,
         nfts: nfts,
     };

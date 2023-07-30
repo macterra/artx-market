@@ -10,6 +10,8 @@ import {
     TableRow,
     TextField,
     Modal,
+    Select,
+    MenuItem,
 } from '@mui/material';
 
 const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
@@ -27,6 +29,8 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
     const [storageFee, setStorageFee] = useState(0);
     const [totalFee, setTotalFee] = useState(0);
     const [usdPrice, setUsdPrice] = useState(0);
+    const [royalty, setRoyalty] = useState(0);
+    const [license, setLicense] = useState(null);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -36,9 +40,14 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
                 const collectionId = metadata.asset.collection;
                 const collection = await axios.get(`/api/v1/collections/${collectionId}`);
                 const collectionName = collection.data.asset.title;
+                const defaultRoyalty = collection.data.collection.default.royalty;
+                const defaultEditions = collection.data.collection.default.editions;
+                const defaultLicense = collection.data.collection.default.license;
 
                 setOwner(profile.data.name);
                 setCollection(collectionName);
+                setRoyalty(defaultRoyalty);
+                setLicense(defaultLicense);
                 setFileSize(fileSize);
                 setCollectionId(collectionId);
 
@@ -47,7 +56,7 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
                 setExchangeRate(rates.data.bitcoin.usd);
                 setEditionRate(rates.data.editionRate);
 
-                const editions = 1;
+                const editions = defaultEditions;
                 setEditions(editions);
                 const editionFee = editions * rates.data.editionRate;
                 setEditionFee(editionFee);
@@ -68,6 +77,18 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
     if (!metadata) {
         return;
     }
+
+    const handleRoyaltyChange = async (value) => {
+        if (value < 0) {
+            value = 0;
+        }
+
+        if (value > 25) {
+            value = 25;
+        }
+
+        setRoyalty(value);
+    };
 
     const handleEditionsChange = async (value) => {
         if (value < 1) {
@@ -117,7 +138,9 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
             if (chargeData.paid) {
                 try {
                     const mintResponse = await axios.post(`/api/v1/asset/${metadata.asset.xid}/mint`, {
-                        editions: editions
+                        license: license,
+                        royalty: royalty,
+                        editions: editions,
                     });
 
                     if (mintResponse.status === 200) {
@@ -175,25 +198,69 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
                             <TableCell>Total fee:</TableCell>
                             <TableCell>{totalFee} sats (${usdPrice.toFixed(2)})</TableCell>
                         </TableRow>
+                        <TableRow>
+                            <TableCell>License:</TableCell>
+                            <TableCell>
+                                <Select
+                                    value={license}
+                                    onChange={(e) => setLicense(e.target.value)}
+                                    margin="normal"
+                                    sx={{ width: '20ch' }}
+                                >
+                                    <MenuItem value="CC BY">CC BY</MenuItem>
+                                    <MenuItem value="CC BY-SA">CC BY-SA</MenuItem>
+                                    <MenuItem value="CC BY-ND">CC BY-ND</MenuItem>
+                                    <MenuItem value="CC BY-NC">CC BY-NC</MenuItem>
+                                    <MenuItem value="CC BY-NC-SA">CC BY-NC-SA</MenuItem>
+                                    <MenuItem value="CC BY-NC-ND">CC BY-NC-ND</MenuItem>
+                                    <MenuItem value="CC0">CC0 (public domain)</MenuItem>
+                                </Select>
+                            </TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell>Royalty (0-25%):</TableCell>
+                            <TableCell>
+                                <TextField
+                                    type="number" // Set the input type to "number"
+                                    value={royalty}
+                                    onChange={(e) => handleRoyaltyChange(e.target.value)}
+                                    margin="normal"
+                                    inputProps={{
+                                        min: 0, // Set the minimum value to 1
+                                        max: 25, // Set the maximum value to 100
+                                    }}
+                                    sx={{ width: '20ch' }}
+                                />
+                            </TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell>Editions (1-100):</TableCell>
+                            <TableCell>
+                                <TextField
+                                    type="number" // Set the input type to "number"
+                                    value={editions}
+                                    onChange={(e) => handleEditionsChange(e.target.value)}
+                                    margin="normal"
+                                    inputProps={{
+                                        min: 1, // Set the minimum value to 1
+                                        max: 100, // Set the maximum value to 100
+                                    }}
+                                    sx={{ width: '20ch' }}
+                                />
+                            </TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell></TableCell>
+                            <TableCell>
+                                <Button variant="contained" color="primary" onClick={handleMintClick}>
+                                    Mint
+                                </Button>
+                            </TableCell>
+                        </TableRow>
                     </TableBody>
                 </Table>
             </TableContainer>
             <form>
-                <TextField
-                    label="Editions (1-100)"
-                    type="number" // Set the input type to "number"
-                    value={editions}
-                    onChange={(e) => handleEditionsChange(e.target.value)}
-                    fullWidth
-                    margin="normal"
-                    inputProps={{
-                        min: 1, // Set the minimum value to 1
-                        max: 100, // Set the maximum value to 100
-                    }}
-                />
-                <Button variant="contained" color="primary" onClick={handleMintClick}>
-                    Mint
-                </Button>
             </form>
             <Modal
                 open={modalOpen}
