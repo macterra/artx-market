@@ -90,7 +90,6 @@ const getAgentFromKey = async (key) => {
     let agentData = await getAgent(agentId);
 
     if (!agentData) {
-        const gallery = await createCollection(agentId, 'gallery');
 
         agentData = {
             xid: agentId,
@@ -98,10 +97,13 @@ const getAgentFromKey = async (key) => {
             name: 'anon',
             tagline: '',
             description: '',
-            collections: [gallery.asset.xid],
+            collections: [],
         };
 
         await saveAgent(agentData);
+
+        const gallery = await createCollection(agentId, 'gallery');
+        await saveCollection(gallery);
     }
 
     return agentData;
