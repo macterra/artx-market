@@ -1,8 +1,17 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 import os
 import ipfshttpclient
+from ipfshttpclient.exceptions import Error as IPFSError
+from git import Repo
+from git.exc import GitCommandError
 
 app = Flask(__name__)
+repo = Repo('data')
+
+try:
+    repo.init()
+except GitCommandError as error:
+    print(f"git error {str(error)}")
 
 def getIpfs():
     connect = os.environ.get('IPFS_CONNECT')
@@ -14,15 +23,36 @@ def getIpfs():
 
 @app.route('/api/v1/pin/<path:subfolder>', methods=['GET', 'POST'])
 def pin(subfolder):
-    ipfs = getIpfs()
-    folder = f"data/{subfolder}"
-    res = ipfs.add(folder, recursive=True)
-    for item in res:
-        print(item['Name'], item['Hash'])
-    cid = res[-1]['Hash']
-    res = ipfs.pin.add(cid)
-    ipfs.close()
+    try:
+        ipfs = getIpfs()
+        folder = f"data/{subfolder}"
+        res = ipfs.add(folder, recursive=True)
+        cid = res[-1]['Hash']
+        res = ipfs.pin.add(cid)
+    except IPFSError as error:
+        return jsonify({'error': f'Failed to pin data: {str(error)}'}), 500
+    finally:
+        ipfs.close()
+
     return jsonify({'ok': 1, 'cid': cid})
+@app.route('/api/v1/commit', methods=['POST'])
+def commit():
+    data = request.get_json()
+
+    if not data or 'message' not in data:
+        return jsonify({'error': 'No message provided'}), 400
+
+    message = data['message']
+
+    try:
+        repo.git.add('--all')
+        repo.git.commit('-m', message)
+        githash = repo.git.rev_parse('HEAD')
+    except GitCommandError as error:
+        return jsonify({'error': f'Failed to commit changes: {str(error)}'}), 500
+
+    # Replace this with your actual implementation
+    return jsonify({'ok':1, 'githash':githash})
 
 @app.route('/api/v1/peg', methods=['GET', 'POST'])
 def peg():
