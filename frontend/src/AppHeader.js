@@ -147,10 +147,17 @@ const AppHeader = ({ isAuthenticated, setIsAuthenticated, navigate }) => {
                 </Toolbar>
             </AppBar>
             <Dialog onClose={handleAboutClose} open={aboutOpen}>
-                <DialogTitle>About</DialogTitle>
+                <DialogTitle>About ArtX Market</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
                         <BuildTime />
+                    </DialogContentText>
+                    <DialogContentText>
+                        <p>github:
+                            <a href="https://github.com/macterra/artx-market" target="_blank" rel="noopener noreferrer">
+                                macterra/artx-market
+                            </a>
+                        </p>
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
