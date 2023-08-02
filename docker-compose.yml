@@ -11,3 +11,23 @@ services:
       SATSPAY_ADMIN_KEY: ${SATSPAY_ADMIN_KEY}
       SATSPAY_API_KEY: ${SATSPAY_API_KEY}
       SATSPAY_LN_WALLET: ${SATSPAY_LN_WALLET}
+
+  ipfs:
+    image: ipfs/go-ipfs:v0.8.0
+    ports:
+      - "4001:4001"
+      - "8080:8080"
+      - "5001:5001"
+    volumes:
+      - ./dist/export:/export
+      - ./dist/ipfs:/data/ipfs
+
+  archiver:
+    image: archiver
+    ports:
+      - "5115:5115"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - IPFS_CONNECT=/dns/ipfs/tcp/5001/http
+

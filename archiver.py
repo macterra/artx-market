@@ -61,4 +61,4 @@ def peg():
 
 if __name__ == '__main__':
     port = int(os.getenv('ARC_PORT', 5115))
-    app.run(debug=True, port=port)
+    app.run(debug=True, host='0.0.0.0', port=port)

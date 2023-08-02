@@ -1,0 +1,16 @@
+FROM python:3
+
+RUN apt-get update
+RUN apt-get install -y vim git
+
+RUN git config --global user.email "davidmc@gmail.com"
+RUN git config --global user.name "David McFadzean"
+RUN git config --global --add safe.directory /app/data
+
+WORKDIR /app
+RUN pip install flask flit gitpython
+RUN git clone https://github.com/macterra/py-ipfs-http-client.git
+RUN cd py-ipfs-http-client && FLIT_ROOT_INSTALL=1 flit install --pth-file
+COPY *.py .
+
+CMD [ "python", "./archiver.py" ]
