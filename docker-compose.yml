@@ -3,17 +3,18 @@ services:
   app:
     image: macterra/artx-market
     ports:
-      - '5111:5000'
+      - '5000:5000'
     volumes:
       - ./data:/app/data
     environment:
+      ARCHIVER: http://archiver:5115
       SATSPAY_HOST: ${SATSPAY_HOST}
       SATSPAY_ADMIN_KEY: ${SATSPAY_ADMIN_KEY}
       SATSPAY_API_KEY: ${SATSPAY_API_KEY}
       SATSPAY_LN_WALLET: ${SATSPAY_LN_WALLET}
 
   ipfs:
-    image: ipfs/go-ipfs:v0.8.0
+    image: ipfs/go-ipfs:v0.20.0
     ports:
       - "4001:4001"
       - "8080:8080"
