@@ -62,5 +62,7 @@ jobs:
           context: .
           file: ./Dockerfile.archiver
           push: true
-          tags: ${{ env.REGISTRY }}/artx-archiver:${{ steps.calver.outputs.version }}
+          tags: |
+            ${{ env.REGISTRY }}/macterra/artx-archiver:${{ steps.calver.outputs.version }}
+            ${{ env.REGISTRY }}/macterra/artx-archiver:release
           labels: ${{ steps.meta.outputs.labels }}
