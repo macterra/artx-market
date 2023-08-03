@@ -3,7 +3,6 @@ const fs = require('fs');
 const sharp = require('sharp');
 const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
-const { execSync } = require('node:child_process');
 
 const config = {
     host: process.env.ARTX_HOST || 'localhost',
@@ -59,13 +58,13 @@ const getAdmin = async (xid) => {
 };
 
 const saveAdmin = async (adminData) => {
-    const stdout = execSync(`ipfs add -r -Q ${config.data}`);
-    const cid = stdout.toString().trim();
+    const response = await fetch(`${config.archiver}/api/v1/pin/`);
+    const ipfs = await response.json();
     const jsonPath = path.join(config.data, 'meta.json');
 
     adminData.updated = new Date().toISOString();
     adminData.githash = await simpleGit.revparse('HEAD');
-    adminData.cid = cid;
+    adminData.cid = ipfs.cid;
 
     await fs.promises.writeFile(jsonPath, JSON.stringify(adminData, null, 2));
     return adminData;
@@ -472,10 +471,9 @@ const createEdition = async (owner, asset, edition, editions) => {
 
 const createToken = async (userId, xid, editions, license, royalty) => {
     let assetData = await getAsset(xid);
-
-    const assetFolder = path.join(config.assets, xid);
-    const stdout = execSync(`ipfs add -r -Q ${assetFolder}`);
-    const cid = stdout.toString().trim();
+    
+    const response = await fetch(`${config.archiver}/api/v1/pin/assets/${xid}`);
+    const ipfs = await response.json();
 
     const nfts = [];
     editions = parseInt(editions, 10);
@@ -492,8 +490,8 @@ const createToken = async (userId, xid, editions, license, royalty) => {
     royalty = parseFloat(royalty);
 
     assetData.token = {
-        cid: cid,
-        url: `https://ipfs.io/ipfs/${cid}/${assetData.file.fileName}`,
+        cid: ipfs.cid,
+        url: `https://ipfs.io/ipfs/${ipfs.cid}/${assetData.file.fileName}`,
         royalty: royalty,
         license: license,
         editions: editions,
