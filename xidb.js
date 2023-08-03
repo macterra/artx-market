@@ -3,12 +3,12 @@ const fs = require('fs');
 const sharp = require('sharp');
 const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
-const gitP = require('simple-git');
 const { execSync } = require('node:child_process');
 
 const config = {
     host: process.env.ARTX_HOST || 'localhost',
     port: process.env.ARTX_PORT || 5000,
+    archiver: process.env.ARCHIVER || 'http://localhost:5115',
     data: 'data',
     uploads: 'data/uploads',
     assets: 'data/assets',
@@ -16,26 +16,25 @@ const config = {
     id: 'data/id',
 };
 
-// Create a simple-git instance
-const simpleGit = gitP(config.data);
-
-// Function to initialize the repository if it's not already a Git repository
-const initRepo = async () => {
-    if (!fs.existsSync(path.join(config.data, '.git'))) {
-        await simpleGit.init();
-        console.log('Data repository initialized');
-    }
-};
-
-initRepo();
-
 // Function to add all changes, commit, and push
 const commitChanges = async (commitMessage) => {
     try {
-        await simpleGit.add('.');
-        await simpleGit.commit(commitMessage);
-        //await simpleGit.push('origin', 'master'); // Replace 'origin' and 'master' with your remote and branch if they are different
-        console.log(`Changes committed successfully: ${commitMessage}`);
+        const response = await fetch(`${config.archiver}/api/v1/commit`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', },
+            body: JSON.stringify({ message: commitMessage }),
+        });
+
+        if (response.ok) {
+            const commit = await response.json()
+
+            if (commit.error) {
+                console.log(`Failed to commit changes: ${commit.error}`);
+            }
+            else {
+                console.log(`Changes committed successfully: ${commit.githash}`);
+            }
+        }
     } catch (err) {
         console.error('Failed to commit changes:', err);
     }
