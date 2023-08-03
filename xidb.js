@@ -30,8 +30,9 @@ const commitChanges = async (commitMessage) => {
             if (commit.error) {
                 console.log(`Failed to commit changes: ${commit.error}`);
             }
-            else {
-                console.log(`Changes committed successfully: ${commit.githash}`);
+            else if (commit.githash) {
+                const hash = commit.githash.substring(0, 8);
+                console.log(`Commit: ${commitMessage} (${hash})`);
             }
         }
     } catch (err) {
@@ -471,7 +472,7 @@ const createEdition = async (owner, asset, edition, editions) => {
 
 const createToken = async (userId, xid, editions, license, royalty) => {
     let assetData = await getAsset(xid);
-    
+
     const response = await fetch(`${config.archiver}/api/v1/pin/assets/${xid}`);
     const ipfs = await response.json();
 

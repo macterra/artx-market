@@ -23,7 +23,7 @@ services:
       - ./dist/ipfs:/data/ipfs
 
   archiver:
-    image: archiver
+    image: macterra/artx-archiver
     ports:
       - "5115:5115"
     volumes:
