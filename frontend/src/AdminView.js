@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, Table, TableBody, TableRow, TableCell, Tab, Tabs } from '@mui/material';
+import { Box, Button, Table, TableBody, TableRow, TableCell, Tab, Tabs, Grid } from '@mui/material';
 
 const AdminView = ({ navigate }) => {
 
@@ -177,12 +177,18 @@ const AdminView = ({ navigate }) => {
                             style={{ width: '400px', height: '300px', overflow: 'auto' }}
                         />
                         <br></br>
-                        <Button variant="contained" color="primary" onClick={verifyAssets} disabled={disableVerify}>
-                            Verify Assets
-                        </Button>
-                        <Button variant="contained" color="primary" onClick={verifyAgents} disabled={disableVerify}>
-                            Verify Agents
-                        </Button>
+                        <Grid container direction="row" justifyContent="center" alignItems="center" spacing={3}>
+                            <Grid item>
+                                <Button variant="contained" color="primary" onClick={verifyAssets} disabled={disableVerify}>
+                                    Verify Assets
+                                </Button>
+                            </Grid>
+                            <Grid item>
+                                <Button variant="contained" color="primary" onClick={verifyAgents} disabled={disableVerify}>
+                                    Verify Agents
+                                </Button>
+                            </Grid>
+                        </Grid>
                     </Box>
                 }
             </div>

@@ -58,7 +58,7 @@ const getAdmin = async (xid) => {
     return jsonData;
 };
 
-const saveAdmin = async (adminData) => {    
+const saveAdmin = async (adminData) => {
 
     const jsonPath = path.join(config.data, 'meta.json');
     adminData.updated = new Date().toISOString();
@@ -82,7 +82,7 @@ const saveAdmin = async (adminData) => {
 
     const ipfs = await response2.json();
     adminData.cid = ipfs.cid;
-    
+
     await fs.promises.writeFile(jsonPath, JSON.stringify(adminData, null, 2));
     return adminData;
 };
@@ -102,6 +102,45 @@ const allAgents = () => {
 };
 
 const verifyAsset = async (xid) => {
+    const assetData = await getAsset(xid);
+    let error = {
+        xid: xid,
+        verified: false,
+        error: 'invalid fields',
+    };
+
+    if (!assetData.asset) {
+        return error;
+    }
+
+    if (!assetData.asset.xid || assetData.asset.xid !== xid) {
+        return error;
+    }
+
+    if (!assetData.asset.owner) {
+        return error;
+    }
+
+    error.error = 'invalid ownership';
+    const agentData = await getAgent(assetData.asset.owner);
+    const assets = await agentGetAssets(assetData.asset.owner);
+
+    if (assetData.collection) {
+        if (!agentData.collections.includes(xid)) {
+            return error;
+        }
+    }
+    else if (assetData.nft) {
+        if (!assets.collected.includes(xid)) {
+            return error;
+        }
+    }
+    else {
+        if (!assets.created.includes(xid)) {
+            return error;
+        }
+    }
+
     return {
         xid: xid,
         verified: true,
