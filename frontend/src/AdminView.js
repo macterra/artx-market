@@ -4,6 +4,7 @@ import { Box, Button, Table, TableBody, TableRow, TableCell } from '@mui/materia
 const AdminView = ({ navigate }) => {
 
     const [admin, setAdmin] = useState(null);
+    const [disableSave, setDisableSave] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -40,13 +41,20 @@ const AdminView = ({ navigate }) => {
     };
 
     const handleSave = async () => {
+        setDisableSave(true);
         try {
             const response = await fetch('/api/v1/admin/save');
             const admin = await response.json();
-            setAdmin(admin);
+            if (admin.xid) {
+                setAdmin(admin);
+            }
+            else {
+                alert("Save failed");
+            }
         } catch (error) {
             console.error('Error fetching admin data:', error);
         }
+        setDisableSave(false);
     };
 
     return (
@@ -87,7 +95,7 @@ const AdminView = ({ navigate }) => {
                             </TableRow>
                         </TableBody>
                     </Table>
-                    <Button variant="contained" color="primary" onClick={handleSave}>
+                    <Button variant="contained" color="primary" onClick={handleSave} disabled={disableSave}>
                         Save All
                     </Button>
                 </Box>

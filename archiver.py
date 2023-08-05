@@ -21,12 +21,16 @@ def getIpfs():
     else:
         return ipfshttpclient.connect(timeout=6)
 
-@app.route('/api/v1/pin/<path:subfolder>', methods=['GET', 'POST'])
-def pin(subfolder):
+@app.route('/api/v1/pin/', methods=['POST'])
+def pin():
     try:
+        data = request.get_json()
+
+        if not data or 'path' not in data:
+            return jsonify({'error': 'No path provided'}), 400
+        
         ipfs = getIpfs()
-        folder = f"data/{subfolder}"
-        res = ipfs.add(folder, recursive=True)
+        res = ipfs.add(data['path'], recursive=True)
         cid = res[-1]['Hash']
         res = ipfs.pin.add(cid)
     except IPFSError as error:
@@ -35,6 +39,7 @@ def pin(subfolder):
         ipfs.close()
 
     return jsonify({'ok': 1, 'cid': cid})
+
 @app.route('/api/v1/commit', methods=['POST'])
 def commit():
     data = request.get_json()

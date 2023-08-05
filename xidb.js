@@ -58,15 +58,31 @@ const getAdmin = async (xid) => {
     return jsonData;
 };
 
-const saveAdmin = async (adminData) => {
-    const response = await fetch(`${config.archiver}/api/v1/pin/`);
-    const ipfs = await response.json();
+const saveAdmin = async (adminData) => {    
+
     const jsonPath = path.join(config.data, 'meta.json');
-
     adminData.updated = new Date().toISOString();
-    adminData.githash = await simpleGit.revparse('HEAD');
-    adminData.cid = ipfs.cid;
+    // Make sure we have something to commit
+    await fs.promises.writeFile(jsonPath, JSON.stringify(adminData, null, 2));
 
+    const response1 = await fetch(`${config.archiver}/api/v1/commit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', },
+        body: JSON.stringify({ message: "Save admin" }),
+    });
+
+    const commit = await response1.json();
+    adminData.githash = commit.githash;
+
+    const response2 = await fetch(`${config.archiver}/api/v1/pin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', },
+        body: JSON.stringify({ path: config.data }),
+    });
+
+    const ipfs = await response2.json();
+    adminData.cid = ipfs.cid;
+    
     await fs.promises.writeFile(jsonPath, JSON.stringify(adminData, null, 2));
     return adminData;
 };
@@ -473,7 +489,12 @@ const createEdition = async (owner, asset, edition, editions) => {
 const createToken = async (userId, xid, editions, license, royalty) => {
     let assetData = await getAsset(xid);
 
-    const response = await fetch(`${config.archiver}/api/v1/pin/assets/${xid}`);
+    const path = path.join(config.data, 'assets', xid);
+    const response = await fetch(`${config.archiver}/api/v1/pin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', },
+        body: JSON.stringify({ path: path }),
+    });
     const ipfs = await response.json();
 
     const nfts = [];
