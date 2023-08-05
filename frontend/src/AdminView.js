@@ -61,23 +61,51 @@ const AdminView = ({ navigate }) => {
         setDisableSave(false);
     };
 
-    const handleVerify = async () => {
+    const verifyAssets = async () => {
         setDisableVerify(true);
         setLogs([]);
-        
+
         const response = await fetch('/api/v1/admin/assets');
         const assets = await response.json();
+        const logs = [];
 
         for (const xid of assets) {
             const response = await fetch(`/api/v1/admin/verify/asset/${xid}`);
-            const asset = response.json();
+            const asset = await response.json();
 
             if (asset.verified) {
-                setLogs((prevLogs) => [...prevLogs, `Asset ${xid} ✔`]);
+                logs.push(`Asset ${xid} ✔`);
             }
-            else if (asset.error) {
-                setLogs((prevLogs) => [...prevLogs, `Asset ${xid} ${asset.error}`]);
-            }            
+            else {
+                logs.push(`Asset ${xid} ${asset.error}`);
+            }
+
+            setLogs([...logs]);
+        }
+
+        setDisableVerify(false);
+    };
+
+    const verifyAgents = async () => {
+        setDisableVerify(true);
+        setLogs([]);
+
+        const response = await fetch('/api/v1/admin/agents');
+        const assets = await response.json();
+        const logs = [];
+
+        for (const xid of assets) {
+            const response = await fetch(`/api/v1/admin/verify/agent/${xid}`);
+            const asset = await response.json();
+
+            if (asset.verified) {
+                logs.push(`Agent ${xid} ✔`);
+            }
+            else {
+                logs.push(`Agent ${xid} ${asset.error}`);
+            }
+
+            setLogs([...logs]);
         }
 
         setDisableVerify(false);
@@ -146,11 +174,14 @@ const AdminView = ({ navigate }) => {
                         <textarea
                             value={logs.join('\n')}
                             readOnly
-                            style={{ width: '100%', height: '200px', overflow: 'auto' }}
+                            style={{ width: '400px', height: '300px', overflow: 'auto' }}
                         />
                         <br></br>
-                        <Button variant="contained" color="primary" onClick={handleVerify} disabled={disableVerify}>
-                            Verify Data
+                        <Button variant="contained" color="primary" onClick={verifyAssets} disabled={disableVerify}>
+                            Verify Assets
+                        </Button>
+                        <Button variant="contained" color="primary" onClick={verifyAgents} disabled={disableVerify}>
+                            Verify Agents
                         </Button>
                     </Box>
                 }
