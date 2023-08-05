@@ -87,6 +87,34 @@ const saveAdmin = async (adminData) => {
     return adminData;
 };
 
+const allAssets = () => {
+    const assets = fs.readdirSync(config.assets, { withFileTypes: true })
+        .filter(dirent => dirent.isDirectory())
+        .map(dirent => dirent.name);
+    return assets;
+};
+
+const allAgents = () => {
+    const agents = fs.readdirSync(config.agents, { withFileTypes: true })
+        .filter(dirent => dirent.isDirectory())
+        .map(dirent => dirent.name);
+    return agents;
+};
+
+const verifyAsset = async (xid) => {
+    return {
+        xid: xid,
+        verified: true,
+    }
+};
+
+const verifyAgent = async (xid) => {
+    return {
+        xid: xid,
+        verified: true,
+    }
+};
+
 const getAgentFromKey = async (key) => {
     const keyPath = path.join(config.id, 'pubkey.json');
     let keyData = {};
@@ -597,6 +625,10 @@ module.exports = {
     getAgentFromKey,
     getAgent,
     saveAgent,
+    allAssets,
+    allAgents,
+    verifyAsset,
+    verifyAgent,
     getAgentAndCollections,
     getAllAgents,
     getCollection,

@@ -16,6 +16,10 @@ const {
   getAgentFromKey,
   getAgent,
   saveAgent,
+  allAssets,
+  allAgents,
+  verifyAsset,
+  verifyAgent,
   getAgentAndCollections,
   getCollection,
   getAsset,
@@ -240,6 +244,68 @@ app.get('/api/v1/admin/save', ensureAuthenticated, async (req, res) => {
   } catch (error) {
     console.error('Error reading metadata:', error);
     res.status(404).json({ message: 'Asset not found' });
+  }
+});
+
+app.get('/api/v1/admin/assets', ensureAuthenticated, async (req, res) => {
+  try {
+    const adminData = await getAdmin();
+
+    if (!adminData.owner || adminData.owner !== req.user.xid) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    res.json(allAssets());
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(404).json({ message: 'Assets not found' });
+  }
+});
+
+app.get('/api/v1/admin/agents', ensureAuthenticated, async (req, res) => {
+  try {
+    const adminData = await getAdmin();
+
+    if (!adminData.owner || adminData.owner !== req.user.xid) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    res.json(allAgents());
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(404).json({ message: 'Agents not found' });
+  }
+});
+
+app.get('/api/v1/admin/verify/asset/:xid', async (req, res) => {
+  try {
+    const adminData = await getAdmin();
+
+    if (!adminData.owner || adminData.owner !== req.user.xid) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const verify = await verifyAsset(req.params.xid);
+    res.json(verify);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(404).json({ error: 'Asset cannot be verified' });
+  }
+});
+
+app.get('/api/v1/admin/verify/agent/:xid', async (req, res) => {
+  try {
+    const adminData = await getAdmin();
+
+    if (!adminData.owner || adminData.owner !== req.user.xid) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const verify = await verifyAgent(req.params.xid);
+    res.json(verify);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(404).json({ error: 'Agent cannot be verified' });
   }
 });
 
