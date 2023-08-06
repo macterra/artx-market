@@ -147,15 +147,23 @@ app.get('/logout', (req, res) => {
   });
 });
 
-app.get('/check-auth/:xid?', (req, res) => {
+app.get('/check-auth/:xid?', async (req, res) => {
   if (req.isAuthenticated()) {
     const userId = req.params.xid;
+    const admin = await getAdmin();
+    const isAdmin = req.user.xid === admin.owner;
 
     if (userId) {
-      // Check if the logged-in user's ID is the same as the provided ID
-      res.json({ message: 'Authenticated', sameId: req.user.xid === userId });
+      res.json({
+        message: 'Authenticated',
+        sameId: req.user.xid === userId,
+        isAdmin: isAdmin,
+       });
     } else {
-      res.json({ message: 'Authenticated' });
+      res.json({
+        message: 'Authenticated',
+        isAdmin: isAdmin,
+       });
     }
   } else {
     res.json({ message: 'Unauthorized' });

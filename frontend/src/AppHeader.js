@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     AppBar,
     Toolbar,
@@ -17,9 +17,10 @@ import BuildTime from './BuildTime';
 
 const AppHeader = ({ isAuthenticated, setIsAuthenticated, navigate }) => {
 
-    const [profileAnchorEl, setProfileAnchorEl] = React.useState(null);
-    const [anchorEl, setAnchorEl] = React.useState(null);
-    const [aboutOpen, setAboutOpen] = React.useState(false);
+    const [profileAnchorEl, setProfileAnchorEl] = useState(null);
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [aboutOpen, setAboutOpen] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
 
     // Add the handleEditProfileClick function
     const handleEditProfileClick = () => {
@@ -59,12 +60,15 @@ const AppHeader = ({ isAuthenticated, setIsAuthenticated, navigate }) => {
             const data = await response.json();
             if (data.message === 'Authenticated') {
                 setIsAuthenticated(true);
+                setIsAdmin(data.isAdmin);
             } else {
                 setIsAuthenticated(false);
+                setIsAdmin(false);
             }
         } catch (error) {
             console.error('Error fetching authentication status:', error);
             setIsAuthenticated(false);
+            setIsAdmin(false);
         }
     };
 
@@ -98,6 +102,11 @@ const AppHeader = ({ isAuthenticated, setIsAuthenticated, navigate }) => {
                             Profile
                         </Button>
                     )}
+                    {isAdmin &&
+                        <Button color="inherit" onClick={() => navigate('/admin')}>
+                            Admin
+                        </Button>
+                    }
                     <Menu
                         id="profile-menu"
                         anchorEl={profileAnchorEl}
