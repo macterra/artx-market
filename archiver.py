@@ -17,9 +17,9 @@ def getIpfs():
     connect = os.environ.get('IPFS_CONNECT')
 
     if connect:
-        return ipfshttpclient.connect(connect, timeout=6)
+        return ipfshttpclient.connect(connect, timeout=20)
     else:
-        return ipfshttpclient.connect(timeout=6)
+        return ipfshttpclient.connect(timeout=20)
 
 @app.route('/api/v1/pin/', methods=['POST'])
 def pin():
@@ -28,11 +28,10 @@ def pin():
 
         if not data or 'path' not in data:
             return jsonify({'error': 'No path provided'}), 400
-        
+
         ipfs = getIpfs()
-        res = ipfs.add(data['path'], recursive=True)
+        res = ipfs.add(data['path'], recursive=True, pin=True, pattern="**")
         cid = res[-1]['Hash']
-        res = ipfs.pin.add(cid)
     except IPFSError as error:
         return jsonify({'error': f'Failed to pin data: {str(error)}'}), 500
     finally:
