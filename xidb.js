@@ -148,6 +148,39 @@ const verifyAsset = async (xid) => {
 };
 
 const verifyAgent = async (xid) => {
+    const agentData = await getAgent(xid);
+    const assets = await agentGetAssets(xid);
+
+    let error = {
+        xid: xid,
+        verified: false,
+        error: 'invalid ownership',
+    };
+
+    for (const collectionId of agentData.collections) {
+        const collection = await getAsset(collectionId);
+
+        if (collection.asset.owner !== xid) {
+            return error;
+        }
+    }
+
+    for (const assetId of assets.created) {
+        const asset = await getAsset(assetId);
+
+        if (asset.asset.owner !== xid) {
+            return error;
+        }
+    }
+
+    for (const assetId of assets.collected) {
+        const asset = await getAsset(assetId);
+
+        if (asset.asset.owner !== xid) {
+            return error;
+        }
+    }
+
     return {
         xid: xid,
         verified: true,
