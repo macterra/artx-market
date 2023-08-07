@@ -34,6 +34,7 @@ const {
   removeCollection,
   isOwner,
   getAllAgents,
+  integrityCheck,
 } = require('./xidb');
 
 const app = express();
@@ -763,6 +764,10 @@ app.use((req, res, next) => {
   }
 });
 
-app.listen(config.port, () => {
-  console.log(`ArtX server running on ${config.host}:${config.port}`);
+integrityCheck().then(() => {
+  app.listen(config.port, () => {
+    console.log(`ArtX server running on ${config.host}:${config.port}`);
+  });
+}).catch((error) => {
+  console.error('Failed to start the server:', error);
 });

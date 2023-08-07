@@ -88,6 +88,50 @@ const saveAdmin = async (adminData) => {
     return adminData;
 };
 
+const integrityCheck = async () => {
+    const assets = allAssets();
+
+    for (const [i, xid] of assets.entries()) {
+        const asset = await verifyAsset(xid);
+        const index = (i+1).toString().padStart(5, " ");
+
+        if (asset.verified) {
+            console.log(`${index} Asset ${xid} ✔`);
+        }
+        else {
+            const asset = await fixAsset(xid);
+
+            if (asset.fixed) {
+                console.log(`${index} Asset ${xid} ✔ fixed ${asset.message}`);
+            }
+            else {
+                console.log(`${index} Asset ${xid} ${asset.error}`);
+            }
+        }
+    }
+
+    const agents = allAgents();
+
+    for (const [i, xid] of agents.entries()) {
+        const agent = await verifyAgent(xid);
+        const index = (i+1).toString().padStart(5, " ");
+
+        if (agent.verified) {
+            console.log(`${index} Agent ${xid} ✔`);
+        }
+        else {
+            const agent = await fixAgent(xid);
+
+            if (agent.fixed) {
+                console.log(`${index} Agent ${xid} ✔ fixed ${agent.message}`);
+            }
+            else {
+                console.log(`${index} Agent ${xid} ${agent.error}`);
+            }
+        }
+    }
+};
+
 const allAssets = () => {
     const assets = fs.readdirSync(config.assets, { withFileTypes: true })
         .filter(dirent => dirent.isDirectory())
@@ -838,4 +882,5 @@ module.exports = {
     createCollection,
     saveCollection,
     removeCollection,
+    integrityCheck,
 };

@@ -12,6 +12,8 @@ services:
       SATSPAY_ADMIN_KEY: ${SATSPAY_ADMIN_KEY}
       SATSPAY_API_KEY: ${SATSPAY_API_KEY}
       SATSPAY_LN_WALLET: ${SATSPAY_LN_WALLET}
+    depends_on:
+      - archiver
 
   ipfs:
     image: ipfs/go-ipfs:v0.20.0
@@ -31,4 +33,6 @@ services:
       - ./data:/app/data
     environment:
       - IPFS_CONNECT=/dns/ipfs/tcp/5001/http
+    depends_on:
+      - ipfs
 
