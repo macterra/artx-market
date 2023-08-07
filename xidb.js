@@ -181,6 +181,11 @@ const fixAsset = async (xid) => {
     }
 
     const agentData = await getAgent(assetData.asset.owner);
+
+    if (!agentData) {
+        return removeAsset(xid);
+    }
+
     const assets = await agentGetAssets(assetData.asset.owner);
 
     if (assetData.collection) {
