@@ -168,6 +168,11 @@ const verifyAsset = async (xid) => {
 
     error.error = 'invalid ownership';
     const agentData = await getAgent(assetData.asset.owner);
+
+    if (!agentData) {
+        return error;
+    }
+
     const assets = await agentGetAssets(assetData.asset.owner);
 
     if (assetData.collection) {
