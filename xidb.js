@@ -3,6 +3,7 @@ const fs = require('fs');
 const sharp = require('sharp');
 const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
+const { rimrafSync } = require('rimraf')
 
 const config = {
     host: process.env.ARTX_HOST || 'localhost',
@@ -147,6 +148,62 @@ const verifyAsset = async (xid) => {
     }
 };
 
+const removeAsset = (xid) => {
+    const assetPath = path.join(config.assets, xid);
+
+    rimrafSync(assetPath);
+    commitChanges(`Removed asset ${xid}`);
+
+    return {
+        xid: xid,
+        fixed: true,
+        message: 'asset removed',
+    };
+};
+
+const fixAsset = async (xid) => {
+    const assetData = await getAsset(xid);
+
+    if (!assetData.asset) {
+        return removeAsset(xid);
+    }
+
+    if (!assetData.asset.xid || assetData.asset.xid !== xid) {
+        return removeAsset(xid);
+    }
+
+    if (!assetData.asset.owner) {
+        return removeAsset(xid);
+    }
+
+    const agentData = await getAgent(assetData.asset.owner);
+    const assets = await agentGetAssets(assetData.asset.owner);
+
+    if (assetData.collection) {
+        if (!agentData.collections.includes(xid)) {
+            return removeAsset(xid);
+        }
+    }
+    else if (assetData.nft) {
+        if (!assets.collected.includes(xid)) {
+            agentData.collections.push(xid);
+            await saveAgent(agentData);
+        }
+    }
+    else {
+        if (!assets.created.includes(xid)) {
+            agentData.collections.push(xid);
+            await saveAgent(agentData);
+        }
+    }
+
+    return {
+        xid: xid,
+        fixed: true,
+        message: "ownership fixed",
+    }
+};
+
 const verifyAgent = async (xid) => {
     const agentData = await getAgent(xid);
     const assets = await agentGetAssets(xid);
@@ -184,6 +241,44 @@ const verifyAgent = async (xid) => {
     return {
         xid: xid,
         verified: true,
+    }
+};
+
+const fixAgent = async (xid) => {
+    const agentData = await getAgent(xid);
+    const assets = await agentGetAssets(xid);
+
+    for (const collectionId of agentData.collections) {
+        const collection = await getAsset(collectionId);
+
+        if (collection.asset.owner !== xid) {
+            collection.asset.owner = xid;
+            await saveAsset(collection);
+        }
+    }
+
+    for (const assetId of assets.created) {
+        const asset = await getAsset(assetId);
+
+        if (asset.asset.owner !== xid) {
+            asset.asset.owner = xid;
+            await saveAsset(asset);
+        }
+    }
+
+    for (const assetId of assets.collected) {
+        const asset = await getAsset(assetId);
+
+        if (asset.asset.owner !== xid) {
+            asset.asset.owner = xid;
+            await saveAsset(asset);
+        }
+    }
+
+    return {
+        xid: xid,
+        fixed: true,
+        message: "ownership fixed",
     }
 };
 
@@ -700,7 +795,9 @@ module.exports = {
     allAssets,
     allAgents,
     verifyAsset,
+    fixAsset,
     verifyAgent,
+    fixAgent,
     getAgentAndCollections,
     getAllAgents,
     getCollection,

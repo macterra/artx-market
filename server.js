@@ -19,7 +19,9 @@ const {
   allAssets,
   allAgents,
   verifyAsset,
+  fixAsset,
   verifyAgent,
+  fixAgent,
   getAgentAndCollections,
   getCollection,
   getAsset,
@@ -158,12 +160,12 @@ app.get('/check-auth/:xid?', async (req, res) => {
         message: 'Authenticated',
         sameId: req.user.xid === userId,
         isAdmin: isAdmin,
-       });
+      });
     } else {
       res.json({
         message: 'Authenticated',
         isAdmin: isAdmin,
-       });
+      });
     }
   } else {
     res.json({ message: 'Unauthorized' });
@@ -301,6 +303,22 @@ app.get('/api/v1/admin/verify/asset/:xid', async (req, res) => {
   }
 });
 
+app.get('/api/v1/admin/fix/asset/:xid', async (req, res) => {
+  try {
+    const adminData = await getAdmin();
+
+    if (!adminData.owner || adminData.owner !== req.user.xid) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const verify = await fixAsset(req.params.xid);
+    res.json(verify);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(404).json({ error: 'Asset cannot be fixed' });
+  }
+});
+
 app.get('/api/v1/admin/verify/agent/:xid', async (req, res) => {
   try {
     const adminData = await getAdmin();
@@ -314,6 +332,22 @@ app.get('/api/v1/admin/verify/agent/:xid', async (req, res) => {
   } catch (error) {
     console.error('Error:', error);
     res.status(404).json({ error: 'Agent cannot be verified' });
+  }
+});
+
+app.get('/api/v1/admin/fix/agent/:xid', async (req, res) => {
+  try {
+    const adminData = await getAdmin();
+
+    if (!adminData.owner || adminData.owner !== req.user.xid) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const verify = await fixAgent(req.params.xid);
+    res.json(verify);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(404).json({ error: 'Asset cannot be fixed' });
   }
 });
 

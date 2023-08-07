@@ -8,6 +8,8 @@ const AdminView = ({ navigate }) => {
     const [disableVerify, setDisableVerify] = useState(false);
     const [tab, setTab] = useState(null);
     const [logs, setLogs] = useState([]);
+    const [invalidAssets, setInvalidAssets] = useState([]);
+    const [invalidAgents, setInvalidAgents] = useState([]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -68,21 +70,51 @@ const AdminView = ({ navigate }) => {
         const response = await fetch('/api/v1/admin/assets');
         const assets = await response.json();
         const logs = [];
+        const invalidAssets = [];
 
-        for (const xid of assets) {
+        for (const [i, xid] of assets.entries()) {
             const response = await fetch(`/api/v1/admin/verify/asset/${xid}`);
             const asset = await response.json();
+            const index = (i+1).toString().padStart(5, " ");
 
             if (asset.verified) {
-                logs.push(`Asset ${xid} ✔`);
+                logs.push(`${index} Asset ${xid} ✔`);
             }
             else {
-                logs.push(`Asset ${xid} ${asset.error}`);
+                logs.push(`${index} Asset ${xid} ${asset.error}`);
+                invalidAssets.push(xid);
             }
 
             setLogs([...logs]);
         }
 
+        setInvalidAssets(invalidAssets);
+        setDisableVerify(false);
+    };
+
+    const fixAssets = async () => {
+        setDisableVerify(true);
+
+        const logs = [];
+        const stillInvalid = [];
+
+        for (const [i, xid] of invalidAssets.entries()) {
+            const response = await fetch(`/api/v1/admin/fix/asset/${xid}`);
+            const asset = await response.json();
+            const index = (i+1).toString().padStart(5, " ");
+
+            if (asset.fixed) {
+                logs.push(`${index} Asset ${xid} ✔`);
+            }
+            else {
+                logs.push(`${index} Asset ${xid} ${asset.message}`);
+                stillInvalid.push(xid);
+            }
+
+            setLogs([...logs]);
+        }
+
+        setInvalidAssets(stillInvalid);
         setDisableVerify(false);
     };
 
@@ -91,23 +123,56 @@ const AdminView = ({ navigate }) => {
         setLogs([]);
 
         const response = await fetch('/api/v1/admin/agents');
-        const assets = await response.json();
+        const agents = await response.json();
         const logs = [];
+        const invalidAgents = [];
 
-        for (const xid of assets) {
+        for (const [i, xid] of agents.entries()) {
             const response = await fetch(`/api/v1/admin/verify/agent/${xid}`);
             const asset = await response.json();
+            const index = (i+1).toString().padStart(5, " ");
 
             if (asset.verified) {
-                logs.push(`Agent ${xid} ✔`);
+                logs.push(`${index} Agent ${xid} ✔`);
             }
             else {
-                logs.push(`Agent ${xid} ${asset.error}`);
+                logs.push(`${index} Agent ${xid} ${asset.error}`);
+                invalidAgents.push(xid);
+            }
+
+            setLogs([...logs]);
+
+            if (invalidAgents.length > 0) {
+                setInvalidAgents(invalidAgents);
+            }
+        }
+
+        setDisableVerify(false);
+    };
+
+    const fixAgents = async () => {
+        setDisableVerify(true);
+
+        const logs = [];
+        const stillInvalid = [];
+
+        for (const [i, xid] of invalidAgents.entries()) {
+            const response = await fetch(`/api/v1/admin/fix/agent/${xid}`);
+            const asset = await response.json();
+            const index = (i+1).toString().padStart(5, " ");
+
+            if (asset.fixed) {
+                logs.push(`${index} Agent ${xid} ✔`);
+            }
+            else {
+                logs.push(`${index} Agent ${xid} ${asset.message}`);
+                stillInvalid.push(xid);
             }
 
             setLogs([...logs]);
         }
 
+        setInvalidAgents(stillInvalid);
         setDisableVerify(false);
     };
 
@@ -183,11 +248,25 @@ const AdminView = ({ navigate }) => {
                                     Verify Assets
                                 </Button>
                             </Grid>
+                            {invalidAssets.length > 0 &&
+                                <Grid item>
+                                    <Button variant="contained" color="primary" onClick={fixAssets} disabled={disableVerify}>
+                                        Fix Assets
+                                    </Button>
+                                </Grid>
+                            }
                             <Grid item>
                                 <Button variant="contained" color="primary" onClick={verifyAgents} disabled={disableVerify}>
                                     Verify Agents
                                 </Button>
                             </Grid>
+                            {invalidAgents.length > 0 &&
+                                <Grid item>
+                                    <Button variant="contained" color="primary" onClick={fixAgents} disabled={disableVerify}>
+                                        Fix Agents
+                                    </Button>
+                                </Grid>
+                            }
                         </Grid>
                     </Box>
                 }
