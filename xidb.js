@@ -213,17 +213,27 @@ const verifyAgent = async (xid) => {
     const agentData = await getAgent(xid);
     const assets = await agentGetAssets(xid);
 
-    let error = {
+    const ownershipError = {
         xid: xid,
         verified: false,
         error: 'invalid ownership',
+    };
+
+    const typeError = {
+        xid: xid,
+        verified: false,
+        error: 'invalid type',
     };
 
     for (const collectionId of agentData.collections) {
         const collection = await getAsset(collectionId);
 
         if (collection.asset.owner !== xid) {
-            return error;
+            return ownershipError;
+        }
+
+        if (!collection.collection) {
+            return typeError;
         }
     }
 
@@ -231,7 +241,11 @@ const verifyAgent = async (xid) => {
         const asset = await getAsset(assetId);
 
         if (asset.asset.owner !== xid) {
-            return error;
+            return ownershipError;
+        }
+
+        if (!asset.file) {
+            return typeError;
         }
     }
 
@@ -239,7 +253,11 @@ const verifyAgent = async (xid) => {
         const asset = await getAsset(assetId);
 
         if (asset.asset.owner !== xid) {
-            return error;
+            return ownershipError;
+        }
+
+        if (!asset.nft) {
+            return typeError;
         }
     }
 
