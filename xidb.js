@@ -164,6 +164,10 @@ const removeAsset = (xid) => {
 const fixAsset = async (xid) => {
     const assetData = await getAsset(xid);
 
+    if (!assetData) {
+        return removeAsset(xid);
+    }
+
     if (!assetData.asset) {
         return removeAsset(xid);
     }
@@ -181,18 +185,19 @@ const fixAsset = async (xid) => {
 
     if (assetData.collection) {
         if (!agentData.collections.includes(xid)) {
-            return removeAsset(xid);
+            agentData.collections.push(xid);
+            await saveAgent(agentData);
         }
     }
     else if (assetData.nft) {
         if (!assets.collected.includes(xid)) {
-            agentData.collections.push(xid);
+            agentData.collected.push(xid);
             await saveAgent(agentData);
         }
     }
     else {
         if (!assets.created.includes(xid)) {
-            agentData.collections.push(xid);
+            agentData.created.push(xid);
             await saveAgent(agentData);
         }
     }
