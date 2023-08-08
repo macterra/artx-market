@@ -836,6 +836,7 @@ const createCollection = async (userId, name) => {
         }
     };
 
+    await saveCollection(metadata);
     return metadata;
 };
 
