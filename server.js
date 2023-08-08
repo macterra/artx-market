@@ -698,7 +698,7 @@ app.delete('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => 
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const ok = await removeCollection(collection);
+    await removeCollection(collection);
     res.json({ message: 'Collection removed successfully' });
   } catch (error) {
     console.error('Error processing request:', error);

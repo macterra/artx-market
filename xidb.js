@@ -860,7 +860,7 @@ const removeCollection = async (collection) => {
         await saveAgent(agentData);
     }
 
-    // TBD remove collection folder?
+    return removeAsset(collectionId);
 };
 
 module.exports = {
