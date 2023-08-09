@@ -17,7 +17,7 @@ const ProfileGrid = ({ collection }) => {
     }, [collection]);
 
     if (!profiles) {
-        return <p>Loading profiles...</p>;
+        return <p></p>;
     }
 
     const imageCardStyle = {

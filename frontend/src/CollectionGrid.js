@@ -17,7 +17,7 @@ const CollectionGrid = ({ userId, list }) => {
     }, [list]);
 
     if (!collections) {
-        return <p>Loading...</p>;
+        return <p></p>;
     }
 
     const imageCardStyle = {

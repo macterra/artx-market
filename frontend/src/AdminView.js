@@ -33,7 +33,7 @@ const AdminView = ({ navigate }) => {
     }, [navigate]);
 
     if (!admin) {
-        return <p>Loading...</p>;
+        return <p></p>;
     }
 
     const handleClaim = async () => {

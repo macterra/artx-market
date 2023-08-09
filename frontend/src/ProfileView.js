@@ -24,7 +24,7 @@ const ProfileView = ({ navigate }) => {
     }, [navigate, userId]);
 
     if (!profile) {
-        return <p>Loading profile...</p>;
+        return <p></p>;
     }
 
     const handleTabChange = (event, newTab) => {

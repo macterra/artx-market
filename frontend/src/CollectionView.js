@@ -26,7 +26,7 @@ const CollectionView = ({ navigate }) => {
     }, [navigate, xid, refreshKey]);
 
     if (!collection) {
-        return <p>Loading...</p>;
+        return <p></p>;
     }
 
     const handleUpload = async (event) => {
