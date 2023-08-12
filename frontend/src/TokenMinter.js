@@ -32,6 +32,7 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
     const [royalty, setRoyalty] = useState(0);
     const [license, setLicense] = useState(null);
     const [licenses, setLicenses] = useState([]);
+    const [disableMint, setDisableMint] = useState(false);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -114,7 +115,10 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
     };
 
     const handleMintClick = async () => {
+        setDisableMint(true);
+
         try {
+            // TBD: check for possible unexpired charge before creating a new one here
             const response = await axios.post('/api/v1/charge', {
                 description: 'mint',
                 amount: storageFee + 100 * editions
@@ -161,6 +165,8 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
         } catch (error) {
             console.error('Error:', error);
         }
+
+        setDisableMint(false);
     };
 
     return (
@@ -254,7 +260,7 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
                         <TableRow>
                             <TableCell></TableCell>
                             <TableCell>
-                                <Button variant="contained" color="primary" onClick={handleMintClick}>
+                                <Button variant="contained" color="primary" onClick={handleMintClick} disabled={disableMint}>
                                     Mint
                                 </Button>
                             </TableCell>
