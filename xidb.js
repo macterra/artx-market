@@ -93,7 +93,7 @@ const integrityCheck = async () => {
 
     for (const [i, xid] of assets.entries()) {
         const asset = await verifyAsset(xid);
-        const index = (i+1).toString().padStart(5, " ");
+        const index = (i + 1).toString().padStart(5, " ");
 
         if (asset.verified) {
             console.log(`${index} Asset ${xid} ✔`);
@@ -114,7 +114,7 @@ const integrityCheck = async () => {
 
     for (const [i, xid] of agents.entries()) {
         const agent = await verifyAgent(xid);
-        const index = (i+1).toString().padStart(5, " ");
+        const index = (i + 1).toString().padStart(5, " ");
 
         if (agent.verified) {
             console.log(`${index} Agent ${xid} ✔`);
@@ -761,11 +761,11 @@ const createEdition = async (owner, asset, edition, editions) => {
 const createToken = async (userId, xid, editions, license, royalty) => {
     let assetData = await getAsset(xid);
 
-    const path = path.join(config.data, 'assets', xid);
+    const assetPath = path.join(config.data, 'assets', xid);
     const response = await fetch(`${config.archiver}/api/v1/pin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', },
-        body: JSON.stringify({ path: path }),
+        body: JSON.stringify({ path: assetPath }),
     });
     const ipfs = await response.json();
 
