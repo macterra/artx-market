@@ -26,7 +26,7 @@ def checkIpfs():
     for i in range(10):
         try:
             ipfs = getIpfs()
-            print(ipfs.id())
+            #print(ipfs.id())
             return True
         except:
             print(i, "attempting to connect to IPFS...")
