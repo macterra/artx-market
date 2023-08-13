@@ -75,12 +75,7 @@ const saveAdmin = async (adminData) => {
     const commit = await response1.json();
     adminData.githash = commit.githash;
 
-    const response2 = await fetch(`${config.archiver}/api/v1/pin`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', },
-        body: JSON.stringify({ path: config.data }),
-    });
-
+    const response2 = await fetch(`${config.archiver}/api/v1/pin/${config.data}`);
     const ipfs = await response2.json();
     adminData.cid = ipfs.cid;
 
@@ -761,12 +756,8 @@ const createEdition = async (owner, asset, edition, editions) => {
 const createToken = async (userId, xid, editions, license, royalty) => {
     let assetData = await getAsset(xid);
 
-    const assetPath = path.join(config.data, 'assets', xid);
-    const response = await fetch(`${config.archiver}/api/v1/pin`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', },
-        body: JSON.stringify({ path: assetPath }),
-    });
+    const assetPath = path.join(config.assets, xid);
+    const response = await fetch(`${config.archiver}/api/v1/pin/${assetPath}`);
     const ipfs = await response.json();
 
     const nfts = [];
@@ -813,6 +804,13 @@ const transferAsset = async (xid, nextOwnerId) => {
     await saveAsset(assetData);
 
     await commitChanges(`Transferred ${xid} from ${prevOwnerId} to ${nextOwnerId}`);
+};
+
+const pinAsset = async (xid) => {
+    const assetPath = path.join(config.assets, xid);
+    const response = await fetch(`${config.archiver}/api/v1/pin/${assetPath}`);
+    const ipfs = await response.json();
+    return ipfs;
 };
 
 const createCollection = async (userId, name) => {
@@ -874,6 +872,7 @@ module.exports = {
     allAgents,
     verifyAsset,
     fixAsset,
+    pinAsset,
     verifyAgent,
     fixAgent,
     getAgentAndCollections,

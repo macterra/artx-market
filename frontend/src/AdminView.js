@@ -63,6 +63,34 @@ const AdminView = ({ navigate }) => {
         setDisableSave(false);
     };
 
+    const pinAssets = async () => {
+        setDisableVerify(true);
+        setLogs([]);
+
+        const response = await fetch('/api/v1/admin/assets');
+        const assets = await response.json();
+        const logs = [];
+        const invalidAssets = [];
+
+        for (const [i, xid] of assets.entries()) {
+            const response = await fetch(`/api/v1/admin/pin/asset/${xid}`);
+            const asset = await response.json();
+            const index = (i+1).toString().padStart(5, " ");
+
+            if (asset.cid) {
+                logs.push(`${index} Asset ${xid} ${asset.cid}`);
+            }
+            else if (asset.error) {
+                logs.push(`${index} Asset ${xid} ${asset.error}`);
+            }
+
+            setLogs([...logs]);
+        }
+
+        setDisableVerify(false);
+    };
+
+
     const verifyAssets = async () => {
         setDisableVerify(true);
         setLogs([]);
@@ -243,6 +271,11 @@ const AdminView = ({ navigate }) => {
                         />
                         <br></br>
                         <Grid container direction="row" justifyContent="center" alignItems="center" spacing={3}>
+                            <Grid item>
+                                <Button variant="contained" color="primary" onClick={pinAssets} disabled={disableVerify}>
+                                    Pin Assets
+                                </Button>
+                            </Grid>
                             <Grid item>
                                 <Button variant="contained" color="primary" onClick={verifyAssets} disabled={disableVerify}>
                                     Verify Assets

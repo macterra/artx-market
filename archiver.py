@@ -14,6 +14,7 @@ try:
 except GitCommandError as error:
     print(f"git error {str(error)}")
 
+
 def getIpfs():
     connect = os.environ.get('IPFS_CONNECT')
 
@@ -22,39 +23,43 @@ def getIpfs():
     else:
         return ipfshttpclient.connect(timeout=20)
 
+
 def checkIpfs():
     for i in range(10):
         try:
             ipfs = getIpfs()
-            #print(ipfs.id())
+            # print(ipfs.id())
             return True
         except:
             print(i, "attempting to connect to IPFS...")
             time.sleep(1)
     return False
 
-@app.route('/api/v1/pin/', methods=['POST'])
-def pin():
-    try:
-        data = request.get_json()
 
-        if not data or 'path' not in data:
+@app.route('/api/v1/pin/<path:subfolder>', methods=['GET'])
+def pin(subfolder):
+    try:
+        if not subfolder:
             print("Failed to pin data: No path provided")
             return jsonify({'error': 'No path provided'}), 400
 
         if checkIpfs():
             ipfs = getIpfs()
-            res = ipfs.add(data['path'], recursive=True, pin=True, pattern="**")
+            res = ipfs.add(subfolder, recursive=True, pin=True, pattern="**")
             cid = res[-1]['Hash']
         else:
             print("IPFS not available")
             return jsonify({'error': 'IPFS not available', 'cid': 'TBD'}), 500
     except IPFSError as error:
-        print(f"Failed to pin data {data['path']}: {str(error)}")
+        print(f"Failed to pin data {subfolder}: {str(error)}")
         return jsonify({'error': f"Failed to pin data: {str(error)}", 'cid': 'TBD'}), 500
+    except Exception as error:
+        print(f"An unexpected error occurred: {str(error)}")
+        return jsonify({'error': f"An unexpected error occurred: {str(error)}", 'cid': 'TBD'}), 500
 
-    print(f"pinned {data['path']} to {cid}")
-    return jsonify({'cid': cid})
+    print(f"pinned {subfolder} to {cid}")
+    return jsonify({'path': subfolder, 'cid': cid})
+
 
 @app.route('/api/v1/commit', methods=['POST'])
 def commit():
@@ -73,12 +78,14 @@ def commit():
         return jsonify({'error': f'Failed to commit changes: {str(error)}'}), 500
 
     # Replace this with your actual implementation
-    return jsonify({'ok':1, 'githash':githash})
+    return jsonify({'ok': 1, 'githash': githash})
+
 
 @app.route('/api/v1/peg', methods=['GET', 'POST'])
 def peg():
     # Replace this with your actual implementation
     return jsonify({'message': 'You reached the /api/v1/peg endpoint'})
+
 
 if __name__ == '__main__':
     port = int(os.getenv('ARC_PORT', 5115))

@@ -20,6 +20,7 @@ const {
   allAgents,
   verifyAsset,
   fixAsset,
+  pinAsset,
   verifyAgent,
   fixAgent,
   getAgentAndCollections,
@@ -349,6 +350,22 @@ app.get('/api/v1/admin/fix/agent/:xid', async (req, res) => {
   } catch (error) {
     console.error('Error:', error);
     res.status(404).json({ error: 'Asset cannot be fixed' });
+  }
+});
+
+app.get('/api/v1/admin/pin/asset/:xid', async (req, res) => {
+  try {
+    const adminData = await getAdmin();
+
+    if (!adminData.owner || adminData.owner !== req.user.xid) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const pin = await pinAsset(req.params.xid);
+    res.json(pin);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(404).json({ error: `Asset cannot be pinned ${error}` });
   }
 });
 
