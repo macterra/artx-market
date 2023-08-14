@@ -149,11 +149,11 @@ const verifyAsset = async (xid) => {
         error: 'invalid fields',
     };
 
-    if (!assetData.asset) {
+    if (!assetData.xid) {
         return error;
     }
 
-    if (!assetData.asset.xid || assetData.asset.xid !== xid) {
+    if (!assetData.asset) {
         return error;
     }
 
@@ -216,12 +216,20 @@ const fixAsset = async (xid) => {
         return removeAsset(xid);
     }
 
-    if (!assetData.asset.xid || assetData.asset.xid !== xid) {
+    if (!assetData.asset.owner) {
         return removeAsset(xid);
     }
 
-    if (!assetData.asset.owner) {
-        return removeAsset(xid);
+    if (!assetData.xid) {
+        if (!assetData.asset.xid || assetData.asset.xid !== xid) {
+            return removeAsset(xid);
+        }
+
+        assetData.xid = assetData.asset.xid;
+        delete assetData.asset.xid;
+
+        await saveAsset(assetData);
+        await commitChanges(`Moved xid ${assetData.xid}`);
     }
 
     const agentData = await getAgent(assetData.asset.owner);
@@ -459,9 +467,9 @@ const agentAddAsset = async (metadata) => {
     let assetData = await agentGetAssets(metadata.asset.owner);
 
     if (metadata.file) {
-        assetData.created.push(metadata.asset.xid);
+        assetData.created.push(metadata.xid);
     } else {
-        assetData.collected.push(metadata.asset.xid);
+        assetData.collected.push(metadata.xid);
     }
 
     await agentSaveAssets(assetData);
@@ -606,13 +614,13 @@ const getAsset = async (xid) => {
 };
 
 const saveAsset = async (metadata) => {
-    const current = await getAsset(metadata.asset.xid);
+    const current = await getAsset(metadata.xid);
 
     if (JSON.stringify(metadata) == JSON.stringify(current)) {
         return;
     }
 
-    const assetFolder = path.join(config.assets, metadata.asset.xid);
+    const assetFolder = path.join(config.assets, metadata.xid);
     const assetJsonPath = path.join(assetFolder, 'meta.json');
 
     if (!fs.existsSync(assetFolder)) {
@@ -625,7 +633,7 @@ const saveAsset = async (metadata) => {
 
 const commitAsset = async (metadata, action) => {
     await saveAsset(metadata);
-    await commitChanges(`${action || 'Updated'} asset ${metadata.asset.xid}`);
+    await commitChanges(`${action || 'Updated'} asset ${metadata.xid}`);
 };
 
 const isOwner = async (metadata, agentId) => {
@@ -840,7 +848,7 @@ const createCollection = async (userId, name) => {
 
 const saveCollection = async (collection) => {
     const agentData = await getAgent(collection.asset.owner);
-    const collectionId = collection.asset.xid;
+    const collectionId = collection.xid;
 
     if (!agentData.collections.includes(collectionId)) {
         agentData.collections.push(collectionId);
@@ -852,7 +860,7 @@ const saveCollection = async (collection) => {
 
 const removeCollection = async (collection) => {
     const agentData = await getAgent(collection.asset.owner);
-    const collectionId = collection.asset.xid;
+    const collectionId = collection.xid;
 
     if (agentData.collections.includes(collectionId)) {
         agentData.collections = agentData.collections.filter(xid => xid !== collectionId);

@@ -33,7 +33,7 @@ const CollectionEditor = ({ navigate }) => {
 
     const handleSaveClick = async () => {
         try {
-            const response = await fetch(`/api/v1/collections/${selectedCollection.asset.xid}`, {
+            const response = await fetch(`/api/v1/collections/${selectedCollection.xid}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', },
                 body: JSON.stringify(selectedCollection),
@@ -72,7 +72,7 @@ const CollectionEditor = ({ navigate }) => {
     };
 
     const handleRemoveCollection = async () => {
-        const response = await fetch(`/api/v1/collections/${selectedCollection.asset.xid}`, {
+        const response = await fetch(`/api/v1/collections/${selectedCollection.xid}`, {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json', },
         });

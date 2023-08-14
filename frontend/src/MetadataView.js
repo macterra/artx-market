@@ -16,24 +16,24 @@ function findAdjacentXids(list, targetXid) {
     let lastXid = null;
 
     for (let i = 0; i < list.length; i++) {
-        if (list[i].asset.xid === targetXid) {
+        if (list[i].xid === targetXid) {
             if (i > 0) {
-                prevXid = list[i - 1].asset.xid;
+                prevXid = list[i - 1].xid;
             }
             if (i < list.length - 1) {
-                nextXid = list[i + 1].asset.xid;
+                nextXid = list[i + 1].xid;
             }
             break;
         }
     }
 
-    firstXid = list[0].asset.xid;
+    firstXid = list[0].xid;
 
     if (firstXid === targetXid) {
         firstXid = null;
     }
 
-    lastXid = list[list.length - 1].asset.xid;
+    lastXid = list[list.length - 1].xid;
 
     if (lastXid === targetXid) {
         lastXid = null;
@@ -70,9 +70,9 @@ const MetadataView = ({ navigate, metadata }) => {
                 else {
                     response = await fetch(`/api/v1/collections/${metadata.asset.collection}`);
                     const collectionData = await response.json();
-                    const { firstXid, prevXid, nextXid, lastXid } = findAdjacentXids(collectionData.collection.assets, metadata.asset.xid);
+                    const { firstXid, prevXid, nextXid, lastXid } = findAdjacentXids(collectionData.collection.assets, metadata.xid);
 
-                    setCollectionId(collectionData.asset.xid);
+                    setCollectionId(collectionData.xid);
                     setCollectionName(collectionData.asset.title);
                     setFirstXid(firstXid);
                     setPrevXid(prevXid);

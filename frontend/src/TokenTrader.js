@@ -64,7 +64,7 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
 
     const handleListClick = async (nft) => {
         try {
-            const response = await fetch(`/api/v1/asset/${nft.asset.xid}/list`, {
+            const response = await fetch(`/api/v1/asset/${nft.xid}/list`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', },
                 body: JSON.stringify({ price: nft.nft.newPrice }),
@@ -162,7 +162,7 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
             const chargeData = await response.json();
 
             if (chargeData.paid) {
-                const response = await fetch(`/api/v1/asset/${nftSale.asset.xid}/buy`, {
+                const response = await fetch(`/api/v1/asset/${nftSale.xid}/buy`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', },
                     body: JSON.stringify({ price: nftSale.nft.price, chargeId: charge.id }),

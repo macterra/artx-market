@@ -669,7 +669,7 @@ app.post('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    if (req.params.xid != collection.asset.xid) {
+    if (req.params.xid != collection.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 

@@ -145,7 +145,7 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
 
             if (chargeData.paid) {
                 try {
-                    const mintResponse = await axios.post(`/api/v1/asset/${metadata.asset.xid}/mint`, {
+                    const mintResponse = await axios.post(`/api/v1/asset/${metadata.xid}/mint`, {
                         license: license,
                         royalty: royalty,
                         editions: editions,

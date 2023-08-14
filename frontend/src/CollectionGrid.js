@@ -28,7 +28,7 @@ const CollectionGrid = ({ userId, list }) => {
     return (
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
             {collections.map((collection, index) => (
-                <Link key={index} to={`/collection/${collection.asset.xid}`} style={imageCardStyle}>
+                <Link key={index} to={`/collection/${collection.xid}`} style={imageCardStyle}>
                     <CollectionCard key={index} collection={collection} />
                 </Link>
             ))}

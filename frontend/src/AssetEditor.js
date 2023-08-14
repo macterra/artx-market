@@ -29,7 +29,7 @@ const AssetEditor = ({ metadata, setTab, setRefreshKey }) => {
 
     const handleSaveClick = async () => {
         try {
-            const response = await fetch(`/api/v1/asset/${metadata.asset.xid}`, {
+            const response = await fetch(`/api/v1/asset/${metadata.xid}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ title: title, collection: selectedCollection }),
@@ -51,7 +51,7 @@ const AssetEditor = ({ metadata, setTab, setRefreshKey }) => {
 
     const handleDeleteClick = async () => {
         try {
-            const response = await fetch(`/api/v1/asset/${metadata.asset.xid}`, {
+            const response = await fetch(`/api/v1/asset/${metadata.xid}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ collection: 'deleted' }),
@@ -88,7 +88,7 @@ const AssetEditor = ({ metadata, setTab, setRefreshKey }) => {
         onChange={(e) => setSelectedCollection(e.target.value)}
         >
         {collections.map((collection, index) => (
-            <MenuItem key={index} value={collection.asset.xid}>
+            <MenuItem key={index} value={collection.xid}>
             {collection.asset.title}
             </MenuItem>
             ))}

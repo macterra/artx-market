@@ -28,7 +28,7 @@ const ImageGrid = ({ collection }) => {
     return (
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
             {images.map((metadata, index) => (
-                <Link key={index} to={`/asset/${metadata.asset.xid}`} style={imageCardStyle}>
+                <Link key={index} to={`/asset/${metadata.xid}`} style={imageCardStyle}>
                     <ImageCard key={index} metadata={metadata} />
                 </Link>
             ))}
