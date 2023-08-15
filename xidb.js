@@ -14,6 +14,7 @@ const config = {
     assets: 'data/assets',
     agents: 'data/agents',
     id: 'data/id',
+    credits: 10000,
 };
 
 // Function to add all changes, commit, and push
@@ -292,6 +293,15 @@ const fixAsset = async (xid) => {
 
 const verifyAgent = async (xid) => {
     const agentData = await getAgent(xid);
+
+    if (!agentData.credits) {
+        return {
+            xid: xid,
+            verified: false,
+            error: 'missing credits',
+        };
+    }
+
     const assets = await agentGetAssets(xid);
 
     const ownershipError = {
@@ -379,10 +389,15 @@ const fixAgent = async (xid) => {
         }
     }
 
+    if (!agentData.credits) {
+        agentData.credits = config.credits;
+        await saveAgent(agentData);
+    }
+
     return {
         xid: xid,
         fixed: true,
-        message: "ownership fixed",
+        message: "agent fixed",
     }
 };
 

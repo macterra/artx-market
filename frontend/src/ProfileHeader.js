@@ -41,38 +41,45 @@ const ProfileHeader = ({ userId }) => {
     };
 
     return (
-        <Box display="flex" flexDirection="row" alignItems="center" style={{ minHeight: 'auto' }}>
-            <a href={`/profile/${profile.xid}`} style={linkStyle}>
-                {profile.pfp && (
-                    <img
-                        src={profile.pfp}
-                        alt="Profile pic"
-                        style={{
-                            width: '100px',
-                            height: '100px',
-                            objectFit: 'cover',
-                            marginRight: '16px',
-                            borderRadius: '50%', // Add this line to create a circular mask
-                        }}
-                    />
-                )}
-            </a>
-            <div>
+        <Box display="flex" flexDirection="row" alignItems="center" justifyContent="space-between" style={{ minHeight: 'auto' }}>
+            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                 <a href={`/profile/${profile.xid}`} style={linkStyle}>
-                    <span>{profile.name}</span>
+                    {profile.pfp && (
+                        <img
+                            src={profile.pfp}
+                            alt="Profile pic"
+                            style={{
+                                width: '100px',
+                                height: '100px',
+                                objectFit: 'cover',
+                                marginRight: '16px',
+                                borderRadius: '50%', // Add this line to create a circular mask
+                            }}
+                        />
+                    )}
                 </a>
-                {profile.deposit &&
-                    <a href={`lightning:${profile.deposit}`} style={linkStyle}>⚡</a>
+                <div>
+                    <a href={`/profile/${profile.xid}`} style={linkStyle}>
+                        <span>{profile.name}</span>
+                    </a>
+                    {profile.deposit &&
+                        <a href={`lightning:${profile.deposit}`} style={linkStyle}>⚡</a>
+                    }
+                    <span style={{ fontSize: '12px', display: 'block' }}>{profile.tagline}</span>
+                </div>
+                {profile.links &&
+                    <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-start' }}>
+                        {profile.links.map((link, index) => (
+                            <a href={`${link.url}`} target="_blank" rel="noopener noreferrer" style={minilinkStyle}>
+                                {link.name}🔗
+                            </a>
+                        ))}
+                    </div>
                 }
-                <span style={{ fontSize: '12px', display: 'block' }}>{profile.tagline}</span>
             </div>
-            {profile.links &&
-                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
-                    {profile.links.map((link, index) => (
-                        <a href={`${link.url}`} target="_blank" rel="noopener noreferrer" style={minilinkStyle}>
-                            {link.name}🔗
-                        </a>
-                    ))}
+            {profile.isUser &&
+                <div style={{ marginLeft: 'auto', marginRight: '20px' }}>
+                    <span>credits: {profile.credits}</span>
                 </div>
             }
         </Box >
