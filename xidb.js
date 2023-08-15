@@ -702,8 +702,8 @@ const createAssets = async (userId, files, collectionId) => {
 
         // Create the metadata object
         const metadata = {
+            xid: xid,
             asset: {
-                xid: xid,
                 owner: userId,
                 title: title,
                 created: new Date().toISOString(),
@@ -738,8 +738,8 @@ const createEdition = async (owner, asset, edition, editions) => {
     fs.mkdirSync(assetFolder);
 
     const metadata = {
+        xid: xid,
         asset: {
-            xid: xid,
             owner: owner,
             created: new Date().toISOString(),
             updated: new Date().toISOString(),
@@ -823,8 +823,8 @@ const pinAsset = async (xid) => {
 
 const createCollection = async (userId, name) => {
     const metadata = {
+        xid: uuidv4(),
         asset: {
-            xid: uuidv4(),
             owner: userId,
             created: new Date().toISOString(),
             updated: new Date().toISOString(),
