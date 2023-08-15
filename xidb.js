@@ -83,7 +83,31 @@ const saveAdmin = async (adminData) => {
     return adminData;
 };
 
+async function waitForReady() {
+    let isReady = false;
+
+    while (!isReady) {
+        try {
+            const response = await fetch(`${config.archiver}/api/v1/ready`);
+            const data = await response.json();
+            isReady = data.ready;
+
+            if (!isReady) {
+                console.log('Waiting for Archiver to be ready...');
+                await new Promise(resolve => setTimeout(resolve, 1000)); // wait for 5 seconds before checking again
+            }
+        } catch (error) {
+            console.error('Waiting for Archiver to respond...');
+            await new Promise(resolve => setTimeout(resolve, 1000)); // wait for 5 seconds before checking again
+        }
+    }
+
+    console.log('Archiver service is ready!');
+}
+
 const integrityCheck = async () => {
+    await waitForReady();
+
     const assets = allAssets();
 
     for (const [i, xid] of assets.entries()) {

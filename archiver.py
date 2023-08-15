@@ -35,6 +35,10 @@ def checkIpfs():
             time.sleep(1)
     return False
 
+@app.route('/api/v1/ready', methods=['GET'])
+def ready():
+    ready = checkIpfs()
+    return jsonify({'ready': ready})
 
 @app.route('/api/v1/pin/<path:subfolder>', methods=['GET'])
 def pin(subfolder):
