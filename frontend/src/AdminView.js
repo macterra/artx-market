@@ -70,7 +70,6 @@ const AdminView = ({ navigate }) => {
         const response = await fetch('/api/v1/admin/assets');
         const assets = await response.json();
         const logs = [];
-        const invalidAssets = [];
 
         for (const [i, xid] of assets.entries()) {
             const response = await fetch(`/api/v1/admin/pin/asset/${xid}`);

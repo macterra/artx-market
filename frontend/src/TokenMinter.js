@@ -219,22 +219,6 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
                             </TableCell>
                         </TableRow>
                         <TableRow>
-                            <TableCell>Storage fee:</TableCell>
-                            <TableCell>{storageFee} credits for {fileSize} bytes</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell>Minting fee:</TableCell>
-                            <TableCell>{editionFee} credits for {editions} editions</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell>Total fee:</TableCell>
-                            <TableCell>{totalFee} credits</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell>Current balance:</TableCell>
-                            <TableCell>{credits} credits</TableCell>
-                        </TableRow>
-                        <TableRow>
                             <TableCell>License:</TableCell>
                             <TableCell>
                                 <Select
@@ -282,6 +266,22 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
                                     sx={{ width: '20ch' }}
                                 />
                             </TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell>Storage fee:</TableCell>
+                            <TableCell>{storageFee} credits for {fileSize} bytes</TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell>Minting fee:</TableCell>
+                            <TableCell>{editionFee} credits for {editions} editions</TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell>Total fee:</TableCell>
+                            <TableCell>{totalFee} credits</TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell>Current balance:</TableCell>
+                            <TableCell>{credits} credits</TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell></TableCell>
