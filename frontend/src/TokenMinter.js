@@ -33,6 +33,7 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
     const [license, setLicense] = useState(null);
     const [licenses, setLicenses] = useState([]);
     const [disableMint, setDisableMint] = useState(false);
+    const [credits, setCredits] = useState(0);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -47,6 +48,7 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
                 const defaultLicense = collection.data.collection.default.license;
 
                 setOwner(profile.data.name);
+                setCredits(profile.data.credits);
                 setCollection(collectionName);
                 setRoyalty(defaultRoyalty);
                 setLicense(defaultLicense);
@@ -71,6 +73,8 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
                 setTotalFee(totalFee);
                 const usdPrice = totalFee * rates.data.bitcoin.usd / 100000000;
                 setUsdPrice(usdPrice);
+
+                setDisableMint(totalFee > profile.data.credits);
             } catch (error) {
                 console.error('Error fetching image metadata:', error);
             }
@@ -112,6 +116,8 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
         setTotalFee(totalFee);
         const usdPrice = totalFee * exchangeRate / 100000000;
         setUsdPrice(usdPrice);
+
+        setDisableMint(totalFee > credits);
     };
 
     const handleMintClick = async () => {
@@ -169,6 +175,26 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
         setDisableMint(false);
     };
 
+    const handleMintClick2 = async () => {
+        try {
+            const mintResponse = await axios.post(`/api/v1/asset/${metadata.xid}/mint`, {
+                license: license,
+                royalty: royalty,
+                editions: editions,
+            });
+
+            if (mintResponse.status === 200) {
+                setTab('token');
+                setRefreshKey((prevKey) => prevKey + 1);
+            } else {
+                console.error('Error minting:', mintResponse.data.message);
+                alert(mintResponse.data.message);
+            }
+        } catch (error) {
+            console.error('Error minting:', error);
+        }
+    };
+
     return (
         <>
             <TableContainer>
@@ -193,20 +219,20 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
                             </TableCell>
                         </TableRow>
                         <TableRow>
-                            <TableCell>Exchange rate:</TableCell>
-                            <TableCell>{exchangeRate} USD/BTC</TableCell>
-                        </TableRow>
-                        <TableRow>
                             <TableCell>Storage fee:</TableCell>
-                            <TableCell>{storageFee} sats for {fileSize} bytes</TableCell>
+                            <TableCell>{storageFee} credits for {fileSize} bytes</TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>Minting fee:</TableCell>
-                            <TableCell>{editionFee} sats for {editions} editions</TableCell>
+                            <TableCell>{editionFee} credits for {editions} editions</TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>Total fee:</TableCell>
-                            <TableCell>{totalFee} sats (${usdPrice.toFixed(2)})</TableCell>
+                            <TableCell>{totalFee} credits</TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell>Current balance:</TableCell>
+                            <TableCell>{credits} credits</TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>License:</TableCell>
@@ -260,7 +286,7 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
                         <TableRow>
                             <TableCell></TableCell>
                             <TableCell>
-                                <Button variant="contained" color="primary" onClick={handleMintClick} disabled={disableMint}>
+                                <Button variant="contained" color="primary" onClick={handleMintClick2} disabled={disableMint}>
                                     Mint
                                 </Button>
                             </TableCell>

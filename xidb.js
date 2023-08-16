@@ -15,6 +15,9 @@ const config = {
     agents: 'data/agents',
     id: 'data/id',
     credits: 10000,
+    uploadRate: process.env.STORAGE_RATE || 0.0001,
+    storageRate: process.env.STORAGE_RATE || 0.001,
+    editionRate: process.env.EDITION_RATE || 100,
 };
 
 // Function to add all changes, commit, and push
@@ -710,6 +713,7 @@ const createAssets = async (userId, files, collectionId) => {
     const collectionData = await getAsset(collectionId);
     const defaultTitle = collectionData.collection.default.title;
     let collectionCount = collectionData.collection.assets.length;
+    let uploadSize = 0;
 
     for (const file of files) {
         const xid = uuidv4();
@@ -764,11 +768,18 @@ const createAssets = async (userId, files, collectionId) => {
             }
         };
 
+        uploadSize += file.size;
+
         await saveAsset(metadata);
         await agentAddAsset(metadata);
     }
 
     await commitChanges(`Assets (${files.length}) created by ${userId}`);
+
+    const agentData = await getAgent(userId);
+    const uploadFee = Math.round(uploadSize * config.uploadRate);
+    agentData.credits -= uploadFee;
+    await saveAgent(agentData);
 };
 
 const createEdition = async (owner, asset, edition, editions) => {
@@ -832,6 +843,13 @@ const createToken = async (userId, xid, editions, license, royalty) => {
 
     await saveAsset(assetData);
     await commitChanges(`Minted ${editions} edition(s) of ${xid}`);
+
+    const storageFee = Math.round(assetData.file.size * config.storageRate);
+    const editionFee = editions * config.editionRate;
+    const mintFee = storageFee + editionFee;
+    const agentData = await getAgent(userId);
+    agentData.credits -= mintFee;
+    await saveAgent(agentData);
 };
 
 const transferAsset = async (xid, nextOwnerId) => {
