@@ -28,7 +28,7 @@ const ProfileEditor = ({ navigate }) => {
         };
 
         fetchProfile();
-    }, []);
+    }, [jump]);
 
     return (
         <Box>

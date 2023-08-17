@@ -9,7 +9,6 @@ import {
     TableContainer,
     TableRow,
     TextField,
-    Modal,
     Select,
     MenuItem,
 } from '@mui/material';
@@ -20,15 +19,10 @@ const TokenMinter = ({ navigate, metadata, setTab, setRefreshKey }) => {
     const [editions, setEditions] = useState(1);
     const [collectionId, setCollectionId] = useState(null);
     const [fileSize, setFileSize] = useState(0);
-    const [charge, setCharge] = useState(null);
-    const [modalOpen, setModalOpen] = useState(false);
-    const [invoiceUrl, setInvoiceUrl] = useState('');
-    const [exchangeRate, setExchangeRate] = useState(0);
     const [editionRate, setEditionRate] = useState(0);
     const [editionFee, setEditionFee] = useState(0);
     const [storageFee, setStorageFee] = useState(0);
     const [totalFee, setTotalFee] = useState(0);
-    const [usdPrice, setUsdPrice] = useState(0);
     const [royalty, setRoyalty] = useState(0);
     const [license, setLicense] = useState(null);
     const [licenses, setLicenses] = useState([]);
@@ -56,8 +50,6 @@ const TokenMinter = ({ navigate, metadata, setTab, setRefreshKey }) => {
                 setCollectionId(collectionId);
 
                 const rates = await axios.get('/api/v1/rates');
-
-                setExchangeRate(rates.data.bitcoin.usd);
                 setEditionRate(rates.data.editionRate);
 
                 const licenses = await axios.get('/api/v1/licenses');
@@ -71,8 +63,6 @@ const TokenMinter = ({ navigate, metadata, setTab, setRefreshKey }) => {
                 setStorageFee(storageFee);
                 const totalFee = storageFee + editionFee;
                 setTotalFee(totalFee);
-                const usdPrice = totalFee * rates.data.bitcoin.usd / 100000000;
-                setUsdPrice(usdPrice);
 
                 setDisableMint(totalFee > profile.data.credits);
             } catch (error) {
@@ -114,68 +104,11 @@ const TokenMinter = ({ navigate, metadata, setTab, setRefreshKey }) => {
         setEditionFee(editionFee);
         const totalFee = storageFee + editionFee;
         setTotalFee(totalFee);
-        const usdPrice = totalFee * exchangeRate / 100000000;
-        setUsdPrice(usdPrice);
 
         setDisableMint(totalFee > credits);
     };
 
     const handleMintClick = async () => {
-        setDisableMint(true);
-
-        try {
-            // TBD: check for possible unexpired charge before creating a new one here
-            const response = await axios.post('/api/v1/charge', {
-                description: 'mint',
-                amount: storageFee + 100 * editions
-            });
-
-            const chargeData = response.data;
-
-            if (chargeData.url) {
-                setCharge(chargeData);
-                setInvoiceUrl(chargeData.url);
-                setModalOpen(true);
-            }
-        } catch (error) {
-            console.error('Error minting:', error);
-        }
-    };
-
-    const handleInvoiceClose = async () => {
-        setModalOpen(false);
-
-        try {
-            const chargeResponse = await axios.get(`/api/v1/charge/${charge.id}`);
-            const chargeData = chargeResponse.data;
-
-            if (chargeData.paid) {
-                try {
-                    const mintResponse = await axios.post(`/api/v1/asset/${metadata.xid}/mint`, {
-                        license: license,
-                        royalty: royalty,
-                        editions: editions,
-                    });
-
-                    if (mintResponse.status === 200) {
-                        setTab('token');
-                        setRefreshKey((prevKey) => prevKey + 1);
-                    } else {
-                        console.error('Error minting:', mintResponse.data.message);
-                        alert(mintResponse.data.message);
-                    }
-                } catch (error) {
-                    console.error('Error minting:', error);
-                }
-            }
-        } catch (error) {
-            console.error('Error:', error);
-        }
-
-        setDisableMint(false);
-    };
-
-    const handleMintClick2 = async () => {
         try {
             const mintResponse = await axios.post(`/api/v1/asset/${metadata.xid}/mint`, {
                 license: license,
@@ -290,7 +223,7 @@ const TokenMinter = ({ navigate, metadata, setTab, setRefreshKey }) => {
                         <TableRow>
                             <TableCell></TableCell>
                             <TableCell>
-                                <Button variant="contained" color="primary" onClick={handleMintClick2} disabled={disableMint}>
+                                <Button variant="contained" color="primary" onClick={handleMintClick} disabled={disableMint}>
                                     Mint
                                 </Button>
                                 <Button variant="contained" color="primary" onClick={handleAddCredits}>
@@ -301,28 +234,6 @@ const TokenMinter = ({ navigate, metadata, setTab, setRefreshKey }) => {
                     </TableBody>
                 </Table>
             </TableContainer>
-            <form>
-            </form>
-            <Modal
-                open={modalOpen}
-                onClose={() => handleInvoiceClose()}
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                }}
-            >
-                <div style={{ backgroundColor: '#282c34', padding: '1em', width: '50vw', height: '100vh', overflow: 'auto' }}>
-                    <iframe
-                        src={invoiceUrl}
-                        title="Invoice"
-                        width="100%"
-                        height="90%"
-                        style={{ border: 'none' }}
-                    />
-                    <Button onClick={() => handleInvoiceClose()}>Close</Button>
-                </div>
-            </Modal>
         </>
     );
 };
