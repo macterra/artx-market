@@ -639,6 +639,25 @@ app.post('/api/v1/profile/:xid/invoice', async (req, res) => {
   }
 });
 
+app.post('/api/v1/profile/credit', ensureAuthenticated, async (req, res) => {
+  const userId = req.user.xid;
+  const { charge } = req.body;
+
+  try {
+    const agentData = await getAgent(userId);
+
+    if (agentData) {
+      agentData.credits += charge.amount;      
+      res.json(agentData);
+    } else {
+      res.status(404).json({ message: 'Profile not found' });
+    }
+  } catch (error) {
+    console.error('Error adding credits:', error);
+    res.status(500).json({ message: 'Error adding credits' });
+  }
+});
+
 app.get('/api/v1/collections/', async (req, res) => {
   try {
     const userId = req.user?.xid;
