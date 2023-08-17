@@ -6,6 +6,7 @@ import NameEditor from './NameEditor';
 import CollectionEditor from './CollectionEditor';
 import LnAddressEditor from './LnAddressEditor';
 import LinksEditor from './LinksEditor';
+import CreditsEditor from './CreditsEditor';
 
 const ProfileEditor = ({ navigate }) => {
     const [profile, setProfile] = useState({});
@@ -42,6 +43,7 @@ const ProfileEditor = ({ navigate }) => {
                 <Tab key="coll" value="coll" label={'Collections'} />
                 <Tab key="links" value="links" label={'Links'} />
                 <Tab key="ln" value="ln" label={'Lightning'} />
+                <Tab key="credits" value="credits" label={'Credits'} />
             </Tabs>
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <Box style={{ width: '50vw' }}>
@@ -56,6 +58,9 @@ const ProfileEditor = ({ navigate }) => {
                     }
                     {tab === 'ln' &&
                         <LnAddressEditor profile={profile} />
+                    }
+                    {tab === 'credits' &&
+                        <CreditsEditor profile={profile} />
                     }
                 </Box>
             </div>
