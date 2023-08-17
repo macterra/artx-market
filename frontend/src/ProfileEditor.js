@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { Box, Tab, Tabs } from '@mui/material';
 
 import NameEditor from './NameEditor';
@@ -9,6 +10,7 @@ import LinksEditor from './LinksEditor';
 import CreditsEditor from './CreditsEditor';
 
 const ProfileEditor = ({ navigate }) => {
+    const { initialTab } = useParams();
     const [profile, setProfile] = useState({});
     const [tab, setTab] = useState(null);
 
@@ -18,7 +20,7 @@ const ProfileEditor = ({ navigate }) => {
                 const response = await fetch(`/api/v1/profile`);
                 const data = await response.json();
                 setProfile(data);
-                setTab("name");
+                setTab(initialTab || "name");
             } catch (error) {
                 console.error('Error fetching profile data:', error);
                 //navigate('/');

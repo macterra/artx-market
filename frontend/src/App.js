@@ -22,7 +22,7 @@ function App() {
         <Route path="/admin/" element={<ViewAdmin />} />
         <Route path="/profile/" element={<ViewLogin />} />
         <Route path="/profile/:userId" element={<ViewProfile />} />
-        <Route path="/profile/edit" element={<EditProfile />} />
+        <Route path="/profile/edit/:tab?" element={<EditProfile />} />
         <Route path="/collection/:xid" element={<ViewCollection />} />
         <Route path="/asset/:xid" element={<ViewAsset />} />
         <Route path="*" element={<NotFound />} />

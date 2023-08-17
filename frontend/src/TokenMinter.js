@@ -14,7 +14,7 @@ import {
     MenuItem,
 } from '@mui/material';
 
-const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
+const TokenMinter = ({ navigate, metadata, setTab, setRefreshKey }) => {
     const [owner, setOwner] = useState(null);
     const [collection, setCollection] = useState(null);
     const [editions, setEditions] = useState(1);
@@ -195,6 +195,11 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
         }
     };
 
+    const handleAddCredits = async () => {
+        alert('add credits');
+        navigate('/profile/edit/credits');
+    };
+
     return (
         <>
             <TableContainer>
@@ -288,6 +293,9 @@ const TokenMinter = ({ metadata, setTab, setRefreshKey }) => {
                             <TableCell>
                                 <Button variant="contained" color="primary" onClick={handleMintClick2} disabled={disableMint}>
                                     Mint
+                                </Button>
+                                <Button variant="contained" color="primary" onClick={handleAddCredits}>
+                                    Add Credits
                                 </Button>
                             </TableCell>
                         </TableRow>
