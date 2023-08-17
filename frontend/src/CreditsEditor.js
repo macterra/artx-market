@@ -5,7 +5,7 @@ import axios from 'axios';
 const CreditsEditor = ({ profile }) => {
 
     const minPurchase = 1000;
-    const maxPurchase = 100000;
+    const maxPurchase = 25000;
 
     const [balance, setBalance] = useState(profile.credits);
     const [purchase, setPurchase] = useState(minPurchase);

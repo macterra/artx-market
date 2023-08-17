@@ -10,7 +10,7 @@ import LinksEditor from './LinksEditor';
 import CreditsEditor from './CreditsEditor';
 
 const ProfileEditor = ({ navigate }) => {
-    const { initialTab } = useParams();
+    const { jump } = useParams();
     const [profile, setProfile] = useState({});
     const [tab, setTab] = useState(null);
 
@@ -20,7 +20,7 @@ const ProfileEditor = ({ navigate }) => {
                 const response = await fetch(`/api/v1/profile`);
                 const data = await response.json();
                 setProfile(data);
-                setTab(initialTab || "name");
+                setTab(jump || "name");
             } catch (error) {
                 console.error('Error fetching profile data:', error);
                 //navigate('/');

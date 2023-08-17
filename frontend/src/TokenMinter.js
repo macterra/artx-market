@@ -196,7 +196,6 @@ const TokenMinter = ({ navigate, metadata, setTab, setRefreshKey }) => {
     };
 
     const handleAddCredits = async () => {
-        alert('add credits');
         navigate('/profile/edit/credits');
     };
 
