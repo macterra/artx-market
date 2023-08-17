@@ -16,6 +16,7 @@ const {
   getAgentFromKey,
   getAgent,
   saveAgent,
+  addCredits,
   allAssets,
   allAgents,
   verifyAsset,
@@ -644,13 +645,13 @@ app.post('/api/v1/profile/credit', ensureAuthenticated, async (req, res) => {
   const { charge } = req.body;
 
   try {
-    const agentData = await getAgent(userId);
+    const agentData = await addCredits(userId, charge);
 
     if (agentData) {
-      agentData.credits += charge.amount;      
       res.json(agentData);
-    } else {
-      res.status(404).json({ message: 'Profile not found' });
+    }
+    else {
+      res.status(500).json({ message: 'Error adding credits' });
     }
   } catch (error) {
     console.error('Error adding credits:', error);

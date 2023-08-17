@@ -476,6 +476,18 @@ const saveAgent = async (agentData) => {
     }
 };
 
+const addCredits = async (userId, charge) => {
+    const agentData = await getAgent(userId);
+
+    if (agentData) {
+        if (charge && charge.paid && charge.amount) {
+            agentData.credits += charge.amount;
+            await saveAgent(agentData);
+            return agentData;
+        }
+    }
+};
+
 const agentGetAssets = async (userId) => {
     const agentFolder = path.join(config.agents, userId);
     const jsonPath = path.join(agentFolder, 'assets.json');
@@ -933,6 +945,7 @@ module.exports = {
     getAgentFromKey,
     getAgent,
     saveAgent,
+    addCredits,
     allAssets,
     allAgents,
     verifyAsset,
