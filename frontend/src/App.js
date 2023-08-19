@@ -115,7 +115,7 @@ function ViewProfile() {
         />
         <header className="App-header">
           <Box display="flex" flexDirection="column" flexGrow={1}>
-            <ProfileHeader userId={userId} />
+            <ProfileHeader navigate={navigate} userId={userId} />
             <ProfileView navigate={navigate} />
           </Box>
         </header>
@@ -161,7 +161,7 @@ function ViewCollection() {
         />
         <header className="App-header">
           <Box display="flex" flexDirection="column" flexGrow={1}>
-            <ProfileHeader userId={userId} />
+            <ProfileHeader navigate={navigate} userId={userId} />
             <CollectionView navigate={navigate} />
           </Box>
         </header>

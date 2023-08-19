@@ -17,25 +17,9 @@ import BuildTime from './BuildTime';
 
 const AppHeader = ({ isAuthenticated, setIsAuthenticated, navigate }) => {
 
-    const [profileAnchorEl, setProfileAnchorEl] = useState(null);
     const [anchorEl, setAnchorEl] = useState(null);
     const [aboutOpen, setAboutOpen] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
-
-    // Add the handleEditProfileClick function
-    const handleEditProfileClick = () => {
-        navigate('/profile/edit');
-    };
-
-    // Add state and handlers for the Profile menu
-
-    const handleProfileMenuClick = (event) => {
-        setProfileAnchorEl(event.currentTarget);
-    };
-
-    const handleProfileMenuClose = () => {
-        setProfileAnchorEl(null);
-    };
 
     const handleHelpMenuClick = (event) => {
         setAnchorEl(event.currentTarget);
@@ -77,12 +61,16 @@ const AppHeader = ({ isAuthenticated, setIsAuthenticated, navigate }) => {
     });
 
     const handleLogin = () => {
-        window.location.href = '/login';
+        window.open('/login');
     };
 
     const handleLogout = async () => {
         await fetch('/logout', { method: 'GET', credentials: 'include' });
         checkAuthStatus();
+    };
+
+    const handleGettingStartedClick = async () => {
+        window.open('https://github.com/macterra/artx-market/wiki/Getting-Started', '_blank');
     };
 
     return (
@@ -93,12 +81,7 @@ const AppHeader = ({ isAuthenticated, setIsAuthenticated, navigate }) => {
                         Home
                     </Button>
                     {isAuthenticated && (
-                        <Button
-                            color="inherit"
-                            aria-controls="profile-menu"
-                            aria-haspopup="true"
-                            onClick={handleProfileMenuClick}
-                        >
+                        <Button color="inherit" onClick={() => navigate('/profile')}>
                             Profile
                         </Button>
                     )}
@@ -107,23 +90,6 @@ const AppHeader = ({ isAuthenticated, setIsAuthenticated, navigate }) => {
                             Admin
                         </Button>
                     }
-                    <Menu
-                        id="profile-menu"
-                        anchorEl={profileAnchorEl}
-                        keepMounted
-                        open={Boolean(profileAnchorEl)}
-                        onClose={handleProfileMenuClose}
-                    >
-                        {/* Add the new menu item under the Profile button */}
-                        <MenuItem onClick={() => {
-                            handleProfileMenuClose();
-                            navigate('/profile');
-                        }}>View Profile</MenuItem>
-                        <MenuItem onClick={() => {
-                            handleProfileMenuClose();
-                            handleEditProfileClick();
-                        }}>Edit Profile</MenuItem>
-                    </Menu>
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                         ArtX Market
                     </Typography>
@@ -151,6 +117,7 @@ const AppHeader = ({ isAuthenticated, setIsAuthenticated, navigate }) => {
                         open={Boolean(anchorEl)}
                         onClose={handleHelpMenuClose}
                     >
+                        <MenuItem onClick={handleGettingStartedClick}>Getting Started</MenuItem>
                         <MenuItem onClick={handleAboutClick}>About</MenuItem>
                     </Menu>
                 </Toolbar>

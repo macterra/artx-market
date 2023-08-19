@@ -1,22 +1,16 @@
 
 import React, { useState, useEffect } from 'react';
-import { Box } from '@mui/material';
+import { Box, Button } from '@mui/material';
 
-const ProfileHeader = ({ userId }) => {
+const ProfileHeader = ({ navigate, userId }) => {
     const [profile, setProfile] = useState(null);
 
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                if (!userId) {
-                    const response = await fetch(`/api/v1/profile`);
-                    const profileData = await response.json();
-                    setProfile(profileData);
-                } else {
-                    const response = await fetch(`/api/v1/profile/${userId}`);
-                    const profileData = await response.json();
-                    setProfile(profileData);
-                }
+                const response = await fetch(`/api/v1/profile/${userId}`);
+                const profileData = await response.json();
+                setProfile(profileData);
             } catch (error) {
                 console.error('Error fetching profile data:', error);
             }
@@ -26,7 +20,7 @@ const ProfileHeader = ({ userId }) => {
     }, [userId]);
 
     if (!profile) {
-        return <p>Loading profile...</p>;
+        return <p>...</p>;
     }
 
     const linkStyle = {
@@ -79,7 +73,12 @@ const ProfileHeader = ({ userId }) => {
             </div>
             {profile.isUser &&
                 <div style={{ marginLeft: 'auto', marginRight: '20px' }}>
-                    <span>credits: {profile.credits}</span>
+                    <Button variant="contained" color="primary" onClick={() => navigate('/profile/edit')} style={{ marginRight: '10px' }}>
+                        Edit Profile
+                    </Button>
+                    <Button variant="contained" color="primary" onClick={() => navigate('/profile/edit/credits')}>
+                        Credits: {profile.credits}
+                    </Button>
                 </div>
             }
         </Box >
