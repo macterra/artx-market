@@ -223,17 +223,22 @@ const TokenMinter = ({ navigate, metadata, setTab, setRefreshKey }) => {
                         <TableRow>
                             <TableCell></TableCell>
                             <TableCell>
-                                <Button variant="contained" color="primary" onClick={handleMintClick} disabled={disableMint}>
+                                <Button variant="contained" color="primary"
+                                    onClick={handleMintClick}
+                                    disabled={disableMint}
+                                    style={{ marginRight: '10px' }} >
                                     Mint
                                 </Button>
-                                <Button variant="contained" color="primary" onClick={handleAddCredits}>
-                                    Add Credits
-                                </Button>
+                                {disableMint &&
+                                    <Button variant="contained" color="primary" onClick={handleAddCredits}>
+                                        Add Credits
+                                    </Button>
+                                }
                             </TableCell>
                         </TableRow>
                     </TableBody>
                 </Table>
-            </TableContainer>
+            </TableContainer >
         </>
     );
 };
