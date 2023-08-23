@@ -39,7 +39,7 @@ class AuthTx():
                 cid0 = cid1.to_v0()
                 self.cid = str(cid0)
         except:
-            #print('cid parser fail')
+            # print('cid parser fail')
             return False
         self.meta = getMeta(self.cid)
         self.xid = getXid(self.cid)
@@ -62,7 +62,7 @@ class Authorizer:
         return Decimal('0.00001111')
 
     def getFee(self):
-        ret = self.blockchain.estimatesmartfee(3)
+        ret = self.blockchain.estimatesmartfee(10)
         return ret['feerate']
 
     def updateWallet(self):
@@ -115,21 +115,26 @@ class Authorizer:
 
         inputs = []
 
+        amount = Decimal('0')
+        stake = self.getStake()
+
         for asset in self.assets:
             if asset.meta['xid'] == xid:
                 if cid == asset.cid:
                     print(f"xid is already up to date with {cid}")
                     return
                 inputs.append(asset.utxo)
+                amount += stake
                 break
 
         if not inputs:
-            print(f"claiming xid {xid}")
+            #print(f"claiming xid {xid}")
+            print(f"can't find utxo for {xid}")
+            return
 
-        amount = Decimal('0')
-        stake = self.getStake()
-        txfeeRate = self.getFee()
-        txfee = txfeeRate/4
+        #txfeeRate = self.getFee()
+        txfeeRate = Decimal(0.00000007) # 7 sats/vbyte
+        txfee = txfeeRate * 255 # expected vsize
 
         for funtxn in self.funds:
             inputs.append(funtxn)
@@ -154,15 +159,51 @@ class Authorizer:
 
         sigtxn = self.blockchain.signrawtransactionwithwallet(rawtxn)
         print('sig', json.dumps(sigtxn, indent=2, cls=Encoder))
-
         print(len(sigtxn['hex']))
 
         dectxn = self.blockchain.decoderawtransaction(sigtxn['hex'])
         print('dec', json.dumps(dectxn, indent=2, cls=Encoder))
 
-        #txid = self.blockchain.sendrawtransaction(sigtxn['hex'])
-        #print('txid', txid)
-        #return txid
+        #return
+
+        txid = self.blockchain.sendrawtransaction(sigtxn['hex'])
+        print('txid', txid)
+
+        # Ensure txnlog directory exists
+        if not os.path.exists('data/txnlog'):
+            os.makedirs('data/txnlog')
+
+        # Write dectxn to a JSON file
+        with open(f'data/txnlog/{txid}.json', 'w') as json_file:
+            json.dump(dectxn, json_file, indent=2, cls=Encoder)
+
+        if os.path.exists('data/txnlog/meta.json'):
+            with open("data/txnlog/meta.json", 'r') as json_file:
+                meta = json.load(json_file)
+        else:
+            meta = {
+                "xid": str(uuid.uuid4())
+            }
+
+        if not xid in meta:
+            meta[xid] = {
+                "pending": [],
+                "confirmed": []
+            }
+
+        meta[xid]["pending"].append(txid)
+        
+        with open(f'data/txnlog/meta.json', 'w') as json_file:
+            json.dump(meta, json_file, indent=2)
+
+        return txid
+
+
+def get_cid():
+    file_path = "data/meta.json"
+    with open(file_path, 'r') as json_file:
+        data = json.load(json_file)
+    return data['cid']
 
 
 def main():
@@ -170,13 +211,16 @@ def main():
     authorizer = Authorizer(connect)
     authorizer.updateWallet()
     balance = authorizer.getBalance()
-    print(balance)
+    print("balance", balance)
     fee = authorizer.getFee()
-    print(fee)
-    authorizer.authorize("QmYiXRwnynpaY3UenTnXwBK58YCSrUbExjW8bQjbUyw7hD")
+    print("fee", fee)
 
-    txn = authorizer.blockchain.getrawtransaction("af9e6914fe79f9c41c2a1606dcd6750134d6bec427862ad69865d690ee22eec6", 1)
-    print('txn', json.dumps(txn, indent=2, cls=Encoder))
-    
+    cid = get_cid()
+    authorizer.authorize(cid)
+
+    # txn = authorizer.blockchain.getrawtransaction("af9e6914fe79f9c41c2a1606dcd6750134d6bec427862ad69865d690ee22eec6", 1)
+    # print('txn', json.dumps(txn, indent=2, cls=Encoder))
+
+
 if __name__ == "__main__":
     main()
