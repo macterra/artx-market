@@ -1,6 +1,8 @@
 import sys
 import os
 import json
+from datetime import datetime
+from dateutil import tz
 
 from decimal import Decimal
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
@@ -198,6 +200,63 @@ class Authorizer:
 
         return txid
 
+    def monitor(self):
+        still = []
+
+        if os.path.exists('data/txnlog/pending.json'):
+            with open("data/txnlog/pending.json", 'r') as json_file:
+                pending = json.load(json_file)
+        else:
+            pending = []
+
+        for txid in pending:
+            print(txid)
+            tx = self.blockchain.getrawtransaction(txid, 1)
+            if 'blockhash' in tx:
+                self.certify(tx)
+            else:
+                still.append(txid)
+
+        with open('data/txnlog/pending.json', 'w') as json_file:
+            json.dump(still, json_file, indent=2)
+
+    def certify(self, tx):
+        auth_tx = AuthTx(tx)
+        txid = tx['txid']
+        blockhash = tx['blockhash']        
+        block = self.blockchain.getblock(blockhash)        
+        block_height = block['height']        
+        block_time = block['time']
+        utc = datetime.utcfromtimestamp(block_time).replace(tzinfo=tz.tzutc())
+        utc_iso = utc.isoformat(timespec='seconds').replace('+00:00', 'Z')        
+        tx_index = block['tx'].index(txid)
+        chainid = f"urn:chain:BTC:{block_height}:{tx_index}:1"
+        artx_ns = uuid.uuid5(uuid.NAMESPACE_DNS, "artx.market")
+        xid = uuid.uuid5(artx_ns, txid)
+        prev_txid = tx['vin'][0]['txid']
+        prev_xid = uuid.uuid5(artx_ns, prev_txid)
+
+        cert = {
+            "xid": str(xid),
+            "cid": auth_tx.cid,
+            "meta": auth_tx.meta,
+            "time": str(utc_iso),
+            "prev": str(prev_xid),
+            "auth": {
+                "blockheight": block_height,
+                "blockhash": blockhash,
+                "chainid": chainid,
+                "tx": tx
+            }
+        }
+
+        newpath = f"data/txnlog/certs/{xid}"
+
+        if not os.path.exists(newpath):
+            os.makedirs(newpath)
+
+        with open(f"{newpath}/meta.json", 'w') as json_file:
+            json.dump(cert, json_file, indent=2, cls=Encoder)
 
 def get_cid():
     file_path = "data/meta.json"
@@ -218,9 +277,11 @@ def main():
     cid = get_cid()
     authorizer.authorize(cid)
 
-    # txn = authorizer.blockchain.getrawtransaction("af9e6914fe79f9c41c2a1606dcd6750134d6bec427862ad69865d690ee22eec6", 1)
-    # print('txn', json.dumps(txn, indent=2, cls=Encoder))
 
+def monitor():
+    connect = os.environ.get("BTC_CONNECT")
+    authorizer = Authorizer(connect)
+    authorizer.monitor()
 
 if __name__ == "__main__":
-    main()
+    monitor()
