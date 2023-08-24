@@ -1,13 +1,13 @@
 import sys
 import os
 import json
+import argparse
+
 from datetime import datetime
 from dateutil import tz
-
 from decimal import Decimal
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from xidb import *
-
 
 class Encoder(json.JSONEncoder):
     def default(self, obj):
@@ -64,7 +64,7 @@ class Authorizer:
         return Decimal('0.00001111')
 
     def getFee(self):
-        ret = self.blockchain.estimatesmartfee(10)
+        ret = self.blockchain.estimatesmartfee(3)
         return ret['feerate']
 
     def updateWallet(self):
@@ -166,59 +166,47 @@ class Authorizer:
         dectxn = self.blockchain.decoderawtransaction(sigtxn['hex'])
         print('dec', json.dumps(dectxn, indent=2, cls=Encoder))
 
-        #return
-
         txid = self.blockchain.sendrawtransaction(sigtxn['hex'])
         print('txid', txid)
 
-        # Ensure txnlog directory exists
-        if not os.path.exists('data/txnlog'):
-            os.makedirs('data/txnlog')
-
-        # Write dectxn to a JSON file
-        with open(f'data/txnlog/{txid}.json', 'w') as json_file:
-            json.dump(dectxn, json_file, indent=2, cls=Encoder)
-
-        if os.path.exists('data/txnlog/meta.json'):
-            with open("data/txnlog/meta.json", 'r') as json_file:
-                meta = json.load(json_file)
-        else:
-            meta = {
-                "xid": str(uuid.uuid4())
-            }
-
-        if not xid in meta:
-            meta[xid] = {
-                "pending": [],
-                "confirmed": []
-            }
-
-        meta[xid]["pending"].append(txid)
-        
-        with open(f'data/txnlog/meta.json', 'w') as json_file:
-            json.dump(meta, json_file, indent=2)
+        txnlog = self.read_txnlog()
+        txnlog['pending'].append(txid)
+        self.write_txnlog(txnlog)
 
         return txid
 
-    def monitor(self):
-        still = []
-
-        if os.path.exists('data/txnlog/pending.json'):
-            with open("data/txnlog/pending.json", 'r') as json_file:
-                pending = json.load(json_file)
+    def read_txnlog(self):
+        if os.path.exists('data/txnlog/meta.json'):
+            with open("data/txnlog/meta.json", 'r') as json_file:
+                txnlog = json.load(json_file)
         else:
-            pending = []
+            txnlog = {
+                "latest": "",
+                "pending": []
+            }
+        return txnlog
+    
+    def write_txnlog(self, txnlog):
+        if not os.path.exists('data/txnlog'):
+            os.makedirs('data/txnlog')
 
-        for txid in pending:
+        with open('data/txnlog/meta.json', 'w') as json_file:
+            json.dump(txnlog, json_file, indent=2)
+
+    def monitor(self):
+        still_pending = []
+        txnlog = self.read_txnlog()
+
+        for txid in txnlog['pending']:
             print(txid)
             tx = self.blockchain.getrawtransaction(txid, 1)
             if 'blockhash' in tx:
-                self.certify(tx)
+                txnlog['latest'] = self.certify(tx)
             else:
-                still.append(txid)
+                still_pending.append(txid)
 
-        with open('data/txnlog/pending.json', 'w') as json_file:
-            json.dump(still, json_file, indent=2)
+        txnlog['pending'] = still_pending
+        self.write_txnlog(txnlog)
 
     def certify(self, tx):
         auth_tx = AuthTx(tx)
@@ -258,14 +246,9 @@ class Authorizer:
         with open(f"{newpath}/meta.json", 'w') as json_file:
             json.dump(cert, json_file, indent=2, cls=Encoder)
 
-def get_cid():
-    file_path = "data/meta.json"
-    with open(file_path, 'r') as json_file:
-        data = json.load(json_file)
-    return data['cid']
+        return str(xid)
 
-
-def main():
+def test():
     connect = os.environ.get("BTC_CONNECT")
     authorizer = Authorizer(connect)
     authorizer.updateWallet()
@@ -274,9 +257,15 @@ def main():
     fee = authorizer.getFee()
     print("fee", fee)
 
-    cid = get_cid()
-    authorizer.authorize(cid)
+def peg():
+    connect = os.environ.get("BTC_CONNECT")
+    authorizer = Authorizer(connect)
+    
+    file_path = "data/meta.json"
+    with open(file_path, 'r') as json_file:
+        data = json.load(json_file)
 
+    authorizer.authorize(data['cid'])
 
 def monitor():
     connect = os.environ.get("BTC_CONNECT")
@@ -284,4 +273,16 @@ def monitor():
     authorizer.monitor()
 
 if __name__ == "__main__":
-    monitor()
+    parser = argparse.ArgumentParser(description='Run a function.')
+    parser.add_argument('function', type=str, help='The function to run: test, peg, or monitor')
+
+    args = parser.parse_args()
+
+    if args.function == 'test':
+        test()
+    elif args.function == 'peg':
+        peg()
+    elif args.function == 'monitor':
+        monitor()
+    else:
+        print(f'Unknown function: {args.function}. Please use "test", "peg", or "monitor".')
