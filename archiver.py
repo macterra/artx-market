@@ -3,6 +3,8 @@ from flask import Flask, jsonify, request
 from git import Repo
 from git.exc import GitCommandError
 from ipfs import *
+from apscheduler.schedulers.background import BackgroundScheduler
+from datetime import datetime
 
 app = Flask(__name__)
 repo = Repo('data')
@@ -67,7 +69,27 @@ def peg():
     # Replace this with your actual implementation
     return jsonify({'message': 'You reached the /api/v1/peg endpoint'})
 
+def timestamp():
+    current_time = time.time()
+    current_datetime = datetime.fromtimestamp(current_time)
+    current_str = current_datetime.strftime('%Y-%m-%d %H:%M:%S')
+    return current_str
+
+def peg_market():
+    print(timestamp(), "peg_market")
+
+def monitor_txns():
+    print(timestamp(), "monitor_txns")
+
+def run_scheduler():
+    # Check if this is the main process
+    if os.environ.get('WERKZEUG_RUN_MAIN') != 'true':
+        scheduler = BackgroundScheduler()
+        scheduler.add_job(peg_market, 'interval', hours=3)
+        scheduler.add_job(monitor_txns, 'interval', minutes=5)
+        scheduler.start()
 
 if __name__ == '__main__':
+    run_scheduler()
     port = int(os.getenv('ARC_PORT', 5115))
     app.run(debug=True, host='0.0.0.0', port=port)
