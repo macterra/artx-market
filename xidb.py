@@ -8,27 +8,7 @@ import cid
 import binascii
 import shutil
 
-
-def getIpfs():
-    connect = os.environ.get('IPFS_CONNECT')
-
-    if connect:
-        return ipfshttpclient.connect(connect, timeout=6)
-    else:
-        return ipfshttpclient.connect(timeout=6)
-
-
-def checkIpfs():
-    for i in range(10):
-        try:
-            ipfs = getIpfs()
-            # print(ipfs.id())
-            return True
-        except:
-            print(i, "attempting to connect to IPFS...")
-            time.sleep(1)
-    return False
-
+from ipfs import *
 
 def verifyXid(xid):
     try:
