@@ -1,0 +1,9 @@
+FROM python:3
+
+WORKDIR /app
+RUN pip install flit python-bitcoinrpc python-dateutil py-cid
+RUN git clone https://github.com/macterra/py-ipfs-http-client.git
+RUN cd py-ipfs-http-client && FLIT_ROOT_INSTALL=1 flit install --pth-file
+COPY *.py .
+
+ENTRYPOINT [ "python", "./authorizer.py" ]
