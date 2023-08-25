@@ -49,7 +49,8 @@ class AuthTx():
 
 
 class Authorizer:
-    def __init__(self, connect):
+    def __init__(self):        
+        connect = os.environ.get("BTC_CONNECT")
         self.chain = "BTC"
         # print(f"connect={connect}")
         self.blockchain = AuthServiceProxy(connect, timeout=10)
@@ -134,9 +135,8 @@ class Authorizer:
             print(f"can't find utxo for {xid}")
             return
 
-        #txfeeRate = self.getFee()
-        txfeeRate = Decimal(0.00000007) # 7 sats/vbyte
-        txfee = txfeeRate * 255 # expected vsize
+        txfeeRate = self.getFee()
+        txfee = txfeeRate * 255 / 1000 # expected size of 255 vBytes
 
         for funtxn in self.funds:
             inputs.append(funtxn)
@@ -249,8 +249,7 @@ class Authorizer:
         return str(xid)
 
 def test():
-    connect = os.environ.get("BTC_CONNECT")
-    authorizer = Authorizer(connect)
+    authorizer = Authorizer()
     authorizer.updateWallet()
     balance = authorizer.getBalance()
     print("balance", balance)
@@ -258,8 +257,7 @@ def test():
     print("fee", fee)
 
 def peg():
-    connect = os.environ.get("BTC_CONNECT")
-    authorizer = Authorizer(connect)
+    authorizer = Authorizer()
     
     file_path = "data/meta.json"
     with open(file_path, 'r') as json_file:
@@ -268,8 +266,7 @@ def peg():
     authorizer.authorize(data['cid'])
 
 def monitor():
-    connect = os.environ.get("BTC_CONNECT")
-    authorizer = Authorizer(connect)
+    authorizer = Authorizer()
     authorizer.monitor()
 
 if __name__ == "__main__":

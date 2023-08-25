@@ -1,9 +1,6 @@
-import ipfshttpclient
 import uuid
 import json
 import zlib
-import time
-import os
 import cid
 import binascii
 import shutil
