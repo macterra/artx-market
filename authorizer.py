@@ -49,11 +49,12 @@ class AuthTx():
 
 
 class Authorizer:
-    def __init__(self):        
+    def __init__(self):
         connect = os.environ.get("BTC_CONNECT")
         self.chain = "BTC"
         # print(f"connect={connect}")
         self.blockchain = AuthServiceProxy(connect, timeout=10)
+        self.register = False
 
     def getChain(self):
         return self.chain
@@ -131,9 +132,11 @@ class Authorizer:
                 break
 
         if not inputs:
-            #print(f"claiming xid {xid}")
-            print(f"can't find utxo for {xid}")
-            return
+            if self.register:
+                print(f"registering xid {xid}")
+            else:
+                print(f"can't find utxo for {xid}")
+                return
 
         txfeeRate = self.getFee()
         txfee = txfeeRate * 255 / 1000 # expected size of 255 vBytes
@@ -185,7 +188,7 @@ class Authorizer:
                 "pending": []
             }
         return txnlog
-    
+
     def write_txnlog(self, txnlog):
         if not os.path.exists('data/txnlog'):
             os.makedirs('data/txnlog')
@@ -211,12 +214,12 @@ class Authorizer:
     def certify(self, tx):
         auth_tx = AuthTx(tx)
         txid = tx['txid']
-        blockhash = tx['blockhash']        
-        block = self.blockchain.getblock(blockhash)        
-        block_height = block['height']        
+        blockhash = tx['blockhash']
+        block = self.blockchain.getblock(blockhash)
+        block_height = block['height']
         block_time = block['time']
         utc = datetime.utcfromtimestamp(block_time).replace(tzinfo=tz.tzutc())
-        utc_iso = utc.isoformat(timespec='seconds').replace('+00:00', 'Z')        
+        utc_iso = utc.isoformat(timespec='seconds').replace('+00:00', 'Z')
         tx_index = block['tx'].index(txid)
         chainid = f"urn:chain:BTC:{block_height}:{tx_index}:1"
         artx_ns = uuid.uuid5(uuid.NAMESPACE_DNS, "artx.market")
@@ -256,14 +259,20 @@ def test():
     fee = authorizer.getFee()
     print("fee", fee)
 
-def peg():
-    authorizer = Authorizer()
-    
+def get_cid():
     file_path = "data/meta.json"
     with open(file_path, 'r') as json_file:
         data = json.load(json_file)
+    return data['cid']
 
-    authorizer.authorize(data['cid'])
+def peg():
+    authorizer = Authorizer()
+    authorizer.authorize(get_cid())
+
+def register():
+    authorizer = Authorizer()
+    authorizer.register = True
+    authorizer.authorize(get_cid())
 
 def monitor():
     authorizer = Authorizer()
@@ -271,15 +280,20 @@ def monitor():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Run a function.')
-    parser.add_argument('function', type=str, help='The function to run: test, peg, or monitor')
+    parser.add_argument('function', type=str, help='The function to run: register, peg, or monitor')
 
-    args = parser.parse_args()
+    try:
+        args = parser.parse_args()
 
-    if args.function == 'test':
+        if args.function == 'test':
+            test()
+        elif args.function == 'peg':
+            peg()
+        elif args.function == 'register':
+            register()
+        elif args.function == 'monitor':
+            monitor()
+        else:
+            print(f'Unknown function: {args.function}. Please use "register", "peg", or "monitor".')
+    except:
         test()
-    elif args.function == 'peg':
-        peg()
-    elif args.function == 'monitor':
-        monitor()
-    else:
-        print(f'Unknown function: {args.function}. Please use "test", "peg", or "monitor".')
