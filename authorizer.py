@@ -131,7 +131,13 @@ class Authorizer:
                 amount += stake
                 break
 
-        if not inputs:
+        if inputs:
+            if self.register:
+                print(f"already registered xid {xid}")
+                return
+            else:
+                print(f"found utxo for {xid}")
+        else:
             if self.register:
                 print(f"registering xid {xid}")
             else:
@@ -173,43 +179,40 @@ class Authorizer:
         print('txid', txid)
 
         txnlog = self.read_txnlog()
-        txnlog['pending'].append(txid)
+        txnlog['pending'] = txid
         self.write_txnlog(txnlog)
 
         return txid
 
     def read_txnlog(self):
-        if os.path.exists('data/txnlog/meta.json'):
-            with open("data/txnlog/meta.json", 'r') as json_file:
+        if os.path.exists('data/txnlog.json'):
+            with open("data/txnlog.json", 'r') as json_file:
                 txnlog = json.load(json_file)
         else:
             txnlog = {
                 "latest": "",
-                "pending": []
+                "pending": ""
             }
         return txnlog
 
     def write_txnlog(self, txnlog):
-        if not os.path.exists('data/txnlog'):
-            os.makedirs('data/txnlog')
-
-        with open('data/txnlog/meta.json', 'w') as json_file:
+        with open('data/txnlog.json', 'w') as json_file:
             json.dump(txnlog, json_file, indent=2)
 
     def monitor(self):
-        still_pending = []
         txnlog = self.read_txnlog()
-
-        for txid in txnlog['pending']:
+        txid = txnlog['pending']
+        if txid:
             print(txid)
             tx = self.blockchain.getrawtransaction(txid, 1)
             if 'blockhash' in tx:
-                txnlog['latest'] = self.certify(tx)
+                cert = self.certify(tx)
+                txnlog['latest'] = cert
+                txnlog['pending'] = ""
+                self.write_txnlog(txnlog)
+                print(f"certified in {cert}")
             else:
-                still_pending.append(txid)
-
-        txnlog['pending'] = still_pending
-        self.write_txnlog(txnlog)
+                print("still pending...")
 
     def certify(self, tx):
         auth_tx = AuthTx(tx)
@@ -241,7 +244,7 @@ class Authorizer:
             }
         }
 
-        newpath = f"data/txnlog/certs/{xid}"
+        newpath = f"data/certs/{xid}"
 
         if not os.path.exists(newpath):
             os.makedirs(newpath)
@@ -296,4 +299,4 @@ if __name__ == "__main__":
         else:
             print(f'Unknown function: {args.function}. Please use "register", "peg", or "monitor".')
     except:
-        test()
+        peg()

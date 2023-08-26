@@ -76,10 +76,10 @@ def timestamp():
     return current_str
 
 def peg_market():
-    print(timestamp(), "peg_market")
+    app.logger.info(f"{timestamp()} peg_market")
 
 def monitor_txns():
-    print(timestamp(), "monitor_txns")
+    app.logger.info(f"{timestamp()} monitor_txns")
 
 def run_scheduler():
     # Check if this is the main process
