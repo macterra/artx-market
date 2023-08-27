@@ -58,6 +58,7 @@ def commit():
         repo.git.commit('-m', message)
         githash = repo.git.rev_parse('HEAD')
     except GitCommandError as error:
+        print(f'Failed to commit changes: {str(error)}')
         return jsonify({'error': f'Failed to commit changes: {str(error)}'}), 500
 
     # Replace this with your actual implementation
@@ -66,10 +67,10 @@ def commit():
 @app.route('/api/v1/peg', methods=['POST'])
 def peg():
     data = request.get_json()
-    
+
     if not data or 'cid' not in data:
         return jsonify({'error': 'No cid provided'}), 400
-    
+
     auth = authorizer.Authorizer()
     txid = auth.authorize(data['cid'])
 
@@ -78,10 +79,10 @@ def peg():
 @app.route('/api/v1/certify', methods=['POST'])
 def certify():
     data = request.get_json()
-    
+
     if not data or 'txid' not in data:
         return jsonify({'error': 'No txid provided'}), 400
-    
+
     auth = authorizer.Authorizer()
     xid = auth.certify_tx(data['txid'])
 

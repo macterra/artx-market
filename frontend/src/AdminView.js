@@ -62,7 +62,7 @@ const AdminView = ({ navigate }) => {
         }
         setDisableSave(false);
     };
-    
+
     const handlePeg = async () => {
         setDisableSave(true);
         try {
@@ -79,7 +79,7 @@ const AdminView = ({ navigate }) => {
         }
         setDisableSave(false);
     };
-    
+
     const handleCertify = async () => {
         setDisableSave(true);
         try {
@@ -108,7 +108,7 @@ const AdminView = ({ navigate }) => {
         for (const [i, xid] of assets.entries()) {
             const response = await fetch(`/api/v1/admin/pin/asset/${xid}`);
             const asset = await response.json();
-            const index = (i+1).toString().padStart(5, " ");
+            const index = (i + 1).toString().padStart(5, " ");
 
             if (asset.cid) {
                 logs.push(`${index} Asset ${xid} ${asset.cid}`);
@@ -136,7 +136,7 @@ const AdminView = ({ navigate }) => {
         for (const [i, xid] of assets.entries()) {
             const response = await fetch(`/api/v1/admin/verify/asset/${xid}`);
             const asset = await response.json();
-            const index = (i+1).toString().padStart(5, " ");
+            const index = (i + 1).toString().padStart(5, " ");
 
             if (asset.verified) {
                 logs.push(`${index} Asset ${xid} ✔`);
@@ -162,7 +162,7 @@ const AdminView = ({ navigate }) => {
         for (const [i, xid] of invalidAssets.entries()) {
             const response = await fetch(`/api/v1/admin/fix/asset/${xid}`);
             const asset = await response.json();
-            const index = (i+1).toString().padStart(5, " ");
+            const index = (i + 1).toString().padStart(5, " ");
 
             if (asset.fixed) {
                 logs.push(`${index} Asset ${xid} ✔`);
@@ -191,7 +191,7 @@ const AdminView = ({ navigate }) => {
         for (const [i, xid] of agents.entries()) {
             const response = await fetch(`/api/v1/admin/verify/agent/${xid}`);
             const asset = await response.json();
-            const index = (i+1).toString().padStart(5, " ");
+            const index = (i + 1).toString().padStart(5, " ");
 
             if (asset.verified) {
                 logs.push(`${index} Agent ${xid} ✔`);
@@ -220,7 +220,7 @@ const AdminView = ({ navigate }) => {
         for (const [i, xid] of invalidAgents.entries()) {
             const response = await fetch(`/api/v1/admin/fix/agent/${xid}`);
             const asset = await response.json();
-            const index = (i+1).toString().padStart(5, " ");
+            const index = (i + 1).toString().padStart(5, " ");
 
             if (asset.fixed) {
                 logs.push(`${index} Agent ${xid} ✔`);
@@ -244,6 +244,11 @@ const AdminView = ({ navigate }) => {
             </Button>
         )
     }
+
+    const linkStyle = {
+        margin: '8px', // Add a margin around the ImageCard components
+        textDecoration: 'none', // Remove the text decoration from the Link component
+    };
 
     return (
         <Box>
@@ -292,21 +297,35 @@ const AdminView = ({ navigate }) => {
                                     <TableCell>Certificate</TableCell>
                                     <TableCell>{admin.latest}</TableCell>
                                 </TableRow>
-                                <TableRow>
-                                    <TableCell>Pending Txn</TableCell>
-                                    <TableCell>{admin.pending}</TableCell>
-                                </TableRow>
+                                {admin.pending &&
+                                    <TableRow>
+                                        <TableCell>Pending Txn</TableCell>
+                                        <TableCell>
+                                            <a href={`https://mempool.space/tx/${admin.pending}`} target="_blank" rel="noopener noreferrer">
+                                                {admin.pending}
+                                            </a>
+                                        </TableCell>
+                                    </TableRow>
+                                }
                             </TableBody>
                         </Table>
-                        <Button variant="contained" color="primary" onClick={handleSave} disabled={disableSave}>
-                            Save All
-                        </Button>
-                        <Button variant="contained" color="primary" onClick={handlePeg} disabled={disableSave}>
-                            Peg State
-                        </Button>
-                        <Button variant="contained" color="primary" onClick={handleCertify} disabled={disableSave}>
-                            Certify
-                        </Button>
+                        <Grid container direction="row" justifyContent="center" alignItems="center" spacing={3}>
+                            <Grid item>
+                                <Button variant="contained" color="primary" onClick={handleSave} disabled={disableSave}>
+                                    Save All
+                                </Button>
+                            </Grid>
+                            <Grid item>
+                                <Button variant="contained" color="primary" onClick={handlePeg} disabled={admin.pending}>
+                                    Peg State
+                                </Button>
+                            </Grid>
+                            <Grid item>
+                                <Button variant="contained" color="primary" onClick={handleCertify} disabled={!admin.pending}>
+                                    Certify
+                                </Button>
+                            </Grid>
+                        </Grid>
                     </Box>
                 }
                 {tab === 'verify' &&
