@@ -4,4 +4,3 @@ flit
 python-bitcoinrpc 
 python-dateutil 
 py-cid
-APScheduler

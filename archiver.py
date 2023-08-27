@@ -3,7 +3,6 @@ from flask import Flask, jsonify, request
 from git import Repo
 from git.exc import GitCommandError
 from ipfs import *
-from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime
 import authorizer
 
@@ -61,7 +60,6 @@ def commit():
         print(f'Failed to commit changes: {str(error)}')
         return jsonify({'error': f'Failed to commit changes: {str(error)}'}), 500
 
-    # Replace this with your actual implementation
     return jsonify({'ok': 1, 'githash': githash})
 
 @app.route('/api/v1/peg', methods=['POST'])
@@ -88,31 +86,6 @@ def certify():
 
     return jsonify({'xid': xid})
 
-def timestamp():
-    current_time = time.time()
-    current_datetime = datetime.fromtimestamp(current_time)
-    current_str = current_datetime.strftime('%Y-%m-%d %H:%M:%S')
-    return current_str
-
-def peg_market():
-    ts = timestamp()
-    app.logger.info(f"peg market state at {ts}")
-    authorizer.peg()
-
-def monitor_txns():
-    ts = timestamp()
-    app.logger.info(f"monitor pending transactions at {ts}")
-    authorizer.monitor()
-
-def run_scheduler():
-    # Check if this is the main process
-    if os.environ.get('WERKZEUG_RUN_MAIN') != 'true':
-        scheduler = BackgroundScheduler()
-        scheduler.add_job(peg_market, 'interval', hours=24)
-        scheduler.add_job(monitor_txns, 'interval', seconds=10) #minutes=10)
-        scheduler.start()
-
 if __name__ == '__main__':
-    #run_scheduler()
     port = int(os.getenv('ARC_PORT', 5115))
     app.run(debug=True, host='0.0.0.0', port=port)
