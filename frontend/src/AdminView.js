@@ -62,6 +62,40 @@ const AdminView = ({ navigate }) => {
         }
         setDisableSave(false);
     };
+    
+    const handlePeg = async () => {
+        setDisableSave(true);
+        try {
+            const response = await fetch('/api/v1/admin/peg');
+            const admin = await response.json();
+            if (admin.pending) {
+                setAdmin(admin);
+            }
+            else {
+                alert("Peg failed");
+            }
+        } catch (error) {
+            console.error('Error fetching admin data:', error);
+        }
+        setDisableSave(false);
+    };
+    
+    const handleCertify = async () => {
+        setDisableSave(true);
+        try {
+            const response = await fetch('/api/v1/admin/certify');
+            const admin = await response.json();
+            if (!admin.pending) {
+                setAdmin(admin);
+            }
+            else {
+                alert("Still pending");
+            }
+        } catch (error) {
+            console.error('Error fetching admin data:', error);
+        }
+        setDisableSave(false);
+    };
 
     const pinAssets = async () => {
         setDisableVerify(true);
@@ -254,10 +288,24 @@ const AdminView = ({ navigate }) => {
                                     <TableCell>CID</TableCell>
                                     <TableCell>{admin.cid}</TableCell>
                                 </TableRow>
+                                <TableRow>
+                                    <TableCell>Certificate</TableCell>
+                                    <TableCell>{admin.latest}</TableCell>
+                                </TableRow>
+                                <TableRow>
+                                    <TableCell>Pending Txn</TableCell>
+                                    <TableCell>{admin.pending}</TableCell>
+                                </TableRow>
                             </TableBody>
                         </Table>
                         <Button variant="contained" color="primary" onClick={handleSave} disabled={disableSave}>
                             Save All
+                        </Button>
+                        <Button variant="contained" color="primary" onClick={handlePeg} disabled={disableSave}>
+                            Peg State
+                        </Button>
+                        <Button variant="contained" color="primary" onClick={handleCertify} disabled={disableSave}>
+                            Certify
                         </Button>
                     </Box>
                 }

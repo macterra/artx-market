@@ -43,10 +43,13 @@ class AuthTx():
         except:
             # print('cid parser fail')
             return False
+        
         self.meta = getMeta(self.cid)
-        self.xid = getXid(self.cid)
-        return self.xid != None
 
+        if self.meta and 'xid' in self.meta:
+            self.xid = self.meta['xid']
+
+        return self.xid != None
 
 class Authorizer:
     def __init__(self):
@@ -83,7 +86,8 @@ class Authorizer:
             if tx['vout'] == 1:
                 txin = self.blockchain.getrawtransaction(tx['txid'], 1)
                 auth = AuthTx(txin)
-                if auth.isValid:
+                if auth.cid:
+                #if auth.isValid:
                     auth.utxo = tx
                     assets.append(auth)
                     self.staked += tx['amount']
@@ -123,7 +127,7 @@ class Authorizer:
         stake = self.getStake()
 
         for asset in self.assets:
-            if asset.meta['xid'] == xid:
+            if xid == asset.xid:
                 if cid == asset.cid:
                     print(f"xid is already up to date with {cid}")
                     return
@@ -214,6 +218,11 @@ class Authorizer:
             else:
                 print("still pending...")
 
+    def certify_tx(self, txid):
+        tx = self.blockchain.getrawtransaction(txid, 1)
+        if 'blockhash' in tx:
+            return self.certify(tx)
+
     def certify(self, tx):
         auth_tx = AuthTx(tx)
         txid = tx['txid']
@@ -256,11 +265,18 @@ class Authorizer:
 
 def test():
     authorizer = Authorizer()
-    authorizer.updateWallet()
-    balance = authorizer.getBalance()
-    print("balance", balance)
     fee = authorizer.getFee()
     print("fee", fee)
+
+def balance():
+    authorizer = Authorizer()
+    authorizer.updateWallet()
+    print("staked ", authorizer.staked)
+    print("balance", authorizer.balance)
+
+def fund():
+    authorizer = Authorizer()
+    print(authorizer.getAddress())
 
 def get_cid():
     file_path = "data/meta.json"
@@ -290,6 +306,10 @@ if __name__ == "__main__":
 
         if args.function == 'test':
             test()
+        elif args.function == 'balance':
+            balance()
+        elif args.function == 'fund':
+            fund()
         elif args.function == 'peg':
             peg()
         elif args.function == 'register':
@@ -299,4 +319,4 @@ if __name__ == "__main__":
         else:
             print(f'Unknown function: {args.function}. Please use "register", "peg", or "monitor".')
     except:
-        peg()
+        test()

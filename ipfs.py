@@ -5,11 +5,12 @@ from ipfshttpclient.exceptions import Error as IPFSError
 
 def getIpfs():
     connect = os.environ.get('IPFS_CONNECT')
+    timeout = 5
 
     if connect:
-        return ipfshttpclient.connect(connect, timeout=20)
+        return ipfshttpclient.connect(connect, timeout=timeout)
     else:
-        return ipfshttpclient.connect(timeout=20)
+        return ipfshttpclient.connect(timeout=timeout)
 
 
 def checkIpfs():

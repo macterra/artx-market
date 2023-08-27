@@ -18,44 +18,24 @@ def verifyXid(xid):
     except:
         return None
 
-
 def getXid(cid):
-    xid = None
-    ipfs = getIpfs()
+    meta = getMeta(cid)
 
-    try:
-        meta = json.loads(ipfs.cat(cid))
-        xid = meta['xid']
-    except:
-        try:
-            meta = json.loads(ipfs.cat(cid + '/meta.json'))
-            xid = meta['xid']
-        except:
-            try:
-                # deprecated
-                xid = ipfs.cat(cid + '/xid')
-                xid = xid.decode().strip()
-            except:
-                # print(f"error: unable to retrieve xid for {cid}")
-                return None
-
-    return verifyXid(xid)
-
+    if meta and 'xid' in meta:
+        return meta['xid']
+    
+    return None
 
 def getMeta(cid):
     meta = None
     ipfs = getIpfs()
 
     try:
-        meta = json.loads(ipfs.cat(cid))
+        meta = json.loads(ipfs.cat(cid + '/meta.json'))
     except:
-        try:
-            meta = json.loads(ipfs.cat(cid + '/meta.json'))
-        except:
-            pass
+        pass
 
     return meta
-
 
 def getVersions(cid):
     versions = []

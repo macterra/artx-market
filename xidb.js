@@ -87,6 +87,48 @@ const saveAdmin = async (adminData) => {
     return adminData;
 };
 
+const pegState = async (adminState) => {
+
+    adminState = await saveAdmin(adminState);
+    
+    const response = await fetch(`${config.archiver}/api/v1/peg`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', },
+        body: JSON.stringify({ cid: adminState.cid }),
+    });
+
+    const peg = await response.json();
+    adminState.pending = peg.txid;
+    
+    const jsonPath = path.join(config.data, 'meta.json');
+    await fs.promises.writeFile(jsonPath, JSON.stringify(adminState, null, 2));
+
+    return adminState;
+};
+
+const certifyState = async (adminState) => {
+
+    if (adminState.pending) {
+        const response = await fetch(`${config.archiver}/api/v1/certify`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', },
+            body: JSON.stringify({ txid: adminState.pending }),
+        });
+    
+        const cert = await response.json();
+
+        if (cert.xid) {
+            adminState.latest = cert.xid;
+            adminState.pending = null;
+
+            const jsonPath = path.join(config.data, 'meta.json');
+            await fs.promises.writeFile(jsonPath, JSON.stringify(adminState, null, 2));
+        }
+    }
+
+    return adminState;
+};
+
 async function waitForReady() {
     let isReady = false;
 
@@ -942,6 +984,8 @@ const removeCollection = async (collection) => {
 module.exports = {
     getAdmin,
     saveAdmin,
+    pegState,
+    certifyState,
     getAgentFromKey,
     getAgent,
     saveAgent,

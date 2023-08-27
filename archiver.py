@@ -5,6 +5,7 @@ from git.exc import GitCommandError
 from ipfs import *
 from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime
+import authorizer
 
 app = Flask(__name__)
 repo = Repo('data')
@@ -43,7 +44,6 @@ def pin(subfolder):
     print(f"pinned {subfolder} to {cid}")
     return jsonify({'path': subfolder, 'cid': cid})
 
-
 @app.route('/api/v1/commit', methods=['POST'])
 def commit():
     data = request.get_json()
@@ -63,11 +63,29 @@ def commit():
     # Replace this with your actual implementation
     return jsonify({'ok': 1, 'githash': githash})
 
-
-@app.route('/api/v1/peg', methods=['GET', 'POST'])
+@app.route('/api/v1/peg', methods=['POST'])
 def peg():
-    # Replace this with your actual implementation
-    return jsonify({'message': 'You reached the /api/v1/peg endpoint'})
+    data = request.get_json()
+    
+    if not data or 'cid' not in data:
+        return jsonify({'error': 'No cid provided'}), 400
+    
+    auth = authorizer.Authorizer()
+    txid = auth.authorize(data['cid'])
+
+    return jsonify({'txid': txid})
+
+@app.route('/api/v1/certify', methods=['POST'])
+def certify():
+    data = request.get_json()
+    
+    if not data or 'txid' not in data:
+        return jsonify({'error': 'No txid provided'}), 400
+    
+    auth = authorizer.Authorizer()
+    xid = auth.certify_tx(data['txid'])
+
+    return jsonify({'xid': xid})
 
 def timestamp():
     current_time = time.time()
@@ -76,20 +94,24 @@ def timestamp():
     return current_str
 
 def peg_market():
-    app.logger.info(f"{timestamp()} peg_market")
+    ts = timestamp()
+    app.logger.info(f"peg market state at {ts}")
+    authorizer.peg()
 
 def monitor_txns():
-    app.logger.info(f"{timestamp()} monitor_txns")
+    ts = timestamp()
+    app.logger.info(f"monitor pending transactions at {ts}")
+    authorizer.monitor()
 
 def run_scheduler():
     # Check if this is the main process
     if os.environ.get('WERKZEUG_RUN_MAIN') != 'true':
         scheduler = BackgroundScheduler()
-        scheduler.add_job(peg_market, 'interval', hours=3)
-        scheduler.add_job(monitor_txns, 'interval', minutes=5)
+        scheduler.add_job(peg_market, 'interval', hours=24)
+        scheduler.add_job(monitor_txns, 'interval', seconds=10) #minutes=10)
         scheduler.start()
 
 if __name__ == '__main__':
-    run_scheduler()
+    #run_scheduler()
     port = int(os.getenv('ARC_PORT', 5115))
     app.run(debug=True, host='0.0.0.0', port=port)

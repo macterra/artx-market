@@ -33,6 +33,7 @@ services:
       - ./data:/app/data
     environment:
       - IPFS_CONNECT=/dns/ipfs/tcp/5001/http
+      - BTC_CONNECT=${BTC_CONNECT}
     depends_on:
       - ipfs
 

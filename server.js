@@ -13,6 +13,8 @@ const { createCharge, checkCharge, sendPayment } = require('./satspay');
 const {
   getAdmin,
   saveAdmin,
+  pegState,
+  certifyState,
   getAgentFromKey,
   getAgent,
   saveAgent,
@@ -253,6 +255,38 @@ app.get('/api/v1/admin/save', ensureAuthenticated, async (req, res) => {
     }
 
     const savedAdmin = await saveAdmin(adminData);
+    res.json(savedAdmin);
+  } catch (error) {
+    console.error('Error reading metadata:', error);
+    res.status(404).json({ message: 'Asset not found' });
+  }
+});
+
+app.get('/api/v1/admin/peg', ensureAuthenticated, async (req, res) => {
+  try {
+    const adminData = await getAdmin();
+
+    if (!adminData.owner || adminData.owner !== req.user.xid) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const savedAdmin = await pegState(adminData);
+    res.json(savedAdmin);
+  } catch (error) {
+    console.error('Error reading metadata:', error);
+    res.status(404).json({ message: 'Asset not found' });
+  }
+});
+
+app.get('/api/v1/admin/certify', ensureAuthenticated, async (req, res) => {
+  try {
+    const adminData = await getAdmin();
+
+    if (!adminData.owner || adminData.owner !== req.user.xid) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const savedAdmin = await certifyState(adminData);
     res.json(savedAdmin);
   } catch (error) {
     console.error('Error reading metadata:', error);
