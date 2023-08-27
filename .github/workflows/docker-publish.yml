@@ -59,8 +59,8 @@ jobs:
       - name: Build and push Docker archiver image
         uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
         with:
-          context: .
-          file: ./Dockerfile.archiver
+          context: ./archiver
+          file: ./archiver/Dockerfile
           push: true
           tags: |
             ${{ env.REGISTRY }}/macterra/artx-archiver:${{ steps.calver.outputs.version }}
