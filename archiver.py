@@ -16,7 +16,12 @@ except GitCommandError as error:
 
 @app.route('/api/v1/ready', methods=['GET'])
 def ready():
-    ready = checkIpfs()
+    auth = authorizer.Authorizer()
+    addr = auth.getAddress()
+
+    # Check if checkIpfs() returns True and getAddress() returns a non-empty string
+    ready = checkIpfs() and bool(addr.strip())
+
     return jsonify({'ready': ready})
 
 @app.route('/api/v1/pin/<path:subfolder>', methods=['GET'])
