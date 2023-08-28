@@ -327,19 +327,19 @@ const AdminView = ({ navigate }) => {
                                     Save All
                                 </Button>
                             </Grid>
-                            {admin.lates &&
+                            {admin.latest ? (
                                 <Grid item>
                                     <Button variant="contained" color="primary" onClick={handlePeg} disabled={admin.pending || disableButton}>
                                         Peg State
                                     </Button>
                                 </Grid>
-                            } : {
+                            ) : (
                                 <Grid item>
                                     <Button variant="contained" color="primary" onClick={handleRegister} disabled={admin.pending || disableButton}>
                                         Register State
                                     </Button>
                                 </Grid>
-                            }
+                            )}
                             <Grid item>
                                 <Button variant="contained" color="primary" onClick={handleCertify} disabled={!admin.pending || disableButton}>
                                     Certify

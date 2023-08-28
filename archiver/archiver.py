@@ -67,6 +67,19 @@ def commit():
 
     return jsonify({'ok': 1, 'githash': githash})
 
+@app.route('/api/v1/register', methods=['POST'])
+def register():
+    data = request.get_json()
+
+    if not data or 'cid' not in data:
+        return jsonify({'error': 'No cid provided'}), 400
+
+    auth = authorizer.Authorizer()
+    auth.register = True
+    txid = auth.authorize(data['cid'])
+
+    return jsonify({'txid': txid})
+
 @app.route('/api/v1/peg', methods=['POST'])
 def peg():
     data = request.get_json()

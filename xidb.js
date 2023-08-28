@@ -87,6 +87,25 @@ const saveAdmin = async (adminData) => {
     return adminData;
 };
 
+const registerState = async (adminState) => {
+
+    adminState = await saveAdmin(adminState);
+    
+    const response = await fetch(`${config.archiver}/api/v1/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', },
+        body: JSON.stringify({ cid: adminState.cid }),
+    });
+
+    const register = await response.json();
+    adminState.pending = register.txid;
+    
+    const jsonPath = path.join(config.data, 'meta.json');
+    await fs.promises.writeFile(jsonPath, JSON.stringify(adminState, null, 2));
+
+    return adminState;
+};
+
 const pegState = async (adminState) => {
 
     adminState = await saveAdmin(adminState);
@@ -984,6 +1003,7 @@ const removeCollection = async (collection) => {
 module.exports = {
     getAdmin,
     saveAdmin,
+    registerState,
     pegState,
     certifyState,
     getAgentFromKey,

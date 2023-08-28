@@ -13,6 +13,7 @@ const { createCharge, checkCharge, sendPayment } = require('./satspay');
 const {
   getAdmin,
   saveAdmin,
+  registerState,
   pegState,
   certifyState,
   getAgentFromKey,
@@ -262,12 +263,40 @@ app.get('/api/v1/admin/save', ensureAuthenticated, async (req, res) => {
   }
 });
 
+app.get('/api/v1/admin/register', ensureAuthenticated, async (req, res) => {
+  try {
+    const adminData = await getAdmin();
+
+    if (!adminData.owner || adminData.owner !== req.user.xid) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    if (adminData.latest) {
+      return res.status(500).json({ message: 'Already registered' });
+    }
+
+    const savedAdmin = await registerState(adminData);
+    res.json(savedAdmin);
+  } catch (error) {
+    console.error('Error reading metadata:', error);
+    res.status(404).json({ message: 'Asset not found' });
+  }
+});
+
 app.get('/api/v1/admin/peg', ensureAuthenticated, async (req, res) => {
   try {
     const adminData = await getAdmin();
 
     if (!adminData.owner || adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    if (!adminData.latest) {
+      return res.status(500).json({ message: 'Not registered' });
+    }
+
+    if (adminData.pending) {
+      return res.status(500).json({ message: 'Authorization pending' });
     }
 
     const savedAdmin = await pegState(adminData);
@@ -284,6 +313,10 @@ app.get('/api/v1/admin/certify', ensureAuthenticated, async (req, res) => {
 
     if (!adminData.owner || adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    if (!adminData.pending) {
+      return res.status(500).json({ message: 'No authorization pending' });
     }
 
     const savedAdmin = await certifyState(adminData);
