@@ -1,8 +1,5 @@
 FROM python:3
 
-RUN apt-get update
-RUN apt-get install -y vim git
-
 RUN git config --global user.email "daemon@artx.market"
 RUN git config --global user.name "ArtX Market"
 RUN git config --global --add safe.directory /app/data

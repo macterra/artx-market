@@ -10,11 +10,15 @@ COPY package*.json ./
 # Install dependencies
 RUN npm ci
 
-# Copy the production build to the working directory
-COPY . .
+# Copy the client build to the frontend directory
+COPY frontend/src ./frontend/src
+COPY frontend/public ./frontend/public
+COPY frontend/package*.json ./frontend/
 
 # Build client
 RUN cd frontend && npm ci && npm run build
+
+COPY *.js .
 
 # Expose the port the app will run on
 EXPOSE 5000
