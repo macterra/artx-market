@@ -7,6 +7,7 @@ const LnurlAuth = require('passport-lnurl-auth');
 const session = require('express-session');
 const morgan = require('morgan');
 const dotenv = require('dotenv');
+const cron = require('node-cron');
 const { requestInvoice } = require('lnurl-pay');
 
 const { createCharge, checkCharge, sendPayment } = require('./satspay');
@@ -865,6 +866,30 @@ app.use((req, res, next) => {
   } else {
     console.warn(`Warning: Unhandled API endpoint - ${req.method} ${req.originalUrl}`);
     res.status(404).json({ message: 'Endpoint not found' });
+  }
+});
+
+// Check pending txn every minute
+cron.schedule('* * * * *', async () => {
+  const adminData = await getAdmin();
+  if (adminData.pending) {
+    console.log(`Pending txn ${adminData.pending}...`);
+    const savedAdmin = await certifyState(adminData);
+    if (!savedAdmin.pending) {
+      console.log(`New certificate ${adminData.latest}`);
+    }
+  }
+});
+
+// Peg market state at midnight
+cron.schedule('0 0 * * *', async () => {
+  const adminData = await getAdmin();
+  if (!adminData.pending) {
+    console.log(`Pegging market state...`);
+    const savedAdmin = await pegState(adminData);
+    if (savedAdmin.pending) {
+      console.log(`Pending txn ${adminData.pending}`);
+    }
   }
 });
 
