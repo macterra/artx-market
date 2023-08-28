@@ -245,11 +245,6 @@ const AdminView = ({ navigate }) => {
         )
     }
 
-    const linkStyle = {
-        margin: '8px', // Add a margin around the ImageCard components
-        textDecoration: 'none', // Remove the text decoration from the Link component
-    };
-
     return (
         <Box>
             <h1>Admin</h1>
