@@ -4,7 +4,7 @@ import { Box, Button, Table, TableBody, TableRow, TableCell, Tab, Tabs, Grid } f
 const AdminView = ({ navigate }) => {
 
     const [admin, setAdmin] = useState(null);
-    const [disableSave, setDisableSave] = useState(false);
+    const [disableButton, setDisableButton] = useState(false);
     const [disableVerify, setDisableVerify] = useState(false);
     const [tab, setTab] = useState(null);
     const [logs, setLogs] = useState([]);
@@ -47,7 +47,7 @@ const AdminView = ({ navigate }) => {
     };
 
     const handleSave = async () => {
-        setDisableSave(true);
+        setDisableButton(true);
         try {
             const response = await fetch('/api/v1/admin/save');
             const admin = await response.json();
@@ -60,11 +60,11 @@ const AdminView = ({ navigate }) => {
         } catch (error) {
             console.error('Error fetching admin data:', error);
         }
-        setDisableSave(false);
+        setDisableButton(false);
     };
 
     const handlePeg = async () => {
-        setDisableSave(true);
+        setDisableButton(true);
         try {
             const response = await fetch('/api/v1/admin/peg');
             const admin = await response.json();
@@ -77,11 +77,28 @@ const AdminView = ({ navigate }) => {
         } catch (error) {
             console.error('Error fetching admin data:', error);
         }
-        setDisableSave(false);
+        setDisableButton(false);
+    };
+
+    const handleRegister = async () => {
+        setDisableButton(true);
+        try {
+            const response = await fetch('/api/v1/admin/register');
+            const admin = await response.json();
+            if (admin.pending) {
+                setAdmin(admin);
+            }
+            else {
+                alert("Register failed");
+            }
+        } catch (error) {
+            console.error('Error fetching admin data:', error);
+        }
+        setDisableButton(false);
     };
 
     const handleCertify = async () => {
-        setDisableSave(true);
+        setDisableButton(true);
         try {
             const response = await fetch('/api/v1/admin/certify');
             const admin = await response.json();
@@ -94,7 +111,7 @@ const AdminView = ({ navigate }) => {
         } catch (error) {
             console.error('Error fetching admin data:', error);
         }
-        setDisableSave(false);
+        setDisableButton(false);
     };
 
     const pinAssets = async () => {
@@ -306,17 +323,25 @@ const AdminView = ({ navigate }) => {
                         </Table>
                         <Grid container direction="row" justifyContent="center" alignItems="center" spacing={3}>
                             <Grid item>
-                                <Button variant="contained" color="primary" onClick={handleSave} disabled={disableSave}>
+                                <Button variant="contained" color="primary" onClick={handleSave} disabled={disableButton}>
                                     Save All
                                 </Button>
                             </Grid>
+                            {admin.lates &&
+                                <Grid item>
+                                    <Button variant="contained" color="primary" onClick={handlePeg} disabled={admin.pending || disableButton}>
+                                        Peg State
+                                    </Button>
+                                </Grid>
+                            } : {
+                                <Grid item>
+                                    <Button variant="contained" color="primary" onClick={handleRegister} disabled={admin.pending || disableButton}>
+                                        Register State
+                                    </Button>
+                                </Grid>
+                            }
                             <Grid item>
-                                <Button variant="contained" color="primary" onClick={handlePeg} disabled={admin.pending}>
-                                    Peg State
-                                </Button>
-                            </Grid>
-                            <Grid item>
-                                <Button variant="contained" color="primary" onClick={handleCertify} disabled={!admin.pending}>
+                                <Button variant="contained" color="primary" onClick={handleCertify} disabled={!admin.pending || disableButton}>
                                     Certify
                                 </Button>
                             </Grid>
