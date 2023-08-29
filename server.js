@@ -31,6 +31,7 @@ const {
   getAgentAndCollections,
   getCollection,
   getAsset,
+  saveHistory,
   commitAsset,
   createAssets,
   transferAsset,
@@ -500,6 +501,13 @@ app.post('/api/v1/asset/:xid/mint', ensureAuthenticated, async (req, res) => {
       return res.status(500).json({ message: 'Error' });
     }
 
+    const record = {
+      "time": new Date().toISOString(),
+      "type": "mint",
+      "creator": userId,
+    };
+
+    await saveHistory(xid, record);
     await createToken(userId, xid, editions, license, royalty / 100);
     res.json({ message: 'Success' });
   } catch (error) {
@@ -529,6 +537,16 @@ app.post('/api/v1/asset/:xid/list', ensureAuthenticated, async (req, res) => {
 
     if (newPrice !== assetData.nft.price) {
       assetData.nft.price = newPrice;
+
+      const record = {
+        "time": new Date().toISOString(),
+        "type": "list",
+        "owner": userId,
+        "edition": xid,
+        "price": newPrice
+      };
+
+      await saveHistory(assetData.nft.asset, record);
       await commitAsset(assetData, 'Listed');
     }
 
@@ -544,7 +562,6 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
     const xid = req.params.xid;
     const userId = req.user.xid;
     const { chargeId } = req.body;
-
     const assetData = await getAsset(xid);
 
     if (!assetData.nft) {
@@ -573,6 +590,15 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
       return res.status(500).json({ message: 'Error' });
     }
 
+    const record = {
+      "time": new Date().toISOString(),
+      "type": "sale",
+      "buyer": userId,
+      "seller": assetData.asset.owner,
+      "price": price,
+    };
+
+    await saveHistory(xid, record);
     await transferAsset(xid, userId);
 
     const tokenData = await getAsset(assetData.nft.asset);

@@ -746,6 +746,12 @@ const saveAsset = async (metadata) => {
     await fs.promises.writeFile(assetJsonPath, JSON.stringify(metadata, null, 2));
 };
 
+const saveHistory = async (xid, record) => {
+    const recordString = JSON.stringify(record);    
+    const historyPath = path.join(config.assets, xid, 'history.jsonl');    
+    await fs.promises.appendFile(historyPath, recordString + '\n');
+};
+
 const commitAsset = async (metadata, action) => {
     await saveAsset(metadata);
     await commitChanges(`${action || 'Updated'} asset ${metadata.xid}`);
@@ -917,6 +923,7 @@ const createToken = async (userId, xid, editions, license, royalty) => {
     await saveAsset(assetData);
     await commitChanges(`Minted ${editions} edition(s) of ${xid}`);
 
+    // Charge mint fee from agent credits
     const storageFee = Math.round(assetData.file.size * config.storageRate);
     const editionFee = editions * config.editionRate;
     const mintFee = storageFee + editionFee;
@@ -1021,6 +1028,7 @@ module.exports = {
     getAllAgents,
     getCollection,
     getAsset,
+    saveHistory,
     commitAsset,
     isOwner,
     createAssets,
