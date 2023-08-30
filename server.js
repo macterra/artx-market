@@ -543,7 +543,7 @@ app.post('/api/v1/asset/:xid/list', ensureAuthenticated, async (req, res) => {
       const record = {
         "time": new Date().toISOString(),
         "type": "list",
-        "owner": userId,
+        "seller": userId,
         "edition": xid,
         "price": newPrice
       };
@@ -597,6 +597,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
       "type": "sale",
       "buyer": userId,
       "seller": assetData.asset.owner,
+      "edition": xid,
       "price": price,
     };
 
