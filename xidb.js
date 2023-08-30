@@ -90,7 +90,7 @@ const saveAdmin = async (adminData) => {
 const registerState = async (adminState) => {
 
     adminState = await saveAdmin(adminState);
-    
+
     const response = await fetch(`${config.archiver}/api/v1/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', },
@@ -99,7 +99,7 @@ const registerState = async (adminState) => {
 
     const register = await response.json();
     adminState.pending = register.txid;
-    
+
     const jsonPath = path.join(config.data, 'meta.json');
     await fs.promises.writeFile(jsonPath, JSON.stringify(adminState, null, 2));
 
@@ -109,7 +109,7 @@ const registerState = async (adminState) => {
 const pegState = async (adminState) => {
 
     adminState = await saveAdmin(adminState);
-    
+
     const response = await fetch(`${config.archiver}/api/v1/peg`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', },
@@ -118,7 +118,7 @@ const pegState = async (adminState) => {
 
     const peg = await response.json();
     adminState.pending = peg.txid;
-    
+
     const jsonPath = path.join(config.data, 'meta.json');
     await fs.promises.writeFile(jsonPath, JSON.stringify(adminState, null, 2));
 
@@ -133,7 +133,7 @@ const certifyState = async (adminState) => {
             headers: { 'Content-Type': 'application/json', },
             body: JSON.stringify({ txid: adminState.pending }),
         });
-    
+
         const cert = await response.json();
 
         if (cert.xid) {
@@ -543,6 +543,15 @@ const addCredits = async (userId, charge) => {
     if (agentData) {
         if (charge && charge.paid && charge.amount) {
             agentData.credits += charge.amount;
+
+            const record = {
+                "time": new Date().toISOString(),
+                "type": "buy-credits",
+                "agent": userId,
+                "amount": charge.amount,
+                "charge": charge,
+            };
+            await auditLog(record);
             await saveAgent(agentData);
             return agentData;
         }
@@ -746,9 +755,16 @@ const saveAsset = async (metadata) => {
     await fs.promises.writeFile(assetJsonPath, JSON.stringify(metadata, null, 2));
 };
 
+const auditLog = async (record) => {
+    const recordString = JSON.stringify(record);
+    const logPath = path.join(config.data, 'auditlog.jsonl');
+    await fs.promises.appendFile(logPath, recordString + '\n');
+    await commitChanges(`Updated audit log (${record.type})`);
+};
+
 const saveHistory = async (xid, record) => {
-    const recordString = JSON.stringify(record);    
-    const historyPath = path.join(config.assets, xid, 'history.jsonl');    
+    const recordString = JSON.stringify(record);
+    const historyPath = path.join(config.assets, xid, 'history.jsonl');
     await fs.promises.appendFile(historyPath, recordString + '\n');
 };
 
@@ -1028,6 +1044,7 @@ module.exports = {
     getAllAgents,
     getCollection,
     getAsset,
+    auditLog,
     saveHistory,
     commitAsset,
     isOwner,

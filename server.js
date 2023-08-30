@@ -31,6 +31,7 @@ const {
   getAgentAndCollections,
   getCollection,
   getAsset,
+  auditLog,
   saveHistory,
   commitAsset,
   createAssets,
@@ -43,6 +44,7 @@ const {
   getAllAgents,
   integrityCheck,
 } = require('./xidb');
+const { log } = require('console');
 
 const app = express();
 
@@ -598,12 +600,18 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
       "price": price,
     };
 
-    await saveHistory(xid, record);
+    await saveHistory(assetData.nft.asset, record);
     await transferAsset(xid, userId);
 
     const tokenData = await getAsset(assetData.nft.asset);
     const assetName = `"${tokenData.asset.title}" (${assetData.asset.title})`;
     console.log(`audit: ${buyer.name} buying ${assetName} for ${price} from ${seller.name}`);
+
+    let audit = {
+      "time": new Date().toISOString(),
+      "type": "sale",
+      "charge": chargeData,
+    };
 
     const royaltyRate = tokenData.token?.royalty || 0;
     let royalty = 0;
@@ -615,6 +623,10 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
       if (creator.deposit && royalty > 0) {
         sendPayment(creator.deposit, royalty, `royalty for asset ${assetName}`);
         console.log(`audit: royalty ${royalty} to ${creator.deposit}`);
+        audit.royalty = {
+          "address": creator.deposit,
+          "amount": royalty,
+        };
       }
     }
 
@@ -624,12 +636,22 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
     if (seller.deposit) {
       sendPayment(seller.deposit, payout, `sale of asset ${assetName}`);
       console.log(`audit: payout ${payout} to ${seller.deposit}`);
+      audit.payout = {
+        "address": seller.deposit,
+        "amount": payout,
+      };
     }
 
     if (txnFee > 0 && config.depositAddress) {
       sendPayment(config.depositAddress, txnFee, `txn fee for asset ${assetName}`);
       console.log(`audit: txn fee ${txnFee} to ${config.depositAddress}`);
+      audit.txnfee = {
+        "address": config.depositAddress,
+        "amount": txnFee,
+      };
     }
+
+    await auditLog(audit);
 
     res.json({ ok: true, message: 'Success' });
   } catch (error) {
