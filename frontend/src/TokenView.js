@@ -101,11 +101,11 @@ const TokenView = ({ metadata }) => {
                         </TableCell>
                     </TableRow>
                     <TableRow>
-                        <TableCell>IPFS CID:</TableCell>
+                        <TableCell>IPFS:</TableCell>
                         <TableCell>
-                            <Link to={`https://ipfs.io/ipfs/${metadata.token.cid}`}>
+                            <a href={`/ipfs/${metadata.token.cid}/${metadata.file.fileName}`} target="_blank" rel="noopener noreferrer">
                                 {metadata.token.cid}
-                            </Link>
+                            </a>
                         </TableCell>
                     </TableRow>
                     <TableRow>
