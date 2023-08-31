@@ -9,6 +9,7 @@ const morgan = require('morgan');
 const dotenv = require('dotenv');
 const cron = require('node-cron');
 const { requestInvoice } = require('lnurl-pay');
+const axios = require('axios');
 
 const { createCharge, checkCharge, sendPayment } = require('./satspay');
 const {
@@ -53,6 +54,7 @@ dotenv.config();
 const config = {
   host: process.env.ARTX_HOST || 'localhost',
   port: process.env.ARTX_PORT || 5000,
+  ipfs: process.env.IPFS_HOST || 'localhost',
   depositAddress: process.env.TXN_FEE_DEPOSIT,
   txnFeeRate: process.env.TXN_FEE_RATE || 0.025,
   storageRate: process.env.STORAGE_RATE || 0.001,
@@ -179,6 +181,22 @@ app.get('/check-auth/:xid?', async (req, res) => {
     }
   } else {
     res.json({ message: 'Unauthorized' });
+  }
+});
+
+app.get('/ipfs/*', async (req, res) => {
+  try {
+    const path = req.params[0];
+    const response = await axios({
+      method: 'post',
+      url: `http://${config.ipfs}:5001/api/v0/cat?arg=/ipfs/${path}`,
+      responseType: 'stream'
+    });
+
+    res.set(response.headers);
+    response.data.pipe(res);
+  } catch (error) {
+    res.status(500).send({ error: error.toString() });
   }
 });
 

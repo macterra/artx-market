@@ -8,6 +8,7 @@ services:
       - ./data:/app/data
     environment:
       ARCHIVER: http://archiver:5115
+      IPFS_HOST: ipfs
       SATSPAY_HOST: ${SATSPAY_HOST}
       SATSPAY_ADMIN_KEY: ${SATSPAY_ADMIN_KEY}
       SATSPAY_API_KEY: ${SATSPAY_API_KEY}
