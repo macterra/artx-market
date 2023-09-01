@@ -250,6 +250,31 @@ const verifyAsset = async (xid) => {
         return error;
     }
 
+    if (assetData.file && assetData.file.originalName) {
+        return error;
+    }
+
+    if (assetData.token) {
+
+        // verify CID
+
+        for (const nftId of assetData.token.nfts) {
+            const edition = await getAsset(nftId);
+
+            if (!edition) {
+                return error;
+            }
+
+            if (!edition.nft) {
+                return error;
+            }
+
+            if (edition.nft.asset != xid) {
+                return error;
+            }
+        }
+    }
+
     error.error = 'invalid ownership';
     const agentData = await getAgent(assetData.asset.owner);
 
@@ -319,6 +344,29 @@ const fixAsset = async (xid) => {
 
         await saveAsset(assetData);
         await commitChanges(`Moved xid ${assetData.xid}`);
+    }
+
+    if (assetData.file && assetData.file.originalName) {
+        delete assetData.file.originalName;
+        await saveAsset(assetData);
+        await commitChanges(`Removed originalName`);
+    }
+
+    if (assetData.token) {
+        const missingNftIds = [];
+
+        for (const nftId of assetData.token.nfts) {
+            const edition = await getAsset(nftId);
+            if (!edition) {
+                missingNftIds.push(nftId);
+            }
+        }
+
+        if (missingNftIds.length > 0) {
+            assetData.token.nfts = assetData.token.nfts.filter(nftId => !missingNftIds.includes(nftId));
+            await saveAsset(assetData);
+            await commitChanges(`Removed missing NFTs`);
+        }
     }
 
     const agentData = await getAgent(assetData.asset.owner);
@@ -864,7 +912,6 @@ const createAssets = async (userId, files, collectionId) => {
             },
             file: {
                 fileName: assetName,
-                originalName: file.originalname,
                 size: file.size,
                 hash: fileHash,
                 path: `/${config.assets}/${xid}/${assetName}`,
