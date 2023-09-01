@@ -613,10 +613,12 @@ const getAgentAndCollections = async (profileId, userId) => {
 
     let collections = {};
 
-    for (const collectionId of agentData.collections) {
-        let collectionData = await getAsset(collectionId);
-        collectionData.collection.assets = [];
-        collections[collectionId] = collectionData;
+    if (agentData.collections) {
+        for (const collectionId of agentData.collections) {
+            let collectionData = await getAsset(collectionId);
+            collectionData.collection.assets = [];
+            collections[collectionId] = collectionData;
+        }
     }
 
     const deleted = [];
@@ -724,6 +726,17 @@ const getCollection = async (collectionId, userId) => {
     return collection;
 };
 
+const getHistory = async (xid) => {
+    try {
+        const historyPath = path.join(config.assets, xid, 'history.jsonl');
+        const data = await fs.promises.readFile(historyPath, 'utf-8');
+        const lines = data.trim().split('\n');
+        return lines.map(line => JSON.parse(line));
+    } catch (error) {
+        return [];
+    }
+};
+
 const getAsset = async (xid) => {
     let metadata = null;
 
@@ -731,6 +744,7 @@ const getAsset = async (xid) => {
         const metadataPath = path.join(config.assets, xid, 'meta.json');
         const metadataContent = await fs.promises.readFile(metadataPath, 'utf-8');
         metadata = JSON.parse(metadataContent);
+        metadata.history = await getHistory(xid);
     } catch (error) {
     }
 
