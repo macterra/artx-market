@@ -13,6 +13,7 @@ const config = {
     uploads: 'data/uploads',
     assets: 'data/assets',
     agents: 'data/agents',
+    certs: 'data/certs',
     id: 'data/id',
     credits: 10000,
     uploadRate: process.env.STORAGE_RATE || 0.0001,
@@ -774,6 +775,13 @@ const getCollection = async (collectionId, userId) => {
     return collection;
 };
 
+const getCert = async (xid) => {
+    const certPath = path.join(config.certs, xid, 'meta.json');
+    const certContent = await fs.promises.readFile(certPath, 'utf-8');
+    const cert = JSON.parse(certContent);
+    return cert;
+};
+
 const getHistory = async (xid) => {
     try {
         const historyPath = path.join(config.assets, xid, 'history.jsonl');
@@ -1105,6 +1113,7 @@ module.exports = {
     getAllAgents,
     getCollection,
     getAsset,
+    getCert,
     auditLog,
     saveHistory,
     commitAsset,

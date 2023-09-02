@@ -32,6 +32,7 @@ const {
   getAgentAndCollections,
   getCollection,
   getAsset,
+  getCert,
   auditLog,
   saveHistory,
   commitAsset,
@@ -456,6 +457,16 @@ app.get('/api/v1/admin/pin/asset/:xid', async (req, res) => {
   } catch (error) {
     console.error('Error:', error);
     res.status(404).json({ error: `Asset cannot be pinned ${error}` });
+  }
+});
+
+app.get('/api/v1/cert/:xid', async (req, res) => {
+  try {
+    const cert = await getCert(req.params.xid);
+    res.json(cert);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(404).json({ message: 'Cert not found' });
   }
 });
 

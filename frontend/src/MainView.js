@@ -23,7 +23,7 @@ const MainView = ({ navigate }) => {
     }, [navigate]);
 
     if (!profiles) {
-        return <p>Loading...</p>;
+        return <p></p>;
     }
 
     return (

@@ -11,6 +11,7 @@ import ProfileHeader from './ProfileHeader';
 import ProfileView from './ProfileView';
 import CollectionView from './CollectionView';
 import AdminView from './AdminView';
+import CertView from './CertView';
 
 import './App.css';
 
@@ -20,6 +21,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/admin/" element={<ViewAdmin />} />
+        <Route path="/cert/:xid" element={<ViewCert />} />
         <Route path="/profile/" element={<ViewLogin />} />
         <Route path="/profile/:userId" element={<ViewProfile />} />
         <Route path="/profile/edit/:jump?" element={<EditProfile />} />
@@ -237,6 +239,27 @@ function ViewAdmin() {
           <AdminView
             navigate={navigate}
             isAuthenticated={isAuthenticated} />
+        </header>
+      </div>
+    </ThemeProvider>
+  );
+}
+
+function ViewCert() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const navigate = useNavigate();
+
+  return (
+    <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
+      <div className="App">
+        <AppHeader
+          isAuthenticated={isAuthenticated}
+          setIsAuthenticated={setIsAuthenticated}
+          navigate={navigate}
+        />
+        <header className="App-header">
+          <CertView navigate={navigate} />
         </header>
       </div>
     </ThemeProvider>

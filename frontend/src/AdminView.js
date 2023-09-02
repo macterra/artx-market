@@ -307,7 +307,7 @@ const AdminView = ({ navigate }) => {
                                 </TableRow>
                                 <TableRow>
                                     <TableCell>Certificate</TableCell>
-                                    <TableCell>{admin.latest}</TableCell>
+                                    <TableCell><a href={`/cert/${admin.latest}`}>{admin.latest}</a></TableCell>
                                 </TableRow>
                                 {admin.pending &&
                                     <TableRow>
