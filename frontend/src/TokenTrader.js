@@ -72,6 +72,7 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
 
             if (response.ok) {
                 nft.nft.price = nft.nft.newPrice;
+                setRefreshKey((prevKey) => prevKey + 1);
             } else {
                 const data = await response.json();
                 console.error('Error listing:', data.message);
