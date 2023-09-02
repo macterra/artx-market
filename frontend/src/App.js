@@ -150,6 +150,10 @@ function ViewCollection() {
     fetchProfile();
   });
 
+  if (!userId) {
+    return;
+  }
+
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />

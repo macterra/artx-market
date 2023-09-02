@@ -45,7 +45,7 @@ const TokenHistory = ({ metadata }) => {
                     const response = await fetch(`/api/v1/profile/${record.creator}`);
                     const creator = await response.json();
 
-                    if (metadata.token.editions == 1) {
+                    if (metadata.token.editions === 1) {
                         setMessage(`${creator.name} minted a single edition.`);
                     }
                     else {
@@ -60,7 +60,7 @@ const TokenHistory = ({ metadata }) => {
                     const response2 = await fetch(`/api/v1/asset/${record.edition}`);
                     const edition = await response2.json();
 
-                    if (record.price == 0) {
+                    if (record.price === 0) {
                         setMessage(`${seller.name} delisted edition ${edition.asset.title}.`);
                     }
                     else {
