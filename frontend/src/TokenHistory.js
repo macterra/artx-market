@@ -60,7 +60,12 @@ const TokenHistory = ({ metadata }) => {
                     const response2 = await fetch(`/api/v1/asset/${record.edition}`);
                     const edition = await response2.json();
 
-                    setMessage(`${seller.name} listed edition ${edition.asset.title} for ${record.price} sats.`)
+                    if (record.price == 0) {
+                        setMessage(`${seller.name} delisted edition ${edition.asset.title}.`);
+                    }
+                    else {
+                        setMessage(`${seller.name} listed edition ${edition.asset.title} for ${record.price} sats.`);
+                    }
                 }
 
                 if (record.type === 'sale') {
@@ -73,7 +78,7 @@ const TokenHistory = ({ metadata }) => {
                     const response3 = await fetch(`/api/v1/asset/${record.edition}`);
                     const edition = await response3.json();
 
-                    setMessage(`${seller.name} sold edition ${edition.asset.title} to ${buyer.name} for ${record.price} sats.`)
+                    setMessage(`${seller.name} sold edition ${edition.asset.title} to ${buyer.name} for ${record.price} sats.`);
                 }
 
                 setTime(record.time);
