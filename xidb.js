@@ -514,6 +514,25 @@ const fixAgent = async (xid) => {
     }
 };
 
+const createAgent = async () => {
+    agentData = {
+        xid: agentId,
+        pubkey: key,
+        name: 'anon',
+        tagline: '',
+        description: '',
+        collections: [],
+        credits: config.credits,
+    };
+
+    await saveAgent(agentData);
+
+    const gallery = await createCollection(agentId, 'gallery');
+    await saveCollection(gallery);
+
+    return agentData;
+};
+
 const getAgentFromKey = async (key) => {
     const keyPath = path.join(config.id, 'pubkey.json');
     let keyData = {};
@@ -532,20 +551,7 @@ const getAgentFromKey = async (key) => {
     let agentData = await getAgent(agentId);
 
     if (!agentData) {
-
-        agentData = {
-            xid: agentId,
-            pubkey: key,
-            name: 'anon',
-            tagline: '',
-            description: '',
-            collections: [],
-        };
-
-        await saveAgent(agentData);
-
-        const gallery = await createCollection(agentId, 'gallery');
-        await saveCollection(gallery);
+        agentData = await createAgent();
     }
 
     return agentData;
