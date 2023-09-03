@@ -7,12 +7,13 @@ from datetime import datetime
 import authorizer
 
 app = Flask(__name__)
-repo = Repo('data')
 
 try:
-    repo.init()
+    Repo.init('data')
 except GitCommandError as error:
     print(f"git error {str(error)}")
+
+repo = Repo('data')
 
 @app.route('/api/v1/ready', methods=['GET'])
 def ready():
