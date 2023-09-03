@@ -256,9 +256,11 @@ const AdminView = ({ navigate }) => {
 
     if (!admin.owner) {
         return (
-            <Button variant="contained" color="primary" onClick={handleClaim}>
-                Claim Admin
-            </Button>
+            <Box>
+                <Button variant="contained" color="primary" onClick={handleClaim}>
+                    Claim Admin
+                </Button>
+            </Box>
         )
     }
 
