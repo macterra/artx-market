@@ -514,9 +514,9 @@ const fixAgent = async (xid) => {
     }
 };
 
-const createAgent = async () => {
+const createAgent = async (key) => {
     agentData = {
-        xid: agentId,
+        xid: uuidv4(),
         pubkey: key,
         name: 'anon',
         tagline: '',
@@ -527,7 +527,7 @@ const createAgent = async () => {
 
     await saveAgent(agentData);
 
-    const gallery = await createCollection(agentId, 'gallery');
+    const gallery = await createCollection(agentData.xid, 'gallery');
     await saveCollection(gallery);
 
     return agentData;
@@ -543,16 +543,13 @@ const getAgentFromKey = async (key) => {
     }
 
     if (!(key in keyData)) {
-        keyData[key] = uuidv4();
+        const newAgent = await createAgent(key);
+        keyData[key] = newAgent.xid;
         await fs.promises.writeFile(keyPath, JSON.stringify(keyData, null, 2));
     }
 
     const agentId = keyData[key];
-    let agentData = await getAgent(agentId);
-
-    if (!agentData) {
-        agentData = await createAgent();
-    }
+    const agentData = await getAgent(agentId);
 
     return agentData;
 };
