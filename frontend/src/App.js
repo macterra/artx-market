@@ -152,10 +152,6 @@ function ViewCollection() {
     fetchProfile();
   });
 
-  if (!userId) {
-    return;
-  }
-
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
@@ -167,8 +163,12 @@ function ViewCollection() {
         />
         <header className="App-header">
           <Box display="flex" flexDirection="column" flexGrow={1}>
-            <ProfileHeader navigate={navigate} userId={userId} />
-            <CollectionView navigate={navigate} />
+            {userId &&
+              <>
+                <ProfileHeader navigate={navigate} userId={userId} />
+                <CollectionView navigate={navigate} />
+              </>
+            }
           </Box>
         </header>
       </div>
