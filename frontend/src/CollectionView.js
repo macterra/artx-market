@@ -76,10 +76,11 @@ const CollectionView = ({ navigate }) => {
                     <span style={{ fontSize: '14px' }}>Upload:
                         <input type="file" name="images" accept="image/*" multiple onChange={handleUpload} disabled={disableUpload} />
                     </span>
-                    <span style={{ fontSize: '14px' }}>Credits: { credits }</span>
-                    <Button variant="contained" color="primary" onClick={handleAddCredits}>
-                        Add Credits
-                    </Button>
+                    {disableUpload &&
+                        <Button variant="contained" color="primary" onClick={() => navigate('/profile/edit/credits')}>
+                            Credits: {credits}
+                        </Button>
+                    }
                 </Box>
             }
             <ImageGrid collection={collection.collection.assets} />
