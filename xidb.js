@@ -878,7 +878,7 @@ function gitHash(fileBuffer) {
 }
 
 const createAssets = async (userId, files, collectionId) => {
-    const collectionData = await getAsset(collectionId);
+    const collectionData = await getCollection(collectionId, userId);
     const defaultTitle = collectionData.collection.default.title;
     let collectionCount = collectionData.collection.assets.length;
     let uploadSize = 0;
