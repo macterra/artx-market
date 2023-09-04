@@ -15,6 +15,7 @@ const config = {
     agents: 'data/agents',
     certs: 'data/certs',
     id: 'data/id',
+    defaultPfp: 'data/defaultPfp.png',
     credits: 10000,
     uploadRate: process.env.STORAGE_RATE || 0.0001,
     storageRate: process.env.STORAGE_RATE || 0.001,
@@ -514,9 +515,27 @@ const fixAgent = async (xid) => {
     }
 };
 
+function getFileObject(filePath) {
+    try {
+        const contents = fs.readFileSync(filePath);
+        return {
+            path: filePath,
+            originalname: path.basename(filePath),
+            encoding: '7bit', // This is a default value. Actual encoding may vary.
+            mimetype: 'application/octet-stream', // This is a default value. Actual MIME type may vary.
+            size: contents.length,
+            buffer: contents
+        };
+    } catch (error) {
+        console.error('Error reading file:', error);
+        return null;
+    }
+}
+
 const createAgent = async (key) => {
+    const userId = uuidv4();
     agentData = {
-        xid: uuidv4(),
+        xid: userId,
         pubkey: key,
         name: 'anon',
         tagline: '',
@@ -527,8 +546,20 @@ const createAgent = async (key) => {
 
     await saveAgent(agentData);
 
-    const gallery = await createCollection(agentData.xid, 'gallery');
+    const gallery = await createCollection(userId, 'gallery');
     await saveCollection(gallery);
+    agentData = await getAgent(userId);
+
+    if (fs.existsSync(config.defaultPfp)) {
+        const pfpName = path.basename(config.defaultPfp);
+        const pfpPath = path.join(config.uploads, pfpName);
+        fs.copyFileSync(config.defaultPfp, pfpPath);
+        const file = getFileObject(pfpPath);
+        const assetData = await createAsset(file, "default pfp", userId, gallery.xid);
+
+        agentData.pfp = assetData.file.path;
+        await saveAgent(agentData);
+    }
 
     return agentData;
 };
@@ -546,6 +577,7 @@ const getAgentFromKey = async (key) => {
         const newAgent = await createAgent(key);
         keyData[key] = newAgent.xid;
         await fs.promises.writeFile(keyPath, JSON.stringify(keyData, null, 2));
+        await commitChanges(`new agent ${newAgent.xid}`);
     }
 
     const agentId = keyData[key];
@@ -877,6 +909,57 @@ function gitHash(fileBuffer) {
     return hasher.digest('hex');
 }
 
+const createAsset = async (file, title, userId, collectionId) => {
+    const xid = uuidv4();
+
+    // Calculate the Git hash
+    const fileBuffer = fs.readFileSync(file.path);
+    const fileHash = gitHash(fileBuffer);
+
+    // Create the subfolder
+    const assetFolder = path.join(config.assets, xid);
+    if (!fs.existsSync(assetFolder)) {
+        fs.mkdirSync(assetFolder);
+    }
+
+    // Move the file to the subfolder and rename it to "_"
+    const assetName = '_' + path.extname(file.originalname);
+    const newPath = path.join(assetFolder, assetName);
+    fs.renameSync(file.path, newPath);
+
+    // Get image metadata using sharp
+    const imageMetadata = await sharp(newPath).metadata();
+
+    // Create the metadata object
+    const metadata = {
+        xid: xid,
+        asset: {
+            owner: userId,
+            title: title,
+            created: new Date().toISOString(),
+            updated: new Date().toISOString(),
+            collection: collectionId,
+        },
+        file: {
+            fileName: assetName,
+            size: file.size,
+            hash: fileHash,
+            path: `/${config.assets}/${xid}/${assetName}`,
+        },
+        image: {
+            width: imageMetadata.width,
+            height: imageMetadata.height,
+            depth: imageMetadata.depth,
+            format: imageMetadata.format,
+        }
+    };
+
+    await saveAsset(metadata);
+    await agentAddAsset(metadata);
+
+    return metadata;
+};
+
 const createAssets = async (userId, files, collectionId) => {
     const collectionData = await getCollection(collectionId, userId);
     const defaultTitle = collectionData.collection.default.title;
@@ -884,26 +967,6 @@ const createAssets = async (userId, files, collectionId) => {
     let uploadSize = 0;
 
     for (const file of files) {
-        const xid = uuidv4();
-
-        // Calculate the Git hash
-        const fileBuffer = fs.readFileSync(file.path);
-        const fileHash = gitHash(fileBuffer);
-
-        // Create the subfolder
-        const assetFolder = path.join(config.assets, xid);
-        if (!fs.existsSync(assetFolder)) {
-            fs.mkdirSync(assetFolder);
-        }
-
-        // Move the file to the subfolder and rename it to "_"
-        const assetName = '_' + path.extname(file.originalname);
-        const newPath = path.join(assetFolder, assetName);
-        fs.renameSync(file.path, newPath);
-
-        // Get image metadata using sharp
-        const imageMetadata = await sharp(newPath).metadata();
-
         let title = 'untitled';
 
         if (defaultTitle) {
@@ -911,34 +974,8 @@ const createAssets = async (userId, files, collectionId) => {
             title = defaultTitle.replace("%N%", collectionCount);
         }
 
-        // Create the metadata object
-        const metadata = {
-            xid: xid,
-            asset: {
-                owner: userId,
-                title: title,
-                created: new Date().toISOString(),
-                updated: new Date().toISOString(),
-                collection: collectionId,
-            },
-            file: {
-                fileName: assetName,
-                size: file.size,
-                hash: fileHash,
-                path: `/${config.assets}/${xid}/${assetName}`,
-            },
-            image: {
-                width: imageMetadata.width,
-                height: imageMetadata.height,
-                depth: imageMetadata.depth,
-                format: imageMetadata.format,
-            }
-        };
-
+        const assetData = await createAsset(file, title, userId, collectionId);
         uploadSize += file.size;
-
-        await saveAsset(metadata);
-        await agentAddAsset(metadata);
     }
 
     await commitChanges(`Assets (${files.length}) created by ${userId}`);
