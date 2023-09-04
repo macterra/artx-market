@@ -127,10 +127,15 @@ passport.deserializeUser(function (key, done) {
 passport.use(new LnurlAuth.Strategy(async function (linkingPublicKey, done) {
   let user = map.user.get(linkingPublicKey);
   if (!user) {
-    const agentData = await getAgentFromKey(linkingPublicKey);
-    console.log(`passport ${linkingPublicKey} ${agentData.xid}`);
-    user = { key: linkingPublicKey, xid: agentData.xid, };
-    map.user.set(linkingPublicKey, user);
+    try {
+      const agentData = await getAgentFromKey(linkingPublicKey);
+      console.log(`passport ${linkingPublicKey} ${agentData.xid}`);
+      user = { key: linkingPublicKey, xid: agentData.xid, };
+      map.user.set(linkingPublicKey, user);
+    }
+    catch (error) {
+      console.log(`error logging in ${error}`);
+    }
   }
   done(null, user);
 }));
