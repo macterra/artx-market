@@ -20,6 +20,10 @@ const ImageGrid = ({ collection }) => {
         return <p>Loading images...</p>;
     }
 
+    if (images.length === 0) {
+        return <p>0 items</p>;
+    }
+
     const imageCardStyle = {
         margin: '8px', // Add a margin around the ImageCard components
         textDecoration: 'none', // Remove the text decoration from the Link component
