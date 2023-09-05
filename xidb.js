@@ -2,7 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const sharp = require('sharp');
 const crypto = require('crypto');
-const { v4: uuidv4 } = require('uuid');
+const { v4: uuidv4, v5: uuidv5 } = require('uuid');
 const { rimrafSync } = require('rimraf')
 
 const config = {
@@ -533,7 +533,11 @@ function getFileObject(filePath) {
 }
 
 const createAgent = async (key) => {
-    const userId = uuidv4();
+
+    const dns_ns = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
+    const artx_ns = uuidv5('artx.market', dns_ns);
+    const userId = uuidv5(key.toString(), artx_ns);
+
     agentData = {
         xid: userId,
         pubkey: key,
