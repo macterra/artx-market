@@ -11,6 +11,7 @@ const CollectionView = ({ navigate }) => {
     const [refreshKey, setRefreshKey] = useState(0);
     const [credits, setCredits] = useState(0);
     const [disableUpload, setDisableUpload] = useState(null);
+    const [uploadRate, setUploadRate] = useState(0);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -21,6 +22,9 @@ const CollectionView = ({ navigate }) => {
                 if (!collectionData.error) {
                     setCollection(collectionData);
                 }
+
+                const rates = await axios.get('/api/v1/rates');
+                setUploadRate(rates.data.uploadRate * 1000000);
 
                 const profile = await axios.get('/api/v1/profile');
                 const credits = profile.data.credits;
@@ -63,10 +67,6 @@ const CollectionView = ({ navigate }) => {
         }
     };
 
-    const handleAddCredits = async () => {
-        navigate('/profile/edit/credits');
-    };
-
     return (
         <>
             <span>{collection.asset.title}</span>
@@ -76,6 +76,7 @@ const CollectionView = ({ navigate }) => {
                     <span style={{ fontSize: '14px' }}>Upload:
                         <input type="file" name="images" accept="image/*" multiple onChange={handleUpload} disabled={disableUpload} />
                     </span>
+                    <span style={{ fontSize: '14px' }}>(uploads cost {uploadRate} credits/MB)</span>
                     {disableUpload &&
                         <Button variant="contained" color="primary" onClick={() => navigate('/profile/edit/credits')}>
                             Credits: {credits}

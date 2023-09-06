@@ -60,6 +60,7 @@ const config = {
   txnFeeRate: process.env.TXN_FEE_RATE || 0.025,
   storageRate: process.env.STORAGE_RATE || 0.001,
   editionRate: process.env.EDITION_RATE || 100,
+  uploadRate: process.env.STORAGE_RATE || 0.0001,
   data: 'data',
   uploads: 'data/uploads',
   assets: 'data/assets',
@@ -222,6 +223,7 @@ app.get('/api/v1/rates', async (req, res) => {
     const xrData = await xrResp.json();
     xrData.storageRate = config.storageRate;
     xrData.editionRate = config.editionRate;
+    xrData.uploadRate = config.uploadRate;
     res.json(xrData);
   } catch (error) {
     console.error('Error:', error);
