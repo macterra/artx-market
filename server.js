@@ -6,11 +6,11 @@ const passport = require('passport');
 const LnurlAuth = require('passport-lnurl-auth');
 const session = require('express-session');
 const morgan = require('morgan');
-const dotenv = require('dotenv');
 const cron = require('node-cron');
 const { requestInvoice } = require('lnurl-pay');
 const axios = require('axios');
 
+const config = require('./config');
 const { createCharge, checkCharge, sendPayment } = require('./satspay');
 const {
   getAdmin,
@@ -49,24 +49,6 @@ const {
 const { log } = require('console');
 
 const app = express();
-
-dotenv.config();
-
-const config = {
-  host: process.env.ARTX_HOST || 'localhost',
-  port: process.env.ARTX_PORT || 5000,
-  ipfs: process.env.IPFS_HOST || 'localhost',
-  depositAddress: process.env.TXN_FEE_DEPOSIT,
-  txnFeeRate: process.env.TXN_FEE_RATE || 0.025,
-  storageRate: process.env.STORAGE_RATE || 0.001,
-  editionRate: process.env.EDITION_RATE || 100,
-  uploadRate: process.env.STORAGE_RATE || 0.0001,
-  data: 'data',
-  uploads: 'data/uploads',
-  assets: 'data/assets',
-  agents: 'data/agents',
-  id: 'data/id',
-};
 
 config.url = 'http://' + config.host + ':' + config.port;
 

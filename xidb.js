@@ -4,23 +4,7 @@ const sharp = require('sharp');
 const crypto = require('crypto');
 const { v4: uuidv4, v5: uuidv5 } = require('uuid');
 const { rimrafSync } = require('rimraf')
-
-const config = {
-    host: process.env.ARTX_HOST || 'localhost',
-    port: process.env.ARTX_PORT || 5000,
-    archiver: process.env.ARCHIVER || 'http://localhost:5115',
-    data: 'data',
-    uploads: 'data/uploads',
-    assets: 'data/assets',
-    agents: 'data/agents',
-    certs: 'data/certs',
-    id: 'data/id',
-    defaultPfp: 'data/defaultPfp.png',
-    credits: 10000,
-    uploadRate: process.env.STORAGE_RATE || 0.0001,
-    storageRate: process.env.STORAGE_RATE || 0.001,
-    editionRate: process.env.EDITION_RATE || 100,
-};
+const config = require('./config');
 
 // Function to add all changes, commit, and push
 const commitChanges = async (commitMessage) => {
@@ -503,11 +487,6 @@ const fixAgent = async (xid) => {
         }
     }
 
-    if (!agentData.credits) {
-        agentData.credits = config.credits;
-        await saveAgent(agentData);
-    }
-
     return {
         xid: xid,
         fixed: true,
@@ -535,7 +514,7 @@ function getFileObject(filePath) {
 const createAgent = async (key) => {
 
     const dns_ns = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
-    const artx_ns = uuidv5('artx.market', dns_ns);
+    const artx_ns = uuidv5(config.host, dns_ns);
     const userId = uuidv5(key.toString(), artx_ns);
 
     agentData = {
@@ -545,7 +524,7 @@ const createAgent = async (key) => {
         tagline: '',
         description: '',
         collections: [],
-        credits: config.credits,
+        credits: config.initialCredits,
     };
 
     await saveAgent(agentData);
