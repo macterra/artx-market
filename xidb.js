@@ -944,12 +944,23 @@ const createAsset = async (file, title, userId, collectionId) => {
 };
 
 const createAssets = async (userId, files, collectionId) => {
+    const agentData = await getAgent(userId);
     const collectionData = await getCollection(collectionId, userId);
     const defaultTitle = collectionData.collection.default.title;
+
     let collectionCount = collectionData.collection.assets.length;
     let uploadSize = 0;
+    let uploadFiles = 0;
 
     for (const file of files) {
+        const uploadFee = Math.round(file.size * config.uploadRate);
+
+        if (agentData.credits < uploadFee) {
+            continue;
+        }
+
+        agentData.credits -= uploadFee;
+
         let title = 'untitled';
 
         if (defaultTitle) {
@@ -959,14 +970,19 @@ const createAssets = async (userId, files, collectionId) => {
 
         const assetData = await createAsset(file, title, userId, collectionId);
         uploadSize += file.size;
+        uploadFiles += 1;
     }
 
-    await commitChanges(`Assets (${files.length}) created by ${userId}`);
+    if (uploadFiles > 0) {
+        await commitChanges(`Assets (${uploadFiles}) created by ${userId}`);
+        await saveAgent(agentData);
+    }
 
-    const agentData = await getAgent(userId);
-    const uploadFee = Math.round(uploadSize * config.uploadRate);
-    agentData.credits -= uploadFee;
-    await saveAgent(agentData);
+    return {
+        'filesUploaded': uploadFiles,
+        'bytesUploaded': uploadSize,
+        'creditsDebited': creditsDebited,
+    }
 };
 
 const createEdition = async (owner, asset, edition, editions) => {

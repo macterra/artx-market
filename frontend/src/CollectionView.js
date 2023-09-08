@@ -11,7 +11,7 @@ const CollectionView = ({ navigate }) => {
     const [refreshKey, setRefreshKey] = useState(0);
     const [credits, setCredits] = useState(0);
     const [disableUpload, setDisableUpload] = useState(null);
-    const [uploadRate, setUploadRate] = useState(0);
+    const [budget, setBudget] = useState(0);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -24,13 +24,14 @@ const CollectionView = ({ navigate }) => {
                 }
 
                 const rates = await axios.get('/api/v1/rates');
-                setUploadRate(rates.data.uploadRate * 1000000);
+                const uploadRate = rates.data.uploadRate;
 
                 const profile = await axios.get('/api/v1/profile');
                 const credits = profile.data.credits;
 
                 setCredits(credits);
-                setDisableUpload(credits < 1);
+                setDisableUpload(credits < 1000);
+                setBudget(credits / uploadRate);
             } catch (error) {
                 console.error('Error fetching profile data:', error);
             }
@@ -76,7 +77,7 @@ const CollectionView = ({ navigate }) => {
                     <span style={{ fontSize: '14px' }}>Upload:
                         <input type="file" name="images" accept="image/*" multiple onChange={handleUpload} disabled={disableUpload} />
                     </span>
-                    <span style={{ fontSize: '14px' }}>(uploads cost {uploadRate} credits/MB)</span>
+                    <span style={{ fontSize: '14px' }}>You have enough credits to upload {budget} bytes.</span>
                     {disableUpload &&
                         <Button variant="contained" color="primary" onClick={() => navigate('/profile/edit/credits')}>
                             Credits: {credits}
