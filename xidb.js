@@ -949,17 +949,22 @@ const createAssets = async (userId, files, collectionId) => {
     const defaultTitle = collectionData.collection.default.title;
 
     let collectionCount = collectionData.collection.assets.length;
-    let uploadSize = 0;
-    let uploadFiles = 0;
+    let bytesUploaded = 0;
+    let filesUploaded = 0;
+    let filesSkipped = 0;
+    let creditsDebited = 0;
 
     for (const file of files) {
         const uploadFee = Math.round(file.size * config.uploadRate);
 
         if (agentData.credits < uploadFee) {
+            fs.unlinkSync(file.path);
+            filesSkipped += 1;
             continue;
         }
 
         agentData.credits -= uploadFee;
+        creditsDebited += uploadFee;
 
         let title = 'untitled';
 
@@ -969,18 +974,20 @@ const createAssets = async (userId, files, collectionId) => {
         }
 
         const assetData = await createAsset(file, title, userId, collectionId);
-        uploadSize += file.size;
-        uploadFiles += 1;
+        bytesUploaded += file.size;
+        filesUploaded += 1;
     }
 
-    if (uploadFiles > 0) {
-        await commitChanges(`Assets (${uploadFiles}) created by ${userId}`);
+    if (filesUploaded > 0) {
+        await commitChanges(`Assets (${filesUploaded}) created by ${userId}`);
         await saveAgent(agentData);
     }
 
     return {
-        'filesUploaded': uploadFiles,
-        'bytesUploaded': uploadSize,
+        'ok': true,
+        'filesUploaded': filesUploaded,
+        'filesSkipped': filesSkipped,
+        'bytesUploaded': bytesUploaded,
         'creditsDebited': creditsDebited,
     }
 };

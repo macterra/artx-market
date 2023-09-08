@@ -881,14 +881,12 @@ app.delete('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => 
 app.post('/api/v1/collections/:xid/upload', ensureAuthenticated, upload.array('images', 100), async (req, res) => {
   try {
     const collectionId = req.params.xid;
+    const upload = await createAssets(req.user.xid, req.files, collectionId);
 
-    await createAssets(req.user.xid, req.files, collectionId);
-
-    // Send a success response after processing all files
-    res.status(200).json({ success: true, message: 'Files uploaded successfully' });
+    res.status(200).json(upload);
   } catch (error) {
     console.error('Error processing files:', error);
-    res.status(500).json({ success: false, message: 'Error processing files' });
+    res.status(500).json({ message: 'Error processing files' });
   }
 });
 

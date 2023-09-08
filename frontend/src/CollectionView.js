@@ -30,8 +30,10 @@ const CollectionView = ({ navigate }) => {
                 const credits = profile.data.credits;
 
                 setCredits(credits);
-                setDisableUpload(credits < 1000);
-                setBudget(credits / uploadRate);
+                setDisableUpload(credits < 1);
+
+                const budget = credits / uploadRate / 1000000;
+                setBudget(budget.toFixed(2));
             } catch (error) {
                 console.error('Error fetching profile data:', error);
             }
@@ -60,8 +62,20 @@ const CollectionView = ({ navigate }) => {
 
             const data = await response.json();
 
-            if (data.success) {
-                setRefreshKey((prevKey) => prevKey + 1); // Increment refreshKey after a successful upload
+            if (data.ok) {
+                if (data.filesUploaded > 0) {
+                    const mb = data.bytesUploaded / 1000000;
+                    alert(`You were debited ${data.creditsDebited} credits to upload ${data.filesUploaded} files (${mb.toFixed(2)} MB)`);              
+                    setRefreshKey((prevKey) => prevKey + 1);
+                } 
+                if (data.filesSkipped) {
+                    if (data.filesSkipped === 1) {
+                        alert(`1 file was skipped due to insufficient credits.`);
+                    }
+                    else {
+                        alert(`${data.filesSkipped} files were skipped due to insufficient credits.`);
+                    }
+                }
             }
         } catch (error) {
             console.error('Error uploading image:', error);
@@ -77,7 +91,7 @@ const CollectionView = ({ navigate }) => {
                     <span style={{ fontSize: '14px' }}>Upload:
                         <input type="file" name="images" accept="image/*" multiple onChange={handleUpload} disabled={disableUpload} />
                     </span>
-                    <span style={{ fontSize: '14px' }}>You have enough credits to upload {budget} bytes.</span>
+                    <span style={{ fontSize: '14px' }}>You have {credits} credits, enought to upload {budget} MB.</span>
                     {disableUpload &&
                         <Button variant="contained" color="primary" onClick={() => navigate('/profile/edit/credits')}>
                             Credits: {credits}
