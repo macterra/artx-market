@@ -65,10 +65,10 @@ const CollectionView = ({ navigate, setRefreshProfile }) => {
             if (data.ok) {
                 if (data.filesUploaded > 0) {
                     const mb = data.bytesUploaded / 1000000;
-                    alert(`You were debited ${data.creditsDebited} credits to upload ${data.filesUploaded} files (${mb.toFixed(2)} MB)`);              
+                    alert(`You were debited ${data.creditsDebited} credits to upload ${data.filesUploaded} files (${mb.toFixed(2)} MB)`);
                     setRefreshKey((prevKey) => prevKey + 1);
                     setRefreshProfile((prevKey) => prevKey + 1);
-                } 
+                }
                 if (data.filesSkipped) {
                     if (data.filesSkipped === 1) {
                         alert(`1 file was skipped due to insufficient credits.`);
@@ -92,7 +92,7 @@ const CollectionView = ({ navigate, setRefreshProfile }) => {
                     <span style={{ fontSize: '14px' }}>Upload:
                         <input type="file" name="images" accept="image/*" multiple onChange={handleUpload} disabled={disableUpload} />
                     </span>
-                    <span style={{ fontSize: '14px' }}>You have {credits} credits, enought to upload {budget} MB.</span>
+                    <span style={{ fontSize: '14px' }}>You have {credits} credits, enough to upload {budget} MB.</span>
                     {disableUpload &&
                         <Button variant="contained" color="primary" onClick={() => navigate('/profile/edit/credits')}>
                             Credits: {credits}
