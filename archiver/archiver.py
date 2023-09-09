@@ -81,8 +81,8 @@ def register():
 
     return jsonify({'txid': txid})
 
-@app.route('/api/v1/peg', methods=['POST'])
-def peg():
+@app.route('/api/v1/notarize', methods=['POST'])
+def notarize():
     data = request.get_json()
 
     if not data or 'cid' not in data:

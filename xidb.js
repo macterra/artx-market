@@ -96,14 +96,14 @@ const pegState = async (adminState) => {
 
     adminState = await saveAdmin(adminState);
 
-    const response = await fetch(`${config.archiver}/api/v1/peg`, {
+    const response = await fetch(`${config.archiver}/api/v1/notarize`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', },
         body: JSON.stringify({ cid: adminState.cid }),
     });
 
-    const peg = await response.json();
-    adminState.pending = peg.txid;
+    const notarize = await response.json();
+    adminState.pending = notarize.txid;
 
     const jsonPath = path.join(config.data, 'meta.json');
     await fs.promises.writeFile(jsonPath, JSON.stringify(adminState, null, 2));

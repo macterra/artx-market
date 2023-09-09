@@ -66,13 +66,13 @@ const AdminView = ({ navigate }) => {
     const handlePeg = async () => {
         setDisableButton(true);
         try {
-            const response = await fetch('/api/v1/admin/peg');
+            const response = await fetch('/api/v1/admin/notarize');
             const admin = await response.json();
             if (admin.pending) {
                 setAdmin(admin);
             }
             else {
-                alert("Peg failed");
+                alert("notarize failed");
             }
         } catch (error) {
             console.error('Error fetching admin data:', error);
@@ -332,7 +332,7 @@ const AdminView = ({ navigate }) => {
                             {admin.latest ? (
                                 <Grid item>
                                     <Button variant="contained" color="primary" onClick={handlePeg} disabled={admin.pending || disableButton}>
-                                        Peg State
+                                        Notarize State
                                     </Button>
                                 </Grid>
                             ) : (

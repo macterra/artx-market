@@ -295,7 +295,7 @@ app.get('/api/v1/admin/register', ensureAuthenticated, async (req, res) => {
   }
 });
 
-app.get('/api/v1/admin/peg', ensureAuthenticated, async (req, res) => {
+app.get('/api/v1/admin/notarize', ensureAuthenticated, async (req, res) => {
   try {
     const adminData = await getAdmin();
 
@@ -946,12 +946,12 @@ cron.schedule('* * * * *', async () => {
   }
 });
 
-// Peg market state at midnight
+// Notarize market state at midnight
 cron.schedule('0 0 * * *', async () => {
   const adminData = await getAdmin();
   if (!adminData.pending) {
-    console.log(`Pegging market state...`);
-    const savedAdmin = await pegState(adminData);
+    console.log(`Notarizing market state...`);
+    const savedAdmin = await notarizeState(adminData);
     if (savedAdmin.pending) {
       console.log(`Pending txn ${adminData.pending}`);
     }

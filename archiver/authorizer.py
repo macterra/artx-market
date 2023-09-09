@@ -43,7 +43,7 @@ class AuthTx():
         except:
             # print('cid parser fail')
             return False
-        
+
         self.meta = getMeta(self.cid)
 
         if self.meta and 'xid' in self.meta:
@@ -284,7 +284,7 @@ def get_cid():
         data = json.load(json_file)
     return data['cid']
 
-def peg():
+def notarize():
     authorizer = Authorizer()
     authorizer.authorize(get_cid())
 
@@ -299,7 +299,7 @@ def monitor():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Run a function.')
-    parser.add_argument('function', type=str, help='The function to run: register, peg, or monitor')
+    parser.add_argument('function', type=str, help='The function to run: register, notarize, or monitor')
 
     try:
         args = parser.parse_args()
@@ -310,13 +310,13 @@ if __name__ == "__main__":
             balance()
         elif args.function == 'fund':
             fund()
-        elif args.function == 'peg':
-            peg()
+        elif args.function == 'notarize':
+            notarize()
         elif args.function == 'register':
             register()
         elif args.function == 'monitor':
             monitor()
         else:
-            print(f'Unknown function: {args.function}. Please use "register", "peg", or "monitor".')
+            print(f'Unknown function: {args.function}. Please use "register", "notarize", or "monitor".')
     except:
         test()
