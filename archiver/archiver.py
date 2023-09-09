@@ -108,8 +108,22 @@ def certify():
 @app.route('/api/v1/walletinfo', methods=['GET'])
 def walletinfo():
     auth = authorizer.Authorizer()
+    auth.updateWallet()
+
     walletinfo = auth.getWalletinfo()
-    return jsonify(walletinfo)
+    fee = auth.getFee(3) * 255/1000
+    address = auth.getAddress()
+
+    info = {
+        "wallet": walletinfo,
+        "fee": "{:.8f}".format(fee),
+        "staked": auth.staked,
+        "balance": auth.balance,
+        "notarizations": auth.balance//fee,
+        "address": address
+    }
+
+    return jsonify(info)
 
 if __name__ == '__main__':
     port = int(os.getenv('ARC_PORT', 5115))

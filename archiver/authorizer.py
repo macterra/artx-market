@@ -68,8 +68,8 @@ class Authorizer:
     def getStake(self):
         return Decimal('0.00001111')
 
-    def getFee(self):
-        ret = self.blockchain.estimatesmartfee(3)
+    def getFee(self, blocks):
+        ret = self.blockchain.estimatesmartfee(blocks)
         return ret['feerate']
 
     def getWalletinfo(self):
@@ -151,7 +151,7 @@ class Authorizer:
                 print(f"can't find utxo for {xid}")
                 return
 
-        txfeeRate = self.getFee()
+        txfeeRate = self.getFee(3)
         txfee = txfeeRate * 255 / 1000 # expected size of 255 vBytes
 
         for funtxn in self.funds:
@@ -234,7 +234,7 @@ class Authorizer:
 
 def test():
     authorizer = Authorizer()
-    fee = authorizer.getFee()
+    fee = authorizer.getFee(3)
     print("fee", fee)
 
 def balance():
