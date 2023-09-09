@@ -104,6 +104,7 @@ function ViewLogin() {
 function ViewProfile() {
   const { userId } = useParams();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [refreshProfile, setRefreshProfile] = useState(null);
   const navigate = useNavigate();
 
   return (
@@ -117,8 +118,8 @@ function ViewProfile() {
         />
         <header className="App-header">
           <Box display="flex" flexDirection="column" flexGrow={1}>
-            <ProfileHeader navigate={navigate} userId={userId} />
-            <ProfileView navigate={navigate} />
+            <ProfileHeader navigate={navigate} userId={userId} refreshProfile={refreshProfile} />
+            <ProfileView navigate={navigate} setRefreshProfile={setRefreshProfile} />
           </Box>
         </header>
       </div>
@@ -129,6 +130,7 @@ function ViewProfile() {
 function ViewCollection() {
   const { xid } = useParams();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [refreshProfile, setRefreshProfile] = useState(null);
   const [userId, setUserId] = useState(null);
   const navigate = useNavigate();
 
@@ -165,8 +167,8 @@ function ViewCollection() {
           <Box display="flex" flexDirection="column" flexGrow={1}>
             {userId &&
               <>
-                <ProfileHeader navigate={navigate} userId={userId} />
-                <CollectionView navigate={navigate} />
+                <ProfileHeader navigate={navigate} userId={userId} refreshProfile={refreshProfile} />
+                <CollectionView navigate={navigate} setRefreshProfile={setRefreshProfile} />
               </>
             }
           </Box>

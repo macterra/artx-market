@@ -5,7 +5,7 @@ import axios from 'axios';
 import { Box, Button } from '@mui/material';
 import ImageGrid from './ImageGrid';
 
-const CollectionView = ({ navigate }) => {
+const CollectionView = ({ navigate, setRefreshProfile }) => {
     const { xid } = useParams();
     const [collection, setCollection] = useState(null);
     const [refreshKey, setRefreshKey] = useState(0);
@@ -67,6 +67,7 @@ const CollectionView = ({ navigate }) => {
                     const mb = data.bytesUploaded / 1000000;
                     alert(`You were debited ${data.creditsDebited} credits to upload ${data.filesUploaded} files (${mb.toFixed(2)} MB)`);              
                     setRefreshKey((prevKey) => prevKey + 1);
+                    setRefreshProfile((prevKey) => prevKey + 1);
                 } 
                 if (data.filesSkipped) {
                     if (data.filesSkipped === 1) {

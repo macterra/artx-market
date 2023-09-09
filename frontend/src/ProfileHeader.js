@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Button } from '@mui/material';
 
-const ProfileHeader = ({ navigate, userId }) => {
+const ProfileHeader = ({ navigate, userId, refreshProfile }) => {
     const [profile, setProfile] = useState(null);
 
     useEffect(() => {
@@ -17,7 +17,7 @@ const ProfileHeader = ({ navigate, userId }) => {
         };
 
         fetchProfile();
-    }, [userId]);
+    }, [userId, refreshProfile]);
 
     if (!profile) {
         return <p>...</p>;
