@@ -182,41 +182,7 @@ class Authorizer:
         txid = self.blockchain.sendrawtransaction(sigtxn['hex'])
         print('txid', txid)
 
-        txnlog = self.read_txnlog()
-        txnlog['pending'] = txid
-        self.write_txnlog(txnlog)
-
         return txid
-
-    def read_txnlog(self):
-        if os.path.exists('data/txnlog.json'):
-            with open("data/txnlog.json", 'r') as json_file:
-                txnlog = json.load(json_file)
-        else:
-            txnlog = {
-                "latest": "",
-                "pending": ""
-            }
-        return txnlog
-
-    def write_txnlog(self, txnlog):
-        with open('data/txnlog.json', 'w') as json_file:
-            json.dump(txnlog, json_file, indent=2)
-
-    def monitor(self):
-        txnlog = self.read_txnlog()
-        txid = txnlog['pending']
-        if txid:
-            print(txid)
-            tx = self.blockchain.getrawtransaction(txid, 1)
-            if 'blockhash' in tx:
-                cert = self.certify(tx)
-                txnlog['latest'] = cert
-                txnlog['pending'] = ""
-                self.write_txnlog(txnlog)
-                print(f"certified in {cert}")
-            else:
-                print("still pending...")
 
     def certify_tx(self, txid):
         tx = self.blockchain.getrawtransaction(txid, 1)
@@ -293,13 +259,9 @@ def register():
     authorizer.register = True
     authorizer.authorize(get_cid())
 
-def monitor():
-    authorizer = Authorizer()
-    authorizer.monitor()
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Run a function.')
-    parser.add_argument('function', type=str, help='The function to run: register, notarize, or monitor')
+    parser.add_argument('function', type=str, help='The function to run: register, notarize')
 
     try:
         args = parser.parse_args()
@@ -314,9 +276,7 @@ if __name__ == "__main__":
             notarize()
         elif args.function == 'register':
             register()
-        elif args.function == 'monitor':
-            monitor()
         else:
-            print(f'Unknown function: {args.function}. Please use "register", "notarize", or "monitor".')
+            print(f'Unknown function: {args.function}. Please use "register", "notarize".')
     except:
         test()
