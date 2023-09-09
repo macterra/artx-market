@@ -72,6 +72,9 @@ class Authorizer:
         ret = self.blockchain.estimatesmartfee(3)
         return ret['feerate']
 
+    def getWalletinfo(self):
+        return self.blockchain.getwalletinfo()
+
     def updateWallet(self):
         self.staked = 0
         self.balance = 0

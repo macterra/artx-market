@@ -10,6 +10,7 @@ const AdminView = ({ navigate }) => {
     const [logs, setLogs] = useState([]);
     const [invalidAssets, setInvalidAssets] = useState([]);
     const [invalidAgents, setInvalidAgents] = useState([]);
+    const [walletJson, setWalletJson] = useState(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -24,6 +25,14 @@ const AdminView = ({ navigate }) => {
                 const admin = await response.json();
                 setAdmin(admin);
                 setTab('state');
+
+                const walletResponse = await fetch(`/api/v1/admin/walletinfo`);
+
+                if (response.ok) {
+                    const walletinfo = await walletResponse.json();
+                    const walletJson = JSON.stringify(walletinfo, null, 2);
+                    setWalletJson(walletJson);
+                }
             } catch (error) {
                 console.error('Error fetching admin data:', error);
             }
@@ -63,7 +72,7 @@ const AdminView = ({ navigate }) => {
         setDisableButton(false);
     };
 
-    const handlePeg = async () => {
+    const handleNotarize = async () => {
         setDisableButton(true);
         try {
             const response = await fetch('/api/v1/admin/notarize');
@@ -278,6 +287,7 @@ const AdminView = ({ navigate }) => {
                 >
                     <Tab key="state" value="state" label={'State'} />
                     <Tab key="verify" value="verify" label={'Verify'} />
+                    <Tab key="wallet" value="wallet" label={'Wallet'} />
                 </Tabs>
                 {tab === 'state' &&
                     <Box>
@@ -331,7 +341,7 @@ const AdminView = ({ navigate }) => {
                             </Grid>
                             {admin.latest ? (
                                 <Grid item>
-                                    <Button variant="contained" color="primary" onClick={handlePeg} disabled={admin.pending || disableButton}>
+                                    <Button variant="contained" color="primary" onClick={handleNotarize} disabled={admin.pending || disableButton}>
                                         Notarize State
                                     </Button>
                                 </Grid>
@@ -389,6 +399,15 @@ const AdminView = ({ navigate }) => {
                                 </Grid>
                             }
                         </Grid>
+                    </Box>
+                }
+                {tab === 'wallet' &&
+                    <Box>
+                        <textarea
+                            value={walletJson}
+                            readOnly
+                            style={{ width: '600px', height: '400px', overflow: 'auto' }}
+                        />
                     </Box>
                 }
             </div>

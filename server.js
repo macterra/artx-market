@@ -16,8 +16,9 @@ const {
   getAdmin,
   saveAdmin,
   registerState,
-  pegState,
+  notarizeState,
   certifyState,
+  getWalletInfo,
   getAgentFromKey,
   getAgent,
   saveAgent,
@@ -311,7 +312,7 @@ app.get('/api/v1/admin/notarize', ensureAuthenticated, async (req, res) => {
       return res.status(500).json({ message: 'Authorization pending' });
     }
 
-    const savedAdmin = await pegState(adminData);
+    const savedAdmin = await notarizeState(adminData);
     res.json(savedAdmin);
   } catch (error) {
     console.error('Error reading metadata:', error);
@@ -336,6 +337,22 @@ app.get('/api/v1/admin/certify', ensureAuthenticated, async (req, res) => {
   } catch (error) {
     console.error('Error reading metadata:', error);
     res.status(404).json({ message: 'Asset not found' });
+  }
+});
+
+app.get('/api/v1/admin/walletinfo', ensureAuthenticated, async (req, res) => {
+  try {
+    const adminData = await getAdmin();
+
+    if (!adminData.owner || adminData.owner !== req.user.xid) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const walletinfo = await getWalletInfo();
+    res.json(walletinfo);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(404).json({ message: 'walletinfo not found' });
   }
 });
 

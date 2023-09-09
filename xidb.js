@@ -92,7 +92,7 @@ const registerState = async (adminState) => {
     return adminState;
 };
 
-const pegState = async (adminState) => {
+const notarizeState = async (adminState) => {
 
     adminState = await saveAdmin(adminState);
 
@@ -132,6 +132,12 @@ const certifyState = async (adminState) => {
     }
 
     return adminState;
+};
+
+const getWalletInfo = async () => {
+    const response = await fetch(`${config.archiver}/api/v1/walletinfo`);
+    const walletinfo = await response.json();
+    return walletinfo;
 };
 
 async function waitForReady() {
@@ -1142,8 +1148,9 @@ module.exports = {
     getAdmin,
     saveAdmin,
     registerState,
-    pegState,
+    notarizeState,
     certifyState,
+    getWalletInfo,
     getAgentFromKey,
     getAgent,
     saveAgent,

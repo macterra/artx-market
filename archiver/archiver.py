@@ -105,6 +105,12 @@ def certify():
 
     return jsonify({'xid': xid})
 
+@app.route('/api/v1/walletinfo', methods=['GET'])
+def walletinfo():
+    auth = authorizer.Authorizer()
+    walletinfo = auth.getWalletinfo()
+    return jsonify(walletinfo)
+
 if __name__ == '__main__':
     port = int(os.getenv('ARC_PORT', 5115))
     app.run(debug=True, host='0.0.0.0', port=port)
