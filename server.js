@@ -12,41 +12,7 @@ const axios = require('axios');
 
 const config = require('./config');
 const { createCharge, checkCharge, sendPayment } = require('./satspay');
-const {
-  getAdmin,
-  saveAdmin,
-  registerState,
-  notarizeState,
-  certifyState,
-  getWalletInfo,
-  getAgentFromKey,
-  getAgent,
-  saveAgent,
-  addCredits,
-  allAssets,
-  allAgents,
-  verifyAsset,
-  fixAsset,
-  pinAsset,
-  verifyAgent,
-  fixAgent,
-  getAgentAndCollections,
-  getCollection,
-  getAsset,
-  getCert,
-  auditLog,
-  saveHistory,
-  commitAsset,
-  createAssets,
-  transferAsset,
-  createToken,
-  createCollection,
-  saveCollection,
-  removeCollection,
-  isOwner,
-  getAllAgents,
-  integrityCheck,
-} = require('./xidb');
+const xidb = require('./xidb');
 const { log } = require('console');
 
 const app = express();
@@ -112,7 +78,7 @@ passport.use(new LnurlAuth.Strategy(async function (linkingPublicKey, done) {
   let user = map.user.get(linkingPublicKey);
   if (!user) {
     try {
-      const agentData = await getAgentFromKey(linkingPublicKey);
+      const agentData = await xidb.getAgentFromKey(linkingPublicKey);
       console.log(`passport ${linkingPublicKey} ${agentData.xid}`);
       user = { key: linkingPublicKey, xid: agentData.xid, };
       map.user.set(linkingPublicKey, user);
@@ -154,7 +120,7 @@ app.get('/logout', (req, res) => {
 app.get('/check-auth/:xid?', async (req, res) => {
   if (req.isAuthenticated()) {
     const userId = req.params.xid;
-    const admin = await getAdmin();
+    const admin = await xidb.getAdmin();
     const isAdmin = req.user.xid === admin.owner;
 
     if (userId) {
@@ -230,7 +196,7 @@ app.get('/api/v1/licenses', async (req, res) => {
 
 app.get('/api/v1/admin', ensureAuthenticated, async (req, res) => {
   try {
-    const adminData = await getAdmin();
+    const adminData = await xidb.getAdmin();
 
     if (adminData.owner && adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -245,14 +211,14 @@ app.get('/api/v1/admin', ensureAuthenticated, async (req, res) => {
 
 app.get('/api/v1/admin/claim', ensureAuthenticated, async (req, res) => {
   try {
-    const adminData = await getAdmin();
+    const adminData = await xidb.getAdmin();
 
     if (adminData.owner) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
     adminData.owner = req.user.xid;
-    const savedAdmin = await saveAdmin(adminData);
+    const savedAdmin = await xidb.saveAdmin(adminData);
     res.json(savedAdmin);
   } catch (error) {
     console.error('Error reading metadata:', error);
@@ -262,13 +228,13 @@ app.get('/api/v1/admin/claim', ensureAuthenticated, async (req, res) => {
 
 app.get('/api/v1/admin/save', ensureAuthenticated, async (req, res) => {
   try {
-    const adminData = await getAdmin();
+    const adminData = await xidb.getAdmin();
 
     if (!adminData.owner || adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const savedAdmin = await saveAdmin(adminData);
+    const savedAdmin = await xidb.saveAdmin(adminData);
     res.json(savedAdmin);
   } catch (error) {
     console.error('Error reading metadata:', error);
@@ -278,7 +244,7 @@ app.get('/api/v1/admin/save', ensureAuthenticated, async (req, res) => {
 
 app.get('/api/v1/admin/register', ensureAuthenticated, async (req, res) => {
   try {
-    const adminData = await getAdmin();
+    const adminData = await xidb.getAdmin();
 
     if (!adminData.owner || adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -288,7 +254,7 @@ app.get('/api/v1/admin/register', ensureAuthenticated, async (req, res) => {
       return res.status(500).json({ message: 'Already registered' });
     }
 
-    const savedAdmin = await registerState(adminData);
+    const savedAdmin = await xidb.registerState(adminData);
     res.json(savedAdmin);
   } catch (error) {
     console.error('Error reading metadata:', error);
@@ -298,7 +264,7 @@ app.get('/api/v1/admin/register', ensureAuthenticated, async (req, res) => {
 
 app.get('/api/v1/admin/notarize', ensureAuthenticated, async (req, res) => {
   try {
-    const adminData = await getAdmin();
+    const adminData = await xidb.getAdmin();
 
     if (!adminData.owner || adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -312,7 +278,7 @@ app.get('/api/v1/admin/notarize', ensureAuthenticated, async (req, res) => {
       return res.status(500).json({ message: 'Authorization pending' });
     }
 
-    const savedAdmin = await notarizeState(adminData);
+    const savedAdmin = await xidb.notarizeState(adminData);
     res.json(savedAdmin);
   } catch (error) {
     console.error('Error reading metadata:', error);
@@ -322,7 +288,7 @@ app.get('/api/v1/admin/notarize', ensureAuthenticated, async (req, res) => {
 
 app.get('/api/v1/admin/certify', ensureAuthenticated, async (req, res) => {
   try {
-    const adminData = await getAdmin();
+    const adminData = await xidb.getAdmin();
 
     if (!adminData.owner || adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -332,7 +298,7 @@ app.get('/api/v1/admin/certify', ensureAuthenticated, async (req, res) => {
       return res.status(500).json({ message: 'No authorization pending' });
     }
 
-    const savedAdmin = await certifyState(adminData);
+    const savedAdmin = await xidb.certifyState(adminData);
     res.json(savedAdmin);
   } catch (error) {
     console.error('Error reading metadata:', error);
@@ -342,13 +308,13 @@ app.get('/api/v1/admin/certify', ensureAuthenticated, async (req, res) => {
 
 app.get('/api/v1/admin/walletinfo', ensureAuthenticated, async (req, res) => {
   try {
-    const adminData = await getAdmin();
+    const adminData = await xidb.getAdmin();
 
     if (!adminData.owner || adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const walletinfo = await getWalletInfo();
+    const walletinfo = await xidb.getWalletInfo();
     res.json(walletinfo);
   } catch (error) {
     console.error('Error:', error);
@@ -358,13 +324,13 @@ app.get('/api/v1/admin/walletinfo', ensureAuthenticated, async (req, res) => {
 
 app.get('/api/v1/admin/assets', ensureAuthenticated, async (req, res) => {
   try {
-    const adminData = await getAdmin();
+    const adminData = await xidb.getAdmin();
 
     if (!adminData.owner || adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    res.json(allAssets());
+    res.json(xidb.allAssets());
   } catch (error) {
     console.error('Error:', error);
     res.status(404).json({ message: 'Assets not found' });
@@ -373,13 +339,13 @@ app.get('/api/v1/admin/assets', ensureAuthenticated, async (req, res) => {
 
 app.get('/api/v1/admin/agents', ensureAuthenticated, async (req, res) => {
   try {
-    const adminData = await getAdmin();
+    const adminData = await xidb.getAdmin();
 
     if (!adminData.owner || adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    res.json(allAgents());
+    res.json(xidb.allAgents());
   } catch (error) {
     console.error('Error:', error);
     res.status(404).json({ message: 'Agents not found' });
@@ -388,13 +354,13 @@ app.get('/api/v1/admin/agents', ensureAuthenticated, async (req, res) => {
 
 app.get('/api/v1/admin/verify/asset/:xid', async (req, res) => {
   try {
-    const adminData = await getAdmin();
+    const adminData = await xidb.getAdmin();
 
     if (!adminData.owner || adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const verify = await verifyAsset(req.params.xid);
+    const verify = await xidb.verifyAsset(req.params.xid);
     res.json(verify);
   } catch (error) {
     console.error('Error:', error);
@@ -404,13 +370,13 @@ app.get('/api/v1/admin/verify/asset/:xid', async (req, res) => {
 
 app.get('/api/v1/admin/fix/asset/:xid', async (req, res) => {
   try {
-    const adminData = await getAdmin();
+    const adminData = await xidb.getAdmin();
 
     if (!adminData.owner || adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const verify = await fixAsset(req.params.xid);
+    const verify = await xidb.fixAsset(req.params.xid);
     res.json(verify);
   } catch (error) {
     console.error('Error:', error);
@@ -420,13 +386,13 @@ app.get('/api/v1/admin/fix/asset/:xid', async (req, res) => {
 
 app.get('/api/v1/admin/verify/agent/:xid', async (req, res) => {
   try {
-    const adminData = await getAdmin();
+    const adminData = await xidb.getAdmin();
 
     if (!adminData.owner || adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const verify = await verifyAgent(req.params.xid);
+    const verify = await xidb.verifyAgent(req.params.xid);
     res.json(verify);
   } catch (error) {
     console.error('Error:', error);
@@ -436,13 +402,13 @@ app.get('/api/v1/admin/verify/agent/:xid', async (req, res) => {
 
 app.get('/api/v1/admin/fix/agent/:xid', async (req, res) => {
   try {
-    const adminData = await getAdmin();
+    const adminData = await xidb.getAdmin();
 
     if (!adminData.owner || adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const verify = await fixAgent(req.params.xid);
+    const verify = await xidb.fixAgent(req.params.xid);
     res.json(verify);
   } catch (error) {
     console.error('Error:', error);
@@ -452,13 +418,13 @@ app.get('/api/v1/admin/fix/agent/:xid', async (req, res) => {
 
 app.get('/api/v1/admin/pin/asset/:xid', async (req, res) => {
   try {
-    const adminData = await getAdmin();
+    const adminData = await xidb.getAdmin();
 
     if (!adminData.owner || adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const pin = await pinAsset(req.params.xid);
+    const pin = await xidb.pinAsset(req.params.xid);
     res.json(pin);
   } catch (error) {
     console.error('Error:', error);
@@ -468,7 +434,7 @@ app.get('/api/v1/admin/pin/asset/:xid', async (req, res) => {
 
 app.get('/api/v1/cert/:xid', async (req, res) => {
   try {
-    const cert = await getCert(req.params.xid);
+    const cert = await xidb.getCert(req.params.xid);
     res.json(cert);
   } catch (error) {
     console.error('Error:', error);
@@ -478,8 +444,8 @@ app.get('/api/v1/cert/:xid', async (req, res) => {
 
 app.get('/api/v1/asset/:xid', async (req, res) => {
   try {
-    const assetData = await getAsset(req.params.xid);
-    assetData.userIsOwner = await isOwner(assetData, req.user?.xid);
+    const assetData = await xidb.getAsset(req.params.xid);
+    assetData.userIsOwner = await xidb.isOwner(assetData, req.user?.xid);
     res.json(assetData);
   } catch (error) {
     console.error('Error reading metadata:', error);
@@ -493,7 +459,7 @@ app.patch('/api/v1/asset/:xid', ensureAuthenticated, async (req, res) => {
   const userId = req.user.xid;
 
   try {
-    let assetData = await getAsset(xid);
+    let assetData = await xidb.getAsset(xid);
 
     if (userId != assetData.asset.owner) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -512,7 +478,7 @@ app.patch('/api/v1/asset/:xid', ensureAuthenticated, async (req, res) => {
       assetData.asset.collection = collection;
     }
 
-    await commitAsset(assetData);
+    await xidb.commitAsset(assetData);
 
     res.json({ message: 'Metadata updated successfully' });
   } catch (error) {
@@ -526,7 +492,7 @@ app.post('/api/v1/asset/:xid/mint', ensureAuthenticated, async (req, res) => {
     const xid = req.params.xid;
     const { editions, license, royalty } = req.body;
     const userId = req.user.xid;
-    const assetData = await getAsset(xid);
+    const assetData = await xidb.getAsset(xid);
 
     if (assetData.asset.owner != userId) {
       console.log('mint unauthorized');
@@ -544,8 +510,8 @@ app.post('/api/v1/asset/:xid/mint', ensureAuthenticated, async (req, res) => {
       "creator": userId,
     };
 
-    await saveHistory(xid, record);
-    await createToken(userId, xid, editions, license, royalty / 100);
+    await xidb.saveHistory(xid, record);
+    await xidb.createToken(userId, xid, editions, license, royalty / 100);
     res.json({ message: 'Success' });
   } catch (error) {
     console.error('Error:', error);
@@ -558,7 +524,7 @@ app.post('/api/v1/asset/:xid/list', ensureAuthenticated, async (req, res) => {
     const xid = req.params.xid;
     const { price } = req.body;
     const userId = req.user.xid;
-    const assetData = await getAsset(xid);
+    const assetData = await xidb.getAsset(xid);
 
     console.log(`list ${xid} with price=${price}`);
 
@@ -583,8 +549,8 @@ app.post('/api/v1/asset/:xid/list', ensureAuthenticated, async (req, res) => {
         "price": newPrice
       };
 
-      await saveHistory(assetData.nft.asset, record);
-      await commitAsset(assetData, 'Listed');
+      await xidb.saveHistory(assetData.nft.asset, record);
+      await xidb.commitAsset(assetData, 'Listed');
     }
 
     res.json({ ok: true, message: 'Success' });
@@ -599,7 +565,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
     const xid = req.params.xid;
     const userId = req.user.xid;
     const { chargeId } = req.body;
-    const assetData = await getAsset(xid);
+    const assetData = await xidb.getAsset(xid);
 
     if (!assetData.nft) {
       return res.status(500).json({ message: 'Error' });
@@ -609,8 +575,8 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
       return res.status(500).json({ message: "Already owned" });
     }
 
-    const buyer = await getAgent(userId);
-    const seller = await getAgent(assetData.asset.owner);
+    const buyer = await xidb.getAgent(userId);
+    const seller = await xidb.getAgent(assetData.asset.owner);
 
     // TBD associate this charge with this asset for validation
     const chargeData = await checkCharge(chargeId);
@@ -636,10 +602,10 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
       "price": price,
     };
 
-    await saveHistory(assetData.nft.asset, record);
-    await transferAsset(xid, userId);
+    await xidb.saveHistory(assetData.nft.asset, record);
+    await xidb.transferAsset(xid, userId);
 
-    const tokenData = await getAsset(assetData.nft.asset);
+    const tokenData = await xidb.getAsset(assetData.nft.asset);
     const assetName = `"${tokenData.asset.title}" (${assetData.asset.title})`;
     console.log(`audit: ${buyer.name} buying ${assetName} for ${price} from ${seller.name}`);
 
@@ -653,7 +619,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
     let royalty = 0;
 
     if (tokenData.asset.owner !== seller.xid) {
-      const creator = await getAgent(tokenData.asset.owner);
+      const creator = await xidb.getAgent(tokenData.asset.owner);
       royalty = Math.round(price * royaltyRate);
 
       if (creator.deposit && royalty > 0) {
@@ -687,7 +653,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
       };
     }
 
-    await auditLog(audit);
+    await xidb.auditLog(audit);
 
     res.json({ ok: true, message: 'Success' });
   } catch (error) {
@@ -698,7 +664,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
 
 app.get('/api/v1/profiles/', async (req, res) => {
   try {
-    const profiles = await getAllAgents();
+    const profiles = await xidb.getAllAgents();
     res.json(profiles);
   } catch (error) {
     console.error(error);
@@ -711,7 +677,7 @@ app.get('/api/v1/profile/:xid?', async (req, res) => {
   const userId = req.user?.xid;
 
   try {
-    const agentData = await getAgentAndCollections(profileId, userId);
+    const agentData = await xidb.getAgentAndCollections(profileId, userId);
 
     if (agentData) {
       agentData.collections = Object.values(agentData.collections);
@@ -731,7 +697,7 @@ app.patch('/api/v1/profile/', ensureAuthenticated, async (req, res) => {
     const { name, tagline, pfp, deposit, collections, links } = req.body;
     const userId = req.user.xid;
 
-    const agentData = await getAgent(userId);
+    const agentData = await xidb.getAgent(userId);
 
     if (userId != agentData.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -762,7 +728,7 @@ app.patch('/api/v1/profile/', ensureAuthenticated, async (req, res) => {
       agentData.links = links;
     }
 
-    await saveAgent(agentData);
+    await xidb.saveAgent(agentData);
     res.json({ message: 'Metadata updated successfully' });
   } catch (error) {
     console.error('Error updating metadata:', error);
@@ -775,7 +741,7 @@ app.post('/api/v1/profile/:xid/invoice', async (req, res) => {
   const { amount } = req.body;
 
   try {
-    const agentData = await getAgent(profileId);
+    const agentData = await xidb.getAgent(profileId);
 
     if (agentData) {
       const { invoice } = await requestInvoice({
@@ -797,7 +763,7 @@ app.post('/api/v1/profile/credit', ensureAuthenticated, async (req, res) => {
   const { charge } = req.body;
 
   try {
-    const agentData = await addCredits(userId, charge);
+    const agentData = await xidb.addCredits(userId, charge);
 
     if (agentData) {
       res.json(agentData);
@@ -814,7 +780,7 @@ app.post('/api/v1/profile/credit', ensureAuthenticated, async (req, res) => {
 app.get('/api/v1/collections/', async (req, res) => {
   try {
     const userId = req.user?.xid;
-    const collection = await createCollection(userId, "new");
+    const collection = await xidb.createCollection(userId, "new");
     res.json(collection);
   } catch (error) {
     console.error('Error processing request:', error);
@@ -825,7 +791,7 @@ app.get('/api/v1/collections/', async (req, res) => {
 app.get('/api/v1/collections/:xid', async (req, res) => {
   try {
     const userId = req.user?.xid;
-    const collection = await getCollection(req.params.xid, userId);
+    const collection = await xidb.getCollection(req.params.xid, userId);
     res.json(collection);
   } catch (error) {
     console.error('Error processing request:', error);
@@ -845,7 +811,7 @@ app.post('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const ok = await saveCollection(collection);
+    const ok = await xidb.saveCollection(collection);
     res.json({ message: 'Collection updated successfully' });
   } catch (error) {
     console.error('Error processing request:', error);
@@ -856,7 +822,7 @@ app.post('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => {
 app.patch('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => {
   try {
     const { thumbnail } = req.body;
-    const collection = await getAsset(req.params.xid);
+    const collection = await xidb.getAsset(req.params.xid);
 
     if (req.user.xid != collection.asset.owner) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -866,7 +832,7 @@ app.patch('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => {
       collection.collection.thumbnail = thumbnail;
     }
 
-    await commitAsset(collection);
+    await xidb.commitAsset(collection);
     res.json({ message: 'Collection updated successfully' });
   } catch (error) {
     console.error('Error processing request:', error);
@@ -877,7 +843,7 @@ app.patch('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => {
 app.delete('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => {
   try {
     const userId = req.user?.xid;
-    const collection = await getCollection(req.params.xid, userId);
+    const collection = await xidb.getCollection(req.params.xid, userId);
 
     if (req.user.xid != collection.asset.owner) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -887,7 +853,7 @@ app.delete('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => 
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    await removeCollection(collection);
+    await xidb.removeCollection(collection);
     res.json({ message: 'Collection removed successfully' });
   } catch (error) {
     console.error('Error processing request:', error);
@@ -898,7 +864,7 @@ app.delete('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => 
 app.post('/api/v1/collections/:xid/upload', ensureAuthenticated, upload.array('images', 100), async (req, res) => {
   try {
     const collectionId = req.params.xid;
-    const upload = await createAssets(req.user.xid, req.files, collectionId);
+    const upload = await xidb.createAssets(req.user.xid, req.files, collectionId);
 
     res.status(200).json(upload);
   } catch (error) {
@@ -953,10 +919,10 @@ app.use((req, res, next) => {
 
 // Check pending txn every minute
 cron.schedule('* * * * *', async () => {
-  const adminData = await getAdmin();
+  const adminData = await xidb.getAdmin();
   if (adminData.pending) {
     console.log(`Pending txn ${adminData.pending}...`);
-    const savedAdmin = await certifyState(adminData);
+    const savedAdmin = await xidb.certifyState(adminData);
     if (!savedAdmin.pending) {
       console.log(`New certificate ${adminData.latest}`);
     }
@@ -965,17 +931,17 @@ cron.schedule('* * * * *', async () => {
 
 // Notarize market state at midnight
 cron.schedule('0 0 * * *', async () => {
-  const adminData = await getAdmin();
+  const adminData = await xidb.getAdmin();
   if (!adminData.pending) {
     console.log(`Notarizing market state...`);
-    const savedAdmin = await notarizeState(adminData);
+    const savedAdmin = await xidb.notarizeState(adminData);
     if (savedAdmin.pending) {
       console.log(`Pending txn ${adminData.pending}`);
     }
   }
 });
 
-integrityCheck().then(() => {
+xidb.integrityCheck().then(() => {
   app.listen(config.port, () => {
     console.log(`ArtX server running on ${config.host}:${config.port}`);
   });
