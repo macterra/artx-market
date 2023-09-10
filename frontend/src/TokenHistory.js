@@ -14,18 +14,7 @@ const TokenHistory = ({ metadata }) => {
 
     useEffect(() => {
         const fetchHistory = async () => {
-            try {
-                console.log(`history records ${metadata.history.length}`);
-                console.log(metadata);
-
-                setHistory(metadata.history);
-
-                for (const rec of metadata.history) {
-                    console.log(rec);
-                }
-            } catch (error) {
-                console.error('Error fetching asset owner:', error);
-            }
+            setHistory(metadata.history);
         };
 
         fetchHistory();
