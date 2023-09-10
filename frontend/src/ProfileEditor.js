@@ -8,6 +8,7 @@ import CollectionEditor from './CollectionEditor';
 import LnAddressEditor from './LnAddressEditor';
 import LinksEditor from './LinksEditor';
 import CreditsEditor from './CreditsEditor';
+import TxnLog from './TxnLog';
 
 const ProfileEditor = ({ navigate }) => {
     const { jump } = useParams();
@@ -46,6 +47,7 @@ const ProfileEditor = ({ navigate }) => {
                 <Tab key="links" value="links" label={'Links'} />
                 <Tab key="ln" value="ln" label={'Lightning'} />
                 <Tab key="credits" value="credits" label={'Credits'} />
+                <Tab key="log" value="log" label={'Log'} />
             </Tabs>
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <Box style={{ width: '50vw' }}>
@@ -63,6 +65,9 @@ const ProfileEditor = ({ navigate }) => {
                     }
                     {tab === 'credits' &&
                         <CreditsEditor profile={profile} />
+                    }
+                    {tab === 'log' &&
+                        <TxnLog profile={profile} />
                     }
                 </Box>
             </div>

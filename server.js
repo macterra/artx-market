@@ -705,6 +705,9 @@ app.get('/api/v1/profile/:xid?', async (req, res) => {
     if (agentData) {
       agentData.collections = Object.values(agentData.collections);
       agentData.isUser = (userId === agentData.xid);
+      if (agentData.isUser) {
+        agentData.txnlog = xidb.getAgentTxnLog(userId);
+      }
       res.json(agentData);
     } else {
       res.status(404).json({ message: 'Profile not found' });

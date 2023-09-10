@@ -671,6 +671,17 @@ const agentAddAsset = async (metadata) => {
     await agentSaveAssets(assetData);
 };
 
+const getAgentTxnLog = (userId) => {
+    try {
+        const jsonlPath = path.join(config.agents, userId, 'txnlog.jsonl');
+        const data = fs.readFileSync(jsonlPath, 'utf-8');
+        const lines = data.trim().split('\n');
+        return lines.map(line => JSON.parse(line));
+    } catch (error) {
+        return [];
+    }
+};
+
 const getAgentAndCollections = async (profileId, userId) => {
     if (!profileId) {
         profileId = userId;
@@ -1180,6 +1191,7 @@ module.exports = {
     verifyAgent,
     fixAgent,
     getAgentAndCollections,
+    getAgentTxnLog,
     getAllAgents,
     getCollection,
     getAsset,
