@@ -856,10 +856,17 @@ const auditLog = async (record) => {
     await commitChanges(`Updated audit log (${record.type})`);
 };
 
+const saveTransaction = (xid, record) => {
+    record.time = new Date().toISOString();
+    const recordString = JSON.stringify(record);
+    const jsonlPath = path.join(config.agents, xid, 'txnlog.jsonl');
+    fs.appendFileSync(jsonlPath, recordString + '\n');
+};
+
 const saveHistory = async (xid, record) => {
     const recordString = JSON.stringify(record);
-    const historyPath = path.join(config.assets, xid, 'history.jsonl');
-    await fs.promises.appendFile(historyPath, recordString + '\n');
+    const jsonlPath = path.join(config.assets, xid, 'history.jsonl');
+    await fs.promises.appendFile(jsonlPath, recordString + '\n');
 };
 
 const commitAsset = async (metadata, action) => {
@@ -1067,6 +1074,15 @@ const createToken = async (userId, xid, editions, license, royalty) => {
     const agentData = await getAgent(userId);
     agentData.credits -= mintFee;
     await saveAgent(agentData);
+
+    return {
+        "xid": xid,
+        "cid": ipfs.cid,
+        "editions": editions,
+        "storageFee": storageFee,
+        "editionFee": editionFee,
+        "mintFee": mintFee,
+    };
 };
 
 const transferAsset = async (xid, nextOwnerId) => {
@@ -1168,6 +1184,7 @@ module.exports = {
     getAsset,
     getCert,
     auditLog,
+    saveTransaction,
     saveHistory,
     commitAsset,
     isOwner,

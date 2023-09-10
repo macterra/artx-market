@@ -511,8 +511,17 @@ app.post('/api/v1/asset/:xid/mint', ensureAuthenticated, async (req, res) => {
     };
 
     await xidb.saveHistory(xid, record);
-    await xidb.createToken(userId, xid, editions, license, royalty / 100);
-    res.json({ message: 'Success' });
+
+    const mint = await xidb.createToken(userId, xid, editions, license, royalty / 100);
+
+    const txn = {
+      'type': 'mint',
+      'xid': xid,
+      'credits': mint.mintFee,
+    };
+    xidb.saveTransaction(userId, txn);
+
+    res.json(mint);
   } catch (error) {
     console.error('Error:', error);
     res.status(500).json({ message: 'Error' });
@@ -563,7 +572,7 @@ app.post('/api/v1/asset/:xid/list', ensureAuthenticated, async (req, res) => {
 app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
   try {
     const xid = req.params.xid;
-    const userId = req.user.xid;
+    const buyerId = req.user.xid;
     const { chargeId } = req.body;
     const assetData = await xidb.getAsset(xid);
 
@@ -571,12 +580,13 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
       return res.status(500).json({ message: 'Error' });
     }
 
-    if (assetData.asset.owner == userId) {
+    if (assetData.asset.owner == buyerId) {
       return res.status(500).json({ message: "Already owned" });
     }
 
-    const buyer = await xidb.getAgent(userId);
-    const seller = await xidb.getAgent(assetData.asset.owner);
+    const buyer = await xidb.getAgent(buyerId);
+    const sellerId = assetData.asset.owner;
+    const seller = await xidb.getAgent(sellerId);
 
     // TBD associate this charge with this asset for validation
     const chargeData = await checkCharge(chargeId);
@@ -596,14 +606,31 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
     const record = {
       "time": new Date().toISOString(),
       "type": "sale",
-      "buyer": userId,
-      "seller": assetData.asset.owner,
+      "buyer": buyerId,
+      "seller": sellerId,
+      "edition": xid,
+      "price": price,
+    };
+
+    const sellTxn = {
+      "type": "sell",
+      "buyer": buyerId,
+      "edition": xid,
+      "price": price,
+    };
+
+    const buyTxn = {
+      "type": "buy",
+      "seller": sellerId,
       "edition": xid,
       "price": price,
     };
 
     await xidb.saveHistory(assetData.nft.asset, record);
-    await xidb.transferAsset(xid, userId);
+    xidb.saveTransaction(sellerId, sellTxn);
+    xidb.saveTransaction(buyerId, buyTxn);
+
+    await xidb.transferAsset(xid, buyerId);
 
     const tokenData = await xidb.getAsset(assetData.nft.asset);
     const assetName = `"${tokenData.asset.title}" (${assetData.asset.title})`;
@@ -766,6 +793,14 @@ app.post('/api/v1/profile/credit', ensureAuthenticated, async (req, res) => {
     const agentData = await xidb.addCredits(userId, charge);
 
     if (agentData) {
+
+      const txn = {
+        'type': 'credits',
+        'credits': charge.amount,
+      };
+
+      xidb.saveTransaction(req.user.xid, txn);
+
       res.json(agentData);
     }
     else {
@@ -865,7 +900,14 @@ app.post('/api/v1/collections/:xid/upload', ensureAuthenticated, upload.array('i
   try {
     const collectionId = req.params.xid;
     const upload = await xidb.createAssets(req.user.xid, req.files, collectionId);
-
+    const txn = {
+      'type': 'upload',
+      'xid': collectionId,
+      'files': upload.filesUploaded,
+      'bytes': upload.bytesUploaded,
+      'credits': upload.creditsDebited,
+    };
+    xidb.saveTransaction(req.user.xid, txn);
     res.status(200).json(upload);
   } catch (error) {
     console.error('Error processing files:', error);

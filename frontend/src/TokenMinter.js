@@ -117,6 +117,7 @@ const TokenMinter = ({ navigate, metadata, setTab, setRefreshKey }) => {
             });
 
             if (mintResponse.status === 200) {
+                alert(JSON.stringify(mintResponse.data));
                 setTab('token');
                 setRefreshKey((prevKey) => prevKey + 1);
             } else {
