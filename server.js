@@ -505,12 +505,11 @@ app.post('/api/v1/asset/:xid/mint', ensureAuthenticated, async (req, res) => {
     }
 
     const record = {
-      "time": new Date().toISOString(),
       "type": "mint",
       "creator": userId,
     };
 
-    await xidb.saveHistory(xid, record);
+    xidb.saveHistory(xid, record);
 
     const mint = await xidb.createToken(userId, xid, editions, license, royalty / 100);
 
@@ -519,7 +518,7 @@ app.post('/api/v1/asset/:xid/mint', ensureAuthenticated, async (req, res) => {
       'xid': xid,
       'credits': mint.mintFee,
     };
-    xidb.saveTransaction(userId, txn);
+    xidb.saveTxnLog(userId, txn);
 
     res.json(mint);
   } catch (error) {
@@ -551,14 +550,13 @@ app.post('/api/v1/asset/:xid/list', ensureAuthenticated, async (req, res) => {
       assetData.nft.price = newPrice;
 
       const record = {
-        "time": new Date().toISOString(),
         "type": "list",
         "seller": userId,
         "edition": xid,
         "price": newPrice
       };
 
-      await xidb.saveHistory(assetData.nft.asset, record);
+      xidb.saveHistory(assetData.nft.asset, record);
       await xidb.commitAsset(assetData, 'Listed');
     }
 
@@ -604,7 +602,6 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
     }
 
     const record = {
-      "time": new Date().toISOString(),
       "type": "sale",
       "buyer": buyerId,
       "seller": sellerId,
@@ -626,9 +623,9 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
       "price": price,
     };
 
-    await xidb.saveHistory(assetData.nft.asset, record);
-    xidb.saveTransaction(sellerId, sellTxn);
-    xidb.saveTransaction(buyerId, buyTxn);
+    xidb.saveHistory(assetData.nft.asset, record);
+    xidb.saveTxnLog(sellerId, sellTxn);
+    xidb.saveTxnLog(buyerId, buyTxn);
 
     await xidb.transferAsset(xid, buyerId);
 
@@ -637,7 +634,6 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
     console.log(`audit: ${buyer.name} buying ${assetName} for ${price} from ${seller.name}`);
 
     let audit = {
-      "time": new Date().toISOString(),
       "type": "sale",
       "charge": chargeData,
     };
@@ -680,7 +676,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
       };
     }
 
-    await xidb.auditLog(audit);
+    await xidb.saveAuditLog(audit);
 
     res.json({ ok: true, message: 'Success' });
   } catch (error) {
@@ -799,8 +795,7 @@ app.post('/api/v1/profile/credit', ensureAuthenticated, async (req, res) => {
         'credits': charge.amount,
       };
 
-      xidb.saveTransaction(req.user.xid, txn);
-
+      xidb.saveTxnLog(req.user.xid, txn);
       res.json(agentData);
     }
     else {
@@ -907,7 +902,7 @@ app.post('/api/v1/collections/:xid/upload', ensureAuthenticated, upload.array('i
       'bytes': upload.bytesUploaded,
       'credits': upload.creditsDebited,
     };
-    xidb.saveTransaction(req.user.xid, txn);
+    xidb.saveTxnLog(req.user.xid, txn);
     res.status(200).json(upload);
   } catch (error) {
     console.error('Error processing files:', error);

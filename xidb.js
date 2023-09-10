@@ -618,13 +618,12 @@ const addCredits = async (userId, charge) => {
             agentData.credits += charge.amount;
 
             const record = {
-                "time": new Date().toISOString(),
                 "type": "buy-credits",
                 "agent": userId,
                 "amount": charge.amount,
                 "charge": charge,
             };
-            await auditLog(record);
+            await saveAuditLog(record);
             await saveAgent(agentData);
             return agentData;
         }
@@ -849,24 +848,26 @@ const saveAsset = async (metadata) => {
     await fs.promises.writeFile(assetJsonPath, JSON.stringify(metadata, null, 2));
 };
 
-const auditLog = async (record) => {
+const saveAuditLog = async (record) => {
+    record.time = new Date().toISOString();
     const recordString = JSON.stringify(record);
-    const logPath = path.join(config.data, 'auditlog.jsonl');
-    await fs.promises.appendFile(logPath, recordString + '\n');
+    const jsonlPath = path.join(config.data, 'auditlog.jsonl');
+    fs.appendFileSync(jsonlPath, recordString + '\n');
     await commitChanges(`Updated audit log (${record.type})`);
 };
 
-const saveTransaction = (xid, record) => {
+const saveTxnLog = (xid, record) => {
     record.time = new Date().toISOString();
     const recordString = JSON.stringify(record);
     const jsonlPath = path.join(config.agents, xid, 'txnlog.jsonl');
     fs.appendFileSync(jsonlPath, recordString + '\n');
 };
 
-const saveHistory = async (xid, record) => {
+const saveHistory = (xid, record) => {
+    record.time = new Date().toISOString();
     const recordString = JSON.stringify(record);
     const jsonlPath = path.join(config.assets, xid, 'history.jsonl');
-    await fs.promises.appendFile(jsonlPath, recordString + '\n');
+    fs.appendFileSync(jsonlPath, recordString + '\n');
 };
 
 const commitAsset = async (metadata, action) => {
@@ -1183,8 +1184,8 @@ module.exports = {
     getCollection,
     getAsset,
     getCert,
-    auditLog,
-    saveTransaction,
+    saveAuditLog,
+    saveTxnLog,
     saveHistory,
     commitAsset,
     isOwner,
