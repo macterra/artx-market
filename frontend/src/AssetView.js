@@ -77,7 +77,7 @@ const AssetView = ({ navigate, isAuthenticated }) => {
                 >
                     <Tab key="meta" value="meta" label={'Metadata'} />
                     {isToken && <Tab key="token" value="token" label={'Token'} />}
-                    {isToken && isAuthenticated && !isDeleted && <Tab key="trade" value="trade" label={'Trade'} />}
+                    {isToken && isAuthenticated && !isDeleted && <Tab key="trade" value="trade" label={'Buy/Sell'} />}
                     {isOwner && !isToken && <Tab key="edit" value="edit" label={'Edit'} />}
                     {isOwner && !isToken && !isDeleted && <Tab key="mint" value="mint" label={'Mint'} />}
                     {isOwner && !isDeleted && <Tab key="pfp" value="pfp" label={'Pfp'} />}
