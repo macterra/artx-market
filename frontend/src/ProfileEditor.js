@@ -10,10 +10,10 @@ import LinksEditor from './LinksEditor';
 import CreditsEditor from './CreditsEditor';
 import TxnLog from './TxnLog';
 
-const ProfileEditor = ({ navigate }) => {
+const ProfileEditor = ({ navigate, refreshProfile, setRefreshProfile }) => {
     const { jump } = useParams();
     const [profile, setProfile] = useState({});
-    const [tab, setTab] = useState(null);
+    const [tab, setTab] = useState("name");
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -21,15 +21,18 @@ const ProfileEditor = ({ navigate }) => {
                 const response = await fetch(`/api/v1/profile`);
                 const data = await response.json();
                 setProfile(data);
-                setTab(jump || "name");
+
+                if (jump) {
+                    setTab(jump);
+                }
             } catch (error) {
                 console.error('Error fetching profile data:', error);
-                //navigate('/');
+                navigate('/');
             }
         };
 
         fetchProfile();
-    }, [jump]);
+    }, [jump, refreshProfile]);
 
     return (
         <Box>
@@ -64,10 +67,10 @@ const ProfileEditor = ({ navigate }) => {
                         <LnAddressEditor profile={profile} />
                     }
                     {tab === 'credits' &&
-                        <CreditsEditor profile={profile} />
+                        <CreditsEditor profile={profile} setRefreshProfile={setRefreshProfile} />
                     }
                     {tab === 'log' &&
-                        <TxnLog profile={profile} />
+                        <TxnLog profile={profile} refreshProfile={refreshProfile} />
                     }
                 </Box>
             </div>

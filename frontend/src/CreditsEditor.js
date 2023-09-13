@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Box, Button, Grid, TextField, Modal } from '@mui/material';
 import axios from 'axios';
 
-const CreditsEditor = ({ profile }) => {
+const CreditsEditor = ({ profile, setRefreshProfile }) => {
 
     const minPurchase = 1000;
     const maxPurchase = 25000;
@@ -63,7 +63,7 @@ const CreditsEditor = ({ profile }) => {
 
                     if (creditResponse.status === 200) {
                         setBalance(creditResponse.data.credits);
-                        //setRefreshKey((prevKey) => prevKey + 1);
+                        setRefreshProfile((prevKey) => prevKey + 1);
                     } else {
                         console.error('Error:', creditResponse.data.message);
                         alert(creditResponse.data.message);

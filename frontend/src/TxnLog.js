@@ -9,7 +9,7 @@ import {
     Paper,
 } from '@mui/material';
 
-const TxnLog = ({ profile }) => {
+const TxnLog = ({ profile, refreshProfile }) => {
     const [txnlog, setTxnLog] = useState([]);
 
     useEffect(() => {
@@ -18,7 +18,7 @@ const TxnLog = ({ profile }) => {
         };
 
         fetchHistory();
-    }, [profile]);
+    }, [profile, refreshProfile]);
 
     if (!profile || !txnlog) {
         return;

@@ -180,6 +180,7 @@ function ViewCollection() {
 
 function EditProfile() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [refreshProfile, setRefreshProfile] = useState(null);
   const navigate = useNavigate();
 
   return (
@@ -193,7 +194,7 @@ function EditProfile() {
         />
         <header className="App-header">
           <Box display="flex" flexDirection="column" flexGrow={1}>
-            <ProfileEditor navigate={navigate} />
+            <ProfileEditor navigate={navigate} refreshProfile={refreshProfile} setRefreshProfile={setRefreshProfile} />
           </Box>
         </header>
       </div>
