@@ -5,20 +5,31 @@ import axios from 'axios';
 const LnAddressEditor = ({ profile }) => {
     const [address, setAddress] = useState(profile.deposit);
     const [invoice, setInvoice] = useState(null);
+    const [testing, setTesting] = useState(false);
+    const [validAddress, setValidAddress] = useState(false);
 
     const handleSaveAddress = async () => {
-        try {
-            const response = await axios.patch('/api/v1/profile', { deposit: address });
+        setTesting(true);
 
-            if (response.status === 200) {
-                profile.deposit = address;
-                setInvoice(null);
-            } else {
-                alert(response.data.message);
-            }
+        try {
+            await axios.patch('/api/v1/profile', { deposit: address });
+            profile.deposit = address;
+            setValidAddress(true);
         } catch (error) {
             console.error('Error:', error);
+            if (error.response) {
+                alert(error.response.data.message);
+            }
+            else {
+                alert('An error occurred');
+            }
+            profile.deposit = "";
+            setValidAddress(false);
         }
+
+        setAddress(profile.deposit);
+        setInvoice(null);
+        setTesting(false);
     };
 
     const handleTestAddress = async () => {
@@ -54,21 +65,23 @@ const LnAddressEditor = ({ profile }) => {
                     <Box sx={{ marginTop: 2 }}>
                         <Grid container spacing={2}>
                             <Grid item>
-                                <Button variant="contained" color="primary" onClick={handleSaveAddress}>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={handleSaveAddress}
+                                    disabled={testing}>
                                     Save
                                 </Button>
                             </Grid>
-                            {address &&
-                                <Grid item>
-                                    <Button
-                                        variant="contained"
-                                        color="primary"
-                                        onClick={handleTestAddress}
-                                        disabled={!!invoice}>
-                                        Test
-                                    </Button>
-                                </Grid>
-                            }
+                            <Grid item>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={handleTestAddress}
+                                    disabled={!validAddress}>
+                                    Test
+                                </Button>
+                            </Grid>
                         </Grid>
                     </Box>
                 </Grid>

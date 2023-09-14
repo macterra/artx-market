@@ -32,7 +32,7 @@ const ProfileEditor = ({ navigate, refreshProfile, setRefreshProfile }) => {
         };
 
         fetchProfile();
-    }, [jump, refreshProfile]);
+    }, [navigate, jump, refreshProfile]);
 
     return (
         <Box>
@@ -64,7 +64,7 @@ const ProfileEditor = ({ navigate, refreshProfile, setRefreshProfile }) => {
                         <LinksEditor />
                     }
                     {tab === 'ln' &&
-                        <LnAddressEditor profile={profile} />
+                        <LnAddressEditor profile={profile} setRefreshProfile={setRefreshProfile} />
                     }
                     {tab === 'credits' &&
                         <CreditsEditor profile={profile} setRefreshProfile={setRefreshProfile} />

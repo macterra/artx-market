@@ -11,7 +11,7 @@ const { requestInvoice } = require('lnurl-pay');
 const axios = require('axios');
 
 const config = require('./config');
-const { createCharge, checkCharge, sendPayment } = require('./satspay');
+const { createCharge, checkCharge, checkAddress, sendPayment } = require('./satspay');
 const xidb = require('./xidb');
 const { log } = require('console');
 
@@ -601,32 +601,6 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
       return res.status(500).json({ message: 'Error' });
     }
 
-    const record = {
-      "type": "sale",
-      "buyer": buyerId,
-      "seller": sellerId,
-      "edition": xid,
-      "price": price,
-    };
-
-    const sellTxn = {
-      "type": "sell",
-      "buyer": buyerId,
-      "edition": xid,
-      "price": price,
-    };
-
-    const buyTxn = {
-      "type": "buy",
-      "seller": sellerId,
-      "edition": xid,
-      "price": price,
-    };
-
-    xidb.saveHistory(assetData.nft.asset, record);
-    xidb.saveTxnLog(sellerId, sellTxn);
-    xidb.saveTxnLog(buyerId, buyTxn);
-
     await xidb.transferAsset(xid, buyerId);
 
     const tokenData = await xidb.getAsset(assetData.nft.asset);
@@ -640,44 +614,107 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
 
     const royaltyRate = tokenData.token?.royalty || 0;
     let royalty = 0;
+    let royaltyPaid = false;
 
     if (tokenData.asset.owner !== seller.xid) {
       const creator = await xidb.getAgent(tokenData.asset.owner);
       royalty = Math.round(price * royaltyRate);
 
-      if (creator.deposit && royalty > 0) {
-        sendPayment(creator.deposit, royalty, `royalty for asset ${assetName}`);
-        console.log(`audit: royalty ${royalty} to ${creator.deposit}`);
-        audit.royalty = {
-          "address": creator.deposit,
-          "amount": royalty,
-        };
+      if (royalty > 0) {
+        if (creator.deposit) {
+          try {
+            await sendPayment(creator.deposit, royalty, `royalty for asset ${assetName}`);
+            console.log(`audit: royalty ${royalty} to ${creator.deposit}`);
+            audit.royalty = {
+              "address": creator.deposit,
+              "amount": royalty,
+            };
+            royaltyPaid = true;
+          }
+          catch (error) {
+            console.log(`payment error: ${error}`);
+          }
+        }
+
+        if (!royaltyPaid) {
+          await xidb.addCredits(creator.xid, royalty);
+          console.log(`audit: royalty ${royalty} credits to ${creator.xid}`);
+          audit.royalty = {
+            "address": creator.xid,
+            "amount": royalty,
+          };
+        }
       }
     }
 
     const txnFee = Math.round(config.txnFeeRate * price);
     const payout = price - royalty - txnFee;
+    let payoutPaid = false;
 
     if (seller.deposit) {
-      sendPayment(seller.deposit, payout, `sale of asset ${assetName}`);
-      console.log(`audit: payout ${payout} to ${seller.deposit}`);
+      try {
+        await sendPayment(seller.deposit, payout, `sale of asset ${assetName}`);
+        console.log(`audit: payout ${payout} to ${seller.deposit}`);
+        audit.payout = {
+          "address": seller.deposit,
+          "amount": payout,
+        };
+        payoutPaid = true;
+      }
+      catch (error) {
+        console.log(`payment error: ${error}`);
+      }
+    }
+
+    if (!payoutPaid) {
+      await xidb.addCredits(seller.xid, payout);
+      console.log(`audit: payout ${payout} credits to ${seller.xid}`);
       audit.payout = {
-        "address": seller.deposit,
+        "address": seller.xid,
         "amount": payout,
       };
     }
 
     if (txnFee > 0 && config.depositAddress) {
-      sendPayment(config.depositAddress, txnFee, `txn fee for asset ${assetName}`);
-      console.log(`audit: txn fee ${txnFee} to ${config.depositAddress}`);
-      audit.txnfee = {
-        "address": config.depositAddress,
-        "amount": txnFee,
-      };
+      try {
+        await sendPayment(config.depositAddress, txnFee, `txn fee for asset ${assetName}`);
+        console.log(`audit: txn fee ${txnFee} to ${config.depositAddress}`);
+        audit.txnfee = {
+          "address": config.depositAddress,
+          "amount": txnFee,
+        };
+      }
+      catch (error) {
+        console.log(`payment error: ${error}`);
+      }
     }
 
-    await xidb.saveAuditLog(audit);
+    const record = {
+      "type": "sale",
+      "buyer": buyerId,
+      "seller": sellerId,
+      "edition": xid,
+      "price": price,
+    };
 
+    const sellTxn = {
+      "type": "sell",
+      "buyer": buyerId,
+      "edition": xid,
+      "price": payout,
+    };
+
+    const buyTxn = {
+      "type": "buy",
+      "seller": sellerId,
+      "edition": xid,
+      "price": price,
+    };
+
+    xidb.saveHistory(assetData.nft.asset, record);
+    xidb.saveTxnLog(sellerId, sellTxn);
+    xidb.saveTxnLog(buyerId, buyTxn);
+    await xidb.saveAuditLog(audit);
     res.json({ ok: true, message: 'Success' });
   } catch (error) {
     console.error('Error:', error);
@@ -742,7 +779,16 @@ app.patch('/api/v1/profile/', ensureAuthenticated, async (req, res) => {
     }
 
     if (deposit) {
-      agentData.deposit = deposit;
+      const scan = await checkAddress(deposit);
+
+      if (scan) {
+        agentData.deposit = deposit;
+        agentData.depositScan = scan;
+      }
+      else {
+        res.status(400).json({message: `Invalid address: ${deposit}`});
+        return;
+      }
     }
 
     if (collections) {
@@ -751,6 +797,7 @@ app.patch('/api/v1/profile/', ensureAuthenticated, async (req, res) => {
     }
 
     if (links) {
+      // TBD verify links
       agentData.links = links;
     }
 
@@ -789,7 +836,7 @@ app.post('/api/v1/profile/credit', ensureAuthenticated, async (req, res) => {
   const { charge } = req.body;
 
   try {
-    const agentData = await xidb.addCredits(userId, charge);
+    const agentData = await xidb.buyCredits(userId, charge);
 
     if (agentData) {
 

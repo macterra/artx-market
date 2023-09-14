@@ -610,7 +610,24 @@ const saveAgent = async (agentData) => {
     }
 };
 
-const addCredits = async (userId, charge) => {
+const addCredits = async (userId, amount) => {
+    const agentData = await getAgent(userId);
+
+    if (agentData) {
+        agentData.credits += amount;
+
+        const record = {
+            "type": "add-credits",
+            "agent": userId,
+            "amount": amount,
+        };
+        await saveAuditLog(record);
+        await saveAgent(agentData);
+        return agentData;
+    }
+};
+
+const buyCredits = async (userId, charge) => {
     const agentData = await getAgent(userId);
 
     if (agentData) {
@@ -1183,6 +1200,7 @@ module.exports = {
     getAgent,
     saveAgent,
     addCredits,
+    buyCredits,
     allAssets,
     allAgents,
     verifyAsset,
