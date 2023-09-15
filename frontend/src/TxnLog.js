@@ -79,7 +79,7 @@ const TxnLog = ({ profile, refreshProfile }) => {
 
                     setMessage(`Sold "${token.asset.title} (${edition.asset.title})" to ${buyer.name}.`);
 
-                    setSats(record.sats);
+                    setSats(record.sats || record.price);
                     setCredits(record.credits);
                 }
 
@@ -95,7 +95,7 @@ const TxnLog = ({ profile, refreshProfile }) => {
 
                     setMessage(`Bought "${token.asset.title} (${edition.asset.title})" from ${seller.name}.`);
 
-                    setSats(-record.sats);
+                    setSats(-(record.sats || record.price));
                 }
 
                 if (record.type === 'royalty') {

@@ -1,0 +1,13 @@
+digraph G { 
+  node [shape=box];
+  React -> Express; 
+  Express -> Archiver; 
+  Express -> SatsPay; 
+  SatsPay -> LNBits;
+  LNBits -> LND;
+  LND -> Bitcoin;
+  Express -> IPFS; 
+  Archiver -> git; 
+  Archiver -> IPFS; 
+  Archiver -> Bitcoin; 
+}
