@@ -79,7 +79,8 @@ const TxnLog = ({ profile, refreshProfile }) => {
 
                     setMessage(`Sold "${token.asset.title} (${edition.asset.title})" to ${buyer.name}.`);
 
-                    setSats(record.price);
+                    setSats(record.sats);
+                    setCredits(record.credits);
                 }
 
                 if (record.type === 'buy') {
@@ -94,7 +95,26 @@ const TxnLog = ({ profile, refreshProfile }) => {
 
                     setMessage(`Bought "${token.asset.title} (${edition.asset.title})" from ${seller.name}.`);
 
-                    setSats(-record.price);
+                    setSats(-record.sats);
+                }
+
+                if (record.type === 'royalty') {
+                    const response1 = await fetch(`/api/v1/asset/${record.edition}`);
+                    const edition = await response1.json();
+
+                    const response2 = await fetch(`/api/v1/asset/${edition.nft.asset}`);
+                    const token = await response2.json();
+
+                    const response3 = await fetch(`/api/v1/profile/${record.seller}`);
+                    const seller = await response3.json();
+
+                    const response4 = await fetch(`/api/v1/profile/${record.buyer}`);
+                    const buyer = await response4.json();
+
+                    setMessage(`Royalty on "${token.asset.title} (${edition.asset.title})" ${seller.name} -> ${buyer.name}.`);
+
+                    setSats(record.sats);
+                    setCredits(record.credits);
                 }
 
                 setTime(record.time);
