@@ -56,7 +56,7 @@ const AssetView = ({ navigate }) => {
         };
 
         fetchMetadata();
-    }, [xid, isAuthenticated, refreshKey]);
+    }, [xid, refreshKey]);
 
     if (!metadata) {
         return;

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import {
     AppBar,
     Toolbar,
@@ -15,8 +16,9 @@ import {
 
 import BuildTime from './BuildTime';
 
-const AppHeader = ({ isAuthenticated, setIsAuthenticated, navigate }) => {
+const AppHeader = ({ navigate }) => {
 
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null);
     const [aboutOpen, setAboutOpen] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
@@ -40,11 +42,10 @@ const AppHeader = ({ isAuthenticated, setIsAuthenticated, navigate }) => {
 
     const checkAuthStatus = async () => {
         try {
-            const response = await fetch('/check-auth');
-            const data = await response.json();
-            if (data.message === 'Authenticated') {
+            const check = await axios.get('/check-auth');
+            if (check.data.isAuthenticated) {
                 setIsAuthenticated(true);
-                setIsAdmin(data.isAdmin);
+                setIsAdmin(check.data.isAdmin);
             } else {
                 setIsAuthenticated(false);
                 setIsAdmin(false);
