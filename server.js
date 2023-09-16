@@ -96,7 +96,7 @@ app.get('/login',
   function (req, res, next) {
     if (req.user) {
       // Already authenticated.
-      return res.redirect('/profile');
+      return res.redirect(`/profile/${req.user.xid}`);
     }
     next();
   },
@@ -117,26 +117,18 @@ app.get('/logout', (req, res) => {
   });
 });
 
-app.get('/check-auth/:xid?', async (req, res) => {
+app.get('/check-auth', async (req, res) => {
   if (req.isAuthenticated()) {
-    const userId = req.params.xid;
+    const userId = req.user.xid;
     const admin = await xidb.getAdmin();
-    const isAdmin = req.user.xid === admin.owner;
+    const isAdmin = userId === admin.owner;
 
-    if (userId) {
-      res.json({
-        isAuthenticated: true,
-        message: 'Authenticated',
-        sameId: req.user.xid === userId,
-        isAdmin: isAdmin,
-      });
-    } else {
-      res.json({
-        isAuthenticated: true,
-        message: 'Authenticated',
-        isAdmin: isAdmin,
-      });
-    }
+    res.json({
+      isAuthenticated: true,
+      userId: userId,
+      message: 'Authenticated',
+      isAdmin: isAdmin,
+    });
   } else {
     res.json({
       isAuthenticated: false,

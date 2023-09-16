@@ -19,6 +19,7 @@ import BuildTime from './BuildTime';
 const AppHeader = ({ navigate }) => {
 
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [userId, setUserId] = useState(null);
     const [anchorEl, setAnchorEl] = useState(null);
     const [aboutOpen, setAboutOpen] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
@@ -45,6 +46,7 @@ const AppHeader = ({ navigate }) => {
             const check = await axios.get('/check-auth');
             if (check.data.isAuthenticated) {
                 setIsAuthenticated(true);
+                setUserId(check.data.userId);
                 setIsAdmin(check.data.isAdmin);
             } else {
                 setIsAuthenticated(false);
@@ -81,8 +83,8 @@ const AppHeader = ({ navigate }) => {
                     <Button color="inherit" onClick={() => navigate('/')}>
                         Home
                     </Button>
-                    {isAuthenticated && (
-                        <Button color="inherit" onClick={() => navigate('/profile')}>
+                    {userId && (
+                        <Button color="inherit" onClick={() => navigate(`/profile/${userId}`)}>
                             Profile
                         </Button>
                     )}

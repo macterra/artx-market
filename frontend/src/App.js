@@ -22,7 +22,6 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/admin/" element={<ViewAdmin />} />
         <Route path="/cert/:xid" element={<ViewCert />} />
-        <Route path="/profile/" element={<ViewLogin />} />
         <Route path="/profile/:userId" element={<ViewProfile />} />
         <Route path="/profile/edit/:jump?" element={<EditProfile />} />
         <Route path="/collection/:xid" element={<ViewCollection />} />
@@ -49,42 +48,6 @@ function Home() {
         <AppHeader navigate={navigate} />
         <header className="App-header">
           <MainView navigate={navigate} />
-        </header>
-      </div>
-    </ThemeProvider>
-  );
-}
-
-function ViewLogin() {
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const response = await fetch(`/api/v1/profile`);
-        const profileData = await response.json();
-
-        if (profileData.xid) {
-          navigate(`/profile/${profileData.xid}`);
-        }
-        else {
-          navigate('/');
-        }
-      } catch (error) {
-        console.error('Error fetching profile data:', error);
-      }
-    };
-
-    fetchProfile();
-  });
-
-  return (
-    <ThemeProvider theme={darkTheme}>
-      <CssBaseline />
-      <div className="App">
-        <AppHeader navigate={navigate} />
-        <header className="App-header">
-          <p></p>
         </header>
       </div>
     </ThemeProvider>
