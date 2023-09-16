@@ -66,7 +66,7 @@ const AppHeader = ({ isAuthenticated, setIsAuthenticated, navigate }) => {
 
     const handleLogout = async () => {
         await fetch('/logout', { method: 'GET', credentials: 'include' });
-        checkAuthStatus();
+        navigate('/');
     };
 
     const handleGettingStartedClick = async () => {

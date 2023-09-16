@@ -1,11 +1,20 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Grid, Button, TextField } from '@mui/material';
 
 const NameEditor = ({ profile }) => {
-    const [name, setName] = useState(profile.name);
-    const [tagline, setTagline] = useState(profile.tagline);
+    const [name, setName] = useState(null);
+    const [tagline, setTagline] = useState(null);
     const [saved, setSaved] = useState(true);
+
+    useEffect(() => {
+        const initState = async () => {
+            setName(profile.name);
+            setTagline(profile.tagline);
+        };
+
+        initState();
+    }, [profile]);
 
     const handleSaveClick = async () => {
         try {

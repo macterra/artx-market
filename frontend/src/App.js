@@ -94,7 +94,7 @@ function ViewLogin() {
           navigate={navigate}
         />
         <header className="App-header">
-          <p>Login to visit your profile</p>
+          <p></p>
         </header>
       </div>
     </ThemeProvider>

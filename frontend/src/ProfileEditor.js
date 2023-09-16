@@ -19,8 +19,14 @@ const ProfileEditor = ({ navigate, refreshProfile, setRefreshProfile }) => {
         const fetchProfile = async () => {
             try {
                 const response = await fetch(`/api/v1/profile`);
-                const data = await response.json();
-                setProfile(data);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    setProfile(data);
+                }
+                else {
+                    navigate('/');
+                }
 
                 if (jump) {
                     setTab(jump);
