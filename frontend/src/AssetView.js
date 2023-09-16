@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { Tab, Tabs } from '@mui/material';
 import MetadataView from './MetadataView'
@@ -9,7 +10,7 @@ import TokenView from './TokenView';
 import TokenTrader from './TokenTrader';
 import TokenHistory from './TokenHistory';
 
-const AssetView = ({ navigate, isAuthenticated }) => {
+const AssetView = ({ navigate }) => {
     const { xid } = useParams();
 
     const [metadata, setMetadata] = useState(null);
@@ -18,12 +19,16 @@ const AssetView = ({ navigate, isAuthenticated }) => {
     const [isDeleted, setIsDeleted] = useState(false);
     const [tab, setTab] = useState(0);
     const [refreshKey, setRefreshKey] = useState(0);
+    const [isAuthenticated, setIsAuthenticated] = useState(null);
 
     useEffect(() => {
         const fetchMetadata = async () => {
             try {
-                const response = await fetch(`/api/v1/asset/${xid}`);
-                const metadata = await response.json();
+                const auth = await axios.get('/check-auth');
+                setIsAuthenticated(auth.data.isAuthenticated);
+
+                const asset = await axios.get(`/api/v1/asset/${xid}`);
+                const metadata = asset.data;
                 setMetadata(metadata);
 
                 if (metadata.token) {

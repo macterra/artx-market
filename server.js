@@ -125,18 +125,23 @@ app.get('/check-auth/:xid?', async (req, res) => {
 
     if (userId) {
       res.json({
+        isAuthenticated: true,
         message: 'Authenticated',
         sameId: req.user.xid === userId,
         isAdmin: isAdmin,
       });
     } else {
       res.json({
+        isAuthenticated: true,
         message: 'Authenticated',
         isAdmin: isAdmin,
       });
     }
   } else {
-    res.json({ message: 'Unauthorized' });
+    res.json({
+      isAuthenticated: false,
+      message: 'Unauthorized',
+    });
   }
 });
 
@@ -616,7 +621,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
     let royalty = 0;
     let royaltyPaid = false;
     const creatorId = tokenData.asset.owner;
-    
+
     let royaltyTxn = {
       "type": "royalty",
       "edition": xid,
@@ -810,7 +815,7 @@ app.patch('/api/v1/profile/', ensureAuthenticated, async (req, res) => {
         agentData.depositScan = scan;
       }
       else {
-        res.status(400).json({message: `Invalid address: ${deposit}`});
+        res.status(400).json({ message: `Invalid address: ${deposit}` });
         return;
       }
     }
