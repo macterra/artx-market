@@ -40,18 +40,13 @@ const darkTheme = createTheme({
 });
 
 function Home() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
 
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
       <div className="App">
-        <AppHeader
-          isAuthenticated={isAuthenticated}
-          setIsAuthenticated={setIsAuthenticated}
-          navigate={navigate}
-        />
+        <AppHeader navigate={navigate} />
         <header className="App-header">
           <MainView navigate={navigate} />
         </header>
@@ -61,7 +56,6 @@ function Home() {
 }
 
 function ViewLogin() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -88,11 +82,7 @@ function ViewLogin() {
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
       <div className="App">
-        <AppHeader
-          isAuthenticated={isAuthenticated}
-          setIsAuthenticated={setIsAuthenticated}
-          navigate={navigate}
-        />
+        <AppHeader navigate={navigate} />
         <header className="App-header">
           <p></p>
         </header>
@@ -103,7 +93,6 @@ function ViewLogin() {
 
 function ViewProfile() {
   const { userId } = useParams();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [refreshProfile, setRefreshProfile] = useState(null);
   const navigate = useNavigate();
 
@@ -111,11 +100,7 @@ function ViewProfile() {
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
       <div className="App">
-        <AppHeader
-          isAuthenticated={isAuthenticated}
-          setIsAuthenticated={setIsAuthenticated}
-          navigate={navigate}
-        />
+        <AppHeader navigate={navigate} />
         <header className="App-header">
           <Box display="flex" flexDirection="column" flexGrow={1}>
             <ProfileHeader navigate={navigate} userId={userId} refreshProfile={refreshProfile} />
@@ -129,7 +114,6 @@ function ViewProfile() {
 
 function ViewCollection() {
   const { xid } = useParams();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [refreshProfile, setRefreshProfile] = useState(null);
   const [userId, setUserId] = useState(null);
   const navigate = useNavigate();
@@ -158,11 +142,7 @@ function ViewCollection() {
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
       <div className="App">
-        <AppHeader
-          isAuthenticated={isAuthenticated}
-          setIsAuthenticated={setIsAuthenticated}
-          navigate={navigate}
-        />
+        <AppHeader navigate={navigate} />
         <header className="App-header">
           <Box display="flex" flexDirection="column" flexGrow={1}>
             {userId &&
@@ -179,7 +159,6 @@ function ViewCollection() {
 }
 
 function EditProfile() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [refreshProfile, setRefreshProfile] = useState(null);
   const navigate = useNavigate();
 
@@ -187,11 +166,7 @@ function EditProfile() {
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
       <div className="App">
-        <AppHeader
-          isAuthenticated={isAuthenticated}
-          setIsAuthenticated={setIsAuthenticated}
-          navigate={navigate}
-        />
+        <AppHeader navigate={navigate} />
         <header className="App-header">
           <Box display="flex" flexDirection="column" flexGrow={1}>
             <ProfileEditor navigate={navigate} refreshProfile={refreshProfile} setRefreshProfile={setRefreshProfile} />
@@ -203,22 +178,15 @@ function EditProfile() {
 }
 
 function ViewAsset() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
 
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
       <div className="App">
-        <AppHeader
-          isAuthenticated={isAuthenticated}
-          setIsAuthenticated={setIsAuthenticated}
-          navigate={navigate}
-        />
+        <AppHeader navigate={navigate} />
         <header className="App-header">
-          <AssetView
-            navigate={navigate}
-            isAuthenticated={isAuthenticated} />
+          <AssetView navigate={navigate} />
         </header>
       </div>
     </ThemeProvider>
@@ -226,22 +194,15 @@ function ViewAsset() {
 }
 
 function ViewAdmin() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
 
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
       <div className="App">
-        <AppHeader
-          isAuthenticated={isAuthenticated}
-          setIsAuthenticated={setIsAuthenticated}
-          navigate={navigate}
-        />
+        <AppHeader navigate={navigate} />
         <header className="App-header">
-          <AdminView
-            navigate={navigate}
-            isAuthenticated={isAuthenticated} />
+          <AdminView navigate={navigate} />
         </header>
       </div>
     </ThemeProvider>
@@ -249,18 +210,13 @@ function ViewAdmin() {
 }
 
 function ViewCert() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
 
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
       <div className="App">
-        <AppHeader
-          isAuthenticated={isAuthenticated}
-          setIsAuthenticated={setIsAuthenticated}
-          navigate={navigate}
-        />
+        <AppHeader navigate={navigate} />
         <header className="App-header">
           <CertView navigate={navigate} />
         </header>
