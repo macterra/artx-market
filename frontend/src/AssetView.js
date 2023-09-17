@@ -17,7 +17,7 @@ const AssetView = ({ navigate }) => {
     const [isOwner, setIsOwner] = useState(false);
     const [isToken, setIsToken] = useState(false);
     const [isDeleted, setIsDeleted] = useState(false);
-    const [tab, setTab] = useState(0);
+    const [tab, setTab] = useState("meta");
     const [refreshKey, setRefreshKey] = useState(0);
     const [isAuthenticated, setIsAuthenticated] = useState(null);
 
@@ -49,8 +49,6 @@ const AssetView = ({ navigate }) => {
                 } else {
                     setIsOwner(false);
                 }
-                
-                setTab("meta");
             } catch (error) {
                 console.error('Error fetching image metadata:', error);
             }
