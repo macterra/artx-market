@@ -693,7 +693,8 @@ const getAgentTxnLog = (userId) => {
         const jsonlPath = path.join(config.agents, userId, 'txnlog.jsonl');
         const data = fs.readFileSync(jsonlPath, 'utf-8');
         const lines = data.trim().split('\n');
-        return lines.map(line => JSON.parse(line));
+        const log = lines.map(line => JSON.parse(line));
+        return log.reverse();
     } catch (error) {
         return [];
     }
@@ -838,7 +839,8 @@ const getHistory = async (xid) => {
         const historyPath = path.join(config.assets, xid, 'history.jsonl');
         const data = await fs.promises.readFile(historyPath, 'utf-8');
         const lines = data.trim().split('\n');
-        return lines.map(line => JSON.parse(line));
+        const history = lines.map(line => JSON.parse(line));
+        return history.reverse();
     } catch (error) {
         return [];
     }
@@ -874,6 +876,18 @@ const saveAsset = async (metadata) => {
 
     metadata.asset.updated = new Date().toISOString();
     await fs.promises.writeFile(assetJsonPath, JSON.stringify(metadata, null, 2));
+};
+
+const getAuditLog = () => {
+    try {
+        const jsonlPath = path.join(config.data, 'auditlog.jsonl');
+        const data = fs.readFileSync(jsonlPath, 'utf-8');
+        const lines = data.trim().split('\n');
+        const log = lines.map(line => JSON.parse(line));
+        return log.reverse();
+    } catch (error) {
+        return [];
+    }
 };
 
 const saveAuditLog = async (record) => {
@@ -1214,6 +1228,7 @@ module.exports = {
     getCollection,
     getAsset,
     getCert,
+    getAuditLog,
     saveAuditLog,
     saveTxnLog,
     saveHistory,
