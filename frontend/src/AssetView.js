@@ -25,7 +25,8 @@ const AssetView = ({ navigate }) => {
         const fetchMetadata = async () => {
             try {
                 const auth = await axios.get('/check-auth');
-                setIsAuthenticated(auth.data.isAuthenticated);
+                const isAuthenticated = auth.data.isAuthenticated;
+                setIsAuthenticated(isAuthenticated);
 
                 const asset = await axios.get(`/api/v1/asset/${xid}`);
                 const metadata = asset.data;
@@ -47,9 +48,9 @@ const AssetView = ({ navigate }) => {
                     setIsOwner(metadata.userIsOwner);
                 } else {
                     setIsOwner(false);
-                    setTab("meta");
                 }
-
+                
+                setTab("meta");
             } catch (error) {
                 console.error('Error fetching image metadata:', error);
             }
