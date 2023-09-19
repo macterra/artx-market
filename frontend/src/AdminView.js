@@ -11,6 +11,7 @@ const AdminView = ({ navigate }) => {
     const [invalidAssets, setInvalidAssets] = useState([]);
     const [invalidAgents, setInvalidAgents] = useState([]);
     const [walletJson, setWalletJson] = useState(null);
+    const [userList, setUserList] = useState(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -28,11 +29,20 @@ const AdminView = ({ navigate }) => {
 
                 const walletResponse = await fetch(`/api/v1/admin/walletinfo`);
 
-                if (response.ok) {
+                if (walletResponse.ok) {
                     const walletinfo = await walletResponse.json();
                     const walletJson = JSON.stringify(walletinfo, null, 2);
                     setWalletJson(walletJson);
                 }
+                
+                const agentResponse = await fetch('/api/v1/admin/agents');
+
+                if (agentResponse.ok) {
+                    const agents = await agentResponse.json();
+                    const userList = JSON.stringify(agents, null, 2);
+                    setUserList(userList);
+                }
+
             } catch (error) {
                 console.error('Error fetching admin data:', error);
             }
@@ -288,6 +298,7 @@ const AdminView = ({ navigate }) => {
                     <Tab key="state" value="state" label={'State'} />
                     <Tab key="verify" value="verify" label={'Verify'} />
                     <Tab key="wallet" value="wallet" label={'Wallet'} />
+                    <Tab key="users" value="users" label={'Users'} />
                 </Tabs>
                 {tab === 'state' &&
                     <Box>
@@ -405,6 +416,15 @@ const AdminView = ({ navigate }) => {
                     <Box>
                         <textarea
                             value={walletJson}
+                            readOnly
+                            style={{ width: '600px', height: '400px', overflow: 'auto' }}
+                        />
+                    </Box>
+                }
+                {tab === 'users' &&
+                    <Box>
+                        <textarea
+                            value={userList}
                             readOnly
                             style={{ width: '600px', height: '400px', overflow: 'auto' }}
                         />

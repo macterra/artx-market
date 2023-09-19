@@ -342,7 +342,11 @@ app.get('/api/v1/admin/agents', ensureAuthenticated, async (req, res) => {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    res.json(xidb.allAgents());
+    const agentIds = xidb.allAgents();
+    const agentsPromises = agentIds.map(xid => xidb.getAgent(xid));
+    const agents = await Promise.all(agentsPromises);
+    
+    res.json(agents);
   } catch (error) {
     console.error('Error:', error);
     res.status(404).json({ message: 'Agents not found' });
