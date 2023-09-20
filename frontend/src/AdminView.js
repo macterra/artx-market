@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, Table, TableBody, TableRow, TableCell, Tab, Tabs, Grid } from '@mui/material';
+import { Box, Button, Paper, TableContainer, Table, TableHead, TableBody, TableRow, TableCell, Tab, Tabs, Grid } from '@mui/material';
 
 const AdminView = ({ navigate }) => {
 
@@ -27,20 +27,19 @@ const AdminView = ({ navigate }) => {
                 setAdmin(admin);
                 setTab('state');
 
+                const agentResponse = await fetch('/api/v1/admin/agents');
+
+                if (agentResponse.ok) {
+                    const userList = await agentResponse.json();
+                    setUserList(userList);
+                }
+
                 const walletResponse = await fetch(`/api/v1/admin/walletinfo`);
 
                 if (walletResponse.ok) {
                     const walletinfo = await walletResponse.json();
                     const walletJson = JSON.stringify(walletinfo, null, 2);
                     setWalletJson(walletJson);
-                }
-                
-                const agentResponse = await fetch('/api/v1/admin/agents');
-
-                if (agentResponse.ok) {
-                    const agents = await agentResponse.json();
-                    const userList = JSON.stringify(agents, null, 2);
-                    setUserList(userList);
                 }
 
             } catch (error) {
@@ -224,7 +223,8 @@ const AdminView = ({ navigate }) => {
         const logs = [];
         const invalidAgents = [];
 
-        for (const [i, xid] of agents.entries()) {
+        for (const [i, agent] of agents.entries()) {
+            const xid = agent.xid;
             const response = await fetch(`/api/v1/admin/verify/agent/${xid}`);
             const asset = await response.json();
             const index = (i + 1).toString().padStart(5, " ");
@@ -421,14 +421,43 @@ const AdminView = ({ navigate }) => {
                         />
                     </Box>
                 }
-                {tab === 'users' &&
-                    <Box>
-                        <textarea
-                            value={userList}
-                            readOnly
-                            style={{ width: '600px', height: '400px', overflow: 'auto' }}
-                        />
-                    </Box>
+                {tab === 'users' && userList &&
+                    <TableContainer component={Paper} style={{ maxHeight: '600px', overflow: 'auto' }}>
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell></TableCell>
+                                    <TableCell>user</TableCell>
+                                    <TableCell>credits</TableCell>
+                                    <TableCell>updated</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {userList.map((user, index) => (
+                                    <TableRow>
+                                        <TableCell>
+                                            {user.pfp &&
+                                                <img
+                                                    src={user.pfp}
+                                                    alt=""
+                                                    style={{
+                                                        width: '30px',
+                                                        height: '30px',
+                                                        objectFit: 'cover',
+                                                        marginRight: '16px',
+                                                        borderRadius: '50%',
+                                                    }}
+                                                />
+                                            }
+                                        </TableCell>
+                                        <TableCell><a href={`/profile/${user.xid}`} >{user.name}</a></TableCell>
+                                        <TableCell align="right">{user.credits}</TableCell>
+                                        <TableCell>{user.updated}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
                 }
             </div>
         </Box>
