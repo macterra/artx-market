@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Button, Paper, TableContainer, Table, TableHead, TableBody, TableRow, TableCell, Tab, Tabs, Grid } from '@mui/material';
+import AuditLog from './AuditLog';
 
 const AdminView = ({ navigate }) => {
 
@@ -299,6 +300,7 @@ const AdminView = ({ navigate }) => {
                     <Tab key="verify" value="verify" label={'Verify'} />
                     <Tab key="wallet" value="wallet" label={'Wallet'} />
                     <Tab key="users" value="users" label={'Users'} />
+                    <Tab key="auditlog" value="auditlog" label={'Audit Log'} />
                 </Tabs>
                 {tab === 'state' &&
                     <Box>
@@ -458,6 +460,9 @@ const AdminView = ({ navigate }) => {
                             </TableBody>
                         </Table>
                     </TableContainer>
+                }
+                {tab === 'auditlog' &&
+                    <AuditLog />
                 }
             </div>
         </Box>

@@ -319,6 +319,22 @@ app.get('/api/v1/admin/walletinfo', ensureAuthenticated, async (req, res) => {
   }
 });
 
+app.get('/api/v1/admin/auditlog', ensureAuthenticated, async (req, res) => {
+  try {
+    const adminData = await xidb.getAdmin();
+
+    if (!adminData.owner || adminData.owner !== req.user.xid) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const auditlog = await xidb.getAuditLog();
+    res.json(auditlog);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(404).json({ message: 'auditlog not found' });
+  }
+});
+
 app.get('/api/v1/admin/assets', ensureAuthenticated, async (req, res) => {
   try {
     const adminData = await xidb.getAdmin();
@@ -345,7 +361,7 @@ app.get('/api/v1/admin/agents', ensureAuthenticated, async (req, res) => {
     const agentIds = xidb.allAgents();
     const agentsPromises = agentIds.map(xid => xidb.getAgent(xid));
     const agents = await Promise.all(agentsPromises);
-    
+
     res.json(agents);
   } catch (error) {
     console.error('Error:', error);
