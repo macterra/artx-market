@@ -25,7 +25,7 @@ function App() {
         <Route path="/profile/:userId" element={<ViewProfile />} />
         <Route path="/profile/edit/:jump?" element={<EditProfile />} />
         <Route path="/collection/:xid" element={<ViewCollection />} />
-        <Route path="/asset/:xid" element={<ViewAsset />} />
+        <Route path="/asset/:xid/:ed?" element={<ViewAsset />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>

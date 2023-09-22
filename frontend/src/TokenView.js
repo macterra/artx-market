@@ -171,7 +171,11 @@ const TokenView = ({ metadata }) => {
                                         <TableBody>
                                             {nfts.map((nft, index) => (
                                                 <TableRow key={index}>
-                                                    <TableCell>{nft.asset.title}</TableCell>
+                                                    <TableCell>
+                                                        <a href={`/asset/${metadata.xid}/${nft.nft.edition}`}>
+                                                            {nft.asset.title}
+                                                        </a>
+                                                    </TableCell>
                                                     <TableCell>
                                                         <div style={{ display: 'flex', alignItems: 'center' }}>
                                                             {nft.owner.pfp &&

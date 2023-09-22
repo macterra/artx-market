@@ -11,7 +11,7 @@ import TokenTrader from './TokenTrader';
 import TokenHistory from './TokenHistory';
 
 const AssetView = ({ navigate }) => {
-    const { xid } = useParams();
+    const { xid, ed } = useParams();
 
     const [metadata, setMetadata] = useState(null);
     const [isOwner, setIsOwner] = useState(false);
@@ -20,6 +20,7 @@ const AssetView = ({ navigate }) => {
     const [tab, setTab] = useState("meta");
     const [refreshKey, setRefreshKey] = useState(0);
     const [isAuthenticated, setIsAuthenticated] = useState(null);
+    const [edition, setEdition] = useState(null);
 
     useEffect(() => {
         const fetchMetadata = async () => {
@@ -32,10 +33,28 @@ const AssetView = ({ navigate }) => {
                 const metadata = asset.data;
                 setMetadata(metadata);
 
-                if (metadata.token) {
-                    setIsToken(true);
-                } else {
-                    setIsToken(false);
+                const isToken = !!metadata.token;
+                setIsToken(isToken);
+
+                if (ed) {
+                    if (!isToken) {
+                        navigate(`/asset/${xid}`);
+                        return;
+                    }
+
+                    const edition = parseInt(ed);
+
+                    if (isNaN(edition) || edition < 1 || edition > metadata.token.editions) {
+                        navigate(`/asset/${xid}`);
+                        return;
+                    }
+
+                    setEdition(edition);
+                }
+                else {
+                    if (isToken && metadata.token.editions === 1) {
+                        setEdition(1);
+                    }
                 }
 
                 if (metadata.asset.collection === 'deleted') {
@@ -81,6 +100,7 @@ const AssetView = ({ navigate }) => {
                 >
                     <Tab key="meta" value="meta" label={'Metadata'} />
                     {isToken && <Tab key="token" value="token" label={'Token'} />}
+                    {isToken && edition && <Tab key="edition" value="edition" label={'Edition'} />}
                     {isToken && isAuthenticated && !isDeleted && <Tab key="trade" value="trade" label={'Buy/Sell'} />}
                     {isOwner && !isToken && <Tab key="edit" value="edit" label={'Edit'} />}
                     {isOwner && !isToken && !isDeleted && <Tab key="mint" value="mint" label={'Mint'} />}
