@@ -9,6 +9,7 @@ import PfpEditor from './PfpEditor';
 import TokenView from './TokenView';
 import TokenTrader from './TokenTrader';
 import TokenHistory from './TokenHistory';
+import EditionView from './EditionView';
 
 const AssetView = ({ navigate }) => {
     const { xid, ed } = useParams();
@@ -109,6 +110,7 @@ const AssetView = ({ navigate }) => {
                 </Tabs>
                 {tab === 'meta' && <MetadataView navigate={navigate} metadata={metadata} />}
                 {tab === 'token' && <TokenView metadata={metadata} />}
+                {tab === 'edition' && <EditionView metadata={metadata} edition={edition} />}
                 {tab === 'trade' && <TokenTrader metadata={metadata} setRefreshKey={setRefreshKey} />}
                 {tab === 'edit' && <AssetEditor metadata={metadata} setTab={setTab} setRefreshKey={setRefreshKey} />}
                 {tab === 'mint' && <TokenMinter navigate={navigate} metadata={metadata} setTab={setTab} setRefreshKey={setRefreshKey} />}
