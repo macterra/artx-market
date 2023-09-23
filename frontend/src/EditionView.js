@@ -1,13 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import {
     Table,
     TableBody,
     TableCell,
     TableContainer,
     TableRow,
-    TableHead,
-    Paper,
 } from '@mui/material';
 
 const EditionView = ({ metadata, edition }) => {
@@ -64,6 +61,26 @@ const EditionView = ({ metadata, edition }) => {
                             </div>
                         </TableCell>
                     </TableRow>
+                    {nft.cert?.cid &&
+                        <TableRow>
+                            <TableCell>IPFS:</TableCell>
+                            <TableCell>
+                                <a href={`/ipfs/${nft.cert.cid}/assets/${nft.xid}/meta.json`} target="_blank" rel="noopener noreferrer">
+                                    {nft.cert.cid}
+                                </a>
+                            </TableCell>
+                        </TableRow>
+                    }
+                    {nft.cert?.xid &&
+                        <TableRow>
+                            <TableCell>Certificate:</TableCell>
+                            <TableCell>
+                                <a href={`/cert/${nft.cert.xid}`}>
+                                    {nft.cert.xid}
+                                </a>
+                            </TableCell>
+                        </TableRow>
+                    }
                 </TableBody>
             </Table>
         </TableContainer >

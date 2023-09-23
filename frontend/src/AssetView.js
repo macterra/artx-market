@@ -51,6 +51,7 @@ const AssetView = ({ navigate }) => {
                     }
 
                     setEdition(edition);
+                    setTab('edition');
                 }
                 else {
                     if (isToken && metadata.token.editions === 1) {
@@ -75,7 +76,7 @@ const AssetView = ({ navigate }) => {
         };
 
         fetchMetadata();
-    }, [xid, refreshKey]);
+    }, [xid, refreshKey, ed, navigate]);
 
     if (!metadata) {
         return;
