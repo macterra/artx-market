@@ -17,18 +17,9 @@ const EditionView = ({ metadata, edition }) => {
     useEffect(() => {
         const fetchNft = async () => {
             try {
-                let response = await fetch(`/api/v1/profile/`);
-                const myProfile = await response.json();
-
                 const xid = metadata.token.nfts[edition - 1];
-
-                response = await fetch(`/api/v1/asset/${xid}`);
+                const response = await fetch(`/api/v1/nft/${xid}`);
                 const nft = await response.json();
-
-                response = await fetch(`/api/v1/profile/${nft.asset.owner}`);
-                nft.owner = await response.json();
-                nft.owned = (nft.asset.owner === myProfile.xid);
-
                 setNft(nft);
             } catch (error) {
                 console.error('Error fetching NFT:', error);

@@ -459,6 +459,34 @@ app.get('/api/v1/cert/:xid', async (req, res) => {
   }
 });
 
+app.get('/api/v1/nft/:xid', async (req, res) => {
+  try {
+    const assetData = await xidb.getAsset(req.params.xid);
+    
+    assetData.owner = await xidb.getAgent(assetData.asset.owner);
+    assetData.owned = (req.user?.xid === assetData.owner.xid);
+
+    const tokenId = assetData.nft?.asset;
+
+    if (tokenId) {
+      const tokenData = await xidb.getAsset(tokenId);
+      assetData.nft.asset = tokenData;
+    }
+    
+    const adminData = await xidb.getAdmin();
+    const cert = adminData.latest;
+
+    if (cert) {
+      assetData.cert = await xidb.getCert(cert);
+    }
+
+    res.json(assetData);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(404).json({ message: 'NFT not found' });
+  }
+});
+
 app.get('/api/v1/asset/:xid', async (req, res) => {
   try {
     const assetData = await xidb.getAsset(req.params.xid);
