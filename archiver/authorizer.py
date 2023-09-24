@@ -2,14 +2,13 @@ import sys
 import os
 import json
 import argparse
+import uuid
 import base58
 
 from datetime import datetime
 from dateutil import tz
 from decimal import Decimal
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
-from xidb import *
-
 
 class Encoder(json.JSONEncoder):
     def default(self, obj):
@@ -42,7 +41,6 @@ class AuthTx():
             xid_bytes = base58.b58decode(xid58)
             self.xid = str(uuid.UUID(bytes=xid_bytes))
             self.op_return = op_return
-            print('hey!', op_return, xid58, self.xid)
             return True
         except:
             return False
@@ -104,7 +102,6 @@ class Authorizer:
         return self.blockchain.getnewaddress("recv", "bech32")
 
     def notarize(self, xid, cid):
-        authAddr = self.blockchain.getnewaddress("auth")
         print(f"notarize {xid} {cid}")
 
         self.updateWallet()
@@ -150,54 +147,26 @@ class Authorizer:
             print('not enough funds in account', amount)
             return
         
-        print('txfee', txfee)
-        
-        # Convert the UUID from string format to bytes
         uuid_bytes = uuid.UUID(xid).bytes
-
-        # Encode the bytes in base58
         xid58 = base58.b58encode(uuid_bytes).decode()
-
-        print('xid58', xid58)
-        
-        # Decode the base58 string into bytes
-        uuid_bytes = base58.b58decode(xid58)
-
-        # Convert the bytes back into a UUID
-        xid_decoded = uuid.UUID(bytes=uuid_bytes)
-
-        print('xid', xid_decoded)
-
-        version = f'{cid}::{xid58}'
-
-        print('version', version)
-
-        # Convert the string to bytes
-        bytes_s = version.encode()
-
-        # Convert the bytes to a hex string
+        op_return = f'{cid}::{xid58}'
+        bytes_s = op_return.encode()
         hexdata = bytes_s.hex()
 
-        print('hexdata', hexdata, len(hexdata))
-        
-        # changeAddr = self.blockchain.getnewaddress("auth", "bech32")
-        # change = amount - stake - txfee
-        # print(f"{change} = {amount} - {stake} - {txfee}")
-        # outputs = {"data": hexdata, authAddr: str(stake), changeAddr: change}
+        authAddr = self.blockchain.getnewaddress("auth")
+        changeAddr = self.blockchain.getnewaddress("auth", "bech32")
+        change = amount - stake - txfee
+        print(f"{change} = {amount} - {stake} - {txfee}")
+        outputs = {"data": hexdata, authAddr: str(stake), changeAddr: change}
 
-        # rawtxn = self.blockchain.createrawtransaction(inputs, outputs)
+        rawtxn = self.blockchain.createrawtransaction(inputs, outputs)
+        sigtxn = self.blockchain.signrawtransactionwithwallet(rawtxn)
+        dectxn = self.blockchain.decoderawtransaction(sigtxn['hex'])
+        print('dec', json.dumps(dectxn, indent=2, cls=Encoder))
 
-        # sigtxn = self.blockchain.signrawtransactionwithwallet(rawtxn)
-        # print('sig', json.dumps(sigtxn, indent=2, cls=Encoder))
-        # print(len(sigtxn['hex']))
-
-        # dectxn = self.blockchain.decoderawtransaction(sigtxn['hex'])
-        # print('dec', json.dumps(dectxn, indent=2, cls=Encoder))
-
-        # txid = self.blockchain.sendrawtransaction(sigtxn['hex'])
-        # print('txid', txid)
-
-        #return txid
+        txid = self.blockchain.sendrawtransaction(sigtxn['hex'])
+        print('txid', txid)
+        return txid
 
     def certify(self, txid):
         tx = self.blockchain.getrawtransaction(txid, 1)
@@ -289,8 +258,9 @@ if __name__ == "__main__":
     xid = 'd59d815c-1b23-4de4-a6a9-ed8ca1060184'
     #cid = 'QmbNcW8SqNvJ7QuX5zQhQ7fgUtFK8W2gx7GnEgCsPaqGf4'
     cid = 'QmQiqxe6DfgmNj1JTe7Xk2hVQkgEqmMjRy6tuffqcTLJaB'
-    authorizer.notarize(xid, cid)
+    #authorizer.notarize(xid, cid)
 
     #txid = '5e7997bc52587b24c7864b3aff8d185a156676117735bd3a7e87aecc42668c8a'
-    #cert = authorizer.certify(txid)
+    txid = '772fbd4d043f30d6843bd2c68eeb5b5b6e80d1579da41f8281b3511fc26cb798'
+    cert = authorizer.certify(txid)
 
