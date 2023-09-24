@@ -2,12 +2,14 @@ import sys
 import os
 import json
 import argparse
+import base58
 
 from datetime import datetime
 from dateutil import tz
 from decimal import Decimal
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from xidb import *
+
 
 class Encoder(json.JSONEncoder):
     def default(self, obj):
@@ -40,6 +42,15 @@ class AuthTx():
                 cid1 = cid.make_cid(data[2:])
                 cid0 = cid1.to_v0()
                 self.cid = str(cid0)
+            elif data[1] == 70:
+                version = data[2:].decode()
+                self.cid, xid58 = version.split('::')
+                xid_bytes = base58.b58decode(xid58)
+                self.xid = str(uuid.UUID(bytes=xid_bytes))
+                print('hey!', version, xid58, self.xid)
+                return True
+            else:
+                return False
         except:
             # print('cid parser fail')
             return False
@@ -51,11 +62,12 @@ class AuthTx():
 
         return self.xid != None
 
+
 class Authorizer:
     def __init__(self):
         connect = os.environ.get("BTC_CONNECT")
         self.chain = "BTC"
-        # print(f"connect={connect}")
+        print(f"connect={connect}")
         self.blockchain = AuthServiceProxy(connect, timeout=10)
         self.register = False
 
@@ -90,7 +102,7 @@ class Authorizer:
                 txin = self.blockchain.getrawtransaction(tx['txid'], 1)
                 auth = AuthTx(txin)
                 if auth.cid:
-                #if auth.isValid:
+                    # if auth.isValid:
                     auth.utxo = tx
                     assets.append(auth)
                     self.staked += tx['amount']
@@ -106,6 +118,102 @@ class Authorizer:
 
     def getAddress(self):
         return self.blockchain.getnewaddress("recv", "bech32")
+
+    def notarize(self, xid, cid):
+        authAddr = self.blockchain.getnewaddress("auth")
+        print(f"notarize {xid} {cid}")
+
+        self.updateWallet()
+
+        inputs = []
+
+        amount = Decimal('0')
+        stake = self.getStake()
+
+        for asset in self.assets:
+            if xid == asset.xid:
+                if cid == asset.cid:
+                    print(f"xid is already up to date with {cid}")
+                    return
+                inputs.append(asset.utxo)
+                amount += stake
+                break
+
+        if inputs:
+            if self.register:
+                print(f"already registered xid {xid}")
+                return
+            else:
+                print(f"found utxo for {xid}")
+        else:
+            if self.register:
+                print(f"registering xid {xid}")
+            else:
+                print(f"can't find utxo for {xid}")
+                return
+            
+        txfeeRate = self.getFee(3)
+        txfee = txfeeRate * 255 / 1000  # expected size of 255 vBytes
+
+        for funtxn in self.funds:
+            inputs.append(funtxn)
+            print("inputs", funtxn['amount'])
+            amount += funtxn['amount']
+            if amount > (stake + txfee):
+                break
+
+        if amount < (stake + txfee):
+            print('not enough funds in account', amount)
+            return
+        
+        print('txfee', txfee)
+        
+        # Convert the UUID from string format to bytes
+        uuid_bytes = uuid.UUID(xid).bytes
+
+        # Encode the bytes in base58
+        xid58 = base58.b58encode(uuid_bytes).decode()
+
+        print('xid58', xid58)
+        
+        # Decode the base58 string into bytes
+        uuid_bytes = base58.b58decode(xid58)
+
+        # Convert the bytes back into a UUID
+        xid_decoded = uuid.UUID(bytes=uuid_bytes)
+
+        print('xid', xid_decoded)
+
+        version = f'{cid}::{xid58}'
+
+        print('version', version)
+
+        # Convert the string to bytes
+        bytes_s = version.encode()
+
+        # Convert the bytes to a hex string
+        hexdata = bytes_s.hex()
+
+        print('hexdata', hexdata, len(hexdata))
+        
+        # changeAddr = self.blockchain.getnewaddress("auth", "bech32")
+        # change = amount - stake - txfee
+        # print(f"{change} = {amount} - {stake} - {txfee}")
+        # outputs = {"data": hexdata, authAddr: str(stake), changeAddr: change}
+
+        # rawtxn = self.blockchain.createrawtransaction(inputs, outputs)
+
+        # sigtxn = self.blockchain.signrawtransactionwithwallet(rawtxn)
+        # print('sig', json.dumps(sigtxn, indent=2, cls=Encoder))
+        # print(len(sigtxn['hex']))
+
+        # dectxn = self.blockchain.decoderawtransaction(sigtxn['hex'])
+        # print('dec', json.dumps(dectxn, indent=2, cls=Encoder))
+
+        # txid = self.blockchain.sendrawtransaction(sigtxn['hex'])
+        # print('txid', txid)
+
+        #return txid
 
     def authorize(self, cid):
         print(f"authorizing {cid}")
@@ -152,7 +260,7 @@ class Authorizer:
                 return
 
         txfeeRate = self.getFee(3)
-        txfee = txfeeRate * 255 / 1000 # expected size of 255 vBytes
+        txfee = txfeeRate * 255 / 1000  # expected size of 255 vBytes
 
         for funtxn in self.funds:
             inputs.append(funtxn)
@@ -232,54 +340,44 @@ class Authorizer:
 
         return str(xid)
 
-def test():
-    authorizer = Authorizer()
-    fee = authorizer.getFee(3)
-    print("fee", fee)
-
-def balance():
-    authorizer = Authorizer()
-    authorizer.updateWallet()
-    print("staked ", authorizer.staked)
-    print("balance", authorizer.balance)
-
-def fund():
-    authorizer = Authorizer()
-    print(authorizer.getAddress())
-
-def get_cid():
-    file_path = "data/meta.json"
-    with open(file_path, 'r') as json_file:
-        data = json.load(json_file)
-    return data['cid']
-
-def notarize():
-    authorizer = Authorizer()
-    authorizer.authorize(get_cid())
-
-def register():
-    authorizer = Authorizer()
-    authorizer.register = True
-    authorizer.authorize(get_cid())
-
-if __name__ == "__main__":
+def run():
     parser = argparse.ArgumentParser(description='Run a function.')
-    parser.add_argument('function', type=str, help='The function to run: register, notarize')
+    parser.add_argument('function', type=str,
+                        help='The function to run: register, notarize')
 
     try:
         args = parser.parse_args()
+        authorizer = Authorizer()
 
         if args.function == 'test':
-            test()
+            fee = authorizer.getFee(3)
+            print("fee", fee)
+        elif args.function == 'wallet':
+            walletinfo = authorizer.getWalletinfo()
+            print(walletinfo)
         elif args.function == 'balance':
-            balance()
+            authorizer.updateWallet()
+            print("staked ", authorizer.staked)
+            print("balance", authorizer.balance)
         elif args.function == 'fund':
-            fund()
-        elif args.function == 'notarize':
-            notarize()
+            print(authorizer.getAddress())
         elif args.function == 'register':
-            register()
+            authorizer.register = True
+            xid = 'd59d815c-1b23-4de4-a6a9-ed8ca1060184'
+            cid = 'QmbNcW8SqNvJ7QuX5zQhQ7fgUtFK8W2gx7GnEgCsPaqGf4'
+            authorizer.notarize(xid, cid)
         else:
-            print(f'Unknown function: {args.function}. Please use "register", "notarize".')
-    except:
-        test()
+            print(
+                f'Unknown function: {args.function}. Please use "register", "notarize".')
+    except Exception as e:
+        print(f"An exception occurred: {e}")
+
+        
+if __name__ == "__main__":
+    
+    authorizer = Authorizer()
+    
+    authorizer.register = True
+    xid = 'd59d815c-1b23-4de4-a6a9-ed8ca1060184'
+    cid = 'QmbNcW8SqNvJ7QuX5zQhQ7fgUtFK8W2gx7GnEgCsPaqGf4'
+    authorizer.notarize(xid, cid)
