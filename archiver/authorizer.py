@@ -15,7 +15,6 @@ class Encoder(json.JSONEncoder):
         if isinstance(obj, Decimal):
             return float(obj)
 
-
 class AuthTx():
     def __init__(self, tx):
         self.tx = tx
@@ -73,9 +72,7 @@ class Authorizer:
         self.staked = 0
         self.balance = 0
 
-        # self.blockchain.loadwallet("metatron")
         unspent = self.blockchain.listunspent()
-        # print(unspent)
         funds = []
         assets = []
 
@@ -83,8 +80,7 @@ class Authorizer:
             if tx['vout'] == 1:
                 txin = self.blockchain.getrawtransaction(tx['txid'], 1)
                 auth = AuthTx(txin)
-                if auth.cid:
-                    # if auth.isValid:
+                if auth.isValid:
                     auth.utxo = tx
                     assets.append(auth)
                     self.staked += tx['amount']
@@ -99,7 +95,7 @@ class Authorizer:
         self.assets = assets
 
     def getAddress(self):
-        return self.blockchain.getnewaddress("recv", "bech32")
+        return self.blockchain.getnewaddress("recv")
 
     def notarize(self, xid, cid):
         print(f"notarize {xid} {cid}")
@@ -154,7 +150,7 @@ class Authorizer:
         hexdata = bytes_s.hex()
 
         authAddr = self.blockchain.getnewaddress("auth")
-        changeAddr = self.blockchain.getnewaddress("auth", "bech32")
+        changeAddr = self.blockchain.getnewaddress("auth")
         change = amount - stake - txfee
         print(f"{change} = {amount} - {stake} - {txfee}")
         outputs = {"data": hexdata, authAddr: str(stake), changeAddr: change}

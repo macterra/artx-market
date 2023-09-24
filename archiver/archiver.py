@@ -72,12 +72,15 @@ def commit():
 def register():
     data = request.get_json()
 
-    if not data or 'cid' not in data:
+    if 'xid' not in data:
+        return jsonify({'error': 'No xid provided'}), 400
+    
+    if 'cid' not in data:
         return jsonify({'error': 'No cid provided'}), 400
 
     auth = authorizer.Authorizer()
     auth.register = True
-    txid = auth.authorize(data['cid'])
+    txid = auth.notarize(data['xid'], data['cid'])
 
     return jsonify({'txid': txid})
 
@@ -85,11 +88,14 @@ def register():
 def notarize():
     data = request.get_json()
 
-    if not data or 'cid' not in data:
+    if 'xid' not in data:
+        return jsonify({'error': 'No xid provided'}), 400
+    
+    if 'cid' not in data:
         return jsonify({'error': 'No cid provided'}), 400
 
     auth = authorizer.Authorizer()
-    txid = auth.authorize(data['cid'])
+    txid = auth.notarize(data['xid'], data['cid'])
 
     return jsonify({'txid': txid})
 
@@ -101,9 +107,9 @@ def certify():
         return jsonify({'error': 'No txid provided'}), 400
 
     auth = authorizer.Authorizer()
-    xid = auth.certify_tx(data['txid'])
+    cert = auth.certify(data['txid'])
 
-    return jsonify({'xid': xid})
+    return jsonify(cert)
 
 @app.route('/api/v1/walletinfo', methods=['GET'])
 def walletinfo():
