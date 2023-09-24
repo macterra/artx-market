@@ -34,34 +34,18 @@ class AuthTx():
         data = bytes.fromhex(hexdata)
         if data[0] != 0x6a:
             return False
-        try:
-            if data[1] == 34:  # len of CIDv0
-                cid0 = cid.make_cid(0, cid.CIDv0.CODEC, data[2:])
-                self.cid = str(cid0)
-            elif data[1] == 36:  # len of CIDv1
-                cid1 = cid.make_cid(data[2:])
-                cid0 = cid1.to_v0()
-                self.cid = str(cid0)
-            elif data[1] == 70:
-                version = data[2:].decode()
-                self.cid, xid58 = version.split('::')
-                xid_bytes = base58.b58decode(xid58)
-                self.xid = str(uuid.UUID(bytes=xid_bytes))
-                print('hey!', version, xid58, self.xid)
-                return True
-            else:
-                return False
-        except:
-            # print('cid parser fail')
+        if data[1] != 70:
             return False
-
-        self.meta = getMeta(self.cid)
-
-        if self.meta and 'xid' in self.meta:
-            self.xid = self.meta['xid']
-
-        return self.xid != None
-
+        try:
+            op_return = data[2:].decode()
+            self.cid, xid58 = op_return.split('::')
+            xid_bytes = base58.b58decode(xid58)
+            self.xid = str(uuid.UUID(bytes=xid_bytes))
+            self.op_return = op_return
+            print('hey!', op_return, xid58, self.xid)
+            return True
+        except:
+            return False
 
 class Authorizer:
     def __init__(self):
@@ -215,93 +199,17 @@ class Authorizer:
 
         #return txid
 
-    def authorize(self, cid):
-        print(f"authorizing {cid}")
-        authAddr = self.blockchain.getnewaddress("auth", "bech32")
-        return self.transfer(cid, authAddr)
-
-    def transfer(self, cid, authAddr):
-        print(f"transferring {cid} to {authAddr}")
-        xid = getXid(cid)
-
-        if not xid:
-            print(f"{cid} includes no valid xid")
-            return
-
-        print(f"found xid {xid}")
-
-        self.updateWallet()
-
-        inputs = []
-
-        amount = Decimal('0')
-        stake = self.getStake()
-
-        for asset in self.assets:
-            if xid == asset.xid:
-                if cid == asset.cid:
-                    print(f"xid is already up to date with {cid}")
-                    return
-                inputs.append(asset.utxo)
-                amount += stake
-                break
-
-        if inputs:
-            if self.register:
-                print(f"already registered xid {xid}")
-                return
-            else:
-                print(f"found utxo for {xid}")
-        else:
-            if self.register:
-                print(f"registering xid {xid}")
-            else:
-                print(f"can't find utxo for {xid}")
-                return
-
-        txfeeRate = self.getFee(3)
-        txfee = txfeeRate * 255 / 1000  # expected size of 255 vBytes
-
-        for funtxn in self.funds:
-            inputs.append(funtxn)
-            print("inputs", funtxn['amount'])
-            amount += funtxn['amount']
-            if amount > (stake + txfee):
-                break
-
-        if amount < (stake + txfee):
-            print('not enough funds in account', amount)
-            return
-
-        hexdata = encodeCid(cid)
-        nulldata = {"data": hexdata}
-
-        changeAddr = self.blockchain.getnewaddress("auth", "bech32")
-        change = amount - stake - txfee
-        print(f"{change} = {amount} - {stake} - {txfee}")
-        outputs = {"data": hexdata, authAddr: str(stake), changeAddr: change}
-
-        rawtxn = self.blockchain.createrawtransaction(inputs, outputs)
-
-        sigtxn = self.blockchain.signrawtransactionwithwallet(rawtxn)
-        print('sig', json.dumps(sigtxn, indent=2, cls=Encoder))
-        print(len(sigtxn['hex']))
-
-        dectxn = self.blockchain.decoderawtransaction(sigtxn['hex'])
-        print('dec', json.dumps(dectxn, indent=2, cls=Encoder))
-
-        txid = self.blockchain.sendrawtransaction(sigtxn['hex'])
-        print('txid', txid)
-
-        return txid
-
-    def certify_tx(self, txid):
+    def certify(self, txid):
         tx = self.blockchain.getrawtransaction(txid, 1)
-        if 'blockhash' in tx:
-            return self.certify(tx)
 
-    def certify(self, tx):
+        if 'blockhash' not in tx:
+            return
+        
         auth_tx = AuthTx(tx)
+
+        if not auth_tx.isValid:
+            return
+        
         txid = tx['txid']
         blockhash = tx['blockhash']
         block = self.blockchain.getblock(blockhash)
@@ -313,16 +221,23 @@ class Authorizer:
         chainid = f"urn:chain:BTC:{block_height}:{tx_index}:1"
         artx_ns = uuid.uuid5(uuid.NAMESPACE_DNS, "artx.market")
         xid = uuid.uuid5(artx_ns, txid)
-        prev_txid = tx['vin'][0]['txid']
-        prev_xid = uuid.uuid5(artx_ns, prev_txid)
+
+        prev_txid = tx['vin'][0]['txid']        
+        prev_tx = self.blockchain.getrawtransaction(prev_txid, 1)
+        prev_auth = AuthTx(prev_tx)
+        if prev_auth.isValid:
+            prev_xid = uuid.uuid5(artx_ns, prev_txid)
+        else:
+            prev_xid = None
 
         cert = {
             "xid": str(xid),
-            "cid": auth_tx.cid,
-            "meta": auth_tx.meta,
-            "time": str(utc_iso),
             "prev": str(prev_xid),
             "auth": {
+                "cid": auth_tx.cid,
+                "xid": auth_tx.xid,
+                "op_return": auth_tx.op_return,
+                "time": str(utc_iso),
                 "blockheight": block_height,
                 "blockhash": blockhash,
                 "chainid": chainid,
@@ -330,15 +245,8 @@ class Authorizer:
             }
         }
 
-        newpath = f"data/certs/{xid}"
-
-        if not os.path.exists(newpath):
-            os.makedirs(newpath)
-
-        with open(f"{newpath}/meta.json", 'w') as json_file:
-            json.dump(cert, json_file, indent=2, cls=Encoder)
-
-        return str(xid)
+        print(cert)
+        return cert
 
 def run():
     parser = argparse.ArgumentParser(description='Run a function.')
@@ -377,7 +285,12 @@ if __name__ == "__main__":
     
     authorizer = Authorizer()
     
-    authorizer.register = True
+    #authorizer.register = True
     xid = 'd59d815c-1b23-4de4-a6a9-ed8ca1060184'
-    cid = 'QmbNcW8SqNvJ7QuX5zQhQ7fgUtFK8W2gx7GnEgCsPaqGf4'
+    #cid = 'QmbNcW8SqNvJ7QuX5zQhQ7fgUtFK8W2gx7GnEgCsPaqGf4'
+    cid = 'QmQiqxe6DfgmNj1JTe7Xk2hVQkgEqmMjRy6tuffqcTLJaB'
     authorizer.notarize(xid, cid)
+
+    #txid = '5e7997bc52587b24c7864b3aff8d185a156676117735bd3a7e87aecc42668c8a'
+    #cert = authorizer.certify(txid)
+
