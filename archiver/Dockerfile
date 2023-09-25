@@ -11,4 +11,4 @@ RUN git clone https://github.com/macterra/py-ipfs-http-client.git
 RUN cd py-ipfs-http-client && FLIT_ROOT_INSTALL=1 flit install --pth-file
 COPY *.py .
 
-CMD [ "python", "./archiver.py" ]
+CMD [ "python", "-u", "./archiver.py" ]
