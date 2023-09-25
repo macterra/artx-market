@@ -184,14 +184,14 @@ class Authorizer:
         utc_iso = utc.isoformat(timespec='seconds').replace('+00:00', 'Z')
         tx_index = block['tx'].index(txid)
         chainid = f"urn:chain:BTC:{block_height}:{tx_index}:1"
-        artx_ns = uuid.uuid5(uuid.NAMESPACE_DNS, "artx.market")
-        xid = uuid.uuid5(artx_ns, txid)
+        namespace = uuid.UUID(auth_tx.xid)
+        xid = uuid.uuid5(namespace, txid)
 
         prev_txid = tx['vin'][0]['txid']        
         prev_tx = self.blockchain.getrawtransaction(prev_txid, 1)
         prev_auth = AuthTx(prev_tx)
         if prev_auth.isValid:
-            prev_xid = uuid.uuid5(artx_ns, prev_txid)
+            prev_xid = uuid.uuid5(namespace, prev_txid)
         else:
             prev_xid = None
 

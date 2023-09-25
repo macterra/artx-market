@@ -35,6 +35,8 @@ def pin(subfolder):
         if checkIpfs():
             ipfs = getIpfs()
             res = ipfs.add(subfolder, recursive=True, pin=True, pattern="**")
+            for item in res:
+                print(item)
             cid = res[-1]['Hash']
         else:
             print("IPFS not available")
