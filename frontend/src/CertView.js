@@ -61,11 +61,15 @@ const CertView = ({ navigate }) => {
                                 </TableRow>
                                 <TableRow>
                                     <TableCell>CID</TableCell>
-                                    <TableCell>{cert.cid}</TableCell>
+                                    <TableCell>{cert.auth.cid}</TableCell>
+                                </TableRow>
+                                <TableRow>
+                                    <TableCell>OP_RETURN</TableCell>
+                                    <TableCell>{cert.auth.op_return}</TableCell>
                                 </TableRow>
                                 <TableRow>
                                     <TableCell>Time</TableCell>
-                                    <TableCell>{cert.time}</TableCell>
+                                    <TableCell>{cert.auth.time}</TableCell>
                                 </TableRow>
                                 <TableRow>
                                     <TableCell>Previous</TableCell>
