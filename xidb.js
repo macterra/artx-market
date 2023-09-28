@@ -31,13 +31,20 @@ const commitChanges = async (commitMessage) => {
     }
 };
 
+function getMarketID() {
+    const dns_ns = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
+    const marketId = uuidv5(config.host, dns_ns);
+
+    return marketId;
+}
+
 const getAdmin = async (xid) => {
     const jsonPath = path.join(config.data, 'meta.json');
 
     // Check if the agent.json file exists
     if (!fs.existsSync(jsonPath)) {
         return {
-            xid: uuidv4(),
+            xid: getMarketId(),
             created: new Date().toISOString(),
             updated: new Date().toISOString(),
         };
@@ -80,7 +87,7 @@ const registerState = async (adminState) => {
     const response = await fetch(`${config.archiver}/api/v1/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', },
-        body: JSON.stringify({ cid: adminState.cid }),
+        body: JSON.stringify({ xid: adminState.xid, cid: adminState.cid }),
     });
 
     const register = await response.json();
@@ -99,7 +106,7 @@ const notarizeState = async (adminState) => {
     const response = await fetch(`${config.archiver}/api/v1/notarize`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', },
-        body: JSON.stringify({ cid: adminState.cid }),
+        body: JSON.stringify({ xid: adminState.xid, cid: adminState.cid }),
     });
 
     const notarize = await response.json();
@@ -123,11 +130,18 @@ const certifyState = async (adminState) => {
         const cert = await response.json();
 
         if (cert.xid) {
+            const certPath = path.join(config.certs, cert.xid);
+            fs.mkdirSync(certPath, { recursive: true });
+            const certFile = path.join(certPath, 'meta.json');
+            fs.writeFileSync(certFile, JSON.stringify(cert, null, 2));
+
             adminState.latest = cert.xid;
             adminState.pending = null;
 
             const jsonPath = path.join(config.data, 'meta.json');
-            await fs.promises.writeFile(jsonPath, JSON.stringify(adminState, null, 2));
+            fs.writeFileSync(jsonPath, JSON.stringify(adminState, null, 2));
+
+            await commitChanges(`new certificate ${cert.xid}`);
         }
     }
 
@@ -518,10 +532,8 @@ function getFileObject(filePath) {
 }
 
 const createAgent = async (key) => {
-
-    const dns_ns = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
-    const artx_ns = uuidv5(config.host, dns_ns);
-    const userId = uuidv5(key.toString(), artx_ns);
+    const namespace = getMarketId();
+    const userId = uuidv5(key.toString(), namespace);
 
     agentData = {
         xid: userId,
