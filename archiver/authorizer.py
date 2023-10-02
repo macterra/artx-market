@@ -128,7 +128,7 @@ class Authorizer:
             else:
                 print(f"can't find utxo for {xid}")
                 return
-            
+
         txfeeRate = self.getFee(3)
         txfee = txfeeRate * 255 / 1000  # expected size of 255 vBytes
 
@@ -142,7 +142,7 @@ class Authorizer:
         if amount < (stake + txfee):
             print('not enough funds in account', amount)
             return
-        
+
         uuid_bytes = uuid.UUID(xid).bytes
         xid58 = base58.b58encode(uuid_bytes).decode()
         op_return = f'{cid}::{xid58}'
@@ -169,12 +169,12 @@ class Authorizer:
 
         if 'blockhash' not in tx:
             return
-        
+
         auth_tx = AuthTx(tx)
 
         if not auth_tx.isValid:
             return
-        
+
         txid = tx['txid']
         blockhash = tx['blockhash']
         block = self.blockchain.getblock(blockhash)
@@ -187,10 +187,10 @@ class Authorizer:
         namespace = uuid.UUID(auth_tx.xid)
         xid = uuid.uuid5(namespace, txid)
 
-        prev_txid = tx['vin'][0]['txid']        
+        prev_txid = tx['vin'][0]['txid']
         prev_tx = self.blockchain.getrawtransaction(prev_txid, 1)
         prev_auth = AuthTx(prev_tx)
-        if prev_auth.isValid:
+        if prev_auth.isValid and prev_auth.xid == auth_tx.xid:
             prev_xid = uuid.uuid5(namespace, prev_txid)
         else:
             prev_xid = None
@@ -245,11 +245,11 @@ def run():
     except Exception as e:
         print(f"An exception occurred: {e}")
 
-        
+
 if __name__ == "__main__":
-    
+
     authorizer = Authorizer()
-    
+
     #authorizer.register = True
     xid = 'd59d815c-1b23-4de4-a6a9-ed8ca1060184'
     #cid = 'QmbNcW8SqNvJ7QuX5zQhQ7fgUtFK8W2gx7GnEgCsPaqGf4'
