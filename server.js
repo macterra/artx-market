@@ -11,9 +11,8 @@ const { requestInvoice } = require('lnurl-pay');
 const axios = require('axios');
 
 const config = require('./config');
-const { createCharge, checkCharge, checkAddress, sendPayment } = require('./satspay');
+const satspay = require('./satspay');
 const xidb = require('./xidb');
-const { log } = require('console');
 
 const app = express();
 
@@ -462,7 +461,7 @@ app.get('/api/v1/cert/:xid', async (req, res) => {
 app.get('/api/v1/nft/:xid', async (req, res) => {
   try {
     const assetData = await xidb.getAsset(req.params.xid);
-    
+
     assetData.owner = await xidb.getAgent(assetData.asset.owner);
     assetData.owned = (req.user?.xid === assetData.owner.xid);
 
@@ -472,7 +471,7 @@ app.get('/api/v1/nft/:xid', async (req, res) => {
       const tokenData = await xidb.getAsset(tokenId);
       assetData.nft.asset = tokenData;
     }
-    
+
     const adminData = await xidb.getAdmin();
     const cert = adminData.latest;
 
@@ -632,7 +631,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
     const seller = await xidb.getAgent(sellerId);
 
     // TBD associate this charge with this asset for validation
-    const chargeData = await checkCharge(chargeId);
+    const chargeData = await satspay.checkCharge(chargeId);
 
     if (!chargeData.paid) {
       console.log(`charge ${chargeId} not paid`);
@@ -676,7 +675,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
       if (royalty > 0) {
         if (creator.deposit) {
           try {
-            await sendPayment(creator.deposit, royalty, `royalty for asset ${assetName}`);
+            await satspay.sendPayment(creator.deposit, royalty, `royalty for asset ${assetName}`);
             console.log(`audit: royalty ${royalty} to ${creator.deposit}`);
             audit.royalty = {
               "address": creator.deposit,
@@ -713,7 +712,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
 
     if (seller.deposit) {
       try {
-        await sendPayment(seller.deposit, payout, `sale of asset ${assetName}`);
+        await satspay.sendPayment(seller.deposit, payout, `sale of asset ${assetName}`);
         console.log(`audit: payout ${payout} to ${seller.deposit}`);
         audit.payout = {
           "address": seller.deposit,
@@ -740,7 +739,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
 
     if (txnFee > 0 && config.depositAddress) {
       try {
-        await sendPayment(config.depositAddress, txnFee, `txn fee for asset ${assetName}`);
+        await satspay.sendPayment(config.depositAddress, txnFee, `txn fee for asset ${assetName}`);
         console.log(`audit: txn fee ${txnFee} to ${config.depositAddress}`);
         audit.txnfee = {
           "address": config.depositAddress,
@@ -848,7 +847,7 @@ app.patch('/api/v1/profile/', ensureAuthenticated, async (req, res) => {
     }
 
     if (deposit) {
-      const scan = await checkAddress(deposit);
+      const scan = await satspay.checkAddress(deposit);
 
       if (scan) {
         agentData.deposit = deposit;
@@ -1031,7 +1030,7 @@ app.post('/api/v1/collections/:xid/upload', ensureAuthenticated, upload.array('i
 
 app.get('/api/v1/charge/:chargeId', ensureAuthenticated, async (req, res) => {
   try {
-    const chargeData = await checkCharge(req.params.chargeId);
+    const chargeData = await satspay.checkCharge(req.params.chargeId);
 
     res.status(200).json({
       id: chargeData.id,
@@ -1051,7 +1050,7 @@ app.get('/api/v1/charge/:chargeId', ensureAuthenticated, async (req, res) => {
 app.post('/api/v1/charge', ensureAuthenticated, async (req, res) => {
   try {
     const { description, amount } = req.body;
-    const chargeData = await createCharge(description, amount);
+    const chargeData = await satspay.createCharge(description, amount);
 
     res.status(200).json({
       ok: true,
