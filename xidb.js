@@ -2,7 +2,8 @@ const path = require('path');
 const fs = require('fs');
 const sharp = require('sharp');
 const crypto = require('crypto');
-const { v4: uuidv4, v5: uuidv5 } = require('uuid');
+const uuid = require('uuid');
+const bs58 = require('bs58');
 const { rimrafSync } = require('rimraf')
 const config = require('./config');
 
@@ -31,11 +32,21 @@ const commitChanges = async (commitMessage) => {
     }
 };
 
-function getMarketID() {
+function getMarketId() {
     const dns_ns = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
-    const marketId = uuidv5(config.host, dns_ns);
+    const marketId = uuid.v5(config.name || config.host, dns_ns);
 
     return marketId;
+}
+
+function uuidToBase58(uuidString) {
+    // Parse the UUID and convert it to bytes
+    const bytes = uuid.parse(uuidString);
+
+    // Convert the bytes to base58
+    const base58 = bs58.encode(Buffer.from(bytes));
+
+    return base58;
 }
 
 const getAdmin = async (xid) => {
@@ -43,8 +54,12 @@ const getAdmin = async (xid) => {
 
     // Check if the agent.json file exists
     if (!fs.existsSync(jsonPath)) {
+        const newXid = getMarketId();
+
         return {
-            xid: getMarketId(),
+            name: config.name || config.host,
+            xid: newXid,
+            xid58: uuidToBase58(newXid),
             created: new Date().toISOString(),
             updated: new Date().toISOString(),
         };
@@ -533,7 +548,7 @@ function getFileObject(filePath) {
 
 const createAgent = async (key) => {
     const namespace = getMarketId();
-    const userId = uuidv5(key.toString(), namespace);
+    const userId = uuid.v5(key.toString(), namespace);
 
     agentData = {
         xid: userId,
@@ -961,7 +976,7 @@ function gitHash(fileBuffer) {
 }
 
 const createAsset = async (file, title, userId, collectionId) => {
-    const xid = uuidv4();
+    const xid = uuid.v4();
 
     // Calculate the Git hash
     const fileBuffer = fs.readFileSync(file.path);
@@ -1061,7 +1076,7 @@ const createAssets = async (userId, files, collectionId) => {
 };
 
 const createEdition = async (owner, asset, edition, editions) => {
-    const xid = uuidv4();
+    const xid = uuid.v4();
     const assetFolder = path.join(config.assets, xid);
     fs.mkdirSync(assetFolder);
 
@@ -1168,7 +1183,7 @@ const pinAsset = async (xid) => {
 
 const createCollection = async (userId, name) => {
     const metadata = {
-        xid: uuidv4(),
+        xid: uuid.v4(),
         asset: {
             owner: userId,
             created: new Date().toISOString(),

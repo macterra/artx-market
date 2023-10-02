@@ -3,6 +3,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const config = {
+    name: process.env.ARTX_NAME,
     host: process.env.ARTX_HOST || 'localhost',
     port: process.env.ARTX_PORT || 5000,
     ipfs: process.env.IPFS_HOST || 'localhost',

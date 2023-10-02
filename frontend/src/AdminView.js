@@ -307,8 +307,16 @@ const AdminView = ({ navigate }) => {
                         <Table>
                             <TableBody>
                                 <TableRow>
+                                    <TableCell>Name</TableCell>
+                                    <TableCell>{admin.name}</TableCell>
+                                </TableRow>
+                                <TableRow>
                                     <TableCell>XID</TableCell>
                                     <TableCell>{admin.xid}</TableCell>
+                                </TableRow>
+                                <TableRow>
+                                    <TableCell>XID58</TableCell>
+                                    <TableCell>{admin.xid58}</TableCell>
                                 </TableRow>
                                 <TableRow>
                                     <TableCell>Owner</TableCell>
