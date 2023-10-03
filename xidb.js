@@ -78,6 +78,7 @@ const saveAdmin = async (adminData) => {
     // Make sure we have something to commit
     fs.writeFileSync(jsonPath, JSON.stringify(adminData, null, 2));
 
+    // !!! use commitChanges here
     const response1 = await fetch(`${config.archiver}/api/v1/commit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', },

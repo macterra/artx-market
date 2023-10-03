@@ -858,11 +858,9 @@ app.patch('/api/v1/profile/', ensureAuthenticated, async (req, res) => {
 
       if (scan) {
         agentData.deposit = deposit;
-        agentData.depositScan = scan;
       }
       else {
-        res.status(400).json({ message: `Invalid address: ${deposit}` });
-        return;
+        return res.status(400).json({ message: `Invalid address: ${deposit}` });
       }
     }
 
@@ -876,7 +874,8 @@ app.patch('/api/v1/profile/', ensureAuthenticated, async (req, res) => {
       agentData.links = links;
     }
 
-    await xidb.saveAgent(agentData);
+    xidb.saveAgent(agentData);
+    xidb.commitChanges(`Updated agent ${agentData.xid}`);
     res.json({ message: 'Metadata updated successfully' });
   } catch (error) {
     console.error('Error updating metadata:', error);

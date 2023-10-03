@@ -438,6 +438,7 @@ const AdminView = ({ navigate }) => {
                                 <TableRow>
                                     <TableCell></TableCell>
                                     <TableCell>user</TableCell>
+                                    <TableCell>deposit</TableCell>
                                     <TableCell>credits</TableCell>
                                     <TableCell>updated</TableCell>
                                 </TableRow>
@@ -461,6 +462,7 @@ const AdminView = ({ navigate }) => {
                                             }
                                         </TableCell>
                                         <TableCell><a href={`/profile/${user.xid}`} >{user.name}</a></TableCell>
+                                        <TableCell>{user.deposit}</TableCell>
                                         <TableCell align="right">{user.credits}</TableCell>
                                         <TableCell>{user.updated}</TableCell>
                                     </TableRow>

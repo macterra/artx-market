@@ -1,9 +1,10 @@
 import os
+import time
 from flask import Flask, jsonify, request
 from git import Repo
 from git.exc import GitCommandError
 from ipfs import *
-from datetime import datetime
+#from datetime import datetime
 from threading import Lock
 import authorizer
 
@@ -119,11 +120,26 @@ def certify():
 @app.route('/api/v1/walletinfo', methods=['GET'])
 def walletinfo():
     auth = authorizer.Authorizer()
-    auth.updateWallet()
 
+    start = time.time()
+    auth.updateWallet()
+    elapsed = time.time() - start
+    print(f"> updateWallet took {elapsed} seconds")
+
+    start = time.time()
     walletinfo = auth.getWalletinfo()
+    elapsed = time.time() - start
+    print(f"> getWalletinfo took {elapsed} seconds")
+
+    start = time.time()
     fee = auth.getFee(3) * 255/1000
+    elapsed = time.time() - start
+    print(f"> getFee took {elapsed} seconds")
+
+    start = time.time()
     address = auth.getAddress()
+    elapsed = time.time() - start
+    print(f"> getAddress took {elapsed} seconds")
 
     info = {
         "wallet": walletinfo,
