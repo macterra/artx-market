@@ -18,7 +18,6 @@ const config = {
     assets: 'data/assets',
     agents: 'data/agents',
     certs: 'data/certs',
-    id: 'data/id',
     defaultPfp: 'data/defaultPfp.png',
     initialCredits: 10000,
 };

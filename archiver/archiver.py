@@ -4,9 +4,11 @@ from git import Repo
 from git.exc import GitCommandError
 from ipfs import *
 from datetime import datetime
+from threading import Lock
 import authorizer
 
 app = Flask(__name__)
+lock = Lock()
 
 try:
     Repo.init('data')
@@ -60,13 +62,14 @@ def commit():
 
     message = data['message']
 
-    try:
-        repo.git.add('--all')
-        repo.git.commit('-m', message)
-        githash = repo.git.rev_parse('HEAD')
-    except GitCommandError as error:
-        print(f'Failed to commit changes: {str(error)}')
-        return jsonify({'error': f'Failed to commit changes: {str(error)}'}), 500
+    with lock:
+        try:
+            repo.git.add('--all')
+            repo.git.commit('-m', message)
+            githash = repo.git.rev_parse('HEAD')
+        except GitCommandError as error:
+            print(f'Failed to commit changes: {str(error)}')
+            return jsonify({'error': f'Failed to commit changes: {str(error)}'}), 500
 
     return jsonify({'ok': 1, 'githash': githash})
 
@@ -76,7 +79,7 @@ def register():
 
     if 'xid' not in data:
         return jsonify({'error': 'No xid provided'}), 400
-    
+
     if 'cid' not in data:
         return jsonify({'error': 'No cid provided'}), 400
 
@@ -92,7 +95,7 @@ def notarize():
 
     if 'xid' not in data:
         return jsonify({'error': 'No xid provided'}), 400
-    
+
     if 'cid' not in data:
         return jsonify({'error': 'No cid provided'}), 400
 

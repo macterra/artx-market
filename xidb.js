@@ -331,7 +331,6 @@ const removeAsset = (xid) => {
     const assetPath = path.join(config.assets, xid);
 
     rimrafSync(assetPath);
-    commitChanges(`Removed asset ${xid}`);
 
     return {
         xid: xid,
@@ -401,19 +400,19 @@ const fixAsset = async (xid) => {
     if (assetData.collection) {
         if (!agentData.collections.includes(xid)) {
             agentData.collections.push(xid);
-            await saveAgent(agentData);
+            saveAgent(agentData);
         }
     }
     else if (assetData.nft) {
         if (!assets.collected.includes(xid)) {
             agentData.collected.push(xid);
-            await saveAgent(agentData);
+            saveAgent(agentData);
         }
     }
     else {
         if (!assets.created.includes(xid)) {
             agentData.created.push(xid);
-            await saveAgent(agentData);
+            saveAgent(agentData);
         }
     }
 
@@ -546,9 +545,14 @@ function getFileObject(filePath) {
     }
 }
 
-const createAgent = async (key) => {
+function agentId(key) {
     const namespace = getMarketId();
     const userId = uuid.v5(key.toString(), namespace);
+    return userId;
+}
+
+const createAgent = async (key) => {
+    const userId = agentId(key);
 
     agentData = {
         xid: userId,
@@ -560,10 +564,10 @@ const createAgent = async (key) => {
         credits: config.initialCredits,
     };
 
-    await saveAgent(agentData);
+    saveAgent(agentData);
 
-    const gallery = await createCollection(userId, 'gallery');
-    await saveCollection(gallery);
+    const gallery = createCollection(userId, 'gallery');
+    saveCollection(gallery);
     agentData = getAgent(userId);
 
     if (fs.existsSync(config.defaultPfp)) {
@@ -572,33 +576,16 @@ const createAgent = async (key) => {
         fs.copyFileSync(config.defaultPfp, pfpPath);
         const file = getFileObject(pfpPath);
         const assetData = await createAsset(file, "default pfp", userId, gallery.xid);
-
         agentData.pfp = assetData.file.path;
-        await saveAgent(agentData);
+        saveAgent(agentData);
     }
 
     return agentData;
 };
 
-const getAgentFromKey = async (key) => {
-    const keyPath = path.join(config.id, 'pubkey.json');
-    let keyData = {};
-
-    if (fs.existsSync(keyPath)) {
-        const keyJsonContent = fs.readFileSync(keyPath, 'utf-8');
-        keyData = JSON.parse(keyJsonContent);
-    }
-
-    if (!(key in keyData)) {
-        const newAgent = await createAgent(key);
-        keyData[key] = newAgent.xid;
-        fs.writeFileSync(keyPath, JSON.stringify(keyData, null, 2));
-        await commitChanges(`new agent ${newAgent.xid}`);
-    }
-
-    const agentId = keyData[key];
-    const agentData = getAgent(agentId);
-
+const getAgentFromKey = (key) => {
+    const xid = agentId(key);
+    const agentData = getAgent(xid);
     return agentData;
 };
 
@@ -616,28 +603,19 @@ const getAgent = (xid) => {
     return agentData;
 };
 
-const saveAgent = async (agentData) => {
+const saveAgent = (agentData) => {
     const agentFolder = path.join(config.agents, agentData.xid);
     const agentJsonPath = path.join(agentFolder, 'agent.json');
-    let newAgent = false;
 
     if (!fs.existsSync(agentFolder)) {
         fs.mkdirSync(agentFolder);
-        newAgent = true;
     }
 
     agentData.updated = new Date().toISOString();
     fs.writeFileSync(agentJsonPath, JSON.stringify(agentData, null, 2));
-
-    if (newAgent) {
-        await commitChanges(`Created agent ${agentData.xid}`);
-    }
-    else {
-        await commitChanges(`Updated agent ${agentData.xid}`);
-    }
 };
 
-const addCredits = async (userId, amount) => {
+const addCredits = (userId, amount) => {
     const agentData = getAgent(userId);
 
     if (agentData) {
@@ -648,13 +626,13 @@ const addCredits = async (userId, amount) => {
             "agent": userId,
             "amount": amount,
         };
-        await saveAuditLog(record);
-        await saveAgent(agentData);
+        saveAuditLog(record);
+        saveAgent(agentData);
         return agentData;
     }
 };
 
-const buyCredits = async (userId, charge) => {
+const buyCredits = (userId, charge) => {
     const agentData = getAgent(userId);
 
     if (agentData) {
@@ -667,8 +645,8 @@ const buyCredits = async (userId, charge) => {
                 "amount": charge.amount,
                 "charge": charge,
             };
-            await saveAuditLog(record);
-            await saveAgent(agentData);
+            saveAuditLog(record);
+            saveAgent(agentData);
             return agentData;
         }
     }
@@ -917,12 +895,11 @@ const getAuditLog = () => {
     }
 };
 
-const saveAuditLog = async (record) => {
+const saveAuditLog = (record) => {
     record.time = new Date().toISOString();
     const recordString = JSON.stringify(record);
     const jsonlPath = path.join(config.data, 'auditlog.jsonl');
     fs.appendFileSync(jsonlPath, recordString + '\n');
-    await commitChanges(`Updated audit log (${record.type})`);
 };
 
 const saveTxnLog = (xid, record) => {
@@ -975,6 +952,7 @@ function gitHash(fileBuffer) {
     return hasher.digest('hex');
 }
 
+// createAsset has to be async to get image metadata from sharp
 const createAsset = async (file, title, userId, collectionId) => {
     const xid = uuid.v4();
 
@@ -1062,8 +1040,7 @@ const createAssets = async (userId, files, collectionId) => {
     }
 
     if (filesUploaded > 0) {
-        await commitChanges(`Assets (${filesUploaded}) created by ${userId}`);
-        await saveAgent(agentData);
+        saveAgent(agentData);
     }
 
     return {
@@ -1075,7 +1052,7 @@ const createAssets = async (userId, files, collectionId) => {
     }
 };
 
-const createEdition = async (owner, asset, edition, editions) => {
+const createEdition = (owner, asset, edition, editions) => {
     const xid = uuid.v4();
     const assetFolder = path.join(config.assets, xid);
     fs.mkdirSync(assetFolder);
@@ -1104,6 +1081,7 @@ const createEdition = async (owner, asset, edition, editions) => {
     return xid;
 };
 
+// createToken has to be async to get the IPFS cid
 const createToken = async (userId, xid, editions, license, royalty) => {
     let assetData = getAsset(xid);
 
@@ -1114,7 +1092,7 @@ const createToken = async (userId, xid, editions, license, royalty) => {
     const nfts = [];
     editions = parseInt(editions, 10);
     for (let i = 1; i <= editions; i++) {
-        const createdId = await createEdition(userId, xid, i, editions);
+        const createdId = createEdition(userId, xid, i, editions);
         nfts.push(createdId);
     }
 
@@ -1135,7 +1113,6 @@ const createToken = async (userId, xid, editions, license, royalty) => {
     };
 
     saveAsset(assetData);
-    await commitChanges(`Minted ${editions} edition(s) of ${xid}`);
 
     // Charge mint fee from agent credits
     const storageFee = Math.round(assetData.file.size * config.storageRate);
@@ -1143,7 +1120,7 @@ const createToken = async (userId, xid, editions, license, royalty) => {
     const mintFee = storageFee + editionFee;
     const agentData = getAgent(userId);
     agentData.credits -= mintFee;
-    await saveAgent(agentData);
+    saveAgent(agentData);
 
     return {
         "xid": xid,
@@ -1155,7 +1132,7 @@ const createToken = async (userId, xid, editions, license, royalty) => {
     };
 };
 
-const transferAsset = async (xid, nextOwnerId) => {
+const transferAsset = (xid, nextOwnerId) => {
     let assetData = getAsset(xid);
     const prevOwnerId = assetData.asset.owner;
 
@@ -1170,8 +1147,6 @@ const transferAsset = async (xid, nextOwnerId) => {
     assetData.asset.owner = nextOwnerId;
     assetData.nft.price = 0;
     saveAsset(assetData);
-
-    await commitChanges(`Transferred ${xid} from ${prevOwnerId} to ${nextOwnerId}`);
 };
 
 const pinAsset = async (xid) => {
@@ -1181,7 +1156,7 @@ const pinAsset = async (xid) => {
     return ipfs;
 };
 
-const createCollection = async (userId, name) => {
+const createCollection = (userId, name) => {
     const metadata = {
         xid: uuid.v4(),
         asset: {
@@ -1202,70 +1177,72 @@ const createCollection = async (userId, name) => {
         }
     };
 
-    await saveCollection(metadata);
+    saveCollection(metadata);
     return metadata;
 };
 
-const saveCollection = async (collection) => {
+const saveCollection = (collection) => {
     const agentData = getAgent(collection.asset.owner);
     const collectionId = collection.xid;
 
     if (!agentData.collections.includes(collectionId)) {
         agentData.collections.push(collectionId);
-        await saveAgent(agentData);
+        saveAgent(agentData);
     }
 
-    commitAsset(collection);
+    saveAsset(collection);
 };
 
-const removeCollection = async (collection) => {
+const removeCollection = (collection) => {
     const agentData = getAgent(collection.asset.owner);
     const collectionId = collection.xid;
 
     if (agentData.collections.includes(collectionId)) {
         agentData.collections = agentData.collections.filter(xid => xid !== collectionId);
-        await saveAgent(agentData);
+        saveAgent(agentData);
     }
 
     return removeAsset(collectionId);
 };
 
 module.exports = {
-    getAdmin,
-    saveAdmin,
-    registerState,
-    notarizeState,
-    certifyState,
-    getWalletInfo,
-    getAgentFromKey,
-    getAgent,
-    saveAgent,
     addCredits,
-    buyCredits,
-    allAssets,
     allAgents,
-    verifyAsset,
-    fixAsset,
-    pinAsset,
-    verifyAgent,
+    allAssets,
+    buyCredits,
+    certifyState,
+    commitAsset,
+    commitChanges,
+    createAgent,
+    createAssets,
+    createCollection,
+    createToken,
     fixAgent,
+    fixAsset,
+    getAdmin,
+    getAgent,
     getAgentAndCollections,
+    getAgentFromKey,
     getAgentTxnLog,
     getAllAgents,
-    getCollection,
     getAsset,
-    getCert,
     getAuditLog,
-    saveAuditLog,
-    saveTxnLog,
-    saveHistory,
-    commitAsset,
-    isOwner,
-    createAssets,
-    transferAsset,
-    createToken,
-    createCollection,
-    saveCollection,
-    removeCollection,
+    getCert,
+    getCollection,
+    getWalletInfo,
     integrityCheck,
+    isOwner,
+    notarizeState,
+    pinAsset,
+    registerState,
+    removeCollection,
+    saveAdmin,
+    saveAgent,
+    saveAuditLog,
+    saveCollection,
+    saveHistory,
+    saveTxnLog,
+    transferAsset,
+    verifyAgent,
+    verifyAsset,
 };

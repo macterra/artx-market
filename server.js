@@ -28,7 +28,6 @@ ensureFolderExists(config.data);
 ensureFolderExists(config.uploads);
 ensureFolderExists(config.assets);
 ensureFolderExists(config.agents);
-ensureFolderExists(config.id);
 
 app.use(session({
   secret: 'Satoshi',
@@ -73,14 +72,20 @@ passport.deserializeUser(function (key, done) {
   done(null, map.user.get(key) || null);
 });
 
-passport.use(new LnurlAuth.Strategy(async function (linkingPublicKey, done) {
-  let user = map.user.get(linkingPublicKey);
+passport.use(new LnurlAuth.Strategy(async function (pubkey, done) {
+  let user = map.user.get(pubkey);
   if (!user) {
     try {
-      const agentData = await xidb.getAgentFromKey(linkingPublicKey);
-      console.log(`passport ${linkingPublicKey} ${agentData.xid}`);
-      user = { key: linkingPublicKey, xid: agentData.xid, };
-      map.user.set(linkingPublicKey, user);
+      let agentData = xidb.getAgentFromKey(pubkey);
+
+      if (!agentData) {
+        agentData = await xidb.createAgent(pubkey);
+        xidb.commitChanges(`New agent ${agentData.xid}`);
+      }
+
+      console.log(`passport ${pubkey} ${agentData.xid}`);
+      user = { key: pubkey, xid: agentData.xid, };
+      map.user.set(pubkey, user);
     }
     catch (error) {
       console.log(`error logging in ${error}`);
@@ -561,7 +566,9 @@ app.post('/api/v1/asset/:xid/mint', ensureAuthenticated, async (req, res) => {
       'xid': xid,
       'credits': mint.mintFee,
     };
+
     xidb.saveTxnLog(userId, txn);
+    xidb.commitChanges(`Minted ${editions} edition(s) of ${xid}`);
 
     res.json(mint);
   } catch (error) {
@@ -644,7 +651,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
       return res.status(500).json({ message: 'Error' });
     }
 
-    await xidb.transferAsset(xid, buyerId);
+    xidb.transferAsset(xid, buyerId);
 
     const tokenData = xidb.getAsset(assetData.nft.asset);
     const assetName = `"${tokenData.asset.title}" (${assetData.asset.title})`;
@@ -690,7 +697,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
         }
 
         if (!royaltyPaid) {
-          await xidb.addCredits(creator.xid, royalty);
+          xidb.addCredits(creator.xid, royalty);
           console.log(`audit: royalty ${royalty} credits to ${creator.xid}`);
           audit.royalty = {
             "address": creator.xid,
@@ -726,7 +733,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
     }
 
     if (!payoutPaid) {
-      await xidb.addCredits(seller.xid, payout);
+      xidb.addCredits(seller.xid, payout);
       console.log(`audit: payout ${payout} credits to ${seller.xid}`);
       audit.payout = {
         "address": seller.xid,
@@ -781,7 +788,8 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
       xidb.saveTxnLog(creatorId, royaltyTxn);
     }
 
-    await xidb.saveAuditLog(audit);
+    xidb.saveAuditLog(audit);
+    xidb.commitChanges(`Purchase: ${sellerId} sold ${xid} to ${buyerId} for ${price} sats`);
     res.json({ ok: true, message: 'Success' });
   } catch (error) {
     console.error('Error:', error);
@@ -903,7 +911,7 @@ app.post('/api/v1/profile/credit', ensureAuthenticated, async (req, res) => {
   const { charge } = req.body;
 
   try {
-    const agentData = await xidb.buyCredits(userId, charge);
+    const agentData = xidb.buyCredits(userId, charge);
 
     if (agentData) {
 
@@ -913,6 +921,7 @@ app.post('/api/v1/profile/credit', ensureAuthenticated, async (req, res) => {
       };
 
       xidb.saveTxnLog(req.user.xid, txn);
+      xidb.commitChanges(`Agent ${req.user.xid} bought ${charge.amount} credits`);
       res.json(agentData);
     }
     else {
@@ -927,7 +936,8 @@ app.post('/api/v1/profile/credit', ensureAuthenticated, async (req, res) => {
 app.get('/api/v1/collections/', async (req, res) => {
   try {
     const userId = req.user?.xid;
-    const collection = await xidb.createCollection(userId, "new");
+    const collection = xidb.createCollection(userId, "new");
+    xidb.commitChanges(`New collection ${collection.xid}`);
     res.json(collection);
   } catch (error) {
     console.error('Error processing request:', error);
@@ -958,7 +968,8 @@ app.post('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const ok = await xidb.saveCollection(collection);
+    const ok = xidb.saveCollection(collection);
+    xidb.commitChanges(`Updated collection ${collection.xid}`);
     res.json({ message: 'Collection updated successfully' });
   } catch (error) {
     console.error('Error processing request:', error);
@@ -1000,7 +1011,8 @@ app.delete('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => 
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    await xidb.removeCollection(collection);
+    xidb.removeCollection(collection);
+    xidb.commitChanges(`Deleted collection ${collection.xid}`);
     res.json({ message: 'Collection removed successfully' });
   } catch (error) {
     console.error('Error processing request:', error);
@@ -1020,6 +1032,7 @@ app.post('/api/v1/collections/:xid/upload', ensureAuthenticated, upload.array('i
       'credits': upload.creditsDebited,
     };
     xidb.saveTxnLog(req.user.xid, txn);
+    xidb.commitChanges(`${upload.filesUploaded} assets uploaded by ${req.user.xid}`);
     res.status(200).json(upload);
   } catch (error) {
     console.error('Error processing files:', error);
