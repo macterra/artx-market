@@ -303,7 +303,7 @@ const verifyAsset = async (xid) => {
         return error;
     }
 
-    const assets = await agentGetAssets(assetData.asset.owner);
+    const assets = agentGetAssets(assetData.asset.owner);
 
     if (assetData.collection) {
         if (!agentData.collections.includes(xid)) {
@@ -396,7 +396,7 @@ const fixAsset = async (xid) => {
         return removeAsset(xid);
     }
 
-    const assets = await agentGetAssets(assetData.asset.owner);
+    const assets = agentGetAssets(assetData.asset.owner);
 
     if (assetData.collection) {
         if (!agentData.collections.includes(xid)) {
@@ -435,7 +435,7 @@ const verifyAgent = async (xid) => {
         };
     }
 
-    const assets = await agentGetAssets(xid);
+    const assets = agentGetAssets(xid);
 
     const ownershipError = {
         xid: xid,
@@ -493,7 +493,7 @@ const verifyAgent = async (xid) => {
 
 const fixAgent = async (xid) => {
     const agentData = getAgent(xid);
-    const assets = await agentGetAssets(xid);
+    const assets = agentGetAssets(xid);
 
     for (const collectionId of agentData.collections) {
         const collection = getAsset(collectionId);
@@ -674,7 +674,7 @@ const buyCredits = async (userId, charge) => {
     }
 };
 
-const agentGetAssets = async (userId) => {
+const agentGetAssets = (userId) => {
     const agentFolder = path.join(config.agents, userId);
     const jsonPath = path.join(agentFolder, 'assets.json');
 
@@ -694,7 +694,7 @@ const agentGetAssets = async (userId) => {
     return assetData;
 };
 
-const agentSaveAssets = async (assetData) => {
+const agentSaveAssets = (assetData) => {
     const agentFolder = path.join(config.agents, assetData.owner);
     const jsonPath = path.join(agentFolder, 'assets.json');
 
@@ -703,8 +703,8 @@ const agentSaveAssets = async (assetData) => {
     fs.writeFileSync(jsonPath, JSON.stringify(assetData, null, 2));
 };
 
-const agentAddAsset = async (metadata) => {
-    let assetData = await agentGetAssets(metadata.asset.owner);
+const agentAddAsset = (metadata) => {
+    let assetData = agentGetAssets(metadata.asset.owner);
 
     if (metadata.file) {
         assetData.created.push(metadata.xid);
@@ -712,7 +712,7 @@ const agentAddAsset = async (metadata) => {
         assetData.collected.push(metadata.xid);
     }
 
-    await agentSaveAssets(assetData);
+    agentSaveAssets(assetData);
 };
 
 const getAgentTxnLog = (userId) => {
@@ -727,7 +727,7 @@ const getAgentTxnLog = (userId) => {
     }
 };
 
-const getAgentAndCollections = async (profileId, userId) => {
+const getAgentAndCollections = (profileId, userId) => {
     if (!profileId) {
         profileId = userId;
     }
@@ -737,7 +737,7 @@ const getAgentAndCollections = async (profileId, userId) => {
     }
 
     let agentData = getAgent(profileId);
-    const assets = await agentGetAssets(profileId);
+    const assets = agentGetAssets(profileId);
 
     let collections = {};
 
@@ -833,7 +833,7 @@ const getAllAgents = async () => {
     const profiles = [];
 
     for (const profileId of agentFolders) {
-        const agentData = await getAgentAndCollections(profileId);
+        const agentData = getAgentAndCollections(profileId);
 
         if (agentData.minted && agentData.minted.length > 0) {
             profiles.push(agentData);
@@ -843,10 +843,10 @@ const getAllAgents = async () => {
     return profiles;
 };
 
-const getCollection = async (collectionId, userId) => {
+const getCollection = (collectionId, userId) => {
     let collection = getAsset(collectionId);
 
-    const agentData = await getAgentAndCollections(collection.asset.owner, userId);
+    const agentData = getAgentAndCollections(collection.asset.owner, userId);
     collection = agentData.collections[collectionId];
 
     collection.isOwnedByUser = (userId == collection.asset.owner);
@@ -854,7 +854,7 @@ const getCollection = async (collectionId, userId) => {
     return collection;
 };
 
-const getCert = async (xid) => {
+const getCert = (xid) => {
     const certPath = path.join(config.certs, xid, 'meta.json');
     const certContent = fs.readFileSync(certPath, 'utf-8');
     const cert = JSON.parse(certContent);
@@ -944,7 +944,7 @@ const commitAsset = async (metadata, action) => {
     await commitChanges(`${action || 'Updated'} asset ${metadata.xid}`);
 };
 
-const isOwner = async (metadata, agentId) => {
+const isOwner = (metadata, agentId) => {
     if (!agentId) {
         return false;
     }
@@ -1021,14 +1021,14 @@ const createAsset = async (file, title, userId, collectionId) => {
     };
 
     saveAsset(metadata);
-    await agentAddAsset(metadata);
+    agentAddAsset(metadata);
 
     return metadata;
 };
 
 const createAssets = async (userId, files, collectionId) => {
     const agentData = getAgent(userId);
-    const collectionData = await getCollection(collectionId, userId);
+    const collectionData = getCollection(collectionId, userId);
     const defaultTitle = collectionData.collection.default.title;
 
     let collectionCount = collectionData.collection.assets.length;
@@ -1119,7 +1119,7 @@ const createToken = async (userId, xid, editions, license, royalty) => {
     }
 
     //console.log(nfts);
-    let assets = await agentGetAssets(userId);
+    let assets = agentGetAssets(userId);
     assets.collected.push(...nfts);
     agentSaveAssets(assets);
 
@@ -1159,11 +1159,11 @@ const transferAsset = async (xid, nextOwnerId) => {
     let assetData = getAsset(xid);
     const prevOwnerId = assetData.asset.owner;
 
-    let assetsPrevOwner = await agentGetAssets(prevOwnerId);
+    let assetsPrevOwner = agentGetAssets(prevOwnerId);
     assetsPrevOwner.collected = assetsPrevOwner.collected.filter(item => item !== xid);
     agentSaveAssets(assetsPrevOwner);
 
-    let assetsNextOwner = await agentGetAssets(nextOwnerId);
+    let assetsNextOwner = agentGetAssets(nextOwnerId);
     assetsNextOwner.collected.push(xid);
     agentSaveAssets(assetsNextOwner);
 

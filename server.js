@@ -449,7 +449,7 @@ app.get('/api/v1/admin/pin/asset/:xid', async (req, res) => {
 
 app.get('/api/v1/cert/:xid', async (req, res) => {
   try {
-    const cert = await xidb.getCert(req.params.xid);
+    const cert = xidb.getCert(req.params.xid);
     res.json(cert);
   } catch (error) {
     console.error('Error:', error);
@@ -475,7 +475,7 @@ app.get('/api/v1/nft/:xid', async (req, res) => {
     const cert = adminData.latest;
 
     if (cert) {
-      assetData.cert = await xidb.getCert(cert);
+      assetData.cert = xidb.getCert(cert);
     }
 
     res.json(assetData);
@@ -488,7 +488,7 @@ app.get('/api/v1/nft/:xid', async (req, res) => {
 app.get('/api/v1/asset/:xid', async (req, res) => {
   try {
     const assetData = xidb.getAsset(req.params.xid);
-    assetData.userIsOwner = await xidb.isOwner(assetData, req.user?.xid);
+    assetData.userIsOwner = xidb.isOwner(assetData, req.user?.xid);
     res.json(assetData);
   } catch (error) {
     console.error('Error reading metadata:', error);
@@ -804,7 +804,7 @@ app.get('/api/v1/profile/:xid?', async (req, res) => {
   const userId = req.user?.xid;
 
   try {
-    const agentData = await xidb.getAgentAndCollections(profileId, userId);
+    const agentData = xidb.getAgentAndCollections(profileId, userId);
 
     if (agentData) {
       agentData.collections = Object.values(agentData.collections);
@@ -938,7 +938,7 @@ app.get('/api/v1/collections/', async (req, res) => {
 app.get('/api/v1/collections/:xid', async (req, res) => {
   try {
     const userId = req.user?.xid;
-    const collection = await xidb.getCollection(req.params.xid, userId);
+    const collection = xidb.getCollection(req.params.xid, userId);
     res.json(collection);
   } catch (error) {
     console.error('Error processing request:', error);
@@ -990,7 +990,7 @@ app.patch('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => {
 app.delete('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => {
   try {
     const userId = req.user?.xid;
-    const collection = await xidb.getCollection(req.params.xid, userId);
+    const collection = xidb.getCollection(req.params.xid, userId);
 
     if (req.user.xid != collection.asset.owner) {
       return res.status(401).json({ message: 'Unauthorized' });
