@@ -81,6 +81,12 @@ const checkAddress = async (address) => {
 
 const sendPayment = async (address, amount, comment) => {
     try {
+        const scan = await checkAddress(address);
+
+        if (comment.length > scan.commentAllowed) {
+            comment = comment.substring(0, scan.commentAllowed);
+        }
+
         const { invoice } = await requestInvoice({
             lnUrlOrAddress: address,
             tokens: amount,
