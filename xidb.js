@@ -252,7 +252,7 @@ const allAgents = () => {
 };
 
 const verifyAsset = async (xid) => {
-    const assetData = await getAsset(xid);
+    const assetData = getAsset(xid);
     let error = {
         xid: xid,
         verified: false,
@@ -280,7 +280,7 @@ const verifyAsset = async (xid) => {
         // verify CID
 
         for (const nftId of assetData.token.nfts) {
-            const edition = await getAsset(nftId);
+            const edition = getAsset(nftId);
 
             if (!edition) {
                 return error;
@@ -341,7 +341,7 @@ const removeAsset = (xid) => {
 };
 
 const fixAsset = async (xid) => {
-    const assetData = await getAsset(xid);
+    const assetData = getAsset(xid);
 
     if (!assetData) {
         return removeAsset(xid);
@@ -363,13 +363,13 @@ const fixAsset = async (xid) => {
         assetData.xid = assetData.asset.xid;
         delete assetData.asset.xid;
 
-        await saveAsset(assetData);
+        saveAsset(assetData);
         await commitChanges(`Moved xid ${assetData.xid}`);
     }
 
     if (assetData.file && assetData.file.originalName) {
         delete assetData.file.originalName;
-        await saveAsset(assetData);
+        saveAsset(assetData);
         await commitChanges(`Removed originalName`);
     }
 
@@ -377,7 +377,7 @@ const fixAsset = async (xid) => {
         const missingNftIds = [];
 
         for (const nftId of assetData.token.nfts) {
-            const edition = await getAsset(nftId);
+            const edition = getAsset(nftId);
             if (!edition) {
                 missingNftIds.push(nftId);
             }
@@ -385,7 +385,7 @@ const fixAsset = async (xid) => {
 
         if (missingNftIds.length > 0) {
             assetData.token.nfts = assetData.token.nfts.filter(nftId => !missingNftIds.includes(nftId));
-            await saveAsset(assetData);
+            saveAsset(assetData);
             await commitChanges(`Removed missing NFTs`);
         }
     }
@@ -450,7 +450,7 @@ const verifyAgent = async (xid) => {
     };
 
     for (const collectionId of agentData.collections) {
-        const collection = await getAsset(collectionId);
+        const collection = getAsset(collectionId);
 
         if (collection.asset.owner !== xid) {
             return ownershipError;
@@ -462,7 +462,7 @@ const verifyAgent = async (xid) => {
     }
 
     for (const assetId of assets.created) {
-        const asset = await getAsset(assetId);
+        const asset = getAsset(assetId);
 
         if (asset.asset.owner !== xid) {
             return ownershipError;
@@ -474,7 +474,7 @@ const verifyAgent = async (xid) => {
     }
 
     for (const assetId of assets.collected) {
-        const asset = await getAsset(assetId);
+        const asset = getAsset(assetId);
 
         if (asset.asset.owner !== xid) {
             return ownershipError;
@@ -496,29 +496,29 @@ const fixAgent = async (xid) => {
     const assets = await agentGetAssets(xid);
 
     for (const collectionId of agentData.collections) {
-        const collection = await getAsset(collectionId);
+        const collection = getAsset(collectionId);
 
         if (collection.asset.owner !== xid) {
             collection.asset.owner = xid;
-            await saveAsset(collection);
+            saveAsset(collection);
         }
     }
 
     for (const assetId of assets.created) {
-        const asset = await getAsset(assetId);
+        const asset = getAsset(assetId);
 
         if (asset.asset.owner !== xid) {
             asset.asset.owner = xid;
-            await saveAsset(asset);
+            saveAsset(asset);
         }
     }
 
     for (const assetId of assets.collected) {
-        const asset = await getAsset(assetId);
+        const asset = getAsset(assetId);
 
         if (asset.asset.owner !== xid) {
             asset.asset.owner = xid;
-            await saveAsset(asset);
+            saveAsset(asset);
         }
     }
 
@@ -743,7 +743,7 @@ const getAgentAndCollections = async (profileId, userId) => {
 
     if (agentData.collections) {
         for (const collectionId of agentData.collections) {
-            let collectionData = await getAsset(collectionId);
+            let collectionData = getAsset(collectionId);
             collectionData.collection.assets = [];
             collections[collectionId] = collectionData;
         }
@@ -753,7 +753,7 @@ const getAgentAndCollections = async (profileId, userId) => {
 
     if (profileId === userId) {
         for (const assetId of assets.created) {
-            let assetData = await getAsset(assetId);
+            let assetData = getAsset(assetId);
 
             if (assetData.asset.collection in collections) {
                 collections[assetData.asset.collection].collection.assets.push(assetData);
@@ -764,7 +764,7 @@ const getAgentAndCollections = async (profileId, userId) => {
     }
     else {
         for (const assetId of assets.created) {
-            let assetData = await getAsset(assetId);
+            let assetData = getAsset(assetId);
 
             if (assetData.token && assetData.asset.collection in collections) {
                 collections[assetData.asset.collection].collection.assets.push(assetData);
@@ -793,11 +793,11 @@ const getAgentAndCollections = async (profileId, userId) => {
     let tokens = {};
 
     for (const assetId of assets.collected) {
-        const editionData = await getAsset(assetId);
+        const editionData = getAsset(assetId);
         const tokenId = editionData.nft.asset;
 
         if (!(tokenId in tokens)) {
-            tokens[tokenId] = await getAsset(tokenId);
+            tokens[tokenId] = getAsset(tokenId);
             tokens[tokenId].owned = 1;
             tokens[tokenId].label = editionData.asset.title;
             tokens[tokenId].maxprice = editionData.nft.price;
@@ -844,7 +844,7 @@ const getAllAgents = async () => {
 };
 
 const getCollection = async (collectionId, userId) => {
-    let collection = await getAsset(collectionId);
+    let collection = getAsset(collectionId);
 
     const agentData = await getAgentAndCollections(collection.asset.owner, userId);
     collection = agentData.collections[collectionId];
@@ -861,10 +861,10 @@ const getCert = async (xid) => {
     return cert;
 };
 
-const getHistory = async (xid) => {
+const getHistory = (xid) => {
     try {
         const historyPath = path.join(config.assets, xid, 'history.jsonl');
-        const data = await fs.promises.readFile(historyPath, 'utf-8');
+        const data = fs.readFileSync(historyPath, 'utf-8');
         const lines = data.trim().split('\n');
         const history = lines.map(line => JSON.parse(line));
         return history.reverse();
@@ -873,22 +873,22 @@ const getHistory = async (xid) => {
     }
 };
 
-const getAsset = async (xid) => {
+const getAsset = (xid) => {
     let metadata = null;
 
     try {
         const metadataPath = path.join(config.assets, xid, 'meta.json');
-        const metadataContent = await fs.promises.readFile(metadataPath, 'utf-8');
+        const metadataContent = fs.readFileSync(metadataPath, 'utf-8');
         metadata = JSON.parse(metadataContent);
-        metadata.history = await getHistory(xid);
+        metadata.history = getHistory(xid);
     } catch (error) {
     }
 
     return metadata;
 };
 
-const saveAsset = async (metadata) => {
-    const current = await getAsset(metadata.xid);
+const saveAsset = (metadata) => {
+    const current = getAsset(metadata.xid);
 
     if (JSON.stringify(metadata) == JSON.stringify(current)) {
         return;
@@ -902,7 +902,7 @@ const saveAsset = async (metadata) => {
     }
 
     metadata.asset.updated = new Date().toISOString();
-    await fs.promises.writeFile(assetJsonPath, JSON.stringify(metadata, null, 2));
+    fs.writeFileSync(assetJsonPath, JSON.stringify(metadata, null, 2));
 };
 
 const getAuditLog = () => {
@@ -940,7 +940,7 @@ const saveHistory = (xid, record) => {
 };
 
 const commitAsset = async (metadata, action) => {
-    await saveAsset(metadata);
+    saveAsset(metadata);
     await commitChanges(`${action || 'Updated'} asset ${metadata.xid}`);
 };
 
@@ -958,7 +958,7 @@ const isOwner = async (metadata, agentId) => {
     }
 
     for (const editionId of metadata.token.nfts) {
-        const edition = await getAsset(editionId);
+        const edition = getAsset(editionId);
 
         if (edition.asset.owner === agentId) {
             return true;
@@ -1020,7 +1020,7 @@ const createAsset = async (file, title, userId, collectionId) => {
         }
     };
 
-    await saveAsset(metadata);
+    saveAsset(metadata);
     await agentAddAsset(metadata);
 
     return metadata;
@@ -1105,7 +1105,7 @@ const createEdition = async (owner, asset, edition, editions) => {
 };
 
 const createToken = async (userId, xid, editions, license, royalty) => {
-    let assetData = await getAsset(xid);
+    let assetData = getAsset(xid);
 
     const assetPath = path.join(config.assets, xid);
     const response = await fetch(`${config.archiver}/api/v1/pin/${assetPath}`);
@@ -1134,7 +1134,7 @@ const createToken = async (userId, xid, editions, license, royalty) => {
         nfts: nfts,
     };
 
-    await saveAsset(assetData);
+    saveAsset(assetData);
     await commitChanges(`Minted ${editions} edition(s) of ${xid}`);
 
     // Charge mint fee from agent credits
@@ -1156,7 +1156,7 @@ const createToken = async (userId, xid, editions, license, royalty) => {
 };
 
 const transferAsset = async (xid, nextOwnerId) => {
-    let assetData = await getAsset(xid);
+    let assetData = getAsset(xid);
     const prevOwnerId = assetData.asset.owner;
 
     let assetsPrevOwner = await agentGetAssets(prevOwnerId);
@@ -1169,7 +1169,7 @@ const transferAsset = async (xid, nextOwnerId) => {
 
     assetData.asset.owner = nextOwnerId;
     assetData.nft.price = 0;
-    await saveAsset(assetData);
+    saveAsset(assetData);
 
     await commitChanges(`Transferred ${xid} from ${prevOwnerId} to ${nextOwnerId}`);
 };

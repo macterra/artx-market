@@ -460,7 +460,7 @@ app.get('/api/v1/cert/:xid', async (req, res) => {
 
 app.get('/api/v1/nft/:xid', async (req, res) => {
   try {
-    const assetData = await xidb.getAsset(req.params.xid);
+    const assetData = xidb.getAsset(req.params.xid);
 
     assetData.owner = await xidb.getAgent(assetData.asset.owner);
     assetData.owned = (req.user?.xid === assetData.owner.xid);
@@ -468,7 +468,7 @@ app.get('/api/v1/nft/:xid', async (req, res) => {
     const tokenId = assetData.nft?.asset;
 
     if (tokenId) {
-      const tokenData = await xidb.getAsset(tokenId);
+      const tokenData = xidb.getAsset(tokenId);
       assetData.nft.asset = tokenData;
     }
 
@@ -488,7 +488,7 @@ app.get('/api/v1/nft/:xid', async (req, res) => {
 
 app.get('/api/v1/asset/:xid', async (req, res) => {
   try {
-    const assetData = await xidb.getAsset(req.params.xid);
+    const assetData = xidb.getAsset(req.params.xid);
     assetData.userIsOwner = await xidb.isOwner(assetData, req.user?.xid);
     res.json(assetData);
   } catch (error) {
@@ -503,7 +503,7 @@ app.patch('/api/v1/asset/:xid', ensureAuthenticated, async (req, res) => {
   const userId = req.user.xid;
 
   try {
-    let assetData = await xidb.getAsset(xid);
+    let assetData = xidb.getAsset(xid);
 
     if (userId != assetData.asset.owner) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -536,7 +536,7 @@ app.post('/api/v1/asset/:xid/mint', ensureAuthenticated, async (req, res) => {
     const xid = req.params.xid;
     const { editions, license, royalty } = req.body;
     const userId = req.user.xid;
-    const assetData = await xidb.getAsset(xid);
+    const assetData = xidb.getAsset(xid);
 
     if (assetData.asset.owner != userId) {
       console.log('mint unauthorized');
@@ -576,7 +576,7 @@ app.post('/api/v1/asset/:xid/list', ensureAuthenticated, async (req, res) => {
     const xid = req.params.xid;
     const { price } = req.body;
     const userId = req.user.xid;
-    const assetData = await xidb.getAsset(xid);
+    const assetData = xidb.getAsset(xid);
 
     console.log(`list ${xid} with price=${price}`);
 
@@ -616,7 +616,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
     const xid = req.params.xid;
     const buyerId = req.user.xid;
     const { chargeId } = req.body;
-    const assetData = await xidb.getAsset(xid);
+    const assetData = xidb.getAsset(xid);
 
     if (!assetData.nft) {
       return res.status(500).json({ message: 'Error' });
@@ -647,7 +647,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
 
     await xidb.transferAsset(xid, buyerId);
 
-    const tokenData = await xidb.getAsset(assetData.nft.asset);
+    const tokenData = xidb.getAsset(assetData.nft.asset);
     const assetName = `"${tokenData.asset.title}" (${assetData.asset.title})`;
     console.log(`audit: ${buyer.name} buying ${assetName} for ${price} from ${seller.name}`);
 
@@ -970,7 +970,7 @@ app.post('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => {
 app.patch('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => {
   try {
     const { thumbnail } = req.body;
-    const collection = await xidb.getAsset(req.params.xid);
+    const collection = xidb.getAsset(req.params.xid);
 
     if (req.user.xid != collection.asset.owner) {
       return res.status(401).json({ message: 'Unauthorized' });
