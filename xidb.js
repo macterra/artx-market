@@ -49,7 +49,7 @@ function uuidToBase58(uuidString) {
     return base58;
 }
 
-const getAdmin = async (xid) => {
+const getAdmin = (xid) => {
     const jsonPath = path.join(config.data, 'meta.json');
 
     // Check if the agent.json file exists
@@ -65,7 +65,7 @@ const getAdmin = async (xid) => {
         };
     }
 
-    const jsonContent = await fs.promises.readFile(jsonPath, 'utf-8');
+    const jsonContent = fs.readFileSync(jsonPath, 'utf-8');
     const jsonData = JSON.parse(jsonContent);
 
     return jsonData;
@@ -76,7 +76,7 @@ const saveAdmin = async (adminData) => {
     const jsonPath = path.join(config.data, 'meta.json');
     adminData.updated = new Date().toISOString();
     // Make sure we have something to commit
-    await fs.promises.writeFile(jsonPath, JSON.stringify(adminData, null, 2));
+    fs.writeFileSync(jsonPath, JSON.stringify(adminData, null, 2));
 
     const response1 = await fetch(`${config.archiver}/api/v1/commit`, {
         method: 'POST',
@@ -91,7 +91,7 @@ const saveAdmin = async (adminData) => {
     const ipfs = await response2.json();
     adminData.cid = ipfs.cid;
 
-    await fs.promises.writeFile(jsonPath, JSON.stringify(adminData, null, 2));
+    fs.writeFileSync(jsonPath, JSON.stringify(adminData, null, 2));
     return adminData;
 };
 
@@ -109,7 +109,7 @@ const registerState = async (adminState) => {
     adminState.pending = register.txid;
 
     const jsonPath = path.join(config.data, 'meta.json');
-    await fs.promises.writeFile(jsonPath, JSON.stringify(adminState, null, 2));
+    fs.writeFileSync(jsonPath, JSON.stringify(adminState, null, 2));
 
     return adminState;
 };
@@ -128,7 +128,7 @@ const notarizeState = async (adminState) => {
     adminState.pending = notarize.txid;
 
     const jsonPath = path.join(config.data, 'meta.json');
-    await fs.promises.writeFile(jsonPath, JSON.stringify(adminState, null, 2));
+    fs.writeFileSync(jsonPath, JSON.stringify(adminState, null, 2));
 
     return adminState;
 };
@@ -297,7 +297,7 @@ const verifyAsset = async (xid) => {
     }
 
     error.error = 'invalid ownership';
-    const agentData = await getAgent(assetData.asset.owner);
+    const agentData = getAgent(assetData.asset.owner);
 
     if (!agentData) {
         return error;
@@ -390,7 +390,7 @@ const fixAsset = async (xid) => {
         }
     }
 
-    const agentData = await getAgent(assetData.asset.owner);
+    const agentData = getAgent(assetData.asset.owner);
 
     if (!agentData) {
         return removeAsset(xid);
@@ -425,7 +425,7 @@ const fixAsset = async (xid) => {
 };
 
 const verifyAgent = async (xid) => {
-    const agentData = await getAgent(xid);
+    const agentData = getAgent(xid);
 
     if (!agentData.credits) {
         return {
@@ -492,7 +492,7 @@ const verifyAgent = async (xid) => {
 };
 
 const fixAgent = async (xid) => {
-    const agentData = await getAgent(xid);
+    const agentData = getAgent(xid);
     const assets = await agentGetAssets(xid);
 
     for (const collectionId of agentData.collections) {
@@ -564,7 +564,7 @@ const createAgent = async (key) => {
 
     const gallery = await createCollection(userId, 'gallery');
     await saveCollection(gallery);
-    agentData = await getAgent(userId);
+    agentData = getAgent(userId);
 
     if (fs.existsSync(config.defaultPfp)) {
         const pfpName = path.basename(config.defaultPfp);
@@ -585,24 +585,24 @@ const getAgentFromKey = async (key) => {
     let keyData = {};
 
     if (fs.existsSync(keyPath)) {
-        const keyJsonContent = await fs.promises.readFile(keyPath, 'utf-8');
+        const keyJsonContent = fs.readFileSync(keyPath, 'utf-8');
         keyData = JSON.parse(keyJsonContent);
     }
 
     if (!(key in keyData)) {
         const newAgent = await createAgent(key);
         keyData[key] = newAgent.xid;
-        await fs.promises.writeFile(keyPath, JSON.stringify(keyData, null, 2));
+        fs.writeFileSync(keyPath, JSON.stringify(keyData, null, 2));
         await commitChanges(`new agent ${newAgent.xid}`);
     }
 
     const agentId = keyData[key];
-    const agentData = await getAgent(agentId);
+    const agentData = getAgent(agentId);
 
     return agentData;
 };
 
-const getAgent = async (xid) => {
+const getAgent = (xid) => {
     const agentJsonPath = path.join(config.agents, xid, 'agent.json');
 
     // Check if the agent.json file exists
@@ -610,7 +610,7 @@ const getAgent = async (xid) => {
         return null;
     }
 
-    const agentJsonContent = await fs.promises.readFile(agentJsonPath, 'utf-8');
+    const agentJsonContent = fs.readFileSync(agentJsonPath, 'utf-8');
     const agentData = JSON.parse(agentJsonContent);
 
     return agentData;
@@ -627,7 +627,7 @@ const saveAgent = async (agentData) => {
     }
 
     agentData.updated = new Date().toISOString();
-    await fs.promises.writeFile(agentJsonPath, JSON.stringify(agentData, null, 2));
+    fs.writeFileSync(agentJsonPath, JSON.stringify(agentData, null, 2));
 
     if (newAgent) {
         await commitChanges(`Created agent ${agentData.xid}`);
@@ -638,7 +638,7 @@ const saveAgent = async (agentData) => {
 };
 
 const addCredits = async (userId, amount) => {
-    const agentData = await getAgent(userId);
+    const agentData = getAgent(userId);
 
     if (agentData) {
         agentData.credits += amount;
@@ -655,7 +655,7 @@ const addCredits = async (userId, amount) => {
 };
 
 const buyCredits = async (userId, charge) => {
-    const agentData = await getAgent(userId);
+    const agentData = getAgent(userId);
 
     if (agentData) {
         if (charge && charge.paid && charge.amount) {
@@ -682,7 +682,7 @@ const agentGetAssets = async (userId) => {
 
     // Check if the agent.json file exists
     if (fs.existsSync(jsonPath)) {
-        const jsonContent = await fs.promises.readFile(jsonPath, 'utf-8');
+        const jsonContent = fs.readFileSync(jsonPath, 'utf-8');
         assetData = JSON.parse(jsonContent);
     }
     else {
@@ -700,7 +700,7 @@ const agentSaveAssets = async (assetData) => {
 
     assetData.updated = new Date().toISOString();
 
-    await fs.promises.writeFile(jsonPath, JSON.stringify(assetData, null, 2));
+    fs.writeFileSync(jsonPath, JSON.stringify(assetData, null, 2));
 };
 
 const agentAddAsset = async (metadata) => {
@@ -736,7 +736,7 @@ const getAgentAndCollections = async (profileId, userId) => {
         return;
     }
 
-    let agentData = await getAgent(profileId);
+    let agentData = getAgent(profileId);
     const assets = await agentGetAssets(profileId);
 
     let collections = {};
@@ -856,7 +856,7 @@ const getCollection = async (collectionId, userId) => {
 
 const getCert = async (xid) => {
     const certPath = path.join(config.certs, xid, 'meta.json');
-    const certContent = await fs.promises.readFile(certPath, 'utf-8');
+    const certContent = fs.readFileSync(certPath, 'utf-8');
     const cert = JSON.parse(certContent);
     return cert;
 };
@@ -1027,7 +1027,7 @@ const createAsset = async (file, title, userId, collectionId) => {
 };
 
 const createAssets = async (userId, files, collectionId) => {
-    const agentData = await getAgent(userId);
+    const agentData = getAgent(userId);
     const collectionData = await getCollection(collectionId, userId);
     const defaultTitle = collectionData.collection.default.title;
 
@@ -1099,7 +1099,7 @@ const createEdition = async (owner, asset, edition, editions) => {
 
     // Write the metadata to meta.json
     const metadataPath = path.join(assetFolder, 'meta.json');
-    await fs.promises.writeFile(metadataPath, JSON.stringify(metadata, null, 2));
+    fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2));
 
     return xid;
 };
@@ -1141,7 +1141,7 @@ const createToken = async (userId, xid, editions, license, royalty) => {
     const storageFee = Math.round(assetData.file.size * config.storageRate);
     const editionFee = editions * config.editionRate;
     const mintFee = storageFee + editionFee;
-    const agentData = await getAgent(userId);
+    const agentData = getAgent(userId);
     agentData.credits -= mintFee;
     await saveAgent(agentData);
 
@@ -1207,7 +1207,7 @@ const createCollection = async (userId, name) => {
 };
 
 const saveCollection = async (collection) => {
-    const agentData = await getAgent(collection.asset.owner);
+    const agentData = getAgent(collection.asset.owner);
     const collectionId = collection.xid;
 
     if (!agentData.collections.includes(collectionId)) {
@@ -1219,7 +1219,7 @@ const saveCollection = async (collection) => {
 };
 
 const removeCollection = async (collection) => {
-    const agentData = await getAgent(collection.asset.owner);
+    const agentData = getAgent(collection.asset.owner);
     const collectionId = collection.xid;
 
     if (agentData.collections.includes(collectionId)) {

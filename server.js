@@ -119,8 +119,8 @@ app.get('/logout', (req, res) => {
 app.get('/check-auth', async (req, res) => {
   if (req.isAuthenticated()) {
     const userId = req.user.xid;
-    const admin = await xidb.getAdmin();
-    const isAdmin = userId === admin.owner;
+    const adminData = xidb.getAdmin();
+    const isAdmin = userId === adminData.owner;
 
     res.json({
       isAuthenticated: true,
@@ -192,7 +192,7 @@ app.get('/api/v1/licenses', async (req, res) => {
 
 app.get('/api/v1/admin', ensureAuthenticated, async (req, res) => {
   try {
-    const adminData = await xidb.getAdmin();
+    const adminData = xidb.getAdmin();
 
     if (adminData.owner && adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -207,7 +207,7 @@ app.get('/api/v1/admin', ensureAuthenticated, async (req, res) => {
 
 app.get('/api/v1/admin/claim', ensureAuthenticated, async (req, res) => {
   try {
-    const adminData = await xidb.getAdmin();
+    const adminData = xidb.getAdmin();
 
     if (adminData.owner) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -224,7 +224,7 @@ app.get('/api/v1/admin/claim', ensureAuthenticated, async (req, res) => {
 
 app.get('/api/v1/admin/save', ensureAuthenticated, async (req, res) => {
   try {
-    const adminData = await xidb.getAdmin();
+    const adminData = xidb.getAdmin();
 
     if (!adminData.owner || adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -240,7 +240,7 @@ app.get('/api/v1/admin/save', ensureAuthenticated, async (req, res) => {
 
 app.get('/api/v1/admin/register', ensureAuthenticated, async (req, res) => {
   try {
-    const adminData = await xidb.getAdmin();
+    const adminData = xidb.getAdmin();
 
     if (!adminData.owner || adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -260,7 +260,7 @@ app.get('/api/v1/admin/register', ensureAuthenticated, async (req, res) => {
 
 app.get('/api/v1/admin/notarize', ensureAuthenticated, async (req, res) => {
   try {
-    const adminData = await xidb.getAdmin();
+    const adminData = xidb.getAdmin();
 
     if (!adminData.owner || adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -284,7 +284,7 @@ app.get('/api/v1/admin/notarize', ensureAuthenticated, async (req, res) => {
 
 app.get('/api/v1/admin/certify', ensureAuthenticated, async (req, res) => {
   try {
-    const adminData = await xidb.getAdmin();
+    const adminData = xidb.getAdmin();
 
     if (!adminData.owner || adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -304,7 +304,7 @@ app.get('/api/v1/admin/certify', ensureAuthenticated, async (req, res) => {
 
 app.get('/api/v1/admin/walletinfo', ensureAuthenticated, async (req, res) => {
   try {
-    const adminData = await xidb.getAdmin();
+    const adminData = xidb.getAdmin();
 
     if (!adminData.owner || adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -320,7 +320,7 @@ app.get('/api/v1/admin/walletinfo', ensureAuthenticated, async (req, res) => {
 
 app.get('/api/v1/admin/auditlog', ensureAuthenticated, async (req, res) => {
   try {
-    const adminData = await xidb.getAdmin();
+    const adminData = xidb.getAdmin();
 
     if (!adminData.owner || adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -336,7 +336,7 @@ app.get('/api/v1/admin/auditlog', ensureAuthenticated, async (req, res) => {
 
 app.get('/api/v1/admin/assets', ensureAuthenticated, async (req, res) => {
   try {
-    const adminData = await xidb.getAdmin();
+    const adminData = xidb.getAdmin();
 
     if (!adminData.owner || adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -351,15 +351,14 @@ app.get('/api/v1/admin/assets', ensureAuthenticated, async (req, res) => {
 
 app.get('/api/v1/admin/agents', ensureAuthenticated, async (req, res) => {
   try {
-    const adminData = await xidb.getAdmin();
+    const adminData = xidb.getAdmin();
 
     if (!adminData.owner || adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
     const agentIds = xidb.allAgents();
-    const agentsPromises = agentIds.map(xid => xidb.getAgent(xid));
-    const agents = await Promise.all(agentsPromises);
+    const agents = agentIds.map(xid => xidb.getAgent(xid));
 
     res.json(agents);
   } catch (error) {
@@ -370,7 +369,7 @@ app.get('/api/v1/admin/agents', ensureAuthenticated, async (req, res) => {
 
 app.get('/api/v1/admin/verify/asset/:xid', async (req, res) => {
   try {
-    const adminData = await xidb.getAdmin();
+    const adminData = xidb.getAdmin();
 
     if (!adminData.owner || adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -386,7 +385,7 @@ app.get('/api/v1/admin/verify/asset/:xid', async (req, res) => {
 
 app.get('/api/v1/admin/fix/asset/:xid', async (req, res) => {
   try {
-    const adminData = await xidb.getAdmin();
+    const adminData = xidb.getAdmin();
 
     if (!adminData.owner || adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -402,7 +401,7 @@ app.get('/api/v1/admin/fix/asset/:xid', async (req, res) => {
 
 app.get('/api/v1/admin/verify/agent/:xid', async (req, res) => {
   try {
-    const adminData = await xidb.getAdmin();
+    const adminData = xidb.getAdmin();
 
     if (!adminData.owner || adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -418,7 +417,7 @@ app.get('/api/v1/admin/verify/agent/:xid', async (req, res) => {
 
 app.get('/api/v1/admin/fix/agent/:xid', async (req, res) => {
   try {
-    const adminData = await xidb.getAdmin();
+    const adminData = xidb.getAdmin();
 
     if (!adminData.owner || adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -434,7 +433,7 @@ app.get('/api/v1/admin/fix/agent/:xid', async (req, res) => {
 
 app.get('/api/v1/admin/pin/asset/:xid', async (req, res) => {
   try {
-    const adminData = await xidb.getAdmin();
+    const adminData = xidb.getAdmin();
 
     if (!adminData.owner || adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -462,7 +461,7 @@ app.get('/api/v1/nft/:xid', async (req, res) => {
   try {
     const assetData = xidb.getAsset(req.params.xid);
 
-    assetData.owner = await xidb.getAgent(assetData.asset.owner);
+    assetData.owner = xidb.getAgent(assetData.asset.owner);
     assetData.owned = (req.user?.xid === assetData.owner.xid);
 
     const tokenId = assetData.nft?.asset;
@@ -472,7 +471,7 @@ app.get('/api/v1/nft/:xid', async (req, res) => {
       assetData.nft.asset = tokenData;
     }
 
-    const adminData = await xidb.getAdmin();
+    const adminData = xidb.getAdmin();
     const cert = adminData.latest;
 
     if (cert) {
@@ -626,9 +625,9 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
       return res.status(500).json({ message: "Already owned" });
     }
 
-    const buyer = await xidb.getAgent(buyerId);
+    const buyer = xidb.getAgent(buyerId);
     const sellerId = assetData.asset.owner;
-    const seller = await xidb.getAgent(sellerId);
+    const seller = xidb.getAgent(sellerId);
 
     // TBD associate this charge with this asset for validation
     const chargeData = await satspay.checkCharge(chargeId);
@@ -669,7 +668,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
     };
 
     if (creatorId !== seller.xid) {
-      const creator = await xidb.getAgent(creatorId);
+      const creator = xidb.getAgent(creatorId);
       royalty = Math.round(price * royaltyRate);
 
       if (royalty > 0) {
@@ -828,7 +827,7 @@ app.patch('/api/v1/profile/', ensureAuthenticated, async (req, res) => {
     const { name, tagline, pfp, deposit, collections, links } = req.body;
     const userId = req.user.xid;
 
-    const agentData = await xidb.getAgent(userId);
+    const agentData = xidb.getAgent(userId);
 
     if (userId != agentData.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -882,7 +881,7 @@ app.post('/api/v1/profile/:xid/invoice', async (req, res) => {
   const { amount } = req.body;
 
   try {
-    const agentData = await xidb.getAgent(profileId);
+    const agentData = xidb.getAgent(profileId);
 
     if (agentData) {
       const { invoice } = await requestInvoice({
@@ -1074,7 +1073,7 @@ app.use((req, res, next) => {
 
 // Check pending txn every minute
 cron.schedule('* * * * *', async () => {
-  const adminData = await xidb.getAdmin();
+  const adminData = xidb.getAdmin();
   if (adminData.pending) {
     console.log(`Pending txn ${adminData.pending}...`);
     const savedAdmin = await xidb.certifyState(adminData);
@@ -1086,7 +1085,7 @@ cron.schedule('* * * * *', async () => {
 
 // Notarize market state at midnight
 cron.schedule('0 0 * * *', async () => {
-  const adminData = await xidb.getAdmin();
+  const adminData = xidb.getAdmin();
   if (!adminData.pending) {
     console.log(`Notarizing market state...`);
     const savedAdmin = await xidb.notarizeState(adminData);
