@@ -53,11 +53,6 @@ const AssetView = ({ navigate }) => {
                     setEdition(edition);
                     setTab('edition');
                 }
-                else {
-                    if (isToken && metadata.token.editions === 1) {
-                        setEdition(1);
-                    }
-                }
 
                 if (metadata.asset.collection === 'deleted') {
                     setIsDeleted(true);
@@ -101,7 +96,7 @@ const AssetView = ({ navigate }) => {
                     scrollButtons="auto"
                 >
                     <Tab key="meta" value="meta" label={'Metadata'} />
-                    {isToken && <Tab key="token" value="token" label={'Token'} />}
+                    {isToken && !edition && <Tab key="token" value="token" label={'Token'} />}
                     {isToken && edition && <Tab key="edition" value="edition" label={'Edition'} />}
                     {isToken && isAuthenticated && !isDeleted && <Tab key="trade" value="trade" label={'Buy/Sell'} />}
                     {isOwner && !isToken && <Tab key="edit" value="edit" label={'Edit'} />}
