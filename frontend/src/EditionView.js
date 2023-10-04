@@ -6,6 +6,7 @@ import {
     TableContainer,
     TableRow,
 } from '@mui/material';
+import AgentBadge from './AgentBadge';
 
 const EditionView = ({ metadata, edition }) => {
 
@@ -35,8 +36,10 @@ const EditionView = ({ metadata, edition }) => {
             <Table>
                 <TableBody>
                     <TableRow>
-                        <TableCell>Title:</TableCell>
-                        <TableCell>{metadata.asset.title}</TableCell>
+                        <TableCell>Token:</TableCell>
+                        <TableCell>
+                            <a href={`/asset/${metadata.xid}`}>{metadata.asset.title}</a>
+                        </TableCell>
                     </TableRow>
                     <TableRow>
                         <TableCell>Edition:</TableCell>
@@ -45,20 +48,7 @@ const EditionView = ({ metadata, edition }) => {
                     <TableRow>
                         <TableCell>Owner:</TableCell>
                         <TableCell>
-                            <div style={{ display: 'flex', alignItems: 'center' }}>
-                                {nft.owner.pfp &&
-                                    <img
-                                        src={nft.owner.pfp}
-                                        alt=""
-                                        style={{
-                                            width: '30px',
-                                            height: '30px',
-                                            objectFit: 'cover',
-                                            marginRight: '16px',
-                                            borderRadius: '50%',
-                                        }}
-                                    />} {nft.owner.name}
-                            </div>
+                            <AgentBadge agent={nft.owner} />
                         </TableCell>
                     </TableRow>
                     {nft.cert?.cid &&

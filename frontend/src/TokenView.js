@@ -9,6 +9,7 @@ import {
     TableHead,
     Paper,
 } from '@mui/material';
+import AgentBadge from './AgentBadge';
 
 function convertToRanges(arr) {
     let result = '';
@@ -124,7 +125,11 @@ const TokenView = ({ metadata }) => {
                     </TableRow>
                     <TableRow>
                         <TableCell>Editions:</TableCell>
-                        <TableCell>{metadata.token.editions > 1 ? metadata.token.editions : "1 of 1"}</TableCell>
+                        {nfts && nfts.length === 1 ? (
+                            <TableCell>1 of 1</TableCell>
+                        ) : (
+                            <TableCell>{metadata.token.editions}</TableCell>
+                        )}
                     </TableRow>
                     {metadata.token.editions > 1 && owned > 0 &&
                         <TableRow>
@@ -138,21 +143,7 @@ const TokenView = ({ metadata }) => {
                         <TableRow>
                             <TableCell>Owner:</TableCell>
                             <TableCell>
-                                <div style={{ display: 'flex', alignItems: 'center' }}>
-                                    {nfts[0].owner.pfp &&
-                                        <img
-                                            src={nfts[0].owner.pfp}
-                                            alt=""
-                                            style={{
-                                                width: '30px',
-                                                height: '30px',
-                                                objectFit: 'cover',
-                                                marginRight: '16px',
-                                                borderRadius: '50%',
-                                            }}
-                                        />}
-                                    {nfts[0].owner.name}
-                                </div>
+                                <AgentBadge agent={nfts[0].owner} />
                             </TableCell>
                         </TableRow>
                     }
@@ -177,20 +168,7 @@ const TokenView = ({ metadata }) => {
                                                         </a>
                                                     </TableCell>
                                                     <TableCell>
-                                                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                                                            {nft.owner.pfp &&
-                                                                <img
-                                                                    src={nft.owner.pfp}
-                                                                    alt=""
-                                                                    style={{
-                                                                        width: '30px',
-                                                                        height: '30px',
-                                                                        objectFit: 'cover',
-                                                                        marginRight: '16px',
-                                                                        borderRadius: '50%',
-                                                                    }}
-                                                                />} {nft.owner.name}
-                                                        </div>
+                                                        <AgentBadge agent={nft.owner} />
                                                     </TableCell>
                                                 </TableRow>
                                             ))}

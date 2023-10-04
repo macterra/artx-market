@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Button, Paper, TableContainer, Table, TableHead, TableBody, TableRow, TableCell, Tab, Tabs, Grid } from '@mui/material';
 import AuditLog from './AuditLog';
+import AgentBadge from './AgentBadge';
 
 const AdminView = ({ navigate }) => {
 
@@ -446,22 +447,7 @@ const AdminView = ({ navigate }) => {
                             <TableBody>
                                 {userList.map((user, index) => (
                                     <TableRow>
-                                        <TableCell>
-                                            {user.pfp &&
-                                                <img
-                                                    src={user.pfp}
-                                                    alt=""
-                                                    style={{
-                                                        width: '30px',
-                                                        height: '30px',
-                                                        objectFit: 'cover',
-                                                        marginRight: '16px',
-                                                        borderRadius: '50%',
-                                                    }}
-                                                />
-                                            }
-                                        </TableCell>
-                                        <TableCell><a href={`/profile/${user.xid}`} >{user.name}</a></TableCell>
+                                        <TableCell><AgentBadge agent={user} /></TableCell>
                                         <TableCell>{user.deposit}</TableCell>
                                         <TableCell align="right">{user.credits}</TableCell>
                                         <TableCell>{user.updated}</TableCell>
