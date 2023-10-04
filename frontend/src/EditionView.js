@@ -51,12 +51,12 @@ const EditionView = ({ metadata, edition }) => {
                             <AgentBadge agent={nft.owner} />
                         </TableCell>
                     </TableRow>
-                    {nft.cert?.cid &&
+                    {nft.cert?.auth?.cid &&
                         <TableRow>
                             <TableCell>IPFS:</TableCell>
                             <TableCell>
-                                <a href={`/ipfs/${nft.cert.cid}/assets/${nft.xid}/meta.json`} target="_blank" rel="noopener noreferrer">
-                                    {nft.cert.cid}
+                                <a href={`/ipfs/${nft.cert.auth.cid}/assets/${nft.xid}/meta.json`} target="_blank" rel="noopener noreferrer">
+                                    {nft.cert.auth.cid}
                                 </a>
                             </TableCell>
                         </TableRow>
