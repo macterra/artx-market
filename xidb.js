@@ -238,82 +238,6 @@ const allAgents = () => {
     return agents;
 };
 
-const verifyAsset = async (xid) => {
-    const assetData = getAsset(xid);
-    let error = {
-        xid: xid,
-        verified: false,
-        error: 'invalid fields',
-    };
-
-    if (!assetData.xid) {
-        return error;
-    }
-
-    if (!assetData.asset) {
-        return error;
-    }
-
-    if (!assetData.asset.owner) {
-        return error;
-    }
-
-    if (assetData.file && assetData.file.originalName) {
-        return error;
-    }
-
-    if (assetData.token) {
-
-        // verify CID
-
-        for (const nftId of assetData.token.nfts) {
-            const edition = getAsset(nftId);
-
-            if (!edition) {
-                return error;
-            }
-
-            if (!edition.nft) {
-                return error;
-            }
-
-            if (edition.nft.asset != xid) {
-                return error;
-            }
-        }
-    }
-
-    error.error = 'invalid ownership';
-    const agentData = getAgent(assetData.asset.owner);
-
-    if (!agentData) {
-        return error;
-    }
-
-    const assets = agentGetAssets(assetData.asset.owner);
-
-    if (assetData.collection) {
-        if (!agentData.collections.includes(xid)) {
-            return error;
-        }
-    }
-    else if (assetData.nft) {
-        if (!assets.collected.includes(xid)) {
-            return error;
-        }
-    }
-    else {
-        if (!assets.created.includes(xid)) {
-            return error;
-        }
-    }
-
-    return {
-        xid: xid,
-        verified: true,
-    }
-};
-
 const removeAsset = (xid) => {
     const assetPath = path.join(config.assets, xid);
 
@@ -324,90 +248,6 @@ const removeAsset = (xid) => {
         fixed: true,
         message: 'asset removed',
     };
-};
-
-const fixAsset = async (xid) => {
-    const assetData = getAsset(xid);
-
-    if (!assetData) {
-        return removeAsset(xid);
-    }
-
-    if (!assetData.asset) {
-        return removeAsset(xid);
-    }
-
-    if (!assetData.asset.owner) {
-        return removeAsset(xid);
-    }
-
-    if (!assetData.xid) {
-        if (!assetData.asset.xid || assetData.asset.xid !== xid) {
-            return removeAsset(xid);
-        }
-
-        assetData.xid = assetData.asset.xid;
-        delete assetData.asset.xid;
-
-        saveAsset(assetData);
-        await commitChanges(`Moved xid ${assetData.xid}`);
-    }
-
-    if (assetData.file && assetData.file.originalName) {
-        delete assetData.file.originalName;
-        saveAsset(assetData);
-        await commitChanges(`Removed originalName`);
-    }
-
-    if (assetData.token) {
-        const missingNftIds = [];
-
-        for (const nftId of assetData.token.nfts) {
-            const edition = getAsset(nftId);
-            if (!edition) {
-                missingNftIds.push(nftId);
-            }
-        }
-
-        if (missingNftIds.length > 0) {
-            assetData.token.nfts = assetData.token.nfts.filter(nftId => !missingNftIds.includes(nftId));
-            saveAsset(assetData);
-            await commitChanges(`Removed missing NFTs`);
-        }
-    }
-
-    const agentData = getAgent(assetData.asset.owner);
-
-    if (!agentData) {
-        return removeAsset(xid);
-    }
-
-    const assets = agentGetAssets(assetData.asset.owner);
-
-    if (assetData.collection) {
-        if (!agentData.collections.includes(xid)) {
-            agentData.collections.push(xid);
-            saveAgent(agentData);
-        }
-    }
-    else if (assetData.nft) {
-        if (!assets.collected.includes(xid)) {
-            agentData.collected.push(xid);
-            saveAgent(agentData);
-        }
-    }
-    else {
-        if (!assets.created.includes(xid)) {
-            agentData.created.push(xid);
-            saveAgent(agentData);
-        }
-    }
-
-    return {
-        xid: xid,
-        fixed: true,
-        message: "ownership fixed",
-    }
 };
 
 const repairAsset = (xid) => {
@@ -498,112 +338,7 @@ const repairAsset = (xid) => {
     return {
         xid: xid,
         fixed: true,
-        message: "all good",
-    }
-};
-
-const verifyAgent = async (xid) => {
-    const agentData = getAgent(xid);
-
-    if (!agentData.credits) {
-        return {
-            xid: xid,
-            verified: false,
-            error: 'missing credits',
-        };
-    }
-
-    const assets = agentGetAssets(xid);
-
-    const ownershipError = {
-        xid: xid,
-        verified: false,
-        error: 'invalid ownership',
-    };
-
-    const typeError = {
-        xid: xid,
-        verified: false,
-        error: 'invalid type',
-    };
-
-    for (const collectionId of agentData.collections) {
-        const collection = getAsset(collectionId);
-
-        if (collection.asset.owner !== xid) {
-            return ownershipError;
-        }
-
-        if (!collection.collection) {
-            return typeError;
-        }
-    }
-
-    for (const assetId of assets.created) {
-        const asset = getAsset(assetId);
-
-        if (asset.asset.owner !== xid) {
-            return ownershipError;
-        }
-
-        if (!asset.file) {
-            return typeError;
-        }
-    }
-
-    for (const assetId of assets.collected) {
-        const asset = getAsset(assetId);
-
-        if (asset.asset.owner !== xid) {
-            return ownershipError;
-        }
-
-        if (!asset.nft) {
-            return typeError;
-        }
-    }
-
-    return {
-        xid: xid,
-        verified: true,
-    }
-};
-
-const fixAgent = async (xid) => {
-    const agentData = getAgent(xid);
-    const assets = agentGetAssets(xid);
-
-    for (const collectionId of agentData.collections) {
-        const collection = getAsset(collectionId);
-
-        if (collection.asset.owner !== xid) {
-            collection.asset.owner = xid;
-            saveAsset(collection);
-        }
-    }
-
-    for (const assetId of assets.created) {
-        const asset = getAsset(assetId);
-
-        if (asset.asset.owner !== xid) {
-            asset.asset.owner = xid;
-            saveAsset(asset);
-        }
-    }
-
-    for (const assetId of assets.collected) {
-        const asset = getAsset(assetId);
-
-        if (asset.asset.owner !== xid) {
-            asset.asset.owner = xid;
-            saveAsset(asset);
-        }
-    }
-
-    return {
-        xid: xid,
-        fixed: true,
-        message: "agent fixed",
+        message: "",
     }
 };
 
@@ -650,7 +385,7 @@ const repairAgent = (xid) => {
     return {
         xid: xid,
         fixed: true,
-        message: "all good",
+        message: "",
     }
 };
 
@@ -1343,8 +1078,6 @@ module.exports = {
     createAssets,
     createCollection,
     createToken,
-    fixAgent,
-    fixAsset,
     getAdmin,
     getAgent,
     getAgentAndCollections,
@@ -1369,6 +1102,4 @@ module.exports = {
     saveHistory,
     saveTxnLog,
     transferAsset,
-    verifyAgent,
-    verifyAsset,
 };
