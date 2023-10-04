@@ -198,42 +198,28 @@ const integrityCheck = async () => {
     const assets = allAssets();
 
     for (const [i, xid] of assets.entries()) {
-        const asset = await verifyAsset(xid);
+        const res = repairAsset(xid);
         const index = (i + 1).toString().padStart(5, " ");
 
-        if (asset.verified) {
-            console.log(`${index} Asset ${xid} ✔`);
+        if (res.fixed) {
+            console.log(`${index} Asset ${xid} ✔ ${res.message}`);
         }
         else {
-            const asset = await fixAsset(xid);
-
-            if (asset.fixed) {
-                console.log(`${index} Asset ${xid} ✔ fixed ${asset.message}`);
-            }
-            else {
-                console.log(`${index} Asset ${xid} ${asset.error}`);
-            }
+            console.log(`${index} Asset ${xid} ✘ ${res.message}`);
         }
     }
 
     const agents = allAgents();
 
     for (const [i, xid] of agents.entries()) {
-        const agent = await verifyAgent(xid);
+        const res = repairAgent(xid);
         const index = (i + 1).toString().padStart(5, " ");
 
-        if (agent.verified) {
-            console.log(`${index} Agent ${xid} ✔`);
+        if (res.fixed) {
+            console.log(`${index} Agent ${xid} ✔ ${res.message}`);
         }
         else {
-            const agent = await fixAgent(xid);
-
-            if (agent.fixed) {
-                console.log(`${index} Agent ${xid} ✔ fixed ${agent.message}`);
-            }
-            else {
-                console.log(`${index} Agent ${xid} ${agent.error}`);
-            }
+            console.log(`${index} Agent ${xid} ✘ ${res.message}`);
         }
     }
 };
@@ -424,6 +410,98 @@ const fixAsset = async (xid) => {
     }
 };
 
+const repairAsset = (xid) => {
+    const assetData = getAsset(xid);
+
+    if (!assetData) {
+        return removeAsset(xid);
+    }
+
+    if (!assetData.asset) {
+        return removeAsset(xid);
+    }
+
+    if (!assetData.asset.owner) {
+        return removeAsset(xid);
+    }
+
+    if (!assetData.xid) {
+        return removeAsset(xid);
+    }
+
+    if (!uuid.validate(assetData.xid)) {
+        return {
+            xid: xid,
+            fixed: false,
+            message: "bad xid",
+        }
+    }
+
+    if (assetData.token) {
+        const missingNftIds = [];
+
+        for (const nftId of assetData.token.nfts) {
+            const edition = getAsset(nftId);
+            if (!edition) {
+                missingNftIds.push(nftId);
+            }
+        }
+
+        if (missingNftIds.length > 0) {
+            return {
+                xid: xid,
+                fixed: false,
+                message: `missing nft assets: ${missingNftIds}`,
+            }
+        }
+    }
+
+    const agentData = getAgent(assetData.asset.owner);
+
+    if (!agentData) {
+        return removeAsset(xid);
+    }
+
+    const assets = agentGetAssets(assetData.asset.owner);
+    let ownershipFixed = false;
+
+    if (assetData.collection) {
+        if (!agentData.collections.includes(xid)) {
+            agentData.collections.push(xid);
+            saveAgent(agentData);
+            ownershipFixed = true;
+        }
+    }
+    else if (assetData.nft) {
+        if (!assets.collected.includes(xid)) {
+            agentData.collected.push(xid);
+            saveAgent(agentData);
+            ownershipFixed = true;
+        }
+    }
+    else {
+        if (!assets.created.includes(xid)) {
+            agentData.created.push(xid);
+            saveAgent(agentData);
+            ownershipFixed = true;
+        }
+    }
+
+    if (ownershipFixed) {
+        return {
+            xid: xid,
+            fixed: true,
+            message: "ownership fixed",
+        }
+    }
+
+    return {
+        xid: xid,
+        fixed: true,
+        message: "all good",
+    }
+};
+
 const verifyAgent = async (xid) => {
     const agentData = getAgent(xid);
 
@@ -526,6 +604,53 @@ const fixAgent = async (xid) => {
         xid: xid,
         fixed: true,
         message: "agent fixed",
+    }
+};
+
+const repairAgent = (xid) => {
+    const agentData = getAgent(xid);
+    const assets = agentGetAssets(xid);
+    let ownershipFixed = false;
+
+    for (const collectionId of agentData.collections) {
+        const collection = getAsset(collectionId);
+
+        if (collection.asset.owner !== xid) {
+            collection.asset.owner = xid;
+            saveAsset(collection);
+        }
+    }
+
+    for (const assetId of assets.created) {
+        const asset = getAsset(assetId);
+
+        if (asset.asset.owner !== xid) {
+            asset.asset.owner = xid;
+            saveAsset(asset);
+        }
+    }
+
+    for (const assetId of assets.collected) {
+        const asset = getAsset(assetId);
+
+        if (asset.asset.owner !== xid) {
+            asset.asset.owner = xid;
+            saveAsset(asset);
+        }
+    }
+
+    if (ownershipFixed) {
+        return {
+            xid: xid,
+            fixed: true,
+            message: "ownership fixed",
+        }
+    }
+
+    return {
+        xid: xid,
+        fixed: true,
+        message: "all good",
     }
 };
 
