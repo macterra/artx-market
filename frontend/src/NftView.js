@@ -11,10 +11,7 @@ const NftView = ({ navigate }) => {
     const { xid } = useParams();
 
     const [nft, setNft] = useState(null);
-    const [metadata, setMetadata] = useState(null);
     const [isOwner, setIsOwner] = useState(false);
-    const [isToken, setIsToken] = useState(false);
-    const [isDeleted, setIsDeleted] = useState(false);
     const [tab, setTab] = useState("edition");
     const [refreshKey, setRefreshKey] = useState(0);
     const [isAuthenticated, setIsAuthenticated] = useState(null);
@@ -26,22 +23,19 @@ const NftView = ({ navigate }) => {
                 const isAuthenticated = auth.data.isAuthenticated;
                 const asset = await axios.get(`/api/v1/nft/${xid}`);
                 const nft = asset.data;
-                const metadata = nft.token;
 
                 setIsAuthenticated(isAuthenticated);
                 setNft(nft);
-                setMetadata(metadata);
-                setIsToken(!!metadata.token);
                 setIsOwner(nft.owned);
             } catch (error) {
-                console.error('Error fetching image metadata:', error);
+                console.error('Error fetching image nft.token:', error);
             }
         };
 
         fetchMetadata();
     }, [xid, refreshKey, navigate]);
 
-    if (!metadata) {
+    if (!nft) {
         return;
     }
 
@@ -52,7 +46,7 @@ const NftView = ({ navigate }) => {
     return (
         <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
             <div style={{ width: '50%', padding: '16px' }}>
-                <img src={metadata.file.path} alt={metadata.asset.title} style={{ width: '100%', height: 'auto' }} />
+                <img src={nft.token.file.path} alt={nft.token.asset.title} style={{ width: '100%', height: 'auto' }} />
             </div>
             <div style={{ width: '50%', padding: '16px' }}>
                 <Tabs
@@ -64,14 +58,18 @@ const NftView = ({ navigate }) => {
                     scrollButtons="auto"
                 >
                     <Tab key="edition" value="edition" label={'NFT'} />
-                    {isToken && isAuthenticated && !isDeleted && <Tab key="trade" value="trade" label={'Buy/Sell'} />}
-                    {isOwner && !isDeleted && <Tab key="pfp" value="pfp" label={'Pfp'} />}
-                    {isToken && <Tab key="history" value="history" label={'History'} />}
+                    {isAuthenticated &&
+                        <Tab key="trade" value="trade" label={'Buy/Sell'} />
+                    }
+                    {isOwner &&
+                        <Tab key="pfp" value="pfp" label={'Pfp'} />
+                    }
+                    <Tab key="history" value="history" label={'History'} />
                 </Tabs>
                 {tab === 'edition' && <EditionView nft={nft} />}
-                {tab === 'trade' && <TokenTrader metadata={metadata} setRefreshKey={setRefreshKey} />}
-                {tab === 'pfp' && <PfpEditor metadata={metadata} setTab={setTab} />}
-                {tab === 'history' && <TokenHistory metadata={metadata} />}
+                {tab === 'trade' && <TokenTrader metadata={nft.token} setRefreshKey={setRefreshKey} />}
+                {tab === 'pfp' && <PfpEditor metadata={nft.token} setTab={setTab} />}
+                {tab === 'history' && <TokenHistory metadata={nft.token} />}
             </div>
         </div>
     );
