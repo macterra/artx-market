@@ -400,26 +400,9 @@ app.get('/api/v1/cert/:xid', async (req, res) => {
 
 app.get('/api/v1/nft/:xid', async (req, res) => {
   try {
-    const assetData = xidb.getAsset(req.params.xid);
-
-    assetData.owner = xidb.getAgent(assetData.asset.owner);
-    assetData.owned = (req.user?.xid === assetData.owner.xid);
-
-    const tokenId = assetData.nft?.asset;
-
-    if (tokenId) {
-      const tokenData = xidb.getAsset(tokenId);
-      assetData.nft.asset = tokenData;
-    }
-
-    const adminData = xidb.getAdmin();
-    const cert = adminData.latest;
-
-    if (cert) {
-      assetData.cert = xidb.getCert(cert);
-    }
-
-    res.json(assetData);
+    const nftData = xidb.getNft(req.params.xid);
+    nftData.owned = (req.user?.xid === nftData.owner.xid);
+    res.json(nftData);
   } catch (error) {
     console.error('Error:', error);
     res.status(404).json({ message: 'NFT not found' });

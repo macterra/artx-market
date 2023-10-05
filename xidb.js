@@ -712,6 +712,28 @@ const getHistory = (xid) => {
     }
 };
 
+const getNft = (xid) => {
+    const metadata = getAsset(xid);
+
+    metadata.owner = getAgent(metadata.asset.owner);
+
+    const tokenId = metadata.nft?.asset;
+
+    if (tokenId) {
+        const tokenData = getAsset(tokenId);
+        metadata.nft.asset = tokenData;
+    }
+
+    const adminData = getAdmin();
+    const cert = adminData.latest;
+
+    if (cert) {
+        metadata.cert = getCert(cert);
+    }
+
+    return metadata;
+};
+
 const getAsset = (xid) => {
     let metadata = null;
 
@@ -1088,6 +1110,7 @@ module.exports = {
     getAuditLog,
     getCert,
     getCollection,
+    getNft,
     getWalletInfo,
     integrityCheck,
     isOwner,
