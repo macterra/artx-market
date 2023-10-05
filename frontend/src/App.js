@@ -7,6 +7,7 @@ import AppHeader from './AppHeader';
 import MainView from './MainView';
 import ProfileEditor from './ProfileEditor';
 import AssetView from './AssetView';
+import NftView from './NftView';
 import ProfileHeader from './ProfileHeader';
 import ProfileView from './ProfileView';
 import CollectionView from './CollectionView';
@@ -26,6 +27,7 @@ function App() {
         <Route path="/profile/edit/:jump?" element={<EditProfile />} />
         <Route path="/collection/:xid" element={<ViewCollection />} />
         <Route path="/asset/:xid/:ed?" element={<ViewAsset />} />
+        <Route path="/nft/:xid/" element={<ViewNft />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
@@ -150,6 +152,22 @@ function ViewAsset() {
         <AppHeader navigate={navigate} />
         <header className="App-header">
           <AssetView navigate={navigate} />
+        </header>
+      </div>
+    </ThemeProvider>
+  );
+}
+
+function ViewNft() {
+  const navigate = useNavigate();
+
+  return (
+    <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
+      <div className="App">
+        <AppHeader navigate={navigate} />
+        <header className="App-header">
+          <NftView navigate={navigate} />
         </header>
       </div>
     </ThemeProvider>

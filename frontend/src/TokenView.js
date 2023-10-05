@@ -163,9 +163,7 @@ const TokenView = ({ metadata }) => {
                                             {nfts.map((nft, index) => (
                                                 <TableRow key={index}>
                                                     <TableCell>
-                                                        <a href={`/asset/${metadata.xid}/${nft.nft.edition}`}>
-                                                            {nft.asset.title}
-                                                        </a>
+                                                        <a href={`/nft/${nft.xid}`}>{nft.asset.title}</a>
                                                     </TableCell>
                                                     <TableCell>
                                                         <AgentBadge agent={nft.owner} />

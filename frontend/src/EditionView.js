@@ -8,26 +8,15 @@ import {
 } from '@mui/material';
 import AgentBadge from './AgentBadge';
 
-const EditionView = ({ metadata, edition }) => {
+const EditionView = ({ nft }) => {
 
-    const [nft, setNft] = useState(null);
+    const [metadata, setMetadata] = useState(null);
 
     useEffect(() => {
-        const fetchNft = async () => {
-            try {
-                const xid = metadata.token.nfts[edition - 1];
-                const response = await fetch(`/api/v1/nft/${xid}`);
-                const nft = await response.json();
-                setNft(nft);
-            } catch (error) {
-                console.error('Error fetching NFT:', error);
-            }
-        };
+        setMetadata(nft);
+    }, [nft]);
 
-        fetchNft();
-    }, [metadata, edition]);
-
-    if (!metadata || !nft) {
+    if (!metadata) {
         return;
     }
 
@@ -38,17 +27,22 @@ const EditionView = ({ metadata, edition }) => {
                     <TableRow>
                         <TableCell>Token:</TableCell>
                         <TableCell>
-                            <a href={`/asset/${metadata.xid}`}>{metadata.asset.title}</a>
+                            <a href={`/asset/${metadata.nft.asset.xid}`}>{metadata.nft.asset.asset.title}</a>
                         </TableCell>
                     </TableRow>
                     <TableRow>
                         <TableCell>Edition:</TableCell>
-                        <TableCell>{nft.asset.title}</TableCell>
+                        <TableCell>{metadata.asset.title}</TableCell>
                     </TableRow>
                     <TableRow>
                         <TableCell>Owner:</TableCell>
                         <TableCell>
-                            <AgentBadge agent={nft.owner} />
+                            <AgentBadge agent={metadata.owner} />
+                        </TableCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableCell>Creator:</TableCell>
+                        <TableCell>
                         </TableCell>
                     </TableRow>
                     {nft.cert?.auth?.cid &&
