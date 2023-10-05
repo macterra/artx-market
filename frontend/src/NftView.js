@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { Tab, Tabs } from '@mui/material';
-import MetadataView from './MetadataView'
 import PfpEditor from './PfpEditor';
 import TokenTrader from './TokenTrader';
 import TokenHistory from './TokenHistory';
@@ -16,10 +15,9 @@ const NftView = ({ navigate }) => {
     const [isOwner, setIsOwner] = useState(false);
     const [isToken, setIsToken] = useState(false);
     const [isDeleted, setIsDeleted] = useState(false);
-    const [tab, setTab] = useState("meta");
+    const [tab, setTab] = useState("edition");
     const [refreshKey, setRefreshKey] = useState(0);
     const [isAuthenticated, setIsAuthenticated] = useState(null);
-    const [edition, setEdition] = useState(null);
 
     useEffect(() => {
         const fetchMetadata = async () => {
@@ -28,7 +26,7 @@ const NftView = ({ navigate }) => {
                 const isAuthenticated = auth.data.isAuthenticated;
                 const asset = await axios.get(`/api/v1/nft/${xid}`);
                 const nft = asset.data;
-                const metadata = nft.nft.asset;
+                const metadata = nft.token;
 
                 setIsAuthenticated(isAuthenticated);
                 setNft(nft);
@@ -66,13 +64,11 @@ const NftView = ({ navigate }) => {
                     scrollButtons="auto"
                 >
                     <Tab key="edition" value="edition" label={'NFT'} />
-                    <Tab key="meta" value="meta" label={'Metadata'} />
                     {isToken && isAuthenticated && !isDeleted && <Tab key="trade" value="trade" label={'Buy/Sell'} />}
                     {isOwner && !isDeleted && <Tab key="pfp" value="pfp" label={'Pfp'} />}
                     {isToken && <Tab key="history" value="history" label={'History'} />}
                 </Tabs>
                 {tab === 'edition' && <EditionView nft={nft} />}
-                {tab === 'meta' && <MetadataView navigate={navigate} metadata={metadata} />}
                 {tab === 'trade' && <TokenTrader metadata={metadata} setRefreshKey={setRefreshKey} />}
                 {tab === 'pfp' && <PfpEditor metadata={metadata} setTab={setTab} />}
                 {tab === 'history' && <TokenHistory metadata={metadata} />}

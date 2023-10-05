@@ -712,17 +712,30 @@ const getHistory = (xid) => {
     }
 };
 
+function getAgentMinimal(xid) {
+    const agent = getAgent(xid);
+
+    return {
+        'xid': agent.xid,
+        'name': agent.name,
+        'pfp': agent.pfp,
+    }
+}
+
 const getNft = (xid) => {
     const metadata = getAsset(xid);
+    const tokenId = metadata.nft.asset;
+    const tokenData = getAsset(tokenId);
+    const collectionId = tokenData.asset.collection;
+    const collectionData = getAsset(collectionId);
 
-    metadata.owner = getAgent(metadata.asset.owner);
-
-    const tokenId = metadata.nft?.asset;
-
-    if (tokenId) {
-        const tokenData = getAsset(tokenId);
-        metadata.nft.asset = tokenData;
-    }
+    metadata.owner = getAgentMinimal(metadata.asset.owner);
+    metadata.creator = getAgentMinimal(tokenData.asset.owner);
+    metadata.token = tokenData;
+    metadata.collection = {
+        'xid': collectionData.xid,
+        'title': collectionData.asset.title,
+    };
 
     const adminData = getAdmin();
     const cert = adminData.latest;

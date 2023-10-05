@@ -126,7 +126,7 @@ const TokenView = ({ metadata }) => {
                     <TableRow>
                         <TableCell>Editions:</TableCell>
                         {nfts && nfts.length === 1 ? (
-                            <TableCell><a href={`/asset/${metadata.xid}/1`}>1 of 1</a></TableCell>
+                            <TableCell><a href={`/nft/${nfts[0].xid}`}>1 of 1</a></TableCell>
                         ) : (
                             <TableCell>{metadata.token.editions}</TableCell>
                         )}
