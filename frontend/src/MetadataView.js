@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import {
     Table,
     TableBody,
@@ -8,6 +7,7 @@ import {
     TableRow,
     Button,
 } from '@mui/material';
+import AgentBadge from './AgentBadge';
 
 function findAdjacentXids(list, targetXid) {
     let prevXid = null;
@@ -44,8 +44,7 @@ function findAdjacentXids(list, targetXid) {
 
 const MetadataView = ({ navigate, metadata }) => {
 
-    const [ownerId, setOwnerId] = useState(0);
-    const [ownerName, setOwnerName] = useState(0);
+    const [owner, setOwner] = useState(0);
     const [collectionId, setCollectionId] = useState(0);
     const [collectionName, setCollectionName] = useState(0);
     const [firstXid, setFirstXid] = useState(null);
@@ -61,8 +60,7 @@ const MetadataView = ({ navigate, metadata }) => {
                 let response = await fetch(`/api/v1/profile/${ownerId}`);
                 const profileData = await response.json();
 
-                setOwnerId(profileData.xid);
-                setOwnerName(profileData.name);
+                setOwner(profileData);
 
                 if (metadata.asset.collection === 'deleted') {
                     setIsDeleted(true);
@@ -102,7 +100,7 @@ const MetadataView = ({ navigate, metadata }) => {
                     <TableRow>
                         <TableCell>Owner:</TableCell>
                         <TableCell>
-                            <Link to={`/profile/${ownerId}`}>{ownerName}</Link>
+                            <AgentBadge agent={owner} />
                         </TableCell>
                     </TableRow>
                     <TableRow>
