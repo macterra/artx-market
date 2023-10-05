@@ -9,10 +9,9 @@ import PfpEditor from './PfpEditor';
 import TokenView from './TokenView';
 import TokenTrader from './TokenTrader';
 import TokenHistory from './TokenHistory';
-import EditionView from './EditionView';
 
 const AssetView = ({ navigate }) => {
-    const { xid, ed } = useParams();
+    const { xid } = useParams();
 
     const [metadata, setMetadata] = useState(null);
     const [isOwner, setIsOwner] = useState(false);
@@ -21,7 +20,6 @@ const AssetView = ({ navigate }) => {
     const [tab, setTab] = useState("meta");
     const [refreshKey, setRefreshKey] = useState(0);
     const [isAuthenticated, setIsAuthenticated] = useState(null);
-    const [edition, setEdition] = useState(null);
 
     useEffect(() => {
         const fetchMetadata = async () => {
@@ -36,23 +34,6 @@ const AssetView = ({ navigate }) => {
 
                 const isToken = !!metadata.token;
                 setIsToken(isToken);
-
-                if (ed) {
-                    if (!isToken) {
-                        navigate(`/asset/${xid}`);
-                        return;
-                    }
-
-                    const edition = parseInt(ed);
-
-                    if (isNaN(edition) || edition < 1 || edition > metadata.token.editions) {
-                        navigate(`/asset/${xid}`);
-                        return;
-                    }
-
-                    setEdition(edition);
-                    setTab('edition');
-                }
 
                 if (metadata.asset.collection === 'deleted') {
                     setIsDeleted(true);
@@ -71,7 +52,7 @@ const AssetView = ({ navigate }) => {
         };
 
         fetchMetadata();
-    }, [xid, refreshKey, ed, navigate]);
+    }, [xid, refreshKey, navigate]);
 
     if (!metadata) {
         return;
@@ -96,8 +77,7 @@ const AssetView = ({ navigate }) => {
                     scrollButtons="auto"
                 >
                     <Tab key="meta" value="meta" label={'Metadata'} />
-                    {isToken && !edition && <Tab key="token" value="token" label={'Token'} />}
-                    {isToken && edition && <Tab key="edition" value="edition" label={'Edition'} />}
+                    {isToken && <Tab key="token" value="token" label={'Token'} />}
                     {isToken && isAuthenticated && !isDeleted && <Tab key="trade" value="trade" label={'Buy/Sell'} />}
                     {isOwner && !isToken && <Tab key="edit" value="edit" label={'Edit'} />}
                     {isOwner && !isToken && !isDeleted && <Tab key="mint" value="mint" label={'Mint'} />}
@@ -106,7 +86,6 @@ const AssetView = ({ navigate }) => {
                 </Tabs>
                 {tab === 'meta' && <MetadataView navigate={navigate} metadata={metadata} />}
                 {tab === 'token' && <TokenView metadata={metadata} />}
-                {tab === 'edition' && <EditionView metadata={metadata} edition={edition} />}
                 {tab === 'trade' && <TokenTrader metadata={metadata} setRefreshKey={setRefreshKey} />}
                 {tab === 'edit' && <AssetEditor metadata={metadata} setTab={setTab} setRefreshKey={setRefreshKey} />}
                 {tab === 'mint' && <TokenMinter navigate={navigate} metadata={metadata} setTab={setTab} setRefreshKey={setRefreshKey} />}
