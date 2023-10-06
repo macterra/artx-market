@@ -245,6 +245,8 @@ const integrityCheck = async () => {
             console.log(`${index} Agent ${xid} ✘ ${res.message}`);
         }
     }
+
+    await commitChanges("All assets and agents updated and/or repaired");
 };
 
 const allAssets = () => {
@@ -768,6 +770,7 @@ const saveNft = (xid) => {
     metadata.collection = {
         'xid': collectionData.xid,
         'title': collectionData.asset.title,
+        'thumbnail': collectionData.collection.thumbnail,
     };
 
     const adminData = getAdmin();
@@ -789,8 +792,15 @@ const saveNft = (xid) => {
     const creatorPfpPath = path.join(config.assets, xid, metadata.creator.image);
     fs.copyFileSync(metadata.creator.pfp.slice(1), creatorPfpPath);
 
+    if (metadata.collection.thumbnail) {
+        metadata.collection.image = `_collection${path.extname(metadata.collection.thumbnail)}`;
+        const thumbnailPath = path.join(config.assets, xid, metadata.collection.image);
+        fs.copyFileSync(metadata.collection.thumbnail.slice(1), thumbnailPath);
+    }
+
     metadata.nft.link = `${config.link}/nft/${metadata.xid}`;
     metadata.token.link = `${config.link}/asset/${metadata.token.xid}`;
+    metadata.collection.link = `${config.link}/collection/${metadata.collection.xid}`;
     metadata.owner.link = `${config.link}/profile/${metadata.owner.xid}`;
     metadata.creator.link = `${config.link}/profile/${metadata.creator.xid}`;
 
