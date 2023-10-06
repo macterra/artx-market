@@ -744,7 +744,7 @@ function getAgentMinimal(xid) {
     }
 }
 
-const getNft = (xid) => {
+const saveNft = (xid) => {
     const metadata = getAsset(xid);
     const tokenId = metadata.nft.asset;
     const tokenData = getAsset(tokenId);
@@ -765,6 +765,24 @@ const getNft = (xid) => {
     if (cert) {
         metadata.cert = getCert(cert);
     }
+
+    metadata.asset.updated = new Date().toISOString();
+
+    const jsonPath = path.join(config.assets, xid, 'nft.json');
+    fs.writeFileSync(jsonPath, JSON.stringify(metadata, null, 2));
+
+    return metadata;
+};
+
+const getNft = (xid) => {
+    const jsonPath = path.join(config.assets, xid, 'nft.json');
+
+    if (!fs.existsSync(jsonPath)) {
+        return saveNft(xid);
+    }
+
+    const metadataContent = fs.readFileSync(jsonPath, 'utf-8');
+    metadata = JSON.parse(metadataContent);
 
     return metadata;
 };
@@ -1158,6 +1176,7 @@ module.exports = {
     saveAuditLog,
     saveCollection,
     saveHistory,
+    saveNft,
     saveTxnLog,
     transferAsset,
 };
