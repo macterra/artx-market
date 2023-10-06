@@ -1,5 +1,17 @@
 const { requestInvoice } = require('lnurl-pay');
 
+const checkServer = async () => {
+    const response = await fetch(`${process.env.SATSPAY_HOST}/satspay/api/v1/charges`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-API-KEY': process.env.SATSPAY_API_KEY,
+        },
+    });
+
+    return response.ok;
+};
+
 const createCharge = async (description, amount, timeout) => {
     try {
         const data = {
@@ -116,6 +128,7 @@ const sendPayment = async (address, amount, comment) => {
 };
 
 module.exports = {
+    checkServer,
     createCharge,
     checkCharge,
     checkAddress,

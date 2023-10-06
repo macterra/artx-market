@@ -6,6 +6,7 @@ const uuid = require('uuid');
 const bs58 = require('bs58');
 const { rimrafSync } = require('rimraf')
 const config = require('./config');
+const satspay = require('./satspay');
 
 // Function to add all changes, commit, and push
 const commitChanges = async (commitMessage) => {
@@ -170,7 +171,7 @@ const getWalletInfo = async () => {
     return walletinfo;
 };
 
-async function waitForReady() {
+async function waitForArchiver() {
     let isReady = false;
 
     while (!isReady) {
@@ -192,8 +193,29 @@ async function waitForReady() {
     console.log('Archiver service is ready!');
 }
 
+async function waitForLightning() {
+    let isReady = false;
+
+    while (!isReady) {
+        try {
+            isReady = await satspay.checkServer();
+
+            if (!isReady) {
+                console.log('Waiting for LNbits to be ready...');
+                await new Promise(resolve => setTimeout(resolve, 1000)); // wait for 5 seconds before checking again
+            }
+        } catch (error) {
+            console.error('Waiting for LNbits to respond...');
+            await new Promise(resolve => setTimeout(resolve, 1000)); // wait for 5 seconds before checking again
+        }
+    }
+
+    console.log('LNbits service is ready!');
+}
+
 const integrityCheck = async () => {
-    await waitForReady();
+    await waitForArchiver();
+    await waitForLightning();
 
     const assets = allAssets();
 
