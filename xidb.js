@@ -4,6 +4,7 @@ const sharp = require('sharp');
 const crypto = require('crypto');
 const uuid = require('uuid');
 const bs58 = require('bs58');
+const ejs = require('ejs');
 const { rimrafSync } = require('rimraf')
 const config = require('./config');
 const satspay = require('./satspay');
@@ -315,6 +316,16 @@ const repairAsset = (xid) => {
                 fixed: false,
                 message: `missing nft assets: ${missingNftIds}`,
             }
+        }
+    }
+
+    if (assetData.nft) {
+        saveNft(xid);
+
+        return {
+            xid: xid,
+            fixed: true,
+            message: `saved NFT`,
         }
     }
 
@@ -766,8 +777,25 @@ const saveNft = (xid) => {
         metadata.cert = getCert(cert);
     }
 
-    metadata.asset.updated = new Date().toISOString();
+    metadata.nft.image = `_asset${path.extname(metadata.token.file.path)}`;
+    const imagePath = path.join(config.assets, xid, metadata.nft.image);
+    fs.copyFileSync(metadata.token.file.path.slice(1), imagePath);
 
+    metadata.owner.image = `_owner${path.extname(metadata.owner.pfp)}`;
+    const ownerPfpPath = path.join(config.assets, xid, metadata.owner.image);
+    fs.copyFileSync(metadata.owner.pfp.slice(1), ownerPfpPath);
+
+    metadata.creator.image = `_creator${path.extname(metadata.creator.pfp)}`;
+    const creatorPfpPath = path.join(config.assets, xid, metadata.creator.image);
+    fs.copyFileSync(metadata.creator.pfp.slice(1), creatorPfpPath);
+
+    const templatePath = path.join(config.data, 'nft.ejs');
+    const template = fs.readFileSync(templatePath, 'utf8');
+    const html = ejs.render(template, metadata);
+    const htmlPath = path.join(config.assets, xid, 'index.html');
+    fs.writeFileSync(htmlPath, html);
+
+    metadata.asset.updated = new Date().toISOString();
     const jsonPath = path.join(config.assets, xid, 'nft.json');
     fs.writeFileSync(jsonPath, JSON.stringify(metadata, null, 2));
 

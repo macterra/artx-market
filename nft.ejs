@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body {
+            font-family: Roboto, Helvetica, Arial, sans-serif;
+            font-weight: 400;
+            background-color: #282c34;
+            color: white;
+        }
+
+        .container {
+            display: flex;
+        }
+
+        .left,
+        .right {
+            width: 50%;
+            padding: 16px;
+        }
+
+        table {
+            width: 100%;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        tr {
+            border-bottom: 1px solid grey;
+        }
+
+        th,
+        td {
+            padding: 15px;
+            text-align: left;
+            border: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="left">
+            <img src="<%= nft.image %>" alt="<%= token.asset.title %> (<%= asset.title %>)" style="width: 100%">
+        </div>
+        <div class="right">
+            <table>
+                <tbody>
+                    <tr>
+                        <td>
+                            Token:
+                        </td>
+                        <td>
+                            <%= token.asset.title %>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Edition:
+                        </td>
+                        <td>
+                            <%= asset.title %>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Owner:
+                        </td>
+                        <td>
+                            <%= owner.name %>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Creator:
+                        </td>
+                        <td>
+                            <%= creator.name %>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+
+</html>
