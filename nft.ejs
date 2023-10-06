@@ -34,7 +34,6 @@
             padding: 16px;
         }
 
-
         table {
             width: 100%;
             border-spacing: 0;
@@ -54,6 +53,14 @@
         td:first-child {
             width: 1px;
             white-space: nowrap;
+        }
+
+        .pfp {
+            width: 30px;
+            height: 30px;
+            object-fit: cover;
+            margin-right: 16px;
+            border-radius: 50%;
         }
     </style>
 </head>
@@ -91,9 +98,12 @@
                             Collection:
                         </td>
                         <td>
-                            <a href="<%= collection.link %>">
-                                <%= collection.title %>
-                            </a>
+                            <div style="display: flex; align-items: center;">
+                                <img src="<%= collection.image %>" class="pfp" />
+                                <a href="<%= collection.link %>">
+                                    <%= collection.title %>
+                                </a>
+                            </div>
                         </td>
                     </tr>
                     <tr>
@@ -101,9 +111,12 @@
                             Owner:
                         </td>
                         <td>
-                            <a href="<%= owner.link %>">
-                                <%= owner.name %>
-                            </a>
+                            <div style="display: flex; align-items: center;">
+                                <img src="<%= owner.image %>" class="pfp" />
+                                <a href="<%= owner.link %>">
+                                    <%= owner.name %>
+                                </a>
+                            </div>
                         </td>
                     </tr>
                     <tr>
@@ -111,8 +124,21 @@
                             Creator:
                         </td>
                         <td>
-                            <a href="<%= creator.link %>">
-                                <%= creator.name %>
+                            <div style="display: flex; align-items: center;">
+                                <img src="<%= creator.image %>" class="pfp" />
+                                <a href="<%= creator.link %>">
+                                    <%= creator.name %>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            JSON:
+                        </td>
+                        <td>
+                            <a href="nft.json">
+                                nft.json
                             </a>
                         </td>
                     </tr>

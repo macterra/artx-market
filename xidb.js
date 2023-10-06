@@ -797,6 +797,9 @@ const saveNft = (xid) => {
         const thumbnailPath = path.join(config.assets, xid, metadata.collection.image);
         fs.copyFileSync(metadata.collection.thumbnail.slice(1), thumbnailPath);
     }
+    else {
+        metadata.collection.image = metadata.nft.image;
+    }
 
     metadata.nft.link = `${config.link}/nft/${metadata.xid}`;
     metadata.token.link = `${config.link}/asset/${metadata.token.xid}`;
