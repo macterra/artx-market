@@ -6,6 +6,7 @@ const config = {
     name: process.env.ARTX_NAME,
     host: process.env.ARTX_HOST || 'localhost',
     port: process.env.ARTX_PORT || 5000,
+    link: process.env.ARTX_LINK || 'http://localhost:5000',
     ipfs: process.env.IPFS_HOST || 'localhost',
     archiver: process.env.ARCHIVER || 'http://localhost:5115',
     depositAddress: process.env.TXN_FEE_DEPOSIT,

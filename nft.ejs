@@ -10,6 +10,20 @@
             color: white;
         }
 
+        a {
+            text-decoration: none;
+            color: #fff;
+        }
+
+        a:hover {
+            text-decoration: underline;
+            color: #6699cc;
+        }
+
+        a:visited {
+            color: #fff;
+        }
+
         .container {
             display: flex;
         }
@@ -20,13 +34,9 @@
             padding: 16px;
         }
 
-        table {
-            width: 100%;
-        }
 
         table {
             width: 100%;
-            border-collapse: separate;
             border-spacing: 0;
         }
 
@@ -38,7 +48,12 @@
         td {
             padding: 15px;
             text-align: left;
-            border: none;
+        }
+
+        th:first-child,
+        td:first-child {
+            width: 1px;
+            white-space: nowrap;
         }
     </style>
 </head>
@@ -56,7 +71,9 @@
                             Token:
                         </td>
                         <td>
-                            <%= token.asset.title %>
+                            <a href="<%= token.link %>">
+                                <%= token.asset.title %>
+                            </a>
                         </td>
                     </tr>
                     <tr>
@@ -64,7 +81,9 @@
                             Edition:
                         </td>
                         <td>
-                            <%= asset.title %>
+                            <a href="<%= nft.link %>">
+                                <%= asset.title %>
+                            </a>
                         </td>
                     </tr>
                     <tr>
@@ -72,7 +91,9 @@
                             Owner:
                         </td>
                         <td>
-                            <%= owner.name %>
+                            <a href="<%= owner.link %>">
+                                <%= owner.name %>
+                            </a>
                         </td>
                     </tr>
                     <tr>
@@ -80,7 +101,9 @@
                             Creator:
                         </td>
                         <td>
-                            <%= creator.name %>
+                            <a href="<%= creator.link %>">
+                                <%= creator.name %>
+                            </a>
                         </td>
                     </tr>
                 </tbody>

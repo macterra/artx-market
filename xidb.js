@@ -789,6 +789,11 @@ const saveNft = (xid) => {
     const creatorPfpPath = path.join(config.assets, xid, metadata.creator.image);
     fs.copyFileSync(metadata.creator.pfp.slice(1), creatorPfpPath);
 
+    metadata.nft.link = `${config.link}/nft/${metadata.xid}`;
+    metadata.token.link = `${config.link}/asset/${metadata.token.xid}`;
+    metadata.owner.link = `${config.link}/profile/${metadata.owner.xid}`;
+    metadata.creator.link = `${config.link}/profile/${metadata.creator.xid}`;
+
     const templatePath = path.join(config.data, 'nft.ejs');
     const template = fs.readFileSync(templatePath, 'utf8');
     const html = ejs.render(template, metadata);
