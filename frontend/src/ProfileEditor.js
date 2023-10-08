@@ -13,7 +13,7 @@ import TxnLog from './TxnLog';
 const ProfileEditor = ({ navigate, refreshProfile, setRefreshProfile }) => {
     const { jump } = useParams();
     const [profile, setProfile] = useState({});
-    const [tab, setTab] = useState("name");
+    const [tab, setTab] = useState(null);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -30,6 +30,9 @@ const ProfileEditor = ({ navigate, refreshProfile, setRefreshProfile }) => {
 
                 if (jump) {
                     setTab(jump);
+                }
+                else {
+                    setTab('name');
                 }
             } catch (error) {
                 console.error('Error fetching profile data:', error);

@@ -454,7 +454,7 @@ const createAgent = async (key) => {
     agentData = {
         xid: userId,
         pubkey: key,
-        name: 'anon',
+        name: config.newUser,
         tagline: '',
         description: '',
         collections: [],

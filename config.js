@@ -23,6 +23,7 @@ const config = {
     agents: 'data/agents',
     certs: 'data/certs',
     defaultPfp: 'data/defaultPfp.png',
+    newUser: 'GuestUser',
     initialCredits: 10000,
 };
 
