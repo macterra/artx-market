@@ -1,5 +1,6 @@
 const path = require('path');
 const fs = require('fs');
+const assert = require('assert');
 const sharp = require('sharp');
 const crypto = require('crypto');
 const uuid = require('uuid');
@@ -321,15 +322,15 @@ const repairAsset = (xid) => {
         }
     }
 
-    if (assetData.nft) {
-        saveNft(xid);
+    // if (assetData.nft) {
+    //     saveNft(xid);
 
-        return {
-            xid: xid,
-            fixed: true,
-            message: `saved NFT`,
-        }
-    }
+    //     return {
+    //         xid: xid,
+    //         fixed: true,
+    //         message: `saved NFT`,
+    //     }
+    // }
 
     const agentData = getAgent(assetData.asset.owner);
 
@@ -778,13 +779,6 @@ const saveNft = (xid) => {
         'thumbnail': collectionData.collection.thumbnail,
     };
 
-    const adminData = getAdmin();
-    const cert = adminData.latest;
-
-    if (cert) {
-        metadata.cert = getCert(cert);
-    }
-
     metadata.nft.image = `_asset${path.extname(metadata.token.file.path)}`;
     const imagePath = path.join(config.assets, xid, metadata.nft.image);
     fs.copyFileSync(metadata.token.file.path.slice(1), imagePath);
@@ -833,7 +827,21 @@ const getNft = (xid) => {
     }
 
     const metadataContent = fs.readFileSync(jsonPath, 'utf-8');
-    metadata = JSON.parse(metadataContent);
+    const metadata = JSON.parse(metadataContent);
+
+    const adminData = getAdmin();
+    const certId = adminData.latest;
+
+    if (certId) {
+        const cert = getCert(certId);
+        const authTime = new Date(cert.auth.time);
+        const updated = new Date(metadata.asset.updated);
+
+        if (authTime > updated) {
+            console.log(`getNft ${authTime} > ${updated}`);
+            metadata.cert = cert;
+        }
+    }
 
     return metadata;
 };
@@ -1065,6 +1073,8 @@ const createEdition = (owner, asset, edition, editions) => {
     const metadataPath = path.join(assetFolder, 'meta.json');
     fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2));
 
+    saveNft(xid);
+
     return xid;
 };
 
@@ -1120,7 +1130,10 @@ const createToken = async (userId, xid, editions, license, royalty) => {
 };
 
 const transferAsset = (xid, nextOwnerId) => {
-    let assetData = getAsset(xid);
+    const assetData = getAsset(xid);
+
+    assert.ok(assetData.nft);
+
     const prevOwnerId = assetData.asset.owner;
 
     let assetsPrevOwner = agentGetAssets(prevOwnerId);
@@ -1134,6 +1147,7 @@ const transferAsset = (xid, nextOwnerId) => {
     assetData.asset.owner = nextOwnerId;
     assetData.nft.price = 0;
     saveAsset(assetData);
+    saveNft(xid);
 };
 
 const pinAsset = async (xid) => {

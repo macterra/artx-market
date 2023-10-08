@@ -52,26 +52,28 @@ const EditionView = ({ nft }) => {
                             <AgentBadge agent={metadata.creator} />
                         </TableCell>
                     </TableRow>
-                    {metadata.cert?.auth?.cid &&
-                        <TableRow>
-                            <TableCell>IPFS:</TableCell>
-                            <TableCell>
-                                <a href={`/ipfs/${metadata.cert.auth.cid}/assets/${metadata.xid}/meta.json`} target="_blank" rel="noopener noreferrer">
+                    <TableRow>
+                        <TableCell>IPFS:</TableCell>
+                        <TableCell>
+                            {metadata.cert ? (
+                                <a href={`/ipfs/${metadata.cert.auth.cid}/assets/${metadata.xid}/index.html`} target="_blank" rel="noopener noreferrer">
                                     {metadata.cert.auth.cid}
                                 </a>
-                            </TableCell>
-                        </TableRow>
-                    }
-                    {metadata.cert?.xid &&
-                        <TableRow>
-                            <TableCell>Certificate:</TableCell>
-                            <TableCell>
+                            ) : "pending"
+                            }
+                        </TableCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableCell>Certificate:</TableCell>
+                        <TableCell>
+                            {metadata.cert ? (
                                 <a href={`/cert/${metadata.cert.xid}`}>
                                     {metadata.cert.xid}
                                 </a>
-                            </TableCell>
-                        </TableRow>
-                    }
+                            ) : "pending"
+                            }
+                        </TableCell>
+                    </TableRow>
                 </TableBody>
             </Table>
         </TableContainer >

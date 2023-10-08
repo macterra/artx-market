@@ -151,6 +151,18 @@ app.get('/ipfs/*', async (req, res) => {
     });
 
     res.set(response.headers);
+
+    // Check the file extension and set the Content-Type header accordingly
+    if (path.endsWith('.html')) {
+      res.set('Content-Type', 'text/html');
+    } else if (path.endsWith('.jpg') || path.endsWith('.jpeg')) {
+      res.set('Content-Type', 'image/jpeg');
+    } else if (path.endsWith('.png')) {
+      res.set('Content-Type', 'image/png');
+    } else if (path.endsWith('.gif')) {
+      res.set('Content-Type', 'image/gif');
+    } // ...add more conditions for other file types as needed
+
     response.data.pipe(res);
   } catch (error) {
     res.status(500).send({ error: error.toString() });
