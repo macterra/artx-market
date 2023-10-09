@@ -1026,7 +1026,8 @@ const createAssets = async (userId, files, collectionId) => {
 
         if (defaultTitle) {
             collectionCount += 1;
-            title = defaultTitle.replace("%N%", collectionCount);
+            title = defaultTitle.replace("%N%", collectionCount); // deprecated
+            title = defaultTitle.replace("{N}", collectionCount);
         }
 
         const assetData = await createAsset(file, title, userId, collectionId);
@@ -1170,7 +1171,7 @@ const createCollection = (userId, name) => {
             assets: [],
             hidden: false,
             default: {
-                title: `${name} #%N%`,
+                title: `${name} #{N}`,
                 license: "CC BY-SA",
                 editions: 1,
                 royalty: 10,
