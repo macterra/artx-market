@@ -610,7 +610,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
       royalty = Math.round(price * royaltyRate);
 
       if (royalty > 0) {
-        if (creator.deposit) {
+        if (creator.deposit && !creator.depositToCredits) {
           try {
             await satspay.sendPayment(creator.deposit, royalty, `royalty for asset ${assetName}`);
             console.log(`audit: royalty ${royalty} to ${creator.deposit}`);
@@ -647,7 +647,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
     let payoutSats = 0;
     let payoutCredits = 0;
 
-    if (seller.deposit) {
+    if (seller.deposit && !seller.depositToCredits) {
       try {
         await satspay.sendPayment(seller.deposit, payout, `sale of asset ${assetName}`);
         console.log(`audit: payout ${payout} to ${seller.deposit}`);
@@ -763,7 +763,7 @@ app.get('/api/v1/profile/:xid?', async (req, res) => {
 
 app.patch('/api/v1/profile/', ensureAuthenticated, async (req, res) => {
   try {
-    const { name, tagline, pfp, deposit, collections, links } = req.body;
+    const { name, tagline, pfp, deposit, depositToCredits, collections, links } = req.body;
     const userId = req.user.xid;
 
     const agentData = xidb.getAgent(userId);
@@ -793,6 +793,11 @@ app.patch('/api/v1/profile/', ensureAuthenticated, async (req, res) => {
       else {
         return res.status(400).json({ message: `Invalid address: ${deposit}` });
       }
+    }
+
+    if (depositToCredits !== undefined) {
+      // If deposit was set, it was valid
+      agentData.depositToCredits = depositToCredits;
     }
 
     if (collections) {

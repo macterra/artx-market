@@ -459,6 +459,7 @@ const createAgent = async (key) => {
         description: '',
         collections: [],
         credits: config.initialCredits,
+        depositToCredits: true,
     };
 
     saveAgent(agentData);
