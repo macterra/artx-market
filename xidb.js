@@ -626,6 +626,7 @@ const getAgentAndCollections = (profileId, userId) => {
     }
 
     const deleted = [];
+    const minted = [];
 
     if (profileId === userId) {
         for (const assetId of assets.created) {
@@ -636,14 +637,23 @@ const getAgentAndCollections = (profileId, userId) => {
             } else {
                 deleted.push(assetData);
             }
+
+            if (assetData.token) {
+                minted.push(assetData);
+            }
         }
     }
     else {
+        // Only show tokens (minted assets) to other users
         for (const assetId of assets.created) {
             let assetData = getAsset(assetId);
 
-            if (assetData.token && assetData.asset.collection in collections) {
-                collections[assetData.asset.collection].collection.assets.push(assetData);
+            if (assetData.token) {
+                minted.push(assetData);
+
+                if (assetData.asset.collection in collections) {
+                    collections[assetData.asset.collection].collection.assets.push(assetData);
+                }
             }
         }
     }
@@ -666,30 +676,30 @@ const getAgentAndCollections = (profileId, userId) => {
         }
     }
 
-    let tokens = {};
+    let editions = {};
 
     for (const assetId of assets.collected) {
         const editionData = getAsset(assetId);
         const tokenId = editionData.nft.asset;
 
-        if (!(tokenId in tokens)) {
-            tokens[tokenId] = getAsset(tokenId);
-            tokens[tokenId].owned = 1;
-            tokens[tokenId].label = editionData.asset.title;
-            tokens[tokenId].maxprice = editionData.nft.price;
+        if (!(tokenId in editions)) {
+            editions[tokenId] = getAsset(tokenId);
+            editions[tokenId].owned = 1;
+            editions[tokenId].label = editionData.asset.title;
+            editions[tokenId].maxprice = editionData.nft.price;
         }
         else {
-            tokens[tokenId].owned += 1;
-            tokens[tokenId].label = `${tokens[tokenId].owned} editions`;
-            tokens[tokenId].maxprice = Math.max(editionData.nft.price, tokens[tokenId].maxprice);
+            editions[tokenId].owned += 1;
+            editions[tokenId].label = `${editions[tokenId].owned} editions`;
+            editions[tokenId].maxprice = Math.max(editionData.nft.price, editions[tokenId].maxprice);
         }
     }
 
     agentData.collections = collections;
 
-    const tokensArray = Object.values(tokens);
+    const tokensArray = Object.values(editions);
 
-    agentData.minted = tokensArray.filter(token => token.asset.owner === profileId);
+    agentData.minted = minted;
     agentData.collected = tokensArray.filter(token => token.asset.owner !== profileId);
     agentData.listed = tokensArray.filter(token => token.maxprice > 0);
     agentData.unlisted = tokensArray.filter(token => token.maxprice < 1);
