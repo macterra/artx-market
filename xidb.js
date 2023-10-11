@@ -736,6 +736,18 @@ const getCollection = (collectionId, userId) => {
     collection = agentData.collections[collectionId];
 
     collection.isOwnedByUser = (userId == collection.asset.owner);
+    collection.costToMintAll = 0;
+
+    if (collection.isOwnedByUser) {
+        const editionsCost = collection.collection.default.editions * config.editionRate;
+
+        for (const asset of collection.collection.assets) {
+            if (!asset.token) {
+                const storageCost = Math.round(asset.file.size * config.storageRate);
+                collection.costToMintAll += editionsCost + storageCost;
+            }
+        }
+    }
 
     return collection;
 };

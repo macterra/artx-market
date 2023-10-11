@@ -912,6 +912,50 @@ app.post('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => {
   }
 });
 
+app.get('/api/v1/collections/:xid/mint-all', ensureAuthenticated, async (req, res) => {
+  try {
+    const xid = req.params.xid;
+    const userId = req.user?.xid;
+    const collection = xidb.getCollection(xid, userId);
+
+    if (userId != collection.asset.owner) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const editions = collection.collection.default.editions;
+    const license = collection.collection.default.license;
+    const royalty = collection.collection.default.royalty;
+
+    for (const asset of collection.collection.assets) {
+      if (!asset.token) {
+
+        const record = {
+          "type": "mint",
+          "creator": userId,
+        };
+
+        xidb.saveHistory(asset.xid, record);
+
+        const mint = await xidb.createToken(userId, asset.xid, editions, license, royalty / 100);
+
+        const txn = {
+          'type': 'mint',
+          'xid': asset.xid,
+          'credits': mint.mintFee,
+        };
+
+        xidb.saveTxnLog(userId, txn);
+      }
+    }
+
+    xidb.commitChanges(`Mint all unminted assets of ${xid}`);
+    res.json({ message: 'Mint all success' });
+  } catch (error) {
+    console.error('Error processing request:', error);
+    res.status(500).json({ error: 'An error occurred while processing the request.' });
+  }
+});
+
 app.patch('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => {
   try {
     const { thumbnail } = req.body;

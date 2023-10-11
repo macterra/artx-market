@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import { Box, Button } from '@mui/material';
+import { Box, Button, Grid } from '@mui/material';
 import ImageGrid from './ImageGrid';
 
 const CollectionView = ({ navigate, setRefreshProfile }) => {
@@ -11,6 +11,8 @@ const CollectionView = ({ navigate, setRefreshProfile }) => {
     const [refreshKey, setRefreshKey] = useState(0);
     const [credits, setCredits] = useState(0);
     const [disableUpload, setDisableUpload] = useState(null);
+    const [showMintAll, setShowMintAll] = useState(null);
+    const [disableMintAll, setDisableMintAll] = useState(null);
     const [budget, setBudget] = useState(0);
 
     useEffect(() => {
@@ -31,6 +33,9 @@ const CollectionView = ({ navigate, setRefreshProfile }) => {
 
                 setCredits(credits);
                 setDisableUpload(credits < 1);
+
+                setShowMintAll(collectionData.costToMintAll > 0);
+                setDisableMintAll(collectionData.costToMintAll > credits);
 
                 const budget = credits / uploadRate / 1000000;
                 setBudget(budget.toFixed(2));
@@ -83,25 +88,55 @@ const CollectionView = ({ navigate, setRefreshProfile }) => {
         }
     };
 
+    const handleMintAllClick = async () => {
+        setDisableMintAll(true);
+        
+        try {
+            const response = await fetch(`/api/v1/collections/${collection.xid}/mint-all`);
+
+            if (response.ok) {
+                setRefreshKey((prevKey) => prevKey + 1);
+            } else {
+                const data = await response.json();
+                console.error('Error:', data.message);
+                alert(data.message);
+            }
+        }
+        catch (error) {
+            console.error('Error:', error);
+        }
+    };
+
     return (
-        <>
+        <Box>
             <span>{collection.asset.title}</span>
-            <span style={{ fontSize: '12px' }}>({collection.collection.assets.length} items)</span>
+            <span style={{ fontSize: '12px' }}> ({collection.collection.assets.length} items)</span>
             {collection.isOwnedByUser &&
-                <Box>
-                    <span style={{ fontSize: '14px' }}>Upload:
-                        <input type="file" name="images" accept="image/*" multiple onChange={handleUpload} disabled={disableUpload} />
-                    </span>
-                    <span style={{ fontSize: '14px' }}>You have {credits} credits, enough to upload {budget} MB.</span>
-                    {disableUpload &&
-                        <Button variant="contained" color="primary" onClick={() => navigate('/profile/edit/credits')}>
-                            Credits: {credits}
-                        </Button>
-                    }
+                <Box style={{ marginLeft: '20px', marginRight: '20px' }}>
+                    <Grid container alignItems="center" justifyContent="space-between">
+                        <Grid item>
+                            <span style={{ fontSize: '14px' }}>Upload:
+                                <input type="file" name="images" accept="image/*" multiple onChange={handleUpload} disabled={disableUpload} />
+                            </span>
+                            <span style={{ fontSize: '14px' }}>You have {credits} credits, enough to upload {budget} MB.</span>
+                            {disableUpload &&
+                                <Button variant="contained" color="primary" onClick={() => navigate('/profile/edit/credits')}>
+                                    Credits: {credits}
+                                </Button>
+                            }
+                        </Grid>
+                        <Grid item>
+                            {showMintAll &&
+                                <Button variant="contained" color="primary" disabled={disableMintAll} onClick={handleMintAllClick}>
+                                    Mint All for {collection.costToMintAll} credits
+                                </Button>
+                            }
+                        </Grid>
+                    </Grid>
                 </Box>
             }
             <ImageGrid collection={collection.collection.assets} />
-        </>
+        </Box>
     );
 };
 
