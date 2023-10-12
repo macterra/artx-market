@@ -24,9 +24,46 @@ const TxnLog = ({ profile, refreshProfile }) => {
         return;
     }
 
+    function assetLink(metadata) {
+        const title = metadata.asset.title;
+
+        if (title.length > 20) {
+            return <a href={`/asset/${metadata.xid}`}>{title.substring(0, 20)}...</a>;
+        }
+        else {
+            return <a href={`/asset/${metadata.xid}`}>{title}</a>;
+        }
+    }
+
+    function collectionLink(metadata) {
+        const title = metadata.asset.title;
+
+        if (title.length > 20) {
+            return <a href={`/collection/${metadata.xid}`}>{title.substring(0, 20)}...</a>;
+        }
+        else {
+            return <a href={`/collection/${metadata.xid}`}>{title}</a>;
+        }
+    }
+
+    function nftLink(metadata) {
+        return <a href={`/nft/${metadata.xid}`}>{metadata.asset.title}</a>;
+    }
+
+    function profileLink(agent) {
+        const name = agent.name.substring(0, 20);
+
+        if (name.length > 20) {
+            return <a href={`/profile/${agent.xid}`}>{name.substring(0, 20)}...</a>;
+        }
+        else {
+            return <a href={`/profile/${agent.xid}`}>{name}</a>;
+        }
+    }
+
     function HistoryRow({ record }) {
         const [time, setTime] = useState("");
-        const [message, setMessage] = useState("");
+        const [message, setMessage] = useState(null);
         const [credits, setCredits] = useState("");
         const [sats, setSats] = useState("");
 
@@ -47,14 +84,14 @@ const TxnLog = ({ profile, refreshProfile }) => {
 
                     if (metadata.token) {
                         if (metadata.token.editions === 1) {
-                            setMessage(`Minted a single edition of ${metadata.asset.title}.`);
+                            setMessage(<div>Minted a single edition of {assetLink(metadata)}.</div>);
                         }
                         else {
-                            setMessage(`Minted ${metadata.token.editions} editions of ${metadata.asset.title}.`);
+                            setMessage(<div>Minted {metadata.token.editions} editions of {assetLink(metadata)}.</div>);
                         }
                     }
                     else {
-                        setMessage(`Minted ${metadata.asset.title}.`);
+                        setMessage(<div>Minted {assetLink(metadata)}.</div>);
                     }
 
                     setCredits(-record.credits);
@@ -64,7 +101,7 @@ const TxnLog = ({ profile, refreshProfile }) => {
                     const response = await fetch(`/api/v1/asset/${record.xid}`);
                     const metadata = await response.json();
 
-                    setMessage(`Unminted ${metadata.asset.title}.`);
+                    setMessage(<div>Unminted {assetLink(metadata)}.</div>);
                     setCredits(record.credits);
                 }
 
@@ -74,10 +111,10 @@ const TxnLog = ({ profile, refreshProfile }) => {
                     const mb = (record.bytes / 1000000).toFixed(2);
 
                     if (record.files === 1) {
-                        setMessage(`Uploaded 1 file (${mb} MB) to ${metadata.asset.title} collection.`);
+                        setMessage(<div>Uploaded 1 file (${mb} MB) to {collectionLink(metadata)} collection.</div>);
                     }
                     else {
-                        setMessage(`Uploaded ${record.files} files (${mb} MB) to ${metadata.asset.title} collection.`);
+                        setMessage(<div>Uploaded {record.files} files ({mb} MB) to {collectionLink(metadata)} collection.</div>);
                     }
 
                     setCredits(-record.credits);
@@ -93,8 +130,7 @@ const TxnLog = ({ profile, refreshProfile }) => {
                     const response3 = await fetch(`/api/v1/profile/${record.buyer}`);
                     const buyer = await response3.json();
 
-                    setMessage(`Sold "${token.asset.title} (${edition.asset.title})" to ${buyer.name}.`);
-
+                    setMessage(<div>Sold "{assetLink(token)} ({nftLink(edition)})" to {profileLink(buyer)}.</div>);
                     setSats(record.sats || record.price);
                     setCredits(record.credits);
                 }
@@ -109,7 +145,7 @@ const TxnLog = ({ profile, refreshProfile }) => {
                     const response3 = await fetch(`/api/v1/profile/${record.seller}`);
                     const seller = await response3.json();
 
-                    setMessage(`Bought "${token.asset.title} (${edition.asset.title})" from ${seller.name}.`);
+                    setMessage(<div>Bought "{assetLink(token)} ({nftLink(edition)})" from {profileLink(seller)}.</div>);
                     setSats(-(record.sats || record.price));
                 }
 
@@ -126,7 +162,7 @@ const TxnLog = ({ profile, refreshProfile }) => {
                     const response4 = await fetch(`/api/v1/profile/${record.buyer}`);
                     const buyer = await response4.json();
 
-                    setMessage(`Royalty on "${token.asset.title} (${edition.asset.title})" ${seller.name} -> ${buyer.name}.`);
+                    setMessage(<div>Royalty when {profileLink(seller)} sold "{assetLink(token)} ({nftLink(edition)})" to {profileLink(buyer)}.</div>);
                     setSats(record.sats);
                     setCredits(record.credits);
                 }

@@ -269,6 +269,8 @@ const removeAsset = (xid) => {
 
     rimrafSync(assetPath);
 
+    console.log(`Deleted ${assetPath}`);
+
     return {
         xid: xid,
         fixed: true,
