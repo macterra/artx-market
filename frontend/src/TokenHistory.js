@@ -30,6 +30,8 @@ const TokenHistory = ({ metadata }) => {
 
         useEffect(() => {
             const fetchInfo = async () => {
+                setMessage(`unknown record type ${record.type}`);
+
                 if (record.type === 'mint') {
                     const response = await fetch(`/api/v1/profile/${record.creator}`);
                     const creator = await response.json();
@@ -40,6 +42,13 @@ const TokenHistory = ({ metadata }) => {
                     else {
                         setMessage(`${creator.name} minted ${metadata.token.editions} editions.`);
                     }
+                }
+
+                if (record.type === 'unmint') {
+                    const response = await fetch(`/api/v1/profile/${record.creator}`);
+                    const creator = await response.json();
+
+                    setMessage(`${creator.name} unminted the token.`);
                 }
 
                 if (record.type === 'list') {

@@ -44,7 +44,6 @@ function findAdjacentXids(list, targetXid) {
 
 const MetadataView = ({ navigate, metadata }) => {
 
-    const [owner, setOwner] = useState(0);
     const [collectionId, setCollectionId] = useState(0);
     const [collectionName, setCollectionName] = useState(0);
     const [firstXid, setFirstXid] = useState(null);
@@ -56,17 +55,11 @@ const MetadataView = ({ navigate, metadata }) => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const ownerId = metadata.asset.owner;
-                let response = await fetch(`/api/v1/profile/${ownerId}`);
-                const profileData = await response.json();
-
-                setOwner(profileData);
-
                 if (metadata.asset.collection === 'deleted') {
                     setIsDeleted(true);
                 }
                 else {
-                    response = await fetch(`/api/v1/collections/${metadata.asset.collection}`);
+                    const response = await fetch(`/api/v1/collections/${metadata.asset.collection}`);
                     const collectionData = await response.json();
                     const { firstXid, prevXid, nextXid, lastXid } = findAdjacentXids(collectionData.collection.assets, metadata.xid);
 
@@ -98,9 +91,9 @@ const MetadataView = ({ navigate, metadata }) => {
                         <TableCell>{metadata.asset.title}</TableCell>
                     </TableRow>
                     <TableRow>
-                        <TableCell>Owner:</TableCell>
+                        <TableCell>Creator:</TableCell>
                         <TableCell>
-                            <AgentBadge agent={owner} />
+                            <AgentBadge xid={metadata.asset.owner} />
                         </TableCell>
                     </TableRow>
                     <TableRow>

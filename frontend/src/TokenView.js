@@ -137,6 +137,12 @@ const TokenView = ({ metadata, setTab, setRefreshKey }) => {
                         </TableCell>
                     </TableRow>
                     <TableRow>
+                        <TableCell>Creator:</TableCell>
+                        <TableCell>
+                                <AgentBadge xid={metadata.asset.owner} />
+                        </TableCell>
+                    </TableRow>
+                    <TableRow>
                         <TableCell>Royalty:</TableCell>
                         <TableCell>
                             {metadata.token.royalty * 100}%
