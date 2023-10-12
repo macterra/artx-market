@@ -129,10 +129,19 @@ const AppHeader = ({ navigate }) => {
                 <DialogTitle>About ArtX Market</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
+                        The ArtX Market enables digital artists to showcase their work with curated collections,
+                        and collectors to trade the art using <a href="https://bitcoin.org/" target="_blank" rel="noopener noreferrer">Bitcoin</a>/
+                        <a href="https://lightning.network/" target="_blank" rel="noopener noreferrer">Lightning⚡</a>.
+                        <p />
+                        Tokens may be minted with 1-100 limited editions (NFTs), each tradeable and owned individually.
+                        NFT ownership is securely registered on the Bitcoin blockchain
+                        and <a href="https://ipfs.tech/" target="_blank" rel="noopener noreferrer">IPFS network</a>.
+                    </DialogContentText>
+                    <DialogContentText>
                         <BuildTime />
                     </DialogContentText>
                     <DialogContentText>
-                        <p>github:
+                        <p>open sourced on github:
                             <a href="https://github.com/macterra/artx-market" target="_blank" rel="noopener noreferrer">
                                 macterra/artx-market
                             </a>

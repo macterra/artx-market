@@ -296,7 +296,6 @@ const AdminView = ({ navigate }) => {
                         <Table>
                             <TableHead>
                                 <TableRow>
-                                    <TableCell></TableCell>
                                     <TableCell>user</TableCell>
                                     <TableCell>deposit</TableCell>
                                     <TableCell>credits</TableCell>
