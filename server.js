@@ -508,6 +508,45 @@ app.post('/api/v1/asset/:xid/mint', ensureAuthenticated, async (req, res) => {
   }
 });
 
+app.get('/api/v1/asset/:xid/unmint', ensureAuthenticated, async (req, res) => {
+  try {
+    const xid = req.params.xid;
+    const userId = req.user.xid;
+    const assetData = xidb.getAsset(xid);
+
+    if (assetData.asset.owner != userId) {
+      console.log('mint unauthorized');
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    if (!assetData.token) {
+      console.log('not minted');
+      return res.status(500).json({ message: 'Error' });
+    }
+
+    const unmint = await xidb.unmintToken(userId, xid);
+
+    const txn = {
+      'type': 'unmint',
+      'xid': xid,
+      'credits': unmint.refund,
+    };
+
+    const record = {
+      "type": "unmint",
+      "creator": userId,
+    };
+
+    xidb.saveTxnLog(userId, txn);
+    xidb.saveHistory(xid, record);
+    xidb.commitChanges(`Unminted ${xid}`);
+    res.json(unmint);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ message: 'Error' });
+  }
+});
+
 app.post('/api/v1/asset/:xid/list', ensureAuthenticated, async (req, res) => {
   try {
     const xid = req.params.xid;

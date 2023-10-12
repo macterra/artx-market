@@ -85,7 +85,7 @@ const AssetView = ({ navigate }) => {
                     {isToken && <Tab key="history" value="history" label={'History'} />}
                 </Tabs>
                 {tab === 'meta' && <MetadataView navigate={navigate} metadata={metadata} />}
-                {tab === 'token' && <TokenView metadata={metadata} />}
+                {tab === 'token' && <TokenView metadata={metadata} setTab={setTab} setRefreshKey={setRefreshKey} />}
                 {tab === 'trade' && <TokenTrader metadata={metadata} setRefreshKey={setRefreshKey} />}
                 {tab === 'edit' && <AssetEditor metadata={metadata} setTab={setTab} setRefreshKey={setRefreshKey} />}
                 {tab === 'mint' && <TokenMinter navigate={navigate} metadata={metadata} setTab={setTab} setRefreshKey={setRefreshKey} />}

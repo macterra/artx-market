@@ -8,6 +8,7 @@ import {
     TableRow,
     TableHead,
     Paper,
+    Button,
 } from '@mui/material';
 import AgentBadge from './AgentBadge';
 
@@ -30,11 +31,12 @@ function convertToRanges(arr) {
     return result.substring(1); // Remove the leading comma
 }
 
-const TokenView = ({ metadata }) => {
+const TokenView = ({ metadata, setTab, setRefreshKey }) => {
 
     const [collection, setCollection] = useState(0);
     const [nfts, setNfts] = useState([]);
     const [owned, setOwned] = useState(0);
+    const [ownAll, setOwnAll] = useState(0);
     const [ranges, setRanges] = useState(null);
     const [licenseUrl, setLicenseUrl] = useState(null);
 
@@ -71,6 +73,7 @@ const TokenView = ({ metadata }) => {
 
                 setNfts(nfts);
                 setOwned(owned);
+                setOwnAll(metadata.userIsOwner && owned == metadata.token.editions);
                 setRanges(convertToRanges(ownedEditions));
 
             } catch (error) {
@@ -84,6 +87,22 @@ const TokenView = ({ metadata }) => {
     if (!metadata || !metadata.token) {
         return;
     }
+
+    const handleUnmint = async (event) => {
+        try {
+            let response = await fetch(`/api/v1/asset/${metadata.xid}/unmint`);
+
+            if (response.ok) {
+                const unmint = await response.json();
+                alert(`${unmint.refund} credits refunded`);
+                setTab("meta");
+                setRefreshKey((prevKey) => prevKey + 1);
+            }
+        }
+        catch (error) {
+            console.error('Error fetching asset owner:', error);
+        }
+    };
 
     return (
         <TableContainer>
@@ -126,7 +145,14 @@ const TokenView = ({ metadata }) => {
                     <TableRow>
                         <TableCell>Editions:</TableCell>
                         {nfts && nfts.length === 1 ? (
-                            <TableCell><a href={`/nft/${nfts[0].xid}`}>1 of 1</a></TableCell>
+                            <TableCell>
+                                <a href={`/nft/${nfts[0].xid}`}>1 of 1</a>
+                                {ownAll &&
+                                    <Button variant="contained" color="primary" onClick={handleUnmint} style={{ marginLeft: '10px' }}>
+                                        Unmint
+                                    </Button>
+                                }
+                            </TableCell>
                         ) : (
                             <TableCell>{metadata.token.editions}</TableCell>
                         )}
@@ -135,7 +161,16 @@ const TokenView = ({ metadata }) => {
                         <TableRow>
                             <TableCell>Owned:</TableCell>
                             <TableCell>
-                                {owned === metadata.token.editions ? "all" : `${owned} (${ranges})`}
+                                {ownAll ?
+                                    <React.Fragment>
+                                        all
+                                        <Button variant="contained" color="primary" onClick={handleUnmint} style={{ marginLeft: '10px' }}>
+                                            Unmint
+                                        </Button>
+                                    </React.Fragment>
+                                    :
+                                    `${owned} editions (${ranges})`
+                                }
                             </TableCell>
                         </TableRow>
                     }

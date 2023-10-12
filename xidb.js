@@ -591,6 +591,21 @@ const agentAddAsset = (metadata) => {
     agentSaveAssets(assetData);
 };
 
+const agentRemoveAsset = (metadata) => {
+    let assetData = agentGetAssets(metadata.asset.owner);
+
+    if (metadata.nft) {
+        assetData.collected = assetData.collected.filter(xid => xid != metadata.xid);
+    }
+    else {
+        console.log(`agentRemoveAsset ${metadata.xid} not an edition`);
+        return;
+    }
+
+    agentSaveAssets(assetData);
+    return removeAsset(metadata.xid);
+};
+
 const getAgentTxnLog = (userId) => {
     try {
         const jsonlPath = path.join(config.agents, userId, 'txnlog.jsonl');
@@ -1153,6 +1168,34 @@ const createToken = async (userId, xid, editions, license, royalty) => {
     };
 };
 
+const unmintToken = async (userId, xid) => {
+    let assetData = getAsset(xid);
+
+    const editions = assetData.token.editions;
+
+    for (const nftId of assetData.token.nfts) {
+        const nft = getAsset(nftId);
+        agentRemoveAsset(nft);
+    }
+
+    delete assetData.token;
+    saveAsset(assetData);
+
+    // Refund mint fee to agent credits
+    const storageFee = Math.round(assetData.file.size * config.storageRate);
+    const editionFee = editions * config.editionRate;
+    const refund = storageFee + editionFee;
+    const agentData = getAgent(userId);
+    agentData.credits += refund;
+    saveAgent(agentData);
+
+    return {
+        xid: xid,
+        editions: editions,
+        refund: refund,
+    };
+};
+
 const transferAsset = (xid, nextOwnerId) => {
     const assetData = getAsset(xid);
 
@@ -1268,4 +1311,5 @@ module.exports = {
     saveNft,
     saveTxnLog,
     transferAsset,
+    unmintToken,
 };
