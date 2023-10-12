@@ -28,10 +28,27 @@ const commitChanges = async (commitMessage) => {
             else if (commit.githash) {
                 const hash = commit.githash.substring(0, 8);
                 console.log(`Commit: ${commitMessage} (${hash})`);
+                return commit.githash;
             }
         }
     } catch (err) {
         console.error('Failed to commit changes:', err);
+    }
+};
+
+const pushChanges = async () => {
+    try {
+        const response = await fetch(`${config.archiver}/api/v1/push`);
+
+        if (response.ok) {
+            const push = await response.json()
+
+            if (push.error) {
+                console.log(`Failed to push changes: ${push.error}`);
+            }
+        }
+    } catch (err) {
+        console.error('Failed to push changes:', err);
     }
 };
 
@@ -81,15 +98,8 @@ const saveAdmin = async (adminData) => {
     // Make sure we have something to commit
     fs.writeFileSync(jsonPath, JSON.stringify(adminData, null, 2));
 
-    // !!! use commitChanges here
-    const response1 = await fetch(`${config.archiver}/api/v1/commit`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', },
-        body: JSON.stringify({ message: "Save admin" }),
-    });
-
-    const commit = await response1.json();
-    adminData.githash = commit.githash;
+    adminData.githash = await commitChanges("Save admin");
+    pushChanges();
 
     const response2 = await fetch(`${config.archiver}/api/v1/pin/${config.data}`);
     const ipfs = await response2.json();

@@ -38,8 +38,8 @@ def pin(subfolder):
         if checkIpfs():
             ipfs = getIpfs()
             res = ipfs.add(subfolder, recursive=True, pin=True, pattern="**")
-            for item in res:
-                print(item)
+            # for item in res:
+            #     print(item['Hash'], item['Name'])
             cid = res[-1]['Hash']
         else:
             print("IPFS not available")
@@ -68,11 +68,24 @@ def commit():
             repo.git.add('--all')
             repo.git.commit('-m', message)
             githash = repo.git.rev_parse('HEAD')
+            print(f'git commit successful: "{message}"')
         except GitCommandError as error:
             print(f'Failed to commit changes: {str(error)}')
             return jsonify({'error': f'Failed to commit changes: {str(error)}'}), 500
 
     return jsonify({'ok': 1, 'githash': githash})
+
+@app.route('/api/v1/push', methods=['GET'])
+def push():
+    with lock:
+        try:
+            repo.git.push()
+            print('git push successful')
+        except GitCommandError as error:
+            print(f'Failed to push changes: {str(error)}')
+            return jsonify({'error': f'Failed to push changes: {str(error)}'}), 500
+
+    return jsonify({'ok': 1})
 
 @app.route('/api/v1/register', methods=['POST'])
 def register():
