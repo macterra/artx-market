@@ -8,6 +8,7 @@ import {
     TableHead,
     Paper,
 } from '@mui/material';
+import AgentBadge from './AgentBadge';
 
 const TokenHistory = ({ metadata }) => {
     const [history, setHistory] = useState([]);
@@ -26,60 +27,68 @@ const TokenHistory = ({ metadata }) => {
 
     function HistoryRow({ record }) {
         const [time, setTime] = useState("");
-        const [message, setMessage] = useState("")
+        const [message, setMessage] = useState(null)
 
         useEffect(() => {
             const fetchInfo = async () => {
                 setMessage(`unknown record type ${record.type}`);
+                setTime(record.time);
 
                 if (record.type === 'mint') {
-                    const response = await fetch(`/api/v1/profile/${record.creator}`);
-                    const creator = await response.json();
-
                     if (metadata.token.editions === 1) {
-                        setMessage(`${creator.name} minted a single edition.`);
+                        setMessage(
+                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                                <AgentBadge xid={record.creator} />{"minted a single edition."}
+                            </div>
+                        );
                     }
                     else {
-                        setMessage(`${creator.name} minted ${metadata.token.editions} editions.`);
+                        setMessage(
+                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                                <AgentBadge xid={record.creator} />{`minted ${metadata.token.editions} editions.`}
+                            </div>
+                        );
                     }
                 }
 
                 if (record.type === 'unmint') {
-                    const response = await fetch(`/api/v1/profile/${record.creator}`);
-                    const creator = await response.json();
-
-                    setMessage(`${creator.name} unminted the token.`);
+                    setMessage(
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <AgentBadge xid={record.creator} />{"unminted the token."}
+                        </div>
+                    );
                 }
 
                 if (record.type === 'list') {
-                    const response1 = await fetch(`/api/v1/profile/${record.seller}`);
-                    const seller = await response1.json();
-
-                    const response2 = await fetch(`/api/v1/asset/${record.edition}`);
-                    const edition = await response2.json();
+                    const response = await fetch(`/api/v1/asset/${record.edition}`);
+                    const edition = await response.json();
 
                     if (record.price === 0) {
-                        setMessage(`${seller.name} delisted edition ${edition.asset.title}.`);
+                        setMessage(
+                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                                <AgentBadge xid={record.seller} />{`delisted edition ${edition.asset.title}.`}
+                            </div>
+                        );
                     }
                     else {
-                        setMessage(`${seller.name} listed edition ${edition.asset.title} for ${record.price} sats.`);
+                        setMessage(
+                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                                <AgentBadge xid={record.seller} />{`listed edition ${edition.asset.title} for ${record.price} sats.`}
+                            </div>
+                        );
                     }
                 }
 
                 if (record.type === 'sale') {
-                    const response1 = await fetch(`/api/v1/profile/${record.seller}`);
-                    const seller = await response1.json();
+                    const response = await fetch(`/api/v1/asset/${record.edition}`);
+                    const edition = await response.json();
 
-                    const response2 = await fetch(`/api/v1/profile/${record.buyer}`);
-                    const buyer = await response2.json();
-
-                    const response3 = await fetch(`/api/v1/asset/${record.edition}`);
-                    const edition = await response3.json();
-
-                    setMessage(`${seller.name} sold edition ${edition.asset.title} to ${buyer.name} for ${record.price} sats.`);
+                    setMessage(
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <AgentBadge xid={record.seller} />{`sold edition ${edition.asset.title} to `}<AgentBadge xid={record.buyer} />{`for ${record.price} sats.`}
+                        </div>
+                    );
                 }
-
-                setTime(record.time);
             };
 
             fetchInfo();

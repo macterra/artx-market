@@ -28,7 +28,7 @@ const AgentBadge = ({ agent, xid }) => {
     }
 
     return (
-        <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', marginLeft: '0.5em', marginRight: '0.5em' }}>
             {user.pfp &&
                 <img
                     src={user.pfp}
@@ -37,7 +37,7 @@ const AgentBadge = ({ agent, xid }) => {
                         width: '30px',
                         height: '30px',
                         objectFit: 'cover',
-                        marginRight: '16px',
+                        marginRight: '10px',
                         borderRadius: '50%',
                     }}
                 />} <a href={`/profile/${user.xid}`} >{user.name}</a>
