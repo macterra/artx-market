@@ -32,6 +32,9 @@ const TxnLog = ({ profile, refreshProfile }) => {
 
         useEffect(() => {
             const fetchInfo = async () => {
+                setMessage(`Unknown record type ${record.type}`);
+                setTime(record.time);
+
                 if (record.type === 'credits') {
                     setMessage(`Traded sats for credits.`);
                     setCredits(record.credits);
@@ -42,14 +45,27 @@ const TxnLog = ({ profile, refreshProfile }) => {
                     const response = await fetch(`/api/v1/asset/${record.xid}`);
                     const metadata = await response.json();
 
-                    if (metadata.token.editions === 1) {
-                        setMessage(`Minted a single edition of ${metadata.asset.title}.`);
+                    if (metadata.token) {
+                        if (metadata.token.editions === 1) {
+                            setMessage(`Minted a single edition of ${metadata.asset.title}.`);
+                        }
+                        else {
+                            setMessage(`Minted ${metadata.token.editions} editions of ${metadata.asset.title}.`);
+                        }
                     }
                     else {
-                        setMessage(`Minted ${metadata.token.editions} editions of ${metadata.asset.title}.`);
+                        setMessage(`Minted ${metadata.asset.title}.`);
                     }
 
                     setCredits(-record.credits);
+                }
+
+                if (record.type === 'unmint') {
+                    const response = await fetch(`/api/v1/asset/${record.xid}`);
+                    const metadata = await response.json();
+
+                    setMessage(`Unminted ${metadata.asset.title}.`);
+                    setCredits(record.credits);
                 }
 
                 if (record.type === 'upload') {
@@ -94,7 +110,6 @@ const TxnLog = ({ profile, refreshProfile }) => {
                     const seller = await response3.json();
 
                     setMessage(`Bought "${token.asset.title} (${edition.asset.title})" from ${seller.name}.`);
-
                     setSats(-(record.sats || record.price));
                 }
 
@@ -112,12 +127,9 @@ const TxnLog = ({ profile, refreshProfile }) => {
                     const buyer = await response4.json();
 
                     setMessage(`Royalty on "${token.asset.title} (${edition.asset.title})" ${seller.name} -> ${buyer.name}.`);
-
                     setSats(record.sats);
                     setCredits(record.credits);
                 }
-
-                setTime(record.time);
             };
 
             fetchInfo();
