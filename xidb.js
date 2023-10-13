@@ -28,6 +28,7 @@ const commitChanges = async (commitMessage) => {
             else if (commit.githash) {
                 const hash = commit.githash.substring(0, 8);
                 console.log(`Commit: ${commitMessage} (${hash})`);
+                pushChanges();
                 return commit.githash;
             }
         }
@@ -99,7 +100,6 @@ const saveAdmin = async (adminData) => {
     fs.writeFileSync(jsonPath, JSON.stringify(adminData, null, 2));
 
     adminData.githash = await commitChanges("Save admin");
-    pushChanges();
 
     const response2 = await fetch(`${config.archiver}/api/v1/pin/${config.data}`);
     const ipfs = await response2.json();
