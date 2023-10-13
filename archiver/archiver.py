@@ -36,20 +36,25 @@ def pin(subfolder):
             return jsonify({'error': 'No path provided'}), 400
 
         if checkIpfs():
+            start = time.time()
             ipfs = getIpfs()
+            elapsed = time.time() - start
+            print(f"> getIpfs took {elapsed} seconds")
+
+            start = time.time()
             res = ipfs.add(subfolder, recursive=True, pin=True, pattern="**")
-            # for item in res:
-            #     print(item['Hash'], item['Name'])
+            elapsed = time.time() - start
+            print(f"> ipfs.add took {elapsed} seconds for {len(res)} items")
             cid = res[-1]['Hash']
         else:
             print("IPFS not available")
-            return jsonify({'error': 'IPFS not available', 'cid': 'TBD'}), 500
+            return jsonify({'error': 'IPFS not available'}), 500
     except IPFSError as error:
         print(f"Failed to pin data {subfolder}: {str(error)}")
-        return jsonify({'error': f"Failed to pin data: {str(error)}", 'cid': 'TBD'}), 500
+        return jsonify({'error': f"Failed to pin data: {str(error)}"}), 500
     except Exception as error:
         print(f"An unexpected error occurred: {str(error)}")
-        return jsonify({'error': f"An unexpected error occurred: {str(error)}", 'cid': 'TBD'}), 500
+        return jsonify({'error': f"An unexpected error occurred: {str(error)}"}), 500
 
     print(f"pinned {subfolder} to {cid}")
     return jsonify({'path': subfolder, 'cid': cid})

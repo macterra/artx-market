@@ -96,16 +96,22 @@ const saveAdmin = async (adminData) => {
 
     const jsonPath = path.join(config.data, 'meta.json');
     adminData.updated = new Date().toISOString();
-    // Make sure we have something to commit
+    // Make sure we have something to commitq
     fs.writeFileSync(jsonPath, JSON.stringify(adminData, null, 2));
 
     adminData.githash = await commitChanges("Save admin");
 
     const response2 = await fetch(`${config.archiver}/api/v1/pin/${config.data}`);
     const ipfs = await response2.json();
-    adminData.cid = ipfs.cid;
 
-    fs.writeFileSync(jsonPath, JSON.stringify(adminData, null, 2));
+    if (ipfs.cid) {
+        adminData.cid = ipfs.cid;
+        fs.writeFileSync(jsonPath, JSON.stringify(adminData, null, 2));
+    }
+    else {
+        console.log('saveAdmin: IPFS pin failed');
+    }
+
     return adminData;
 };
 
