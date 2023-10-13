@@ -1076,8 +1076,8 @@ const createAssets = async (userId, files, collectionId) => {
 
         if (defaultTitle) {
             collectionCount += 1;
-            title = defaultTitle.replace("%N%", collectionCount); // deprecated
             title = defaultTitle.replace("{N}", collectionCount);
+            title = title.replace("%N%", collectionCount); // deprecated
         }
 
         const assetData = await createAsset(file, title, userId, collectionId);
