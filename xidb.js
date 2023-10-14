@@ -88,6 +88,12 @@ const getAdmin = (xid) => {
 
     const jsonContent = fs.readFileSync(jsonPath, 'utf-8');
     const jsonData = JSON.parse(jsonContent);
+    
+    const cidPath = path.join(config.data, "CID");
+
+    if (fs.existsSync(cidPath)) {
+        jsonData.cid = fs.readFileSync(cidPath, 'utf-8').trim();
+    }
 
     return jsonData;
 };
@@ -100,17 +106,6 @@ const saveAdmin = async (adminData) => {
     fs.writeFileSync(jsonPath, JSON.stringify(adminData, null, 2));
 
     adminData.githash = await commitChanges("Save admin");
-
-    const response2 = await fetch(`${config.archiver}/api/v1/pin/${config.data}`);
-    const ipfs = await response2.json();
-
-    if (ipfs.cid) {
-        adminData.cid = ipfs.cid;
-        fs.writeFileSync(jsonPath, JSON.stringify(adminData, null, 2));
-    }
-    else {
-        console.log('saveAdmin: IPFS pin failed');
-    }
 
     return adminData;
 };

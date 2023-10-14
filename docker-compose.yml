@@ -24,7 +24,7 @@ services:
       - "8080:8080"
       - "5001:5001"
     volumes:
-      - ./dist/export:/export
+      - ./data:/export/data
       - ./dist/ipfs:/data/ipfs
 
   archiver:

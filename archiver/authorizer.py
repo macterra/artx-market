@@ -1,4 +1,3 @@
-import sys
 import os
 import json
 import argparse
@@ -9,6 +8,7 @@ from datetime import datetime
 from dateutil import tz
 from decimal import Decimal
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
+from cid import make_cid
 
 class Encoder(json.JSONEncoder):
     def default(self, obj):
@@ -100,6 +100,22 @@ class Authorizer:
     def notarize(self, xid, cid):
         print(f"notarize {xid} {cid}")
 
+        # Validate xid
+        try:
+            uuid.UUID(xid)
+        except ValueError:
+            print(f"{xid} is not a valid xid")
+            return
+
+        # Validate cid
+        try:
+            cid_obj = make_cid(cid)
+            if cid_obj.version != 0:
+                raise ValueError
+        except ValueError:
+            print(f"{cid} is not a valid IPFS CID v0")
+            return
+
         self.updateWallet()
 
         inputs = []
@@ -168,11 +184,13 @@ class Authorizer:
         tx = self.blockchain.getrawtransaction(txid, 1)
 
         if 'blockhash' not in tx:
+            print(f"txn {txid} not yet confirmed.")
             return
 
         auth_tx = AuthTx(tx)
 
         if not auth_tx.isValid:
+            print(f"txn {txid} not a valid auth txn.")
             return
 
         txid = tx['txid']
