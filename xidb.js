@@ -88,7 +88,7 @@ const getAdmin = (xid) => {
 
     const jsonContent = fs.readFileSync(jsonPath, 'utf-8');
     const jsonData = JSON.parse(jsonContent);
-    
+
     const cidPath = path.join(config.data, "CID");
 
     if (fs.existsSync(cidPath)) {
@@ -830,22 +830,12 @@ const saveNft = (xid) => {
         'thumbnail': collectionData.collection.thumbnail,
     };
 
-    metadata.nft.image = `_asset${path.extname(metadata.token.file.path)}`;
-    const imagePath = path.join(config.assets, xid, metadata.nft.image);
-    fs.copyFileSync(metadata.token.file.path.slice(1), imagePath);
-
-    metadata.owner.image = `_owner${path.extname(metadata.owner.pfp)}`;
-    const ownerPfpPath = path.join(config.assets, xid, metadata.owner.image);
-    fs.copyFileSync(metadata.owner.pfp.slice(1), ownerPfpPath);
-
-    metadata.creator.image = `_creator${path.extname(metadata.creator.pfp)}`;
-    const creatorPfpPath = path.join(config.assets, xid, metadata.creator.image);
-    fs.copyFileSync(metadata.creator.pfp.slice(1), creatorPfpPath);
+    metadata.nft.image = metadata.token.file.path.replace("/data/assets", "..");
+    metadata.owner.image = metadata.owner.pfp.replace("/data/assets", "..");
+    metadata.creator.image = metadata.creator.pfp.replace("/data/assets", "..");
 
     if (metadata.collection.thumbnail) {
-        metadata.collection.image = `_collection${path.extname(metadata.collection.thumbnail)}`;
-        const thumbnailPath = path.join(config.assets, xid, metadata.collection.image);
-        fs.copyFileSync(metadata.collection.thumbnail.slice(1), thumbnailPath);
+        metadata.collection.image = metadata.collection.thumbnail.replace("/data/assets", "..");
     }
     else {
         metadata.collection.image = metadata.nft.image;
