@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { Box, Button, Grid } from '@mui/material';
 import ImageGrid from './ImageGrid';
+import AgentBadge from './AgentBadge';
 
 const CollectionView = ({ navigate, setRefreshProfile }) => {
     const { xid } = useParams();
@@ -90,7 +91,7 @@ const CollectionView = ({ navigate, setRefreshProfile }) => {
 
     const handleMintAllClick = async () => {
         setDisableMintAll(true);
-        
+
         try {
             const response = await fetch(`/api/v1/collections/${collection.xid}/mint-all`);
 
@@ -107,9 +108,33 @@ const CollectionView = ({ navigate, setRefreshProfile }) => {
         }
     };
 
+    const CollectionBadge = ({ collection }) => {
+        return (
+            <div style={{ display: 'flex', alignItems: 'center', marginLeft: '0.5em', marginRight: '0.5em' }}>
+                {collection.collection.thumbnail &&
+                    <img
+                        src={collection.collection.thumbnail}
+                        alt=""
+                        style={{
+                            width: '30px',
+                            height: '30px',
+                            objectFit: 'cover',
+                            marginRight: '10px',
+                            borderRadius: '50%',
+                        }}
+                    />
+                } {collection.asset.title}
+            </div>
+        );
+    };
+
     return (
         <Box>
-            <span>{collection.asset.title}</span>
+            <Box display="flex" alignItems="center" justifyContent="center">
+                <CollectionBadge collection={collection} />
+                <div style={{ fontSize: '0.5em' }}>by</div>
+                <AgentBadge xid={collection.asset.owner} />
+            </Box>
             <span style={{ fontSize: '12px' }}> ({collection.collection.assets.length} items)</span>
             {collection.isOwnedByUser &&
                 <Box style={{ marginLeft: '20px', marginRight: '20px' }}>

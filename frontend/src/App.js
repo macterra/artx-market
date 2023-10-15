@@ -110,12 +110,7 @@ function ViewCollection() {
         <AppHeader navigate={navigate} />
         <header className="App-header">
           <Box display="flex" flexDirection="column" flexGrow={1}>
-            {userId &&
-              <>
-                <ProfileHeader navigate={navigate} userId={userId} refreshProfile={refreshProfile} />
-                <CollectionView navigate={navigate} setRefreshProfile={setRefreshProfile} />
-              </>
-            }
+            <CollectionView navigate={navigate} setRefreshProfile={setRefreshProfile} />
           </Box>
         </header>
       </div>

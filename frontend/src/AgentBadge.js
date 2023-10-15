@@ -40,7 +40,8 @@ const AgentBadge = ({ agent, xid }) => {
                         marginRight: '10px',
                         borderRadius: '50%',
                     }}
-                />} <a href={`/profile/${user.xid}`} >{user.name}</a>
+                />
+            } <a href={`/profile/${user.xid}`} >{user.name}</a>
         </div>
     );
 }
