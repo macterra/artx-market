@@ -78,30 +78,7 @@ function ViewProfile() {
 }
 
 function ViewCollection() {
-  const { xid } = useParams();
-  const [refreshProfile, setRefreshProfile] = useState(null);
-  const [userId, setUserId] = useState(null);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const response = await fetch(`/api/v1/collections/${xid}`);
-        const collectionData = await response.json();
-
-        if (collectionData.error) {
-          navigate('/');
-        }
-        else {
-          setUserId(collectionData.asset.owner);
-        }
-      } catch (error) {
-        console.error('Error fetching profile data:', error);
-      }
-    };
-
-    fetchProfile();
-  });
 
   return (
     <ThemeProvider theme={darkTheme}>
@@ -110,7 +87,7 @@ function ViewCollection() {
         <AppHeader navigate={navigate} />
         <header className="App-header">
           <Box display="flex" flexDirection="column" flexGrow={1}>
-            <CollectionView navigate={navigate} setRefreshProfile={setRefreshProfile} />
+            <CollectionView navigate={navigate} />
           </Box>
         </header>
       </div>

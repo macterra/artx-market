@@ -6,7 +6,7 @@ import { Box, Button, Grid } from '@mui/material';
 import ImageGrid from './ImageGrid';
 import AgentBadge from './AgentBadge';
 
-const CollectionView = ({ navigate, setRefreshProfile }) => {
+const CollectionView = ({ navigate }) => {
     const { xid } = useParams();
     const [collection, setCollection] = useState(null);
     const [refreshKey, setRefreshKey] = useState(0);
@@ -24,6 +24,9 @@ const CollectionView = ({ navigate, setRefreshProfile }) => {
 
                 if (!collectionData.error) {
                     setCollection(collectionData);
+                }
+                else {
+                    navigate('/');
                 }
 
                 const rates = await axios.get('/api/v1/rates');
@@ -73,7 +76,6 @@ const CollectionView = ({ navigate, setRefreshProfile }) => {
                     const mb = data.bytesUploaded / 1000000;
                     alert(`You were debited ${data.creditsDebited} credits to upload ${data.filesUploaded} files (${mb.toFixed(2)} MB)`);
                     setRefreshKey((prevKey) => prevKey + 1);
-                    setRefreshProfile((prevKey) => prevKey + 1);
                 }
                 if (data.filesSkipped) {
                     if (data.filesSkipped === 1) {
@@ -135,7 +137,11 @@ const CollectionView = ({ navigate, setRefreshProfile }) => {
                 <div style={{ fontSize: '0.5em' }}>by</div>
                 <AgentBadge xid={collection.asset.owner} />
             </Box>
-            <span style={{ fontSize: '12px' }}> ({collection.collection.assets.length} items)</span>
+            {collection.collection.assets.length === 1 ? (
+                <span style={{ fontSize: '12px' }}> (1 item)</span>
+            ) : (
+                <span style={{ fontSize: '12px' }}> ({collection.collection.assets.length} items)</span>
+            )}
             {collection.isOwnedByUser &&
                 <Box style={{ marginLeft: '20px', marginRight: '20px' }}>
                     <Grid container alignItems="center" justifyContent="space-between">
