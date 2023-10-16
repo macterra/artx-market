@@ -24,7 +24,7 @@ const TokenHistory = ({ metadata, xid }) => {
         };
 
         fetchHistory();
-    }, [metadata]);
+    }, [metadata, xid]);
 
     if (!metadata || !history) {
         return;

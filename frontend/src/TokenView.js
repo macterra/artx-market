@@ -73,7 +73,7 @@ const TokenView = ({ metadata, setTab, setRefreshKey }) => {
 
                 setNfts(nfts);
                 setOwned(owned);
-                setOwnAll(metadata.userIsOwner && owned == metadata.token.editions);
+                setOwnAll(metadata.userIsOwner && owned === metadata.token.editions);
                 setRanges(convertToRanges(ownedEditions));
 
             } catch (error) {
@@ -139,7 +139,7 @@ const TokenView = ({ metadata, setTab, setRefreshKey }) => {
                     <TableRow>
                         <TableCell>Creator:</TableCell>
                         <TableCell>
-                                <AgentBadge xid={metadata.asset.owner} />
+                            <AgentBadge xid={metadata.asset.owner} />
                         </TableCell>
                     </TableRow>
                     <TableRow>
