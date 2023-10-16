@@ -13,8 +13,7 @@ import {
 } from '@mui/material';
 
 const TokenTrader = ({ metadata, setRefreshKey }) => {
-    const [ownedNfts, setOwnedNfts] = useState(0);
-    const [listedNfts, setListedNfts] = useState(0);
+    const [nfts, setNfts] = useState(0);
     const [exchangeRate, setExchangeRate] = useState(null);
     const [charge, setCharge] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
@@ -24,41 +23,28 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                let response = await fetch('/api/v1/rates');
+                const response = await fetch('/api/v1/rates');
                 const xrates = await response.json();
                 setExchangeRate(xrates.bitcoin.usd);
 
-                response = await fetch(`/api/v1/profile/`);
-                const myProfile = await response.json();
-
-                const ownedNfts = [];
-                const listedNfts = [];
+                const nfts = [];
 
                 for (const xid of metadata.token.nfts) {
-                    response = await fetch(`/api/v1/asset/${xid}`);
+                    const response = await fetch(`/api/v1/asset/${xid}`);
                     const nft = await response.json();
-                    response = await fetch(`/api/v1/profile/${nft.asset.owner}`);
-                    nft.owner = await response.json();
-
-                    if (nft.asset.owner === myProfile.xid) {
-                        ownedNfts.push(nft);
-                    }
-                    else if (nft.nft.price > 0) {
-                        listedNfts.push(nft);
-                    }
+                    nfts.push(nft);
                 }
 
-                setOwnedNfts(ownedNfts);
-                setListedNfts(listedNfts);
+                setNfts(nfts);
             } catch (error) {
-                console.error('Error fetching asset owner:', error);
+                console.error('Error:', error);
             }
         };
 
         fetchProfile();
     }, [metadata]);
 
-    if (!metadata || !metadata.token) {
+    if (!metadata || !metadata.token || !nfts) {
         return;
     }
 
@@ -197,7 +183,7 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
         return (
             <TableRow>
                 <TableCell>{nft.asset.title}</TableCell>
-                <TableCell>{usdPrice.toFixed(2)}</TableCell>
+                <TableCell align="right">${usdPrice.toFixed(2)}</TableCell>
                 <TableCell>
                     <TextField
                         defaultValue={nft.nft.price}
@@ -216,6 +202,7 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
                         Buy
                     </Button>
                 </TableCell>
+                <TableCell></TableCell>
             </TableRow>
         );
     };
@@ -238,53 +225,25 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
                             <TableCell>{exchangeRate} USD/BTC</TableCell>
                         </TableRow>
                         <TableRow>
-                            <TableCell>Sell:</TableCell>
+                            <TableCell>Trade:</TableCell>
                             <TableCell>
-                                {ownedNfts.length > 0 &&
-                                    <TableContainer component={Paper} style={{ maxHeight: '300px', overflow: 'auto' }}>
-                                        <Table>
-                                            <TableHead>
-                                                <TableRow>
-                                                    <TableCell>Edition</TableCell>
-                                                    <TableCell>Price (USD)</TableCell>
-                                                    <TableCell>Price (sats)</TableCell>
-                                                    <TableCell>Listed</TableCell>
-                                                </TableRow>
-                                            </TableHead>
-                                            <TableBody>
-                                                {ownedNfts.map((nft, index) => (
-                                                    <SellerTableRow key={index} nft={nft} />
-                                                ))}
-                                            </TableBody>
-
-                                        </Table>
-                                    </TableContainer>
-                                }
-                                {ownedNfts.length < 1 && "None currently owned"}
-                            </TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell>Buy:</TableCell>
-                            <TableCell>
-                                {listedNfts.length > 0 &&
-                                    <TableContainer component={Paper} style={{ maxHeight: '300px', overflow: 'auto' }}>
-                                        <Table>
-                                            <TableHead>
-                                                <TableRow>
-                                                    <TableCell>Edition</TableCell>
-                                                    <TableCell>Price (USD)</TableCell>
-                                                    <TableCell>Price (sats)</TableCell>
-                                                </TableRow>
-                                            </TableHead>
-                                            <TableBody>
-                                                {listedNfts.map((nft, index) => (
-                                                    <BuyerTableRow nft={nft} />
-                                                ))}
-                                            </TableBody>
-                                        </Table>
-                                    </TableContainer>
-                                }
-                                {listedNfts.length < 1 && "None currently listed"}
+                                <TableContainer component={Paper} style={{ maxHeight: '600px', overflow: 'auto' }}>
+                                    <Table>
+                                        <TableHead>
+                                            <TableRow>
+                                                <TableCell>Edition</TableCell>
+                                                <TableCell>Price (USD)</TableCell>
+                                                <TableCell>Price (sats)</TableCell>
+                                                <TableCell>Listed</TableCell>
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            {nfts.map((nft, index) => (
+                                                nft.userIsOwner ? (<SellerTableRow key={index} nft={nft} />) : (<BuyerTableRow key={index} nft={nft} />)
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer>
                             </TableCell>
                         </TableRow>
                     </TableBody>
