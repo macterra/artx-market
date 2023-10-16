@@ -7,7 +7,6 @@ import {
   Route,
 } from "react-router-dom";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
-import { Button } from "@mui/material";
 import CssBaseline from "@mui/material/CssBaseline";
 import Box from "@mui/material/Box";
 import AppHeader from "./AppHeader";
@@ -20,34 +19,30 @@ import ProfileView from "./ProfileView";
 import CollectionView from "./CollectionView";
 import AdminView from "./AdminView";
 import CertView from "./CertView";
+import Footer from "./Footer";
 
 import "./App.css";
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/admin/" element={<ViewAdmin />} />
-        <Route path="/cert/:xid" element={<ViewCert />} />
-        <Route path="/profile/:userId" element={<ViewProfile />} />
-        <Route path="/profile/edit/:jump?" element={<EditProfile />} />
-        <Route path="/collection/:xid" element={<ViewCollection />} />
-        <Route path="/asset/:xid/" element={<ViewAsset />} />
-        <Route path="/nft/:xid/" element={<ViewNft />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Router>
+    <>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/admin/" element={<ViewAdmin />} />
+          <Route path="/cert/:xid" element={<ViewCert />} />
+          <Route path="/profile/:userId" element={<ViewProfile />} />
+          <Route path="/profile/edit/:jump?" element={<EditProfile />} />
+          <Route path="/collection/:xid" element={<ViewCollection />} />
+          <Route path="/asset/:xid/" element={<ViewAsset />} />
+          <Route path="/nft/:xid/" element={<ViewNft />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Router>
+      <Footer />
+    </>
   );
 }
-
-const handleDiscordButtonClick = () => {
-  // Replace 'YOUR_DISCORD_INVITE_LINK' with the actual Discord invite link
-  const discordInviteLink = "https://discord.gg/RgZsQZqfp";
-
-  // Open the Discord link in a new browser window
-  window.open(discordInviteLink, "_blank");
-};
 
 const darkTheme = createTheme({
   palette: {
@@ -66,9 +61,6 @@ function Home() {
         <header className="App-header">
           <MainView navigate={navigate} />
         </header>
-        <Button color="inherit" onClick={handleDiscordButtonClick}>
-          Join Our Discord
-        </Button>
       </div>
     </ThemeProvider>
   );
@@ -97,9 +89,6 @@ function ViewProfile() {
             />
           </Box>
         </header>
-        <Button color="inherit" onClick={handleDiscordButtonClick}>
-          Join Our Discord
-        </Button>
       </div>
     </ThemeProvider>
   );
@@ -118,9 +107,6 @@ function ViewCollection() {
             <CollectionView navigate={navigate} />
           </Box>
         </header>
-        <Button color="inherit" onClick={handleDiscordButtonClick}>
-          Join Our Discord
-        </Button>
       </div>
     </ThemeProvider>
   );
@@ -144,9 +130,6 @@ function EditProfile() {
             />
           </Box>
         </header>
-        <Button color="inherit" onClick={handleDiscordButtonClick}>
-          Join Our Discord
-        </Button>
       </div>
     </ThemeProvider>
   );
@@ -163,9 +146,6 @@ function ViewAsset() {
         <header className="App-header">
           <AssetView navigate={navigate} />
         </header>
-        <Button color="inherit" onClick={handleDiscordButtonClick}>
-          Join Our Discord
-        </Button>
       </div>
     </ThemeProvider>
   );
@@ -182,9 +162,6 @@ function ViewNft() {
         <header className="App-header">
           <NftView navigate={navigate} />
         </header>
-        <Button color="inherit" onClick={handleDiscordButtonClick}>
-          Join Our Discord
-        </Button>
       </div>
     </ThemeProvider>
   );
@@ -201,9 +178,6 @@ function ViewAdmin() {
         <header className="App-header">
           <AdminView navigate={navigate} />
         </header>
-        <Button color="inherit" onClick={handleDiscordButtonClick}>
-          Join Our Discord
-        </Button>
       </div>
     </ThemeProvider>
   );
@@ -220,9 +194,6 @@ function ViewCert() {
         <header className="App-header">
           <CertView navigate={navigate} />
         </header>
-        <Button color="inherit" onClick={handleDiscordButtonClick}>
-          Join Our Discord
-        </Button>
       </div>
     </ThemeProvider>
   );
