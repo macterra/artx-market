@@ -10,12 +10,17 @@ import {
 } from '@mui/material';
 import AgentBadge from './AgentBadge';
 
-const TokenHistory = ({ metadata }) => {
+const TokenHistory = ({ metadata, xid }) => {
     const [history, setHistory] = useState([]);
 
     useEffect(() => {
         const fetchHistory = async () => {
-            setHistory(metadata.history);
+            if (xid) {
+                setHistory(metadata.history.filter(item => !(item.edition && item.edition !== xid)));
+            }
+            else {
+                setHistory(metadata.history);
+            }
         };
 
         fetchHistory();
@@ -35,17 +40,26 @@ const TokenHistory = ({ metadata }) => {
                 setTime(record.time);
 
                 if (record.type === 'mint') {
-                    if (metadata.token.editions === 1) {
-                        setMessage(
-                            <div style={{ display: 'flex', alignItems: 'center' }}>
-                                <AgentBadge xid={record.creator} />{"minted a single edition."}
-                            </div>
-                        );
+                    if (metadata.token) {
+                        if (metadata.token.editions === 1) {
+                            setMessage(
+                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                    <AgentBadge xid={record.creator} />{"minted a single edition."}
+                                </div>
+                            );
+                        }
+                        else {
+                            setMessage(
+                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                    <AgentBadge xid={record.creator} />{`minted ${metadata.token.editions} editions.`}
+                                </div>
+                            );
+                        }
                     }
                     else {
                         setMessage(
                             <div style={{ display: 'flex', alignItems: 'center' }}>
-                                <AgentBadge xid={record.creator} />{`minted ${metadata.token.editions} editions.`}
+                                <AgentBadge xid={record.creator} />{"minted the token."}
                             </div>
                         );
                     }

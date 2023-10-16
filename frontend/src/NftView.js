@@ -69,7 +69,7 @@ const NftView = ({ navigate }) => {
                 {tab === 'edition' && <EditionView nft={nft} />}
                 {tab === 'trade' && <TokenTrader metadata={nft.token} setRefreshKey={setRefreshKey} />}
                 {tab === 'pfp' && <PfpEditor metadata={nft.token} setTab={setTab} />}
-                {tab === 'history' && <TokenHistory metadata={nft.token} />}
+                {tab === 'history' && <TokenHistory metadata={nft.token} xid={nft.xid} />}
             </div>
         </div>
     );

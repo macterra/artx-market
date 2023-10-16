@@ -824,6 +824,7 @@ const saveNft = (xid) => {
     metadata.owner = getAgentMinimal(metadata.asset.owner);
     metadata.creator = getAgentMinimal(tokenData.asset.owner);
     metadata.token = tokenData;
+
     metadata.collection = {
         'xid': collectionData.xid,
         'title': collectionData.asset.title,
@@ -870,6 +871,9 @@ const getNft = (xid) => {
     const metadataContent = fs.readFileSync(jsonPath, 'utf-8');
     const metadata = JSON.parse(metadataContent);
 
+    // Retrieve latest history
+    metadata.token.history = getHistory(metadata.token.xid);
+
     const adminData = getAdmin();
     const certId = adminData.latest;
 
@@ -879,7 +883,6 @@ const getNft = (xid) => {
         const updated = new Date(metadata.asset.updated);
 
         if (authTime > updated) {
-            console.log(`getNft ${authTime} > ${updated}`);
             metadata.cert = cert;
         }
     }
