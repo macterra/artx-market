@@ -163,13 +163,6 @@ app.get('/ipfs/*', async (req, res) => {
       res.set('Content-Type', 'image/gif');
     } // ...add more conditions for other file types as needed
 
-    res.removeHeader('server');
-    res.removeHeader('trailer');
-    res.removeHeader('vary');
-
-    // console.log("Axios response headers:", response.headers);
-    // console.log("Express response headers:", res.getHeaders());
-
     response.data.pipe(res);
   } catch (error) {
     res.status(500).send({ error: error.toString() });

@@ -38,3 +38,11 @@ services:
       - BTC_CONNECT=${BTC_CONNECT}
     depends_on:
       - ipfs
+
+  pinner:
+    image: macterra/artx-pinner
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./data:/data
+    depends_on:
+      - ipfs
