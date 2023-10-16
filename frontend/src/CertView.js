@@ -64,6 +64,10 @@ const CertView = ({ navigate }) => {
                                     <TableCell>{cert.auth.cid}</TableCell>
                                 </TableRow>
                                 <TableRow>
+                                    <TableCell>XID58</TableCell>
+                                    <TableCell>{cert.auth.xid58}</TableCell>
+                                </TableRow>
+                                <TableRow>
                                     <TableCell>OP_RETURN</TableCell>
                                     <TableCell>{cert.auth.op_return}</TableCell>
                                 </TableRow>
@@ -73,7 +77,9 @@ const CertView = ({ navigate }) => {
                                 </TableRow>
                                 <TableRow>
                                     <TableCell>Previous</TableCell>
-                                    <TableCell><a href={`/cert/${cert.prev}`}>{cert.prev}</a></TableCell>
+                                    <TableCell>
+                                        {cert.prev === "None" ? (cert.prev) : (<a href={`/cert/${cert.prev}`}>{cert.prev}</a>)}
+                                    </TableCell>
                                 </TableRow>
                                 <TableRow>
                                     <TableCell>Chain ID</TableCell>

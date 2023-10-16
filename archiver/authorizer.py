@@ -36,8 +36,8 @@ class AuthTx():
             return False
         try:
             op_return = data[2:].decode()
-            self.cid, xid58 = op_return.split('::')
-            xid_bytes = base58.b58decode(xid58)
+            self.cid, self.xid58 = op_return.split('::')
+            xid_bytes = base58.b58decode(self.xid58)
             self.xid = str(uuid.UUID(bytes=xid_bytes))
             self.op_return = op_return
             return True
@@ -219,6 +219,7 @@ class Authorizer:
             "auth": {
                 "cid": auth_tx.cid,
                 "xid": auth_tx.xid,
+                "xid58": auth_tx.xid58,
                 "op_return": auth_tx.op_return,
                 "time": str(utc_iso),
                 "blockheight": block_height,
