@@ -1,42 +1,52 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams, BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import Box from '@mui/material/Box';
-import AppHeader from './AppHeader';
-import MainView from './MainView';
-import ProfileEditor from './ProfileEditor';
-import AssetView from './AssetView';
-import NftView from './NftView';
-import ProfileHeader from './ProfileHeader';
-import ProfileView from './ProfileView';
-import CollectionView from './CollectionView';
-import AdminView from './AdminView';
-import CertView from './CertView';
+import React, { useState, useEffect } from "react";
+import {
+  useNavigate,
+  useParams,
+  BrowserRouter as Router,
+  Routes,
+  Route,
+} from "react-router-dom";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+import CssBaseline from "@mui/material/CssBaseline";
+import Box from "@mui/material/Box";
+import AppHeader from "./AppHeader";
+import MainView from "./MainView";
+import ProfileEditor from "./ProfileEditor";
+import AssetView from "./AssetView";
+import NftView from "./NftView";
+import ProfileHeader from "./ProfileHeader";
+import ProfileView from "./ProfileView";
+import CollectionView from "./CollectionView";
+import AdminView from "./AdminView";
+import CertView from "./CertView";
+import Footer from "./Footer";
 
-import './App.css';
+import "./App.css";
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/admin/" element={<ViewAdmin />} />
-        <Route path="/cert/:xid" element={<ViewCert />} />
-        <Route path="/profile/:userId" element={<ViewProfile />} />
-        <Route path="/profile/edit/:jump?" element={<EditProfile />} />
-        <Route path="/collection/:xid" element={<ViewCollection />} />
-        <Route path="/asset/:xid/" element={<ViewAsset />} />
-        <Route path="/nft/:xid/" element={<ViewNft />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Router>
+    <>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/admin/" element={<ViewAdmin />} />
+          <Route path="/cert/:xid" element={<ViewCert />} />
+          <Route path="/profile/:userId" element={<ViewProfile />} />
+          <Route path="/profile/edit/:jump?" element={<EditProfile />} />
+          <Route path="/collection/:xid" element={<ViewCollection />} />
+          <Route path="/asset/:xid/" element={<ViewAsset />} />
+          <Route path="/nft/:xid/" element={<ViewNft />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Router>
+      <Footer />
+    </>
   );
 }
 
 const darkTheme = createTheme({
   palette: {
-    mode: 'dark',
+    mode: "dark",
   },
 });
 
@@ -68,12 +78,19 @@ function ViewProfile() {
         <AppHeader navigate={navigate} />
         <header className="App-header">
           <Box display="flex" flexDirection="column" flexGrow={1}>
-            <ProfileHeader navigate={navigate} userId={userId} refreshProfile={refreshProfile} />
-            <ProfileView navigate={navigate} setRefreshProfile={setRefreshProfile} />
+            <ProfileHeader
+              navigate={navigate}
+              userId={userId}
+              refreshProfile={refreshProfile}
+            />
+            <ProfileView
+              navigate={navigate}
+              setRefreshProfile={setRefreshProfile}
+            />
           </Box>
         </header>
       </div>
-    </ThemeProvider >
+    </ThemeProvider>
   );
 }
 
@@ -91,7 +108,7 @@ function ViewCollection() {
           </Box>
         </header>
       </div>
-    </ThemeProvider >
+    </ThemeProvider>
   );
 }
 
@@ -106,7 +123,11 @@ function EditProfile() {
         <AppHeader navigate={navigate} />
         <header className="App-header">
           <Box display="flex" flexDirection="column" flexGrow={1}>
-            <ProfileEditor navigate={navigate} refreshProfile={refreshProfile} setRefreshProfile={setRefreshProfile} />
+            <ProfileEditor
+              navigate={navigate}
+              refreshProfile={refreshProfile}
+              setRefreshProfile={setRefreshProfile}
+            />
           </Box>
         </header>
       </div>
@@ -182,7 +203,7 @@ function NotFound() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    navigate('/');
+    navigate("/");
   });
 }
 
