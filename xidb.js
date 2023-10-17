@@ -362,16 +362,26 @@ const repairAsset = (xid) => {
         }
     }
     else if (assetData.nft) {
+        const token = getAsset(assetData.nft.asset);
+
+        if (!token.token) {
+            return removeAsset(xid);
+        }
+
+        if (!token.token.nfts.includes(xid)) {
+            return removeAsset(xid);
+        }
+
         if (!assets.collected.includes(xid)) {
-            agentData.collected.push(xid);
-            saveAgent(agentData);
+            assets.collected.push(xid);
+            agentSaveAssets(assets);
             ownershipFixed = true;
         }
     }
     else {
         if (!assets.created.includes(xid)) {
-            agentData.created.push(xid);
-            saveAgent(agentData);
+            assets.created.push(xid);
+            agentSaveAssets(assets);
             ownershipFixed = true;
         }
     }
@@ -399,27 +409,30 @@ const repairAgent = (xid) => {
     for (const collectionId of agentData.collections) {
         const collection = getAsset(collectionId);
 
-        if (collection.asset.owner !== xid) {
-            collection.asset.owner = xid;
-            saveAsset(collection);
+        if (!collection) {
+            agentData.collections = agentData.collections.filter(xid => xid !== collectionId);
+            saveAgent(agentData);
+            ownershipFixed = true;
         }
     }
 
     for (const assetId of assets.created) {
         const asset = getAsset(assetId);
 
-        if (asset.asset.owner !== xid) {
-            asset.asset.owner = xid;
-            saveAsset(asset);
+        if (!asset) {
+            assets.created = assets.created.filter(xid => xid !== assetId);
+            agentSaveAssets(assets);
+            ownershipFixed = true;
         }
     }
 
     for (const assetId of assets.collected) {
         const asset = getAsset(assetId);
 
-        if (asset.asset.owner !== xid) {
-            asset.asset.owner = xid;
-            saveAsset(asset);
+        if (!asset) {
+            assets.collected = assets.collected.filter(xid => xid !== assetId);
+            agentSaveAssets(assets);
+            ownershipFixed = true;
         }
     }
 
@@ -872,7 +885,7 @@ const getNft = (xid) => {
     const metadata = JSON.parse(metadataContent);
 
     // Retrieve latest history
-    metadata.token.history = getHistory(metadata.token.xid);
+    metadata.token = getAsset(metadata.token.xid);
 
     const adminData = getAdmin();
     const certId = adminData.latest;
