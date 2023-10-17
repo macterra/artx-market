@@ -69,9 +69,8 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
         }
     };
 
-    // Create a new component for the table row
-    function SellerTableRow({ nft }) {
-        const [disableList, setDisableList] = useState(true);
+    function TradeTableRow({ nft }) {
+        const [disableSave, setDisableSave] = useState(true);
         const [usdPrice, setUsdPrice] = useState(0);
         const [listed, setListed] = useState(false);
 
@@ -89,31 +88,55 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
             <TableRow>
                 <TableCell>{nft.asset.title}</TableCell>
                 <TableCell align="right">${usdPrice.toFixed(2)}</TableCell>
-                <TableCell>
-                    <TextField
-                        defaultValue={nft.nft.price}
-                        type="number"
-                        onChange={(event) => {
-                            nft.nft.newPrice = parseInt(event.target.value, 10) || 0;
-                            setDisableList(nft.nft.price === nft.nft.newPrice);
-                            updatePrice(nft.nft.newPrice);
-                        }}
-                        inputProps={{ min: 0 }}
-                        sx={{ width: '14ch', marginRight: 1 }}
-                    />
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={() => {
-                            handleListClick(nft);
-                            setDisableList(true);
-                            setListed(usdPrice > 0);
-                        }}
-                        disabled={disableList}
-                    >
-                        Save
-                    </Button>
-                </TableCell>
+                {nft.userIsOwner ?
+                    (
+                        <TableCell>
+                            <TextField
+                                defaultValue={nft.nft.price}
+                                type="number"
+                                onChange={(event) => {
+                                    nft.nft.newPrice = parseInt(event.target.value, 10) || 0;
+                                    setDisableSave(nft.nft.price === nft.nft.newPrice);
+                                    updatePrice(nft.nft.newPrice);
+                                }}
+                                inputProps={{ min: 0 }}
+                                sx={{ width: '14ch', marginRight: 1 }}
+                            />
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={() => {
+                                    handleListClick(nft);
+                                    setDisableSave(true);
+                                    setListed(usdPrice > 0);
+                                }}
+                                disabled={disableSave}
+                            >
+                                Save
+                            </Button>
+                        </TableCell>
+
+                    ) : (
+                        <TableCell>
+                            <TextField
+                                defaultValue={nft.nft.price}
+                                type="number"
+                                disabled={true}
+                                sx={{ width: '14ch', marginRight: 1 }}
+                            />
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={() => {
+                                    handleBuyClick(nft);
+                                }}
+                                disabled={!listed}
+                            >
+                                Buy
+                            </Button>
+                        </TableCell>
+                    )
+                }
                 <TableCell>{listed ? '✔' : ''}</TableCell>
             </TableRow>
         );
@@ -168,45 +191,6 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
         }
     };
 
-    function BuyerTableRow({ nft }) {
-        const [usdPrice, setUsdPrice] = useState(0);
-
-        const updatePrice = (price) => {
-            const usdPrice = price * exchangeRate / 100000000;
-            setUsdPrice(usdPrice);
-        };
-
-        useEffect(() => {
-            updatePrice(nft.nft.price);
-        }, [nft]);
-
-        return (
-            <TableRow>
-                <TableCell>{nft.asset.title}</TableCell>
-                <TableCell align="right">${usdPrice.toFixed(2)}</TableCell>
-                <TableCell>
-                    <TextField
-                        defaultValue={nft.nft.price}
-                        type="number"
-                        disabled={true}
-                        sx={{ width: '14ch', marginRight: 1 }}
-                    />
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={() => {
-                            handleBuyClick(nft);
-                        }}
-                        disabled={nft.nft.price < 1}
-                    >
-                        Buy
-                    </Button>
-                </TableCell>
-                <TableCell></TableCell>
-            </TableRow>
-        );
-    };
-
     return (
         <>
             <TableContainer>
@@ -239,7 +223,7 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
                                         </TableHead>
                                         <TableBody>
                                             {nfts.map((nft, index) => (
-                                                nft.userIsOwner ? (<SellerTableRow key={index} nft={nft} />) : (<BuyerTableRow key={index} nft={nft} />)
+                                                <TradeTableRow key={index} nft={nft} />
                                             ))}
                                         </TableBody>
                                     </Table>
