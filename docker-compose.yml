@@ -10,6 +10,7 @@ services:
       ARCHIVER: http://archiver:5115
       IPFS_HOST: ipfs
       ARTX_NAME: ${ARTX_NAME}
+      ARTX_HOST: ${ARTX_HOST}
       SATSPAY_HOST: ${SATSPAY_HOST}
       SATSPAY_ADMIN_KEY: ${SATSPAY_ADMIN_KEY}
       SATSPAY_API_KEY: ${SATSPAY_API_KEY}
