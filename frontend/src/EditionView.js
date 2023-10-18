@@ -59,7 +59,11 @@ const EditionView = ({ nft }) => {
                                 <a href={`/ipfs/${metadata.cert.auth.cid}/assets/${metadata.xid}/index.html`} target="_blank" rel="noopener noreferrer">
                                     {metadata.cert.auth.cid}
                                 </a>
-                            ) : "pending"
+                            ) : (
+                                <a href={`/data/assets/${metadata.xid}/index.html`} target="_blank" rel="noopener noreferrer">
+                                    preview
+                                </a>
+                            )
                             }
                         </TableCell>
                     </TableRow>
