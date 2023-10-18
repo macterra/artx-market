@@ -428,6 +428,7 @@ app.get('/api/v1/nft/:xid', async (req, res) => {
 app.get('/api/v1/asset/:xid', async (req, res) => {
   try {
     const assetData = xidb.getAsset(req.params.xid);
+    // user owns the asset or any editions
     assetData.userIsOwner = xidb.isOwner(assetData, req.user?.xid);
     res.json(assetData);
   } catch (error) {

@@ -61,8 +61,6 @@ const TokenView = ({ metadata, setTab, setRefreshKey }) => {
                 for (const xid of metadata.token.nfts) {
                     response = await fetch(`/api/v1/asset/${xid}`);
                     const nft = await response.json();
-                    response = await fetch(`/api/v1/profile/${nft.asset.owner}`);
-                    nft.owner = await response.json();
                     nfts.push(nft);
 
                     if (nft.asset.owner === myProfile.xid) {
@@ -73,11 +71,11 @@ const TokenView = ({ metadata, setTab, setRefreshKey }) => {
 
                 setNfts(nfts);
                 setOwned(owned);
-                setOwnAll(metadata.userIsOwner && owned === metadata.token.editions);
+                setOwnAll(metadata.asset.owner === myProfile.xid && owned === metadata.token.editions);
                 setRanges(convertToRanges(ownedEditions));
 
             } catch (error) {
-                console.error('Error fetching asset owner:', error);
+                console.error('Error:', error);
             }
         };
 
@@ -100,7 +98,7 @@ const TokenView = ({ metadata, setTab, setRefreshKey }) => {
             }
         }
         catch (error) {
-            console.error('Error fetching asset owner:', error);
+            console.error('Error:', error);
         }
     };
 
@@ -184,7 +182,7 @@ const TokenView = ({ metadata, setTab, setRefreshKey }) => {
                         <TableRow>
                             <TableCell>Owner:</TableCell>
                             <TableCell>
-                                <AgentBadge agent={nfts[0].owner} />
+                                <AgentBadge xid={nfts[0].asset.owner} />
                             </TableCell>
                         </TableRow>
                     }
@@ -207,7 +205,7 @@ const TokenView = ({ metadata, setTab, setRefreshKey }) => {
                                                         <a href={`/nft/${nft.xid}`}>{nft.asset.title}</a>
                                                     </TableCell>
                                                     <TableCell>
-                                                        <AgentBadge agent={nft.owner} />
+                                                        <AgentBadge xid={nft.asset.owner} />
                                                     </TableCell>
                                                 </TableRow>
                                             ))}
