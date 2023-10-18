@@ -537,13 +537,7 @@ app.get('/api/v1/asset/:xid/unmint', ensureAuthenticated, async (req, res) => {
       'credits': unmint.refund,
     };
 
-    const record = {
-      "type": "unmint",
-      "creator": userId,
-    };
-
     xidb.saveTxnLog(userId, txn);
-    xidb.saveHistory(xid, record);
     xidb.commitChanges(`Unminted ${xid}`);
     res.json(unmint);
   } catch (error) {
