@@ -844,6 +844,7 @@ const saveNft = (xid) => {
         'thumbnail': collectionData.collection.thumbnail,
     };
 
+    metadata.nft.preview = `${config.link}${metadata.token.file.path}`;
     metadata.nft.image = metadata.token.file.path.replace("/data/assets", "..");
     metadata.owner.image = metadata.owner.pfp.replace("/data/assets", "..");
     metadata.creator.image = metadata.creator.pfp.replace("/data/assets", "..");
