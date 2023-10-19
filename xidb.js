@@ -708,6 +708,10 @@ const getAgentAndCollections = (profileId, userId) => {
 
                 if (assetData.token) {
                     collections[assetData.asset.collection].published = true;
+
+                    if (assetData.sold) {
+                        collections[assetData.asset.collection].sold = true;
+                    }
                 }
             } else {
                 deleted.push(assetData);
@@ -729,6 +733,10 @@ const getAgentAndCollections = (profileId, userId) => {
                 if (assetData.asset.collection in collections) {
                     collections[assetData.asset.collection].collection.assets.push(assetData);
                     collections[assetData.asset.collection].published = true;
+
+                    if (assetData.sold) {
+                        collections[assetData.asset.collection].sold = true;
+                    }
                 }
             }
         }
@@ -946,7 +954,20 @@ const getAsset = (xid) => {
         const metadataPath = path.join(config.assets, xid, 'meta.json');
         const metadataContent = fs.readFileSync(metadataPath, 'utf-8');
         metadata = JSON.parse(metadataContent);
-        metadata.history = getHistory(xid);
+
+        if (metadata.token) {
+            metadata.history = getHistory(xid);
+
+            const owners = new Set([metadata.asset.owner]);
+
+            for (const nftId of metadata.token.nfts) {
+                const nft = getAsset(nftId);
+                owners.add(nft.asset.owner);
+            }
+
+            metadata.owners = owners.size;
+            metadata.sold = owners.size > 1;
+        }
     } catch (error) {
     }
 

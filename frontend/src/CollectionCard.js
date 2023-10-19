@@ -9,7 +9,7 @@ const CollectionCard = ({ collection }) => {
         justifyContent: 'center',
         overflow: 'hidden',
         position: 'relative',
-        border: collection.published ? '1px solid #0f0' : '1px solid #ccc', // Green border if collection contains tokens
+        border: collection.sold ? '1px solid #0ff' : collection.published ? '1px solid #0f0' : '1px solid #ccc',
         borderRadius: '4px',
         padding: '8px',
     };
