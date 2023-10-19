@@ -9,7 +9,7 @@ const ProfileCard = ({ profile }) => {
         justifyContent: 'center',
         overflow: 'hidden',
         position: 'relative',
-        border: '1px solid #ccc', // Add a thin border
+        border: profile.pro ? '1px solid #0ff' : profile.published ? '1px solid #0f0' : '1px solid #ccc',
         borderRadius: '4px', // Add a border radius
         padding: '8px', // Add padding
     };
@@ -29,7 +29,7 @@ const ProfileCard = ({ profile }) => {
         height: '100%',
         objectFit: 'cover',
         position: 'absolute',
-        borderRadius: '50%', 
+        borderRadius: '50%',
     };
 
     const titleStyle = {
