@@ -705,6 +705,10 @@ const getAgentAndCollections = (profileId, userId) => {
 
             if (assetData.asset.collection in collections) {
                 collections[assetData.asset.collection].collection.assets.push(assetData);
+
+                if (assetData.token) {
+                    collections[assetData.asset.collection].published = true;
+                }
             } else {
                 deleted.push(assetData);
             }
@@ -724,6 +728,7 @@ const getAgentAndCollections = (profileId, userId) => {
 
                 if (assetData.asset.collection in collections) {
                     collections[assetData.asset.collection].collection.assets.push(assetData);
+                    collections[assetData.asset.collection].published = true;
                 }
             }
         }

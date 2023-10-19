@@ -9,9 +9,9 @@ const CollectionCard = ({ collection }) => {
         justifyContent: 'center',
         overflow: 'hidden',
         position: 'relative',
-        border: '1px solid #ccc', // Add a thin border
-        borderRadius: '4px', // Add a border radius
-        padding: '8px', // Add padding
+        border: collection.published ? '1px solid #0f0' : '1px solid #ccc', // Green border if collection contains tokens
+        borderRadius: '4px',
+        padding: '8px',
     };
 
     const imgContainerStyle = {
@@ -29,7 +29,7 @@ const CollectionCard = ({ collection }) => {
         height: '100%',
         objectFit: 'cover',
         position: 'absolute',
-        borderRadius: '50%', 
+        borderRadius: '50%',
     };
 
     const titleStyle = {
