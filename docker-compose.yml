@@ -11,10 +11,10 @@ services:
       IPFS_HOST: ipfs
       ARTX_NAME: ${ARTX_NAME}
       ARTX_HOST: ${ARTX_HOST}
-      SATSPAY_HOST: ${SATSPAY_HOST}
-      SATSPAY_ADMIN_KEY: ${SATSPAY_ADMIN_KEY}
-      SATSPAY_API_KEY: ${SATSPAY_API_KEY}
-      SATSPAY_LN_WALLET: ${SATSPAY_LN_WALLET}
+      LN_HOST: ${LN_HOST}
+      LN_ADMIN_KEY: ${LN_ADMIN_KEY}
+      LN_API_KEY: ${LN_API_KEY}
+      LN_WALLET: ${LN_WALLET}
     depends_on:
       - archiver
 

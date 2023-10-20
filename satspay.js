@@ -1,11 +1,12 @@
 const { requestInvoice } = require('lnurl-pay');
+const config = require('./config');
 
 const checkServer = async () => {
-    const response = await fetch(`${process.env.SATSPAY_HOST}/satspay/api/v1/charges`, {
+    const response = await fetch(`https://${config.ln_host}/satspay/api/v1/charges`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
-            'X-API-KEY': process.env.SATSPAY_API_KEY,
+            'X-API-KEY': config.ln_api_key,
         },
     });
 
@@ -23,11 +24,11 @@ const createInvoice = async (amount, memo, expiry) => {
             expiry: expiry || 180,
         };
 
-        const response = await fetch(`${process.env.SATSPAY_HOST}/api/v1/payments`, {
+        const response = await fetch(`https://${config.ln_host}/api/v1/payments`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-API-KEY': process.env.SATSPAY_API_KEY,
+                'X-API-KEY': config.ln_api_key,
             },
             body: JSON.stringify(data),
         });
@@ -35,9 +36,9 @@ const createInvoice = async (amount, memo, expiry) => {
         if (response.ok) {
             const invoiceData = await response.json();
 
-            invoiceData.qrcode = `${process.env.SATSPAY_HOST}/api/v1/qrcode/${invoiceData.payment_request}`;
+            invoiceData.qrcode = `https://${config.ln_host}/api/v1/qrcode/${invoiceData.payment_request}`;
             invoiceData.paylink = `lightning:${invoiceData.payment_request}`;
-            invoiceData.wslink = `wss://lnb.bolverker.com/api/v1/ws/${process.env.SATSPAY_LN_WALLET}`;
+            invoiceData.wslink = `wss://${config.ln_host}/api/v1/ws/${config.ln_wallet}`;
             invoiceData.amount = data.amount;
             invoiceData.memo = data.memo;
             invoiceData.expiry = data.expiry;
@@ -56,11 +57,11 @@ const createInvoice = async (amount, memo, expiry) => {
 
 const checkPayment = async (payment_hash) => {
     try {
-        const response = await fetch(`${process.env.SATSPAY_HOST}/api/v1/payments/${payment_hash}`, {
+        const response = await fetch(`https://${config.ln_host}/api/v1/payments/${payment_hash}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'X-API-KEY': process.env.SATSPAY_API_KEY,
+                'X-API-KEY': config.ln_api_key,
             },
         });
 
@@ -84,7 +85,7 @@ const createCharge = async (description, amount, timeout) => {
     try {
         const data = {
             onchainwallet: "",
-            lnbitswallet: process.env.SATSPAY_LN_WALLET,
+            lnbitswallet: config.ln_wallet,
             description: description,
             webhook: "",
             completelink: "",
@@ -95,18 +96,18 @@ const createCharge = async (description, amount, timeout) => {
             extra: "{\"mempool_endpoint\": \"https://mempool.space\", \"network\": \"Mainnet\"}",
         };
 
-        const response = await fetch(`${process.env.SATSPAY_HOST}/satspay/api/v1/charge`, {
+        const response = await fetch(`https://${config.ln_host}/satspay/api/v1/charge`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-API-KEY': process.env.SATSPAY_API_KEY,
+                'X-API-KEY': config.ln_api_key,
             },
             body: JSON.stringify(data),
         });
 
         if (response.ok) {
             const chargeData = await response.json();
-            chargeData.url = `${process.env.SATSPAY_HOST}/satspay/${chargeData.id}`;
+            chargeData.url = `https://${config.ln_host}/satspay/${chargeData.id}`;
             return chargeData;
         }
     }
@@ -119,10 +120,10 @@ const createCharge = async (description, amount, timeout) => {
 
 const checkCharge = async (chargeId) => {
     try {
-        const response = await fetch(`${process.env.SATSPAY_HOST}/satspay/api/v1/charge/${chargeId}`, {
+        const response = await fetch(`https://${config.ln_host}/satspay/api/v1/charge/${chargeId}`, {
             method: 'GET',
             headers: {
-                'X-API-KEY': process.env.SATSPAY_API_KEY,
+                'X-API-KEY': config.ln_api_key,
             },
         });
 
@@ -140,10 +141,10 @@ const checkCharge = async (chargeId) => {
 
 const checkAddress = async (address) => {
     try {
-        const response = await fetch(`${process.env.SATSPAY_HOST}/api/v1/lnurlscan/${address}`, {
+        const response = await fetch(`https://${config.ln_host}/api/v1/lnurlscan/${address}`, {
             method: 'GET',
             headers: {
-                'X-API-KEY': process.env.SATSPAY_API_KEY,
+                'X-API-KEY': config.ln_api_key,
             },
         });
 
@@ -178,11 +179,11 @@ const sendPayment = async (address, amount, comment) => {
             bolt11: invoice,
         };
 
-        const response = await fetch(`${process.env.SATSPAY_HOST}/api/v1/payments`, {
+        const response = await fetch(`https://${config.ln_host}/api/v1/payments`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-API-KEY': process.env.SATSPAY_ADMIN_KEY,
+                'X-API-KEY': config.ln_admin_key,
             },
             body: JSON.stringify(data),
         });
