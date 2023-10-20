@@ -150,8 +150,8 @@ const CreditsEditor = ({ profile, setRefreshProfile }) => {
                     <div style={{
                         backgroundColor: '#282c34',
                         padding: '1em',
-                        width: '500px',
-                        height: '500px',
+                        width: '600px',
+                        height: '600px',
                         overflow: 'auto',
                         display: 'flex',
                         flexDirection: 'column',

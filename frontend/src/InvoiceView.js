@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 const InvoiceView = ({ invoice, paid, setPaid }) => {
 
-    const [timeLeft, setTimeLeft] = useState(null);
+    const [timeLeft, setTimeLeft] = useState(0);
     const [expired, setExpired] = useState(false);
 
     let timerId;
@@ -55,11 +55,13 @@ const InvoiceView = ({ invoice, paid, setPaid }) => {
                 console.log(`ws message ${JSON.stringify(data, null, 4)}`);
 
                 if (data.payment &&
-                    data.payment.checking_id &&
-                    //data.payment.checking_id === invoice.checking_id &&
+                    data.payment.checking_id === invoice.checking_id &&
                     data.payment.pending === false) {
                     console.log(`invoice ${data.payment.checking_id} paid!`);
                     setPaid(true);
+                }
+                else {
+                    console.log(`ws ignoring message`);
                 }
             } catch (error) {
                 console.log(`error: ${error}`);
@@ -118,9 +120,9 @@ const InvoiceView = ({ invoice, paid, setPaid }) => {
             <p style={textStyle}>amount: {invoice.amount} sats</p>
             {paid ?
                 (
-                    <div style={textStyle}>{`invoice paid: ${timeLeft} seconds`}</div>
+                    <div style={textStyle}>{`invoice paid`}</div>
                 ) : expired ? (
-                    <div style={textStyle}>{`invoice expired: ${timeLeft} seconds`}</div>
+                    <div style={textStyle}>{`invoice expired`}</div>
                 ) : (
                     <div style={textStyle}>{`expires in: ${timeLeft} seconds`}</div>
                 )
@@ -140,7 +142,6 @@ const InvoiceView = ({ invoice, paid, setPaid }) => {
                                     <img src={invoice.qrcode} style={imgStyle} alt={invoice.memo} />
                                 </div>
                             </a>
-
                         )}
                 </div>
             }
