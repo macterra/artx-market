@@ -630,8 +630,9 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
     console.log(`audit: ${buyer.name} buying ${assetName} for ${price} from ${seller.name}`);
 
     let audit = {
-      "type": "sale",
-      "charge": chargeData,
+      type: "sale",
+      agent: buyerId,
+      charge: chargeData,
     };
 
     const royaltyRate = tokenData.token?.royalty || 0;
@@ -640,10 +641,10 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
     const creatorId = tokenData.asset.owner;
 
     let royaltyTxn = {
-      "type": "royalty",
-      "edition": xid,
-      "buyer": buyerId,
-      "seller": sellerId,
+      type: "royalty",
+      edition: xid,
+      buyer: buyerId,
+      seller: sellerId,
     };
 
     if (creatorId !== seller.xid) {
@@ -656,8 +657,8 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
             await lnbits.sendPayment(creator.deposit, royalty, `royalty for asset ${assetName}`);
             console.log(`audit: royalty ${royalty} to ${creator.deposit}`);
             audit.royalty = {
-              "address": creator.deposit,
-              "amount": royalty,
+              address: creator.deposit,
+              amount: royalty,
             };
             royaltyPaid = true;
             royaltyTxn.address = creator.deposit;
@@ -672,8 +673,8 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
           xidb.addCredits(creator.xid, royalty);
           console.log(`audit: royalty ${royalty} credits to ${creator.xid}`);
           audit.royalty = {
-            "address": creator.xid,
-            "amount": royalty,
+            address: creator.xid,
+            amount: royalty,
           };
           royaltyTxn.address = creatorId;
           royaltyTxn.credits = royalty;
@@ -693,8 +694,8 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
         await lnbits.sendPayment(seller.deposit, payout, `sale of asset ${assetName}`);
         console.log(`audit: payout ${payout} to ${seller.deposit}`);
         audit.payout = {
-          "address": seller.deposit,
-          "amount": payout,
+          address: seller.deposit,
+          amount: payout,
         };
         payoutPaid = true;
         payoutSats = payout;
@@ -708,8 +709,8 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
       xidb.addCredits(seller.xid, payout);
       console.log(`audit: payout ${payout} credits to ${seller.xid}`);
       audit.payout = {
-        "address": seller.xid,
-        "amount": payout,
+        address: seller.xid,
+        amount: payout,
       };
       payoutPaid = true;
       payoutCredits = payout;
@@ -720,8 +721,8 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
         await lnbits.sendPayment(config.depositAddress, txnFee, `txn fee for asset ${assetName}`);
         console.log(`audit: txn fee ${txnFee} to ${config.depositAddress}`);
         audit.txnfee = {
-          "address": config.depositAddress,
-          "amount": txnFee,
+          address: config.depositAddress,
+          amount: txnFee,
         };
       }
       catch (error) {
@@ -730,26 +731,26 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
     }
 
     const record = {
-      "type": "sale",
-      "buyer": buyerId,
-      "seller": sellerId,
-      "edition": xid,
-      "price": price,
+      type: "sale",
+      buyer: buyerId,
+      seller: sellerId,
+      edition: xid,
+      price: price,
     };
 
     const sellTxn = {
-      "type": "sell",
-      "buyer": buyerId,
-      "edition": xid,
-      "sats": payoutSats || null,
-      "credits": payoutCredits || null,
+      type: "sell",
+      buyer: buyerId,
+      edition: xid,
+      sats: payoutSats || null,
+      credits: payoutCredits || null,
     };
 
     const buyTxn = {
-      "type": "buy",
-      "seller": sellerId,
-      "edition": xid,
-      "sats": price,
+      type: "buy",
+      seller: sellerId,
+      edition: xid,
+      sats: price,
     };
 
     xidb.saveHistory(assetData.nft.asset, record);
