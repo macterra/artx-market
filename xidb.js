@@ -589,12 +589,12 @@ const addCredits = (userId, amount) => {
 const buyCredits = async (userId, invoice) => {
     const agentData = getAgent(userId);
 
-    if (agentData && invoice) {
+    if (agentData && invoice?.payment_hash) {
         console.log(`buyCredits: ${JSON.stringify(invoice, null, 4)}`);
 
         const payment = await satspay.checkPayment(invoice.payment_hash);
 
-        if (payment.paid) {
+        if (payment?.paid) {
             const amount = Math.round(payment.details.amount / 1000);
 
             agentData.credits += amount;
@@ -609,6 +609,9 @@ const buyCredits = async (userId, invoice) => {
             saveAuditLog(record);
             saveAgent(agentData);
             return agentData;
+        }
+        else {
+            console.log(`buyCredits: payment check failed`);
         }
     }
 };

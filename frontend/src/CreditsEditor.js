@@ -33,8 +33,7 @@ const CreditsEditor = ({ profile, setRefreshProfile }) => {
         try {
             const response = await axios.post('/api/v1/invoice', {
                 description: 'add credits',
-                amount: purchase,
-                timeout: 60,
+                amount: purchase
             });
 
             const invoice = response.data;

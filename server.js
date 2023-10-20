@@ -1097,8 +1097,9 @@ app.post('/api/v1/charge', ensureAuthenticated, async (req, res) => {
 
 app.post('/api/v1/invoice', ensureAuthenticated, async (req, res) => {
   try {
-    const { description, amount, timeout } = req.body;
-    const invoice = await satspay.createInvoice(description, amount, timeout);
+    const { description, amount } = req.body;
+    const expiry = 120; // get from config
+    const invoice = await satspay.createInvoice(amount, description, expiry);
     res.status(200).json(invoice);
   } catch (error) {
     console.error('Error:', error);

@@ -12,15 +12,15 @@ const checkServer = async () => {
     return response.ok;
 };
 
-const createInvoice = async (description, amount, timeout) => {
+const createInvoice = async (amount, memo, expiry) => {
     try {
         const data = {
             unit: 'sat',
             internal: false,
             out: false,
             amount: amount,
-            memo: description || `invoice for ${amount} sats`,
-            expiry: timeout || 60,
+            memo: memo || `invoice for ${amount} sats`,
+            expiry: expiry || 180,
         };
 
         const response = await fetch(`${process.env.SATSPAY_HOST}/api/v1/payments`, {
@@ -41,7 +41,6 @@ const createInvoice = async (description, amount, timeout) => {
             invoiceData.amount = data.amount;
             invoiceData.memo = data.memo;
             invoiceData.expiry = data.expiry;
-            invoiceData.paid = false;
 
             console.log(`invoice: ${JSON.stringify(invoiceData, null, 2)}`);
 
@@ -70,9 +69,12 @@ const checkPayment = async (payment_hash) => {
             console.log(`checkPayment: ${JSON.stringify(check, null, 2)}`);
             return check;
         }
+        else {
+            console.log(`checkPayment: ${response}`);
+        }
     }
     catch (error) {
-        console.log(error);
+        console.log(`checkPayment: ${error}`);
     }
 
     return null;
