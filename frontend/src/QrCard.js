@@ -40,14 +40,23 @@ const QrCard = ({ invoice, paid }) => {
 
     return (
         <div style={cardStyle}>
-            <a href={invoice.paylink}>
-                <div style={imgContainerStyle}>
-                    <img src={paid ? '/paid.png' : invoice.qrcode} style={imgStyle} />
-                </div>
-                {!paid &&
-                    <p style={titleStyle}>{invoice.memo} ({invoice.amount} sats)</p>
-                }
-            </a>
+            {paid ?
+                (
+                    <div>
+                        <p style={titleStyle}>{invoice.memo} ({invoice.amount} sats)</p>
+                        <div style={imgContainerStyle}>
+                            <img src={'/paid.png'} style={imgStyle} />
+                        </div>
+                    </div>
+                ) : (
+                    <a href={invoice.paylink}>
+                        <p style={titleStyle}>{invoice.memo} ({invoice.amount} sats)</p>
+                        <div style={imgContainerStyle}>
+                            <img src={invoice.qrcode} style={imgStyle} />
+                        </div>
+                    </a>
+
+                )}
         </div>
     );
 };

@@ -200,9 +200,15 @@ const CreditsEditor = ({ profile, setRefreshProfile }) => {
                         alignItems: 'center',
                         justifyContent: 'center'
                     }}>
-                        <div>Invoice</div>
                         <QrCard invoice={invoice} paid={paid} />
-                        <Button variant="contained" color="primary" onClick={() => handleInvoiceClose()}>Close</Button>
+                        <Button
+                            style={{ marginTop: '20px' }}
+                            variant="contained"
+                            color="primary"
+                            onClick={() => handleInvoiceClose()}
+                        >
+                            Close
+                        </Button>
                     </div>
                 </Modal>
             }
