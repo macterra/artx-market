@@ -8,7 +8,7 @@ const bs58 = require('bs58');
 const ejs = require('ejs');
 const { rimrafSync } = require('rimraf')
 const config = require('./config');
-const satspay = require('./satspay');
+const lnbits = require('./lnbits');
 
 // Function to add all changes, commit, and push
 const commitChanges = async (commitMessage) => {
@@ -211,7 +211,7 @@ async function waitForLightning() {
 
     while (!isReady) {
         try {
-            isReady = await satspay.checkServer();
+            isReady = await lnbits.checkServer();
 
             if (!isReady) {
                 console.log('Waiting for LNbits to be ready...');
@@ -592,7 +592,7 @@ const buyCredits = async (userId, invoice) => {
     if (agentData && invoice?.payment_hash) {
         console.log(`buyCredits: ${JSON.stringify(invoice, null, 4)}`);
 
-        const payment = await satspay.checkPayment(invoice.payment_hash);
+        const payment = await lnbits.checkPayment(invoice.payment_hash);
 
         if (payment?.paid) {
             const amount = Math.round(payment.details.amount / 1000);

@@ -11,7 +11,7 @@ const { requestInvoice } = require('lnurl-pay');
 const axios = require('axios');
 
 const config = require('./config');
-const satspay = require('./satspay');
+const lnbits = require('./lnbits');
 const xidb = require('./xidb');
 
 const app = express();
@@ -609,7 +609,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
     const seller = xidb.getAgent(sellerId);
 
     // TBD associate this charge with this asset for validation
-    const chargeData = await satspay.checkCharge(chargeId);
+    const chargeData = await lnbits.checkCharge(chargeId);
 
     if (!chargeData.paid) {
       console.log(`charge ${chargeId} not paid`);
@@ -653,7 +653,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
       if (royalty > 0) {
         if (creator.deposit && !creator.depositToCredits) {
           try {
-            await satspay.sendPayment(creator.deposit, royalty, `royalty for asset ${assetName}`);
+            await lnbits.sendPayment(creator.deposit, royalty, `royalty for asset ${assetName}`);
             console.log(`audit: royalty ${royalty} to ${creator.deposit}`);
             audit.royalty = {
               "address": creator.deposit,
@@ -690,7 +690,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
 
     if (seller.deposit && !seller.depositToCredits) {
       try {
-        await satspay.sendPayment(seller.deposit, payout, `sale of asset ${assetName}`);
+        await lnbits.sendPayment(seller.deposit, payout, `sale of asset ${assetName}`);
         console.log(`audit: payout ${payout} to ${seller.deposit}`);
         audit.payout = {
           "address": seller.deposit,
@@ -717,7 +717,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
 
     if (txnFee > 0 && config.depositAddress) {
       try {
-        await satspay.sendPayment(config.depositAddress, txnFee, `txn fee for asset ${assetName}`);
+        await lnbits.sendPayment(config.depositAddress, txnFee, `txn fee for asset ${assetName}`);
         console.log(`audit: txn fee ${txnFee} to ${config.depositAddress}`);
         audit.txnfee = {
           "address": config.depositAddress,
@@ -826,7 +826,7 @@ app.patch('/api/v1/profile/', ensureAuthenticated, async (req, res) => {
     }
 
     if (deposit) {
-      const scan = await satspay.checkAddress(deposit);
+      const scan = await lnbits.checkAddress(deposit);
 
       if (scan) {
         agentData.deposit = deposit;
@@ -1062,7 +1062,7 @@ app.post('/api/v1/collections/:xid/upload', ensureAuthenticated, upload.array('i
 
 app.get('/api/v1/charge/:chargeId', ensureAuthenticated, async (req, res) => {
   try {
-    const chargeData = await satspay.checkCharge(req.params.chargeId);
+    const chargeData = await lnbits.checkCharge(req.params.chargeId);
 
     res.status(200).json({
       id: chargeData.id,
@@ -1082,7 +1082,7 @@ app.get('/api/v1/charge/:chargeId', ensureAuthenticated, async (req, res) => {
 app.post('/api/v1/charge', ensureAuthenticated, async (req, res) => {
   try {
     const { description, amount } = req.body;
-    const chargeData = await satspay.createCharge(description, amount);
+    const chargeData = await lnbits.createCharge(description, amount);
 
     res.status(200).json({
       ok: true,
@@ -1099,7 +1099,7 @@ app.post('/api/v1/invoice', ensureAuthenticated, async (req, res) => {
   try {
     const { description, amount } = req.body;
     const expiry = 120; // get from config
-    const invoice = await satspay.createInvoice(amount, description, expiry);
+    const invoice = await lnbits.createInvoice(amount, description, expiry);
     res.status(200).json(invoice);
   } catch (error) {
     console.error('Error:', error);
