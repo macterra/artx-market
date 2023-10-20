@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const QrCard = ({ invoice, paid, setPaid }) => {
+const InvoiceView = ({ invoice, paid, setPaid }) => {
 
     const [timeLeft, setTimeLeft] = useState(null);
     const [expired, setExpired] = useState(false);
@@ -147,4 +147,4 @@ const QrCard = ({ invoice, paid, setPaid }) => {
     );
 };
 
-export default QrCard;
+export default InvoiceView;

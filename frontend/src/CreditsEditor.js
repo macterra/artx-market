@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Button, Grid, TextField, Modal } from '@mui/material';
 import axios from 'axios';
-import QrCard from './QrCard';
+import InvoiceView from './InvoiceView';
 
 const CreditsEditor = ({ profile, setRefreshProfile }) => {
 
@@ -161,7 +161,7 @@ const CreditsEditor = ({ profile, setRefreshProfile }) => {
                         alignItems: 'center',
                         justifyContent: 'center'
                     }}>
-                        <QrCard invoice={invoice} paid={paid} setPaid={setPaid} />
+                        <InvoiceView invoice={invoice} paid={paid} setPaid={setPaid} />
                         <Button
                             style={{ marginTop: '20px' }}
                             variant="contained"
