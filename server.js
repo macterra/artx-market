@@ -887,7 +887,7 @@ app.post('/api/v1/profile/credit', ensureAuthenticated, async (req, res) => {
   const { invoice } = req.body;
 
   try {
-    const agentData = xidb.buyCredits(userId, invoice);
+    const agentData = await xidb.buyCredits(userId, invoice);
 
     if (agentData) {
 

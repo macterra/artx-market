@@ -54,8 +54,6 @@ const CreditsEditor = ({ profile, setRefreshProfile }) => {
 
         if (paid) {
             try {
-                invoice.paid = paid;
-
                 const creditResponse = await axios.post(`/api/v1/profile/credit`, {
                     invoice: invoice,
                 });

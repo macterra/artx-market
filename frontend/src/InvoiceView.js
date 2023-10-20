@@ -100,13 +100,14 @@ const InvoiceView = ({ invoice, paid, setPaid }) => {
 
     const titleStyle = {
         marginTop: '8px',
+        marginBottom: '8px',
         fontSize: '40px',
         color: '#ffffff',
         textAlign: 'center',
     };
 
     const textStyle = {
-        //marginTop: '4px',
+        margin: '2px',
         fontSize: '18px',
         color: '#ffffff',
     };

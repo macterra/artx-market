@@ -55,6 +55,29 @@ const createInvoice = async (description, amount, timeout) => {
     return null;
 };
 
+const checkPayment = async (payment_hash) => {
+    try {
+        const response = await fetch(`${process.env.SATSPAY_HOST}/api/v1/payments/${payment_hash}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-API-KEY': process.env.SATSPAY_API_KEY,
+            },
+        });
+
+        if (response.ok) {
+            const check = await response.json();
+            console.log(`checkPayment: ${JSON.stringify(check, null, 2)}`);
+            return check;
+        }
+    }
+    catch (error) {
+        console.log(error);
+    }
+
+    return null;
+};
+
 const createCharge = async (description, amount, timeout) => {
     try {
         const data = {
@@ -174,6 +197,7 @@ module.exports = {
     checkServer,
     createCharge,
     createInvoice,
+    checkPayment,
     checkCharge,
     checkAddress,
     sendPayment,
