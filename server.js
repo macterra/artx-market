@@ -884,20 +884,20 @@ app.post('/api/v1/profile/:xid/invoice', async (req, res) => {
 
 app.post('/api/v1/profile/credit', ensureAuthenticated, async (req, res) => {
   const userId = req.user.xid;
-  const { charge } = req.body;
+  const { invoice } = req.body;
 
   try {
-    const agentData = xidb.buyCredits(userId, charge);
+    const agentData = xidb.buyCredits(userId, invoice);
 
     if (agentData) {
 
       const txn = {
         'type': 'credits',
-        'credits': charge.amount,
+        'credits': invoice.amount,
       };
 
       xidb.saveTxnLog(req.user.xid, txn);
-      xidb.commitChanges(`Agent ${req.user.xid} bought ${charge.amount} credits`);
+      xidb.commitChanges(`Agent ${req.user.xid} bought ${invoice.amount} credits`);
       res.json(agentData);
     }
     else {
@@ -1092,6 +1092,17 @@ app.post('/api/v1/charge', ensureAuthenticated, async (req, res) => {
   } catch (error) {
     console.error('Error:', error);
     res.status(500).json({ ok: false, message: 'Error' });
+  }
+});
+
+app.post('/api/v1/invoice', ensureAuthenticated, async (req, res) => {
+  try {
+    const { description, amount, timeout } = req.body;
+    const invoice = await satspay.createInvoice(description, amount, timeout);
+    res.status(200).json(invoice);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ message: 'Error' });
   }
 });
 

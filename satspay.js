@@ -12,6 +12,48 @@ const checkServer = async () => {
     return response.ok;
 };
 
+const createInvoice = async (description, amount, timeout) => {
+    try {
+        const data = {
+            unit: 'sat',
+            internal: false,
+            out: false,
+            amount: amount,
+            memo: description,
+            expiry: timeout,
+        };
+
+        const response = await fetch(`${process.env.SATSPAY_HOST}/api/v1/payments`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-API-KEY': process.env.SATSPAY_API_KEY,
+            },
+            body: JSON.stringify(data),
+        });
+
+        if (response.ok) {
+            const invoiceData = await response.json();
+
+            console.log(`invoice: ${JSON.stringify(invoiceData, null, 2)}`);
+
+            invoiceData.qrcode = `${process.env.SATSPAY_HOST}/api/v1/qrcode/${invoiceData.payment_request}`;
+            invoiceData.paylink = `lightning:${invoiceData.payment_request}`;
+            invoiceData.wslink = `wss://lnb.bolverker.com/api/v1/ws/${process.env.SATSPAY_LN_WALLET}`;
+            invoiceData.amount = amount;
+            invoiceData.memo = description;
+            invoiceData.paid = false;
+            
+            return invoiceData;
+        }
+    }
+    catch (error) {
+        console.log(error);
+    }
+
+    return null;
+};
+
 const createCharge = async (description, amount, timeout) => {
     try {
         const data = {
@@ -130,6 +172,7 @@ const sendPayment = async (address, amount, comment) => {
 module.exports = {
     checkServer,
     createCharge,
+    createInvoice,
     checkCharge,
     checkAddress,
     sendPayment,

@@ -586,18 +586,18 @@ const addCredits = (userId, amount) => {
     }
 };
 
-const buyCredits = (userId, charge) => {
+const buyCredits = (userId, invoice) => {
     const agentData = getAgent(userId);
 
     if (agentData) {
-        if (charge && charge.paid && charge.amount) {
-            agentData.credits += charge.amount;
+        if (invoice && invoice.paid && invoice.amount) {
+            agentData.credits += invoice.amount;
 
             const record = {
                 "type": "buy-credits",
                 "agent": userId,
-                "amount": charge.amount,
-                "charge": charge,
+                "amount": invoice.amount,
+                "invoice": invoice,
             };
             saveAuditLog(record);
             saveAgent(agentData);

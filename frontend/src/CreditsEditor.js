@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Button, Grid, TextField, Modal } from '@mui/material';
 import axios from 'axios';
+import QrCard from './QrCard';
 
 const CreditsEditor = ({ profile, setRefreshProfile }) => {
 
@@ -9,10 +10,10 @@ const CreditsEditor = ({ profile, setRefreshProfile }) => {
 
     const [balance, setBalance] = useState(profile.credits);
     const [purchase, setPurchase] = useState(minPurchase);
-    const [charge, setCharge] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
-    const [invoiceUrl, setInvoiceUrl] = useState('');
     const [disablePurchase, setDisablePurchase] = useState(false);
+    const [invoice, setInvoice] = useState(null);
+    const [paid, setPaid] = useState(false);
 
     const handlePurchaseChange = async (value) => {
         if (value < minPurchase) {
@@ -26,22 +27,59 @@ const CreditsEditor = ({ profile, setRefreshProfile }) => {
         setPurchase(value);
     }
 
+    function initWebSocket(wslink) {
+        const reconnectInterval = 5000;
+        const ws = new WebSocket(wslink);
+
+        ws.addEventListener('open', () => {
+            console.log(`ws open`);
+        });
+
+        ws.addEventListener('close', () => {
+            console.log(`ws close`);
+            setTimeout(initWebSocket, reconnectInterval);
+        });
+
+        ws.addEventListener('error', error => {
+            console.log(`ws error: ${error}`)
+        });
+
+        ws.addEventListener('message', event => {
+            try {
+                const data = JSON.parse(event.data);
+
+                console.log(`ws message ${JSON.stringify(data, null, 4)}`);
+
+                if (data.payment &&
+                    data.payment.checking_id &&
+                    //data.payment.checking_id === invoice.checking_id &&
+                    data.payment.pending === false) {
+                    console.log(`invoice ${data.payment.checking_id} paid!`);
+                    setPaid(true);
+                }
+            } catch (error) {
+                console.log(`error: ${error}`);
+            }
+        });
+    };
+
     const handlePurchaseClick = async () => {
         setDisablePurchase(true);
 
         try {
             // TBD: check for possible unexpired charge before creating a new one here
-            const response = await axios.post('/api/v1/charge', {
+            const response = await axios.post('/api/v1/invoice', {
                 description: 'add credits',
-                amount: purchase
+                amount: purchase,
+                timeout: 60,
             });
 
-            const chargeData = response.data;
+            const invoice = response.data;
 
-            if (chargeData.url) {
-                setCharge(chargeData);
-                setInvoiceUrl(chargeData.url);
+            if (invoice) {
+                setInvoice(invoice);
                 setModalOpen(true);
+                initWebSocket(invoice.wslink);
             }
         } catch (error) {
             console.error('Error:', error);
@@ -50,33 +88,32 @@ const CreditsEditor = ({ profile, setRefreshProfile }) => {
 
     const handleInvoiceClose = async () => {
         setModalOpen(false);
+        setDisablePurchase(false);
 
-        try {
-            const chargeResponse = await axios.get(`/api/v1/charge/${charge.id}`);
-            const chargeData = chargeResponse.data;
-
-            if (chargeData.paid) {
-                try {
-                    const creditResponse = await axios.post(`/api/v1/profile/credit`, {
-                        charge: chargeData,
-                    });
-
-                    if (creditResponse.status === 200) {
-                        setBalance(creditResponse.data.credits);
-                        setRefreshProfile((prevKey) => prevKey + 1);
-                    } else {
-                        console.error('Error:', creditResponse.data.message);
-                        alert(creditResponse.data.message);
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                }
-            }
-        } catch (error) {
-            console.error('Error:', error);
+        if (!paid) {
+            return;
         }
 
-        setDisablePurchase(false);
+        try {
+            invoice.paid = paid;
+
+            const creditResponse = await axios.post(`/api/v1/profile/credit`, {
+                invoice: invoice,
+            });
+
+            if (creditResponse.status === 200) {
+                setBalance(creditResponse.data.credits);
+                setRefreshProfile((prevKey) => prevKey + 1);
+                setInvoice(null);
+                setPaid(false);
+            } else {
+                console.error('Error:', creditResponse.data.message);
+                alert(creditResponse.data.message);
+            }
+        }
+        catch (error) {
+            console.error('Error:', error);
+        }
     };
 
     return (
@@ -142,26 +179,33 @@ const CreditsEditor = ({ profile, setRefreshProfile }) => {
                     </Grid>
                 </Grid>
             </form>
-            <Modal
-                open={modalOpen}
-                onClose={() => handleInvoiceClose()}
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                }}
-            >
-                <div style={{ backgroundColor: '#282c34', padding: '1em', width: '50vw', height: '100vh', overflow: 'auto' }}>
-                    <iframe
-                        src={invoiceUrl}
-                        title="Invoice"
-                        width="100%"
-                        height="90%"
-                        style={{ border: 'none' }}
-                    />
-                    <Button onClick={() => handleInvoiceClose()}>Close</Button>
-                </div>
-            </Modal>
+            {invoice &&
+                <Modal
+                    open={modalOpen}
+                    onClose={() => handleInvoiceClose()}
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                    }}
+                >
+                    <div style={{
+                        backgroundColor: '#282c34',
+                        padding: '1em',
+                        width: '500px',
+                        height: '500px',
+                        overflow: 'auto',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}>
+                        <div>Invoice</div>
+                        <QrCard invoice={invoice} paid={paid} />
+                        <Button variant="contained" color="primary" onClick={() => handleInvoiceClose()}>Close</Button>
+                    </div>
+                </Modal>
+            }
         </div>
     );
 };
