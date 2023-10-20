@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 const AgentBadge = ({ agent, xid }) => {
 
-    const [user, setUser] = useState(null);
+    const [user, setUser, refreshProfile] = useState(null);
 
     useEffect(() => {
         const fetchAgent = async () => {
@@ -21,7 +21,7 @@ const AgentBadge = ({ agent, xid }) => {
         };
 
         fetchAgent();
-    }, [agent, xid]);
+    }, [agent, xid, refreshProfile]);
 
     if (!user) {
         return;

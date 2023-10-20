@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Grid, Button, TextField } from '@mui/material';
 
-const NameEditor = ({ profile }) => {
+const NameEditor = ({ profile, setRefreshProfile }) => {
     const [name, setName] = useState(null);
     const [tagline, setTagline] = useState(null);
     const [saved, setSaved] = useState(true);
@@ -28,6 +28,7 @@ const NameEditor = ({ profile }) => {
                 profile.name = name;
                 profile.tagline = tagline;
                 setSaved(true);
+                setRefreshProfile((prevKey) => prevKey + 1);
             } else {
                 const data = await response.json();
                 console.error('Error updating profile:', data.message);

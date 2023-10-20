@@ -9,6 +9,7 @@ import LnAddressEditor from './LnAddressEditor';
 import LinksEditor from './LinksEditor';
 import CreditsEditor from './CreditsEditor';
 import TxnLog from './TxnLog';
+import AgentBadge from './AgentBadge';
 
 const ProfileEditor = ({ navigate, refreshProfile, setRefreshProfile }) => {
     const { jump } = useParams();
@@ -31,7 +32,7 @@ const ProfileEditor = ({ navigate, refreshProfile, setRefreshProfile }) => {
                 if (jump) {
                     setTab(jump);
                 }
-                else {
+                else if (!tab) {
                     setTab('name');
                 }
             } catch (error) {
@@ -43,9 +44,16 @@ const ProfileEditor = ({ navigate, refreshProfile, setRefreshProfile }) => {
         fetchProfile();
     }, [navigate, jump, refreshProfile]);
 
+    if (!profile) {
+        return;
+    }
+
     return (
         <Box>
-            <h2>Edit Profile</h2>
+            <Box display="flex" alignItems="center" justifyContent="center">
+                <div>Edit Profile ::</div>
+                <AgentBadge agent={profile} refreshProfile={refreshProfile} />
+            </Box>
             <Tabs
                 value={tab}
                 onChange={(event, newTab) => { setTab(newTab) }}
@@ -64,7 +72,7 @@ const ProfileEditor = ({ navigate, refreshProfile, setRefreshProfile }) => {
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <Box style={{ width: '50vw' }}>
                     {tab === 'name' &&
-                        <NameEditor profile={profile} />
+                        <NameEditor profile={profile} setRefreshProfile={setRefreshProfile} />
                     }
                     {tab === 'coll' &&
                         <CollectionEditor />
