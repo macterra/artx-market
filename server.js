@@ -595,6 +595,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
     const buyerId = req.user.xid;
     const { chargeId } = req.body;
     const assetData = xidb.getAsset(xid);
+    const sellerId = assetData.asset.owner;
 
     if (!assetData.nft) {
       return res.status(500).json({ message: 'Error' });
@@ -603,10 +604,6 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
     if (assetData.asset.owner == buyerId) {
       return res.status(500).json({ message: "Already owned" });
     }
-
-    const buyer = xidb.getAgent(buyerId);
-    const sellerId = assetData.asset.owner;
-    const seller = xidb.getAgent(sellerId);
 
     // TBD associate this charge with this asset for validation
     const chargeData = await lnbits.checkCharge(chargeId);
@@ -623,145 +620,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
       return res.status(500).json({ message: 'Error' });
     }
 
-    xidb.transferAsset(xid, buyerId);
-
-    const tokenData = xidb.getAsset(assetData.nft.asset);
-    const assetName = `"${tokenData.asset.title}" (${assetData.asset.title})`;
-    console.log(`audit: ${buyer.name} buying ${assetName} for ${price} from ${seller.name}`);
-
-    let audit = {
-      type: "sale",
-      agent: buyerId,
-      charge: chargeData,
-    };
-
-    const royaltyRate = tokenData.token?.royalty || 0;
-    let royalty = 0;
-    let royaltyPaid = false;
-    const creatorId = tokenData.asset.owner;
-
-    let royaltyTxn = {
-      type: "royalty",
-      edition: xid,
-      buyer: buyerId,
-      seller: sellerId,
-    };
-
-    if (creatorId !== seller.xid) {
-      const creator = xidb.getAgent(creatorId);
-      royalty = Math.round(price * royaltyRate);
-
-      if (royalty > 0) {
-        if (creator.deposit && !creator.depositToCredits) {
-          try {
-            await lnbits.sendPayment(creator.deposit, royalty, `royalty for asset ${assetName}`);
-            console.log(`audit: royalty ${royalty} to ${creator.deposit}`);
-            audit.royalty = {
-              address: creator.deposit,
-              amount: royalty,
-            };
-            royaltyPaid = true;
-            royaltyTxn.address = creator.deposit;
-            royaltyTxn.sats = royalty;
-          }
-          catch (error) {
-            console.log(`payment error: ${error}`);
-          }
-        }
-
-        if (!royaltyPaid) {
-          xidb.addCredits(creator.xid, royalty);
-          console.log(`audit: royalty ${royalty} credits to ${creator.xid}`);
-          audit.royalty = {
-            address: creator.xid,
-            amount: royalty,
-          };
-          royaltyTxn.address = creatorId;
-          royaltyTxn.credits = royalty;
-          royaltyPaid = true;
-        }
-      }
-    }
-
-    const txnFee = Math.round(config.txnFeeRate * price);
-    const payout = price - royalty - txnFee;
-    let payoutPaid = false;
-    let payoutSats = 0;
-    let payoutCredits = 0;
-
-    if (seller.deposit && !seller.depositToCredits) {
-      try {
-        await lnbits.sendPayment(seller.deposit, payout, `sale of asset ${assetName}`);
-        console.log(`audit: payout ${payout} to ${seller.deposit}`);
-        audit.payout = {
-          address: seller.deposit,
-          amount: payout,
-        };
-        payoutPaid = true;
-        payoutSats = payout;
-      }
-      catch (error) {
-        console.log(`payment error: ${error}`);
-      }
-    }
-
-    if (!payoutPaid) {
-      xidb.addCredits(seller.xid, payout);
-      console.log(`audit: payout ${payout} credits to ${seller.xid}`);
-      audit.payout = {
-        address: seller.xid,
-        amount: payout,
-      };
-      payoutPaid = true;
-      payoutCredits = payout;
-    }
-
-    if (txnFee > 0 && config.depositAddress) {
-      try {
-        await lnbits.sendPayment(config.depositAddress, txnFee, `txn fee for asset ${assetName}`);
-        console.log(`audit: txn fee ${txnFee} to ${config.depositAddress}`);
-        audit.txnfee = {
-          address: config.depositAddress,
-          amount: txnFee,
-        };
-      }
-      catch (error) {
-        console.log(`payment error: ${error}`);
-      }
-    }
-
-    const record = {
-      type: "sale",
-      buyer: buyerId,
-      seller: sellerId,
-      edition: xid,
-      price: price,
-    };
-
-    const sellTxn = {
-      type: "sell",
-      buyer: buyerId,
-      edition: xid,
-      sats: payoutSats || null,
-      credits: payoutCredits || null,
-    };
-
-    const buyTxn = {
-      type: "buy",
-      seller: sellerId,
-      edition: xid,
-      sats: price,
-    };
-
-    xidb.saveHistory(assetData.nft.asset, record);
-    xidb.saveTxnLog(sellerId, sellTxn);
-    xidb.saveTxnLog(buyerId, buyTxn);
-
-    if (royaltyPaid) {
-      xidb.saveTxnLog(creatorId, royaltyTxn);
-    }
-
-    xidb.saveAuditLog(audit);
+    await xidb.purchaseAsset(xid, buyerId, chargeData);
     xidb.commitChanges(`Purchase: ${sellerId} sold ${xid} to ${buyerId} for ${price} sats`);
     res.json({ ok: true, message: 'Success' });
   } catch (error) {

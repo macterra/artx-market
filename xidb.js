@@ -1310,6 +1310,162 @@ const transferAsset = (xid, nextOwnerId) => {
     saveNft(xid);
 };
 
+const purchaseAsset = async (xid, buyerId, chargeData) => {
+    const assetData = getAsset(xid);
+    const buyer = getAgent(buyerId);
+    const sellerId = assetData.asset.owner;
+    const seller = getAgent(sellerId);
+    const price = assetData.nft.price;
+
+    transferAsset(xid, buyerId);
+
+    const tokenData = getAsset(assetData.nft.asset);
+    const assetName = `"${tokenData.asset.title}" (${assetData.asset.title})`;
+    console.log(`audit: ${buyer.name} buying ${assetName} for ${price} from ${seller.name}`);
+
+    let audit = {
+        type: "sale",
+        agent: buyerId,
+        charge: chargeData,
+    };
+
+    const royaltyRate = tokenData.token?.royalty || 0;
+    let royalty = 0;
+    let royaltyPaid = false;
+    const creatorId = tokenData.asset.owner;
+
+    let royaltyTxn = {
+        type: "royalty",
+        edition: xid,
+        buyer: buyerId,
+        seller: sellerId,
+    };
+
+    if (creatorId !== seller.xid) {
+        const creator = getAgent(creatorId);
+        royalty = Math.round(price * royaltyRate);
+
+        if (royalty > 0) {
+            if (creator.deposit && !creator.depositToCredits) {
+                try {
+                    await lnbits.sendPayment(creator.deposit, royalty, `royalty for asset ${assetName}`);
+                    console.log(`audit: royalty ${royalty} to ${creator.deposit}`);
+                    audit.royalty = {
+                        address: creator.deposit,
+                        amount: royalty,
+                    };
+                    royaltyPaid = true;
+                    royaltyTxn.address = creator.deposit;
+                    royaltyTxn.sats = royalty;
+                }
+                catch (error) {
+                    console.log(`payment error: ${error}`);
+                }
+            }
+
+            if (!royaltyPaid) {
+                addCredits(creator.xid, royalty);
+                console.log(`audit: royalty ${royalty} credits to ${creator.xid}`);
+                audit.royalty = {
+                    address: creator.xid,
+                    amount: royalty,
+                };
+                royaltyTxn.address = creatorId;
+                royaltyTxn.credits = royalty;
+                royaltyPaid = true;
+            }
+        }
+    }
+
+    const txnFee = Math.round(config.txnFeeRate * price);
+    const payout = price - royalty - txnFee;
+    let payoutPaid = false;
+    let payoutSats = 0;
+    let payoutCredits = 0;
+
+    if (seller.deposit && !seller.depositToCredits) {
+        try {
+            await lnbits.sendPayment(seller.deposit, payout, `sale of asset ${assetName}`);
+            console.log(`audit: payout ${payout} to ${seller.deposit}`);
+            audit.payout = {
+                address: seller.deposit,
+                amount: payout,
+            };
+            payoutPaid = true;
+            payoutSats = payout;
+        }
+        catch (error) {
+            console.log(`payment error: ${error}`);
+        }
+    }
+
+    if (!payoutPaid) {
+        addCredits(seller.xid, payout);
+        console.log(`audit: payout ${payout} credits to ${seller.xid}`);
+        audit.payout = {
+            address: seller.xid,
+            amount: payout,
+        };
+        payoutPaid = true;
+        payoutCredits = payout;
+    }
+
+    if (txnFee > 0) {
+        if (config.depositAddress) {
+            try {
+                await lnbits.sendPayment(config.depositAddress, txnFee, `txn fee for asset ${assetName}`);
+                console.log(`audit: txn fee ${txnFee} to ${config.depositAddress}`);
+                audit.txnfee = {
+                    address: config.depositAddress,
+                    amount: txnFee,
+                };
+            }
+            catch (error) {
+                console.log(`payment error: ${error}`);
+            }
+        }
+        else {
+            console.log(`audit: txn fee ${txnFee} kept in wallet`);
+        }
+    }
+    else {
+        console.log(`audit: 0 txn fee`);
+    }
+
+    const record = {
+        type: "sale",
+        buyer: buyerId,
+        seller: sellerId,
+        edition: xid,
+        price: price,
+    };
+
+    const sellTxn = {
+        type: "sell",
+        buyer: buyerId,
+        edition: xid,
+        sats: payoutSats || null,
+        credits: payoutCredits || null,
+    };
+
+    const buyTxn = {
+        type: "buy",
+        seller: sellerId,
+        edition: xid,
+        sats: price,
+    };
+
+    saveHistory(assetData.nft.asset, record);
+    saveTxnLog(sellerId, sellTxn);
+    saveTxnLog(buyerId, buyTxn);
+
+    if (royaltyPaid) {
+        saveTxnLog(creatorId, royaltyTxn);
+    }
+
+    saveAuditLog(audit);
+};
+
 const pinAsset = async (xid) => {
     const assetPath = path.join(config.assets, xid);
     const response = await fetch(`${config.archiver}/api/v1/pin/${assetPath}`);
@@ -1394,6 +1550,7 @@ module.exports = {
     isOwner,
     notarizeState,
     pinAsset,
+    purchaseAsset,
     registerState,
     removeCollection,
     saveAdmin,
