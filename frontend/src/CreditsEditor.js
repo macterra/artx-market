@@ -27,47 +27,10 @@ const CreditsEditor = ({ profile, setRefreshProfile }) => {
         setPurchase(value);
     }
 
-    function initWebSocket(wslink) {
-        const reconnectInterval = 5000;
-        const ws = new WebSocket(wslink);
-
-        ws.addEventListener('open', () => {
-            console.log(`ws open`);
-        });
-
-        ws.addEventListener('close', () => {
-            console.log(`ws close`);
-            setTimeout(initWebSocket, reconnectInterval);
-        });
-
-        ws.addEventListener('error', error => {
-            console.log(`ws error: ${error}`)
-        });
-
-        ws.addEventListener('message', event => {
-            try {
-                const data = JSON.parse(event.data);
-
-                console.log(`ws message ${JSON.stringify(data, null, 4)}`);
-
-                if (data.payment &&
-                    data.payment.checking_id &&
-                    //data.payment.checking_id === invoice.checking_id &&
-                    data.payment.pending === false) {
-                    console.log(`invoice ${data.payment.checking_id} paid!`);
-                    setPaid(true);
-                }
-            } catch (error) {
-                console.log(`error: ${error}`);
-            }
-        });
-    };
-
     const handlePurchaseClick = async () => {
         setDisablePurchase(true);
 
         try {
-            // TBD: check for possible unexpired charge before creating a new one here
             const response = await axios.post('/api/v1/invoice', {
                 description: 'add credits',
                 amount: purchase,
@@ -79,7 +42,6 @@ const CreditsEditor = ({ profile, setRefreshProfile }) => {
             if (invoice) {
                 setInvoice(invoice);
                 setModalOpen(true);
-                initWebSocket(invoice.wslink);
             }
         } catch (error) {
             console.error('Error:', error);
@@ -90,30 +52,29 @@ const CreditsEditor = ({ profile, setRefreshProfile }) => {
         setModalOpen(false);
         setDisablePurchase(false);
 
-        if (!paid) {
-            return;
-        }
+        if (paid) {
+            try {
+                invoice.paid = paid;
 
-        try {
-            invoice.paid = paid;
+                const creditResponse = await axios.post(`/api/v1/profile/credit`, {
+                    invoice: invoice,
+                });
 
-            const creditResponse = await axios.post(`/api/v1/profile/credit`, {
-                invoice: invoice,
-            });
-
-            if (creditResponse.status === 200) {
-                setBalance(creditResponse.data.credits);
-                setRefreshProfile((prevKey) => prevKey + 1);
-                setInvoice(null);
-                setPaid(false);
-            } else {
-                console.error('Error:', creditResponse.data.message);
-                alert(creditResponse.data.message);
+                if (creditResponse.status === 200) {
+                    setBalance(creditResponse.data.credits);
+                    setRefreshProfile((prevKey) => prevKey + 1);
+                } else {
+                    console.error('Error:', creditResponse.data.message);
+                    alert(creditResponse.data.message);
+                }
+            }
+            catch (error) {
+                console.error('Error:', error);
             }
         }
-        catch (error) {
-            console.error('Error:', error);
-        }
+
+        setInvoice(null);
+        setPaid(false);
     };
 
     return (
@@ -200,7 +161,7 @@ const CreditsEditor = ({ profile, setRefreshProfile }) => {
                         alignItems: 'center',
                         justifyContent: 'center'
                     }}>
-                        <QrCard invoice={invoice} paid={paid} />
+                        <QrCard invoice={invoice} paid={paid} setPaid={setPaid} />
                         <Button
                             style={{ marginTop: '20px' }}
                             variant="contained"

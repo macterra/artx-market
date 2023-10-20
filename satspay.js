@@ -19,8 +19,8 @@ const createInvoice = async (description, amount, timeout) => {
             internal: false,
             out: false,
             amount: amount,
-            memo: description,
-            expiry: timeout,
+            memo: description || `invoice for ${amount} sats`,
+            expiry: timeout || 60,
         };
 
         const response = await fetch(`${process.env.SATSPAY_HOST}/api/v1/payments`, {
@@ -35,15 +35,16 @@ const createInvoice = async (description, amount, timeout) => {
         if (response.ok) {
             const invoiceData = await response.json();
 
-            console.log(`invoice: ${JSON.stringify(invoiceData, null, 2)}`);
-
             invoiceData.qrcode = `${process.env.SATSPAY_HOST}/api/v1/qrcode/${invoiceData.payment_request}`;
             invoiceData.paylink = `lightning:${invoiceData.payment_request}`;
             invoiceData.wslink = `wss://lnb.bolverker.com/api/v1/ws/${process.env.SATSPAY_LN_WALLET}`;
-            invoiceData.amount = amount;
-            invoiceData.memo = description;
+            invoiceData.amount = data.amount;
+            invoiceData.memo = data.memo;
+            invoiceData.expiry = data.expiry;
             invoiceData.paid = false;
-            
+
+            console.log(`invoice: ${JSON.stringify(invoiceData, null, 2)}`);
+
             return invoiceData;
         }
     }
