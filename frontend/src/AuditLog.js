@@ -8,6 +8,7 @@ import {
     TableHead,
     Paper,
 } from '@mui/material';
+import AgentBadge from './AgentBadge';
 
 const AuditLog = () => {
     const [txnlog, setTxnLog] = useState([]);
@@ -47,8 +48,18 @@ const AuditLog = () => {
                 }
 
                 if (record.type === 'buy-credits') {
-                    setMessage('buy-credits');
-                    setSats(record.charge.amount);
+                    setMessage(
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <AgentBadge xid={record.agent} />{"bought credits"}
+                        </div>
+                    );
+
+                    if (record.invoice) {
+                        setSats(record.invoice.amount);
+                    }
+                    else if (record.charge) { //deprecated
+                        setSats(record.charge.amount);
+                    }
                 }
 
                 setTime(record.time);
