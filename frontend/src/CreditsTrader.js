@@ -3,7 +3,7 @@ import { Box, Button, Grid, TextField, Modal } from '@mui/material';
 import axios from 'axios';
 import InvoiceView from './InvoiceView';
 
-const CreditsEditor = ({ profile, setRefreshProfile }) => {
+const CreditsTrader = ({ profile, setRefreshProfile }) => {
 
     const minPurchase = 1000;
     const maxPurchase = 25000;
@@ -174,4 +174,4 @@ const CreditsEditor = ({ profile, setRefreshProfile }) => {
     );
 };
 
-export default CreditsEditor;
+export default CreditsTrader;

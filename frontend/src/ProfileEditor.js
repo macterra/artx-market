@@ -7,7 +7,7 @@ import NameEditor from './NameEditor';
 import CollectionEditor from './CollectionEditor';
 import LnAddressEditor from './LnAddressEditor';
 import LinksEditor from './LinksEditor';
-import CreditsEditor from './CreditsEditor';
+import CreditsTrader from './CreditsTrader';
 import TxnLog from './TxnLog';
 import AgentBadge from './AgentBadge';
 
@@ -84,7 +84,7 @@ const ProfileEditor = ({ navigate, refreshProfile, setRefreshProfile }) => {
                         <LnAddressEditor profile={profile} setRefreshProfile={setRefreshProfile} />
                     }
                     {tab === 'credits' &&
-                        <CreditsEditor profile={profile} setRefreshProfile={setRefreshProfile} />
+                        <CreditsTrader profile={profile} setRefreshProfile={setRefreshProfile} />
                     }
                     {tab === 'log' &&
                         <TxnLog profile={profile} refreshProfile={refreshProfile} />
