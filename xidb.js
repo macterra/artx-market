@@ -1499,6 +1499,8 @@ const createCollection = (userId, name) => {
 };
 
 const saveCollection = (collection) => {
+    assert.ok(collection.collection);
+
     const agentData = getAgent(collection.asset.owner);
     const collectionId = collection.xid;
 
@@ -1507,10 +1509,14 @@ const saveCollection = (collection) => {
         saveAgent(agentData);
     }
 
+    // assets are generated at runtime because metadata.asset.collection is the source of truth
+    collection.collection.assets = [];
     saveAsset(collection);
 };
 
 const removeCollection = (collection) => {
+    assert.ok(collection.collection);
+
     const agentData = getAgent(collection.asset.owner);
     const collectionId = collection.xid;
 
