@@ -11,14 +11,16 @@ import {
     Button,
     Modal,
 } from '@mui/material';
+import axios from 'axios';
+import InvoiceView from './InvoiceView';
 
 const TokenTrader = ({ metadata, setRefreshKey }) => {
     const [nfts, setNfts] = useState(0);
     const [exchangeRate, setExchangeRate] = useState(null);
-    const [charge, setCharge] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
-    const [invoiceUrl, setInvoiceUrl] = useState('');
     const [nftSale, setNftSale] = useState(null);
+    const [invoice, setInvoice] = useState(null);
+    const [disableBuy, setDisableBuy] = useState(false);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -130,7 +132,7 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
                                 onClick={() => {
                                     handleBuyClick(nft);
                                 }}
-                                disabled={!listed}
+                                disabled={!listed || disableBuy}
                             >
                                 Buy
                             </Button>
@@ -144,20 +146,23 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
 
     const handleBuyClick = async (nft) => {
         setNftSale(nft);
+        setDisableBuy(true);
 
         try {
-            const response = await fetch('/api/v1/charge', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', },
-                body: JSON.stringify({ description: 'buy NFT', amount: nft.nft.price }),
+            const response = await axios.post('/api/v1/invoice', {
+                description: `buy ${nft.asset.title}`,
+                amount: nft.nft.price
             });
 
-            const chargeData = await response.json();
+            const invoice = response.data;
 
-            if (chargeData.url) {
-                setCharge(chargeData);
-                setInvoiceUrl(chargeData.url);
+            if (invoice) {
+                setInvoice(invoice);
                 setModalOpen(true);
+            }
+            else {
+                setDisableBuy(false);
+                setNftSale(null);
             }
         } catch (error) {
             console.error('Error:', error);
@@ -167,15 +172,12 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
     const handleInvoiceClose = async () => {
         setModalOpen(false);
 
-        try {
-            const response = await fetch(`/api/v1/charge/${charge.id}`);
-            const chargeData = await response.json();
-
-            if (chargeData.paid) {
+        if (invoice.paid) {
+            try {
                 const response = await fetch(`/api/v1/asset/${nftSale.xid}/buy`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', },
-                    body: JSON.stringify({ price: nftSale.nft.price, chargeId: charge.id }),
+                    body: JSON.stringify({ invoice: invoice }),
                 });
 
                 if (response.ok) {
@@ -185,10 +187,12 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
                     console.error('Error:', data.message);
                     alert(data.message);
                 }
+            } catch (error) {
+                console.error('Error:', error);
             }
-        } catch (error) {
-            console.error('Error:', error);
         }
+
+        setDisableBuy(false);
     };
 
     return (
@@ -233,26 +237,39 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
                     </TableBody>
                 </Table>
             </TableContainer>
-            <Modal
-                open={modalOpen}
-                onClose={() => handleInvoiceClose()}
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                }}
-            >
-                <div style={{ backgroundColor: '#282c34', padding: '1em', width: '50vw', height: '100vh', overflow: 'auto' }}>
-                    <iframe
-                        src={invoiceUrl}
-                        title="Invoice"
-                        width="100%"
-                        height="90%"
-                        style={{ border: 'none' }}
-                    />
-                    <Button onClick={() => handleInvoiceClose()}>Close</Button>
-                </div>
-            </Modal>
+            {invoice &&
+                <Modal
+                    open={modalOpen}
+                    onClose={() => handleInvoiceClose()}
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                    }}
+                >
+                    <div style={{
+                        backgroundColor: '#282c34',
+                        padding: '1em',
+                        width: '600px',
+                        height: '600px',
+                        overflow: 'auto',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}>
+                        <InvoiceView invoice={invoice} />
+                        <Button
+                            style={{ marginTop: '20px' }}
+                            variant="contained"
+                            color="primary"
+                            onClick={() => handleInvoiceClose()}
+                        >
+                            Close
+                        </Button>
+                    </div>
+                </Modal>
+            }
         </>
     );
 };

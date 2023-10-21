@@ -593,9 +593,8 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
   try {
     const xid = req.params.xid;
     const buyerId = req.user.xid;
-    const { chargeId } = req.body;
+    const { invoice } = req.body;
     const assetData = xidb.getAsset(xid);
-    const sellerId = assetData.asset.owner;
 
     if (!assetData.nft) {
       return res.status(500).json({ message: 'Error' });
@@ -605,24 +604,13 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
       return res.status(500).json({ message: "Already owned" });
     }
 
-    // TBD associate this charge with this asset for validation
-    const chargeData = await lnbits.checkCharge(chargeId);
+    const purchase = await xidb.purchaseAsset(xid, buyerId, invoice);
 
-    if (!chargeData.paid) {
-      console.log(`charge ${chargeId} not paid`);
-      return res.status(500).json({ message: 'Error' });
+    if (purchase.ok) {
+      xidb.commitChanges(purchase.message);
     }
-
-    const price = chargeData.amount;
-
-    if (price != assetData.nft.price) {
-      console.log(`price mismatch between charge ${price} and nft ${assetData.nft.price}`);
-      return res.status(500).json({ message: 'Error' });
-    }
-
-    await xidb.purchaseAsset(xid, buyerId, chargeData);
-    xidb.commitChanges(`Purchase: ${sellerId} sold ${xid} to ${buyerId} for ${price} sats`);
-    res.json({ ok: true, message: 'Success' });
+    
+    res.json(purchase);
   } catch (error) {
     console.error('Error:', error);
     res.status(500).json({ message: 'Error' });

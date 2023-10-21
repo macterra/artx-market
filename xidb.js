@@ -1310,12 +1310,23 @@ const transferAsset = (xid, nextOwnerId) => {
     saveNft(xid);
 };
 
-const purchaseAsset = async (xid, buyerId, chargeData) => {
+const purchaseAsset = async (xid, buyerId, invoice) => {
     const assetData = getAsset(xid);
     const buyer = getAgent(buyerId);
     const sellerId = assetData.asset.owner;
     const seller = getAgent(sellerId);
     const price = assetData.nft.price;
+
+    assert.ok(assetData.nft);
+    assert.ok(invoice.payment_hash);
+
+    const payment = await lnbits.checkPayment(invoice.payment_hash);
+
+    if (!payment || !payment.paid) {
+        return { ok: false, message: 'invoice not paid' };
+    }
+
+    invoice.payment = payment;
 
     transferAsset(xid, buyerId);
 
@@ -1326,7 +1337,7 @@ const purchaseAsset = async (xid, buyerId, chargeData) => {
     let audit = {
         type: "sale",
         agent: buyerId,
-        charge: chargeData,
+        invoice: invoice,
     };
 
     const royaltyRate = tokenData.token?.royalty || 0;
@@ -1464,6 +1475,8 @@ const purchaseAsset = async (xid, buyerId, chargeData) => {
     }
 
     saveAuditLog(audit);
+
+    return { ok: true, message: `Purchase: ${sellerId} sold ${xid} to ${buyerId} for ${price} sats` };
 };
 
 const pinAsset = async (xid) => {
