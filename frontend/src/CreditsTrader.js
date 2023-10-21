@@ -13,7 +13,6 @@ const CreditsTrader = ({ profile, setRefreshProfile }) => {
     const [modalOpen, setModalOpen] = useState(false);
     const [disablePurchase, setDisablePurchase] = useState(false);
     const [invoice, setInvoice] = useState(null);
-    const [paid, setPaid] = useState(false);
 
     const handlePurchaseChange = async (value) => {
         if (value < minPurchase) {
@@ -49,9 +48,8 @@ const CreditsTrader = ({ profile, setRefreshProfile }) => {
 
     const handleInvoiceClose = async () => {
         setModalOpen(false);
-        setDisablePurchase(false);
 
-        if (paid) {
+        if (invoice.paid) {
             try {
                 const creditResponse = await axios.post(`/api/v1/profile/credit`, {
                     invoice: invoice,
@@ -71,7 +69,7 @@ const CreditsTrader = ({ profile, setRefreshProfile }) => {
         }
 
         setInvoice(null);
-        setPaid(false);
+        setDisablePurchase(false);
     };
 
     return (
@@ -158,7 +156,7 @@ const CreditsTrader = ({ profile, setRefreshProfile }) => {
                         alignItems: 'center',
                         justifyContent: 'center'
                     }}>
-                        <InvoiceView invoice={invoice} paid={paid} setPaid={setPaid} />
+                        <InvoiceView invoice={invoice} />
                         <Button
                             style={{ marginTop: '20px' }}
                             variant="contained"

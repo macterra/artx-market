@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 
-const InvoiceView = ({ invoice, paid, setPaid }) => {
+const InvoiceView = ({ invoice }) => {
 
     const [timeLeft, setTimeLeft] = useState(0);
     const [expired, setExpired] = useState(false);
+    const [paid, setPaid] = useState(false);
 
     let timerId;
 
@@ -59,6 +60,7 @@ const InvoiceView = ({ invoice, paid, setPaid }) => {
                     data.payment.pending === false) {
                     console.log(`invoice ${data.payment.checking_id} paid!`);
                     setPaid(true);
+                    invoice.paid = true;
                 }
                 else {
                     console.log(`ws ignoring message`);
