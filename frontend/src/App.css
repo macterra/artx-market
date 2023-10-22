@@ -32,17 +32,46 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
 }
 
 a {
-  color: white; /* Change this to the desired color for all Link tags */
-  text-decoration: none; /* Optional: remove underline from links */
+  color: white;
+  /* Change this to the desired color for all Link tags */
+  text-decoration: none;
+  /* Optional: remove underline from links */
 }
 
 a:hover {
-  color: lightblue; /* Change this to the desired color for all Link tags on hover */
-  text-decoration: underline; /* Optional: add underline on hover */
+  color: lightblue;
+  /* Change this to the desired color for all Link tags on hover */
+  text-decoration: underline;
+  /* Optional: add underline on hover */
+}
+
+.container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.left-pane,
+.right-pane {
+  width: 50%;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+/* Media query for screens narrower than 768px */
+@media (max-width: 767px) {
+
+  .left-pane,
+  .right-pane {
+    width: 100%;
+  }
 }
