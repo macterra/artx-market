@@ -166,6 +166,11 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
             }
         } catch (error) {
             console.error('Error:', error);
+
+            if (error.response.status === 401) {
+                alert("You have to login first");
+                return;
+            }
         }
     };
 
