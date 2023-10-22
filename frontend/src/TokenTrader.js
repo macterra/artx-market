@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import {
+    Box,
+    Button,
+    Modal,
+    Paper,
     Table,
     TableBody,
     TableCell,
     TableContainer,
-    TableRow,
     TableHead,
-    Paper,
+    TableRow,
     TextField,
-    Button,
-    Modal,
 } from '@mui/material';
 import axios from 'axios';
 import InvoiceView from './InvoiceView';
@@ -77,8 +78,13 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
         const [listed, setListed] = useState(false);
 
         const updatePrice = (price) => {
-            const usdPrice = price * exchangeRate / 100000000;
-            setUsdPrice(usdPrice);
+            if (price > 0) {
+                const usdPrice = price * exchangeRate / 100000000;
+                setUsdPrice(`$${usdPrice.toFixed(2)}`);
+            }
+            else {
+                setUsdPrice('not for sale');
+            }
         };
 
         useEffect(() => {
@@ -89,53 +95,57 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
         return (
             <TableRow>
                 <TableCell>{nft.asset.title}</TableCell>
-                <TableCell align="right">${usdPrice.toFixed(2)}</TableCell>
+                <TableCell align="right">{usdPrice}</TableCell>
                 {nft.userIsOwner ?
                     (
                         <TableCell>
-                            <TextField
-                                defaultValue={nft.nft.price}
-                                type="number"
-                                onChange={(event) => {
-                                    nft.nft.newPrice = parseInt(event.target.value, 10) || 0;
-                                    setDisableSave(nft.nft.price === nft.nft.newPrice);
-                                    updatePrice(nft.nft.newPrice);
-                                }}
-                                inputProps={{ min: 0 }}
-                                sx={{ width: '14ch', marginRight: 1 }}
-                            />
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                onClick={() => {
-                                    handleListClick(nft);
-                                    setDisableSave(true);
-                                    setListed(usdPrice > 0);
-                                }}
-                                disabled={disableSave}
-                            >
-                                Save
-                            </Button>
+                            <Box display="flex" alignItems="center">
+                                <TextField
+                                    defaultValue={nft.nft.price}
+                                    type="number"
+                                    onChange={(event) => {
+                                        nft.nft.newPrice = parseInt(event.target.value, 10) || 0;
+                                        setDisableSave(nft.nft.price === nft.nft.newPrice);
+                                        updatePrice(nft.nft.newPrice);
+                                    }}
+                                    inputProps={{ min: 0 }}
+                                    sx={{ width: '14ch', marginRight: 1 }}
+                                />
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={() => {
+                                        handleListClick(nft);
+                                        setDisableSave(true);
+                                        setListed(usdPrice > 0);
+                                    }}
+                                    disabled={disableSave}
+                                >
+                                    Save
+                                </Button>
+                            </Box>
                         </TableCell>
 
                     ) : (
                         <TableCell>
-                            <TextField
-                                defaultValue={nft.nft.price}
-                                type="number"
-                                disabled={true}
-                                sx={{ width: '14ch', marginRight: 1 }}
-                            />
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                onClick={() => {
-                                    handleBuyClick(nft);
-                                }}
-                                disabled={!listed || disableBuy}
-                            >
-                                Buy
-                            </Button>
+                            <Box display="flex" alignItems="center">
+                                <TextField
+                                    defaultValue={nft.nft.price}
+                                    type="number"
+                                    disabled={true}
+                                    sx={{ width: '14ch', marginRight: 1 }}
+                                />
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={() => {
+                                        handleBuyClick(nft);
+                                    }}
+                                    disabled={!listed || disableBuy}
+                                >
+                                    Buy
+                                </Button>
+                            </Box>
                         </TableCell>
                     )
                 }
