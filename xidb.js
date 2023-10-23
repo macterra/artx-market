@@ -336,44 +336,58 @@ const repairAsset = (xid) => {
     }
 
     // Revise history to remove everything before unmints
-    const history = getHistory(xid); // history is in reverse order!
+    // const history = getHistory(xid); // history is in reverse order!
 
-    if (history) {
-        let lastUnmintIndex = -1;
+    // if (history) {
+    //     let lastUnmintIndex = -1;
 
-        for (let i = 0; i < history.length; i++) {
-            if (history[i].type === 'unmint') {
-                lastUnmintIndex = i;
-                break;
+    //     for (let i = 0; i < history.length; i++) {
+    //         if (history[i].type === 'unmint') {
+    //             lastUnmintIndex = i;
+    //             break;
+    //         }
+    //     }
+
+    //     if (lastUnmintIndex !== -1) {
+    //         const jsonlPath = path.join(config.assets, xid, 'history.jsonl');
+    //         fs.rmSync(jsonlPath);
+
+    //         for (let i = lastUnmintIndex - 1; i >= 0; i--) {
+    //             const recordString = JSON.stringify(history[i]);
+    //             fs.appendFileSync(jsonlPath, recordString + '\n');
+    //         }
+
+    //         return {
+    //             xid: xid,
+    //             fixed: true,
+    //             message: `removed unmints from history`,
+    //         }
+    //     }
+    // }
+
+    if (assetData.nft) {
+
+        let doSave = false;
+
+        for (const file of ['_asset.png', '_asset.jpg', '_creator.jpg', '_owner.jpg', '_collection.jpg']) {
+            const filePath = path.join(config.assets, xid, file);
+            if (fs.existsSync(filePath)) {
+                fs.rmSync(filePath);
+                console.log(`removed ${filePath}`);
+                doSave = true;
             }
         }
 
-        if (lastUnmintIndex !== -1) {
-            const jsonlPath = path.join(config.assets, xid, 'history.jsonl');
-            fs.rmSync(jsonlPath);
-
-            for (let i = lastUnmintIndex - 1; i >= 0; i--) {
-                const recordString = JSON.stringify(history[i]);
-                fs.appendFileSync(jsonlPath, recordString + '\n');
-            }
+        if (doSave) {
+            saveNft(xid);
 
             return {
                 xid: xid,
                 fixed: true,
-                message: `removed unmints from history`,
+                message: `migrated NFT`,
             }
         }
     }
-
-    // if (assetData.nft) {
-    //     saveNft(xid);
-
-    //     return {
-    //         xid: xid,
-    //         fixed: true,
-    //         message: `saved NFT`,
-    //     }
-    // }
 
     const agentData = getAgent(assetData.asset.owner);
 
