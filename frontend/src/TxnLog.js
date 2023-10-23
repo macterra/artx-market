@@ -97,14 +97,6 @@ const TxnLog = ({ profile, refreshProfile }) => {
                     setCredits(-record.credits);
                 }
 
-                if (record.type === 'unmint') {
-                    const response = await fetch(`/api/v1/asset/${record.xid}`);
-                    const metadata = await response.json();
-
-                    setMessage(<div>Unminted {assetLink(metadata)}.</div>);
-                    setCredits(record.credits);
-                }
-
                 if (record.type === 'upload') {
                     const response = await fetch(`/api/v1/asset/${record.xid}`);
                     const metadata = await response.json();
