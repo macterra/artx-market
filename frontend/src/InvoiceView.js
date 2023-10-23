@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 
 const InvoiceView = ({ invoice }) => {
 
@@ -116,6 +117,12 @@ const InvoiceView = ({ invoice }) => {
         color: '#ffffff',
     };
 
+    const linkStyle = {
+        margin: '2px',
+        fontSize: '12px',
+        color: '#ffffff',
+    };
+
     return (
         <div>
             <p style={titleStyle}>{invoice.memo}</p>
@@ -129,26 +136,26 @@ const InvoiceView = ({ invoice }) => {
                     <div style={textStyle}>{`expires in: ${timeLeft} seconds`}</div>
                 )
             }
-            {!expired &&
-                <div style={cardStyle}>
-                    {paid ?
-                        (
-                            <div>
-                                <div style={imgContainerStyle}>
-                                    <img src={'/paid.png'} style={imgStyle} alt={'paid'} />
-                                </div>
+            {!expired && paid ?
+                (
+                    <div style={cardStyle}>
+                        <div style={imgContainerStyle}>
+                            <img src={'/paid.png'} style={imgStyle} alt={'paid'} />
+                        </div>
+                    </div>
+                ) : (
+                    <a href={invoice.paylink}>
+                        <div style={linkStyle}>Click or scan this QR code to pay the lightning invoice.</div>
+                        <div style={cardStyle}>
+                            <div style={imgContainerStyle}>
+                                <QRCodeSVG value={invoice.payment_request} size={256} />
                             </div>
-                        ) : (
-                            <a href={invoice.paylink}>
-                                <div style={imgContainerStyle}>
-                                    <img src={invoice.qrcode} style={imgStyle} alt={invoice.memo} />
-                                </div>
-                            </a>
-                        )}
-                </div>
+                        </div>
+                    </a>
+                )
             }
         </div>
-    );
+    )
 };
 
 export default InvoiceView;
