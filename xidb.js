@@ -697,6 +697,7 @@ const getAgentAndCollections = (profileId, userId) => {
     if (profileId === userId) {
         for (const assetId of assets.created) {
             let assetData = getAsset(assetId);
+            enrichAsset(assetData);
 
             if (assetData.asset.collection in collections) {
                 collections[assetData.asset.collection].collection.assets.push(assetData);
@@ -723,6 +724,7 @@ const getAgentAndCollections = (profileId, userId) => {
         // Only show tokens (minted assets) to other users
         for (const assetId of assets.created) {
             let assetData = getAsset(assetId);
+            enrichAsset(assetData);
 
             if (assetData.token) {
                 minted.push(assetData);
