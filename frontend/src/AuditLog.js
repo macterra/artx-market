@@ -37,32 +37,42 @@ const AuditLog = () => {
 
         useEffect(() => {
             const fetchInfo = async () => {
+                setMessage(`unknown type: ${record.type}`);
+                setTime(record.time);
+
                 if (record.type === 'sale') {
-                    const amount = record.charge.amount;
+                    const amount = record.invoice?.amount || record.charge?.amount;
                     const payout = record.payout?.amount || 0;
                     const royalty = record.royalty?.amount || 0;
                     const txnfee = amount - payout - royalty;
 
-                    setMessage(`sale: ${amount} - ${payout} (payout) - ${royalty} (royalty)`);
+                    if (record.agent && record.asset) {
+                        setMessage(
+                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                                <a href={`/profile/${record.agent}`}>{record.agentName}</a>
+                                &nbsp;bought&nbsp;
+                                <a href={`/nft/${record.asset}`}>{record.assetName}</a>
+                                &nbsp;for:&nbsp;{`${amount} - ${payout} (payout) - ${royalty} (royalty)`}
+                            </div>
+                        );
+                    }
+                    else {
+                        setMessage(`sale: ${amount} - ${payout} (payout) - ${royalty} (royalty)`);
+                    }
+
                     setSats(txnfee);
                 }
 
-                if (record.type === 'buy-credits') {
+                if (record.type === 'credits') {
                     setMessage(
                         <div style={{ display: 'flex', alignItems: 'center' }}>
-                            <AgentBadge xid={record.agent} />{"bought credits"}
+                            <a href={`/profile/${record.agent}`}>{record.agentName}</a>
+                            &nbsp;bought&nbsp;{`${record.amount} credits`}
                         </div>
                     );
 
-                    if (record.invoice) {
-                        setSats(record.invoice.amount);
-                    }
-                    else if (record.charge) { //deprecated
-                        setSats(record.charge.amount);
-                    }
+                    setSats(record.amount);
                 }
-
-                setTime(record.time);
             };
 
             fetchInfo();

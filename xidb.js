@@ -585,10 +585,11 @@ const buyCredits = async (userId, invoice) => {
             invoice.payment = payment;
 
             const record = {
-                "type": "buy-credits",
-                "agent": userId,
-                "amount": amount,
-                "invoice": invoice,
+                type: "credits",
+                agent: agentData.xid,
+                agentName: agentData.name,
+                amount: amount,
+                invoice: invoice,
             };
             saveAuditLog(record);
             saveAgent(agentData);
@@ -952,24 +953,30 @@ const getAsset = (xid) => {
         const metadataPath = path.join(config.assets, xid, 'meta.json');
         const metadataContent = fs.readFileSync(metadataPath, 'utf-8');
         metadata = JSON.parse(metadataContent);
-
-        if (metadata.token) {
-            metadata.history = getHistory(xid);
-
-            const owners = new Set([metadata.asset.owner]);
-
-            for (const nftId of metadata.token.nfts) {
-                const nft = getAsset(nftId);
-                owners.add(nft.asset.owner);
-            }
-
-            metadata.owners = owners.size;
-            metadata.sold = owners.size > 1;
-        }
-    } catch (error) {
     }
+    catch (error) { }
 
     return metadata;
+};
+
+const enrichAsset = (metadata) => {
+    if (metadata.token) {
+        metadata.history = getHistory(metadata.xid);
+
+        const owners = new Set([metadata.asset.owner]);
+
+        for (const nftId of metadata.token.nfts) {
+            const nft = getAsset(nftId);
+            owners.add(nft.asset.owner);
+        }
+
+        metadata.owners = owners.size;
+        metadata.sold = owners.size > 1;
+    }
+    else if (metadata.nft) {
+        const token = getAsset(metadata.nft.asset);
+        metadata.nft.title = `${token.asset.title} (${metadata.asset.title})`;
+    }
 };
 
 const saveAsset = (metadata) => {
@@ -1302,6 +1309,8 @@ const purchaseAsset = async (xid, buyerId, invoice) => {
     const price = assetData.nft.price;
 
     assert.ok(assetData.nft);
+    enrichAsset(assetData); // get nft title
+
     assert.ok(invoice.payment_hash);
 
     const payment = await lnbits.checkPayment(invoice.payment_hash);
@@ -1321,6 +1330,9 @@ const purchaseAsset = async (xid, buyerId, invoice) => {
     let audit = {
         type: "sale",
         agent: buyerId,
+        agentName: buyer.name,
+        asset: xid,
+        assetName: assetData.nft.title,
         invoice: invoice,
     };
 
@@ -1537,6 +1549,7 @@ module.exports = {
     createAssets,
     createCollection,
     createToken,
+    enrichAsset,
     getAdmin,
     getAgent,
     getAgentAndCollections,
