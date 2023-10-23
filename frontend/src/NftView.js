@@ -44,11 +44,11 @@ const NftView = ({ navigate }) => {
     };
 
     return (
-        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-            <div style={{ width: '50%', padding: '16px' }}>
+        <div className="container">
+            <div className="left-pane">
                 <img src={nft.token.file.path} alt={nft.token.asset.title} style={{ width: '100%', height: 'auto' }} />
             </div>
-            <div style={{ width: '50%', padding: '16px' }}>
+            <div className="right-pane">
                 <Tabs
                     value={tab}
                     onChange={handleTabChange}
