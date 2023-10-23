@@ -609,7 +609,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
     if (purchase.ok) {
       xidb.commitChanges(purchase.message);
     }
-    
+
     res.json(purchase);
   } catch (error) {
     console.error('Error:', error);
@@ -905,41 +905,6 @@ app.post('/api/v1/collections/:xid/upload', ensureAuthenticated, upload.array('i
   } catch (error) {
     console.error('Error processing files:', error);
     res.status(500).json({ message: 'Error processing files' });
-  }
-});
-
-app.get('/api/v1/charge/:chargeId', ensureAuthenticated, async (req, res) => {
-  try {
-    const chargeData = await lnbits.checkCharge(req.params.chargeId);
-
-    res.status(200).json({
-      id: chargeData.id,
-      description: chargeData.description,
-      amount: chargeData.amount,
-      paid: chargeData.paid,
-      time_elapsed: chargeData.time_elapsed,
-      time_left: chargeData.time_left,
-    });
-  }
-  catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ ok: false, message: 'Error' });
-  }
-});
-
-app.post('/api/v1/charge', ensureAuthenticated, async (req, res) => {
-  try {
-    const { description, amount } = req.body;
-    const chargeData = await lnbits.createCharge(description, amount);
-
-    res.status(200).json({
-      ok: true,
-      id: chargeData.id,
-      url: chargeData.url,
-    });
-  } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ ok: false, message: 'Error' });
   }
 });
 

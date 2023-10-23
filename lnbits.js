@@ -2,7 +2,7 @@ const { requestInvoice } = require('lnurl-pay');
 const config = require('./config');
 
 const checkServer = async () => {
-    const response = await fetch(`https://${config.ln_host}/satspay/api/v1/charges`, {
+    const response = await fetch(`https://${config.ln_host}/api/v1/wallet`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -81,64 +81,6 @@ const checkPayment = async (payment_hash) => {
     return null;
 };
 
-const createCharge = async (description, amount, timeout) => {
-    try {
-        const data = {
-            onchainwallet: "",
-            lnbitswallet: config.ln_wallet,
-            description: description,
-            webhook: "",
-            completelink: "",
-            completelinktext: "",
-            custom_css: "",
-            time: timeout || 3,
-            amount: amount,
-            extra: "{\"mempool_endpoint\": \"https://mempool.space\", \"network\": \"Mainnet\"}",
-        };
-
-        const response = await fetch(`https://${config.ln_host}/satspay/api/v1/charge`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-API-KEY': config.ln_api_key,
-            },
-            body: JSON.stringify(data),
-        });
-
-        if (response.ok) {
-            const chargeData = await response.json();
-            chargeData.url = `https://${config.ln_host}/satspay/${chargeData.id}`;
-            return chargeData;
-        }
-    }
-    catch (error) {
-        console.log(error);
-    }
-
-    return null;
-};
-
-const checkCharge = async (chargeId) => {
-    try {
-        const response = await fetch(`https://${config.ln_host}/satspay/api/v1/charge/${chargeId}`, {
-            method: 'GET',
-            headers: {
-                'X-API-KEY': config.ln_api_key,
-            },
-        });
-
-        if (response.ok) {
-            const chargeData = await response.json();
-            return chargeData;
-        }
-    }
-    catch (error) {
-        console.log(error);
-    }
-
-    return null;
-};
-
 const checkAddress = async (address) => {
     try {
         const response = await fetch(`https://${config.ln_host}/api/v1/lnurlscan/${address}`, {
@@ -198,10 +140,8 @@ const sendPayment = async (address, amount, comment) => {
 
 module.exports = {
     checkServer,
-    createCharge,
     createInvoice,
     checkPayment,
-    checkCharge,
     checkAddress,
     sendPayment,
 };
