@@ -1,5 +1,5 @@
 
-const { WebSocket } = require('websocket-polyfill');
+const WebSocket = require('ws');
 
 const {
     finishEvent,
@@ -11,15 +11,14 @@ const {
     getPublicKey
 } = require('nostr-tools');
 
-
 const config = {
     nostr_relay: 'strfry:7777',
-    nostr_sk: '80ac742bbc82d1b53fb9518d20beb32545e0265b184a007e57c00da8f81f3973',
+    nostr_sk: '531622b8f6eb29937abfea6029d70a00ec925a081e565d5875661002b49551fb',
 };
 
 config.nostr_pk = getPublicKey(config.nostr_sk);
 
-const sendMessage = async (message) => {
+const createEvent = async (message) => {
     let event = {
         kind: 1,
         created_at: Math.floor(Date.now() / 1000),
@@ -36,27 +35,75 @@ const sendMessage = async (message) => {
     console.log('Event:', event);
     console.log('Validation result:', ok);
     console.log('Signature verification result:', veryOk);
+
+    return event;
 };
 
-const tryConnect = async () => {
+const RELAYS = {};
 
-    //const relay = relayInit('wss://taranis.local:4848');
-    const relay = relayInit('wss://localhost:7777');
+function openRelay(wsurl) {
+    const ws = new WebSocket(wsurl);
 
-    relay.on('connect', () => {
-        console.log(`connected to ${relay.url}`);
+    ws.on('open', () => {
+        console.log(`ws open ${wsurl}`);
+        RELAYS[wsurl] = ws;
     });
 
-    relay.on('error', () => {
-        console.log(`failed to connect to ${relay.url}`); S
+    ws.on('error', (error) => {
+        console.log(`ws error from ${wsurl}: ${error}`);
     });
 
-    await relay.connect();
+    ws.on('message', (event) => {
+        console.log(`ws message from ${wsurl}: ${event} `);
+    });
 
-    return relay;
-};
+    ws.on('close', () => {
+        console.log(`ws close ${wsurl}`);
+        delete RELAYS[wsurl];
+    });
+}
+
+function closeRelays() {
+    for (let key in RELAYS) {
+        const ws = RELAYS[key];
+        ws.close();
+    }
+}
+
+function countOpenRelays() {
+    let count = 0;
+
+    for (let key in RELAYS) {
+        const ws = RELAYS[key];
+
+        if (ws.readyState === WebSocket.OPEN) {
+            count++;
+        }
+    }
+
+    return count;
+}
+
+function sendEvent(event) {
+    const message = JSON.stringify(["EVENT", event]);
+
+    for (let key in RELAYS) {
+        const ws = RELAYS[key];
+
+        if (ws.readyState === WebSocket.OPEN) {
+            ws.send(message);
+            console.log(`ws event sent to ${key}`);
+        }
+        else {
+            console.log(`ws ${key} not open`);
+        }
+    }
+}
 
 module.exports = {
-    sendMessage,
-    tryConnect,
+    createEvent,
+    openRelay,
+    closeRelays,
+    countOpenRelays,
+    sendEvent,
 };
