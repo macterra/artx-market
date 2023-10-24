@@ -47,3 +47,12 @@ services:
       - ./data:/data
     depends_on:
       - ipfs
+
+  strfry:
+    container_name: strfry
+    image: dockurr/strfry:latest
+    ports:
+      - 7777:7777
+    volumes:
+      - ./nostr/strfry-db:/app/strfry-db
+      - ./nostr/strfry.conf:/etc/strfry.conf

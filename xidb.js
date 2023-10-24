@@ -6,7 +6,7 @@ const crypto = require('crypto');
 const uuid = require('uuid');
 const bs58 = require('bs58');
 const ejs = require('ejs');
-const { rimrafSync } = require('rimraf')
+const { rimrafSync } = require('rimraf');
 const config = require('./config');
 const lnbits = require('./lnbits');
 
