@@ -6,7 +6,7 @@ const crypto = require('crypto');
 const uuid = require('uuid');
 const bs58 = require('bs58');
 const ejs = require('ejs');
-const { rimrafSync } = require('rimraf')
+const rimraf = require('rimraf')
 const config = require('./config');
 const lnbits = require('./lnbits');
 
@@ -70,7 +70,7 @@ function uuidToBase58(uuidString) {
     return base58;
 }
 
-const getAdmin = (xid) => {
+const getAdmin = () => {
     const jsonPath = path.join(config.data, 'meta.json');
 
     // Check if the agent.json file exists
@@ -278,7 +278,7 @@ const allAgents = () => {
 const removeAsset = (xid) => {
     const assetPath = path.join(config.assets, xid);
 
-    rimrafSync(assetPath);
+    rimraf.rimrafSync(assetPath);
 
     console.log(`Deleted ${assetPath}`);
 
