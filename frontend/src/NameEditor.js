@@ -52,6 +52,7 @@ const NameEditor = ({ profile, setRefreshProfile }) => {
                         }}
                         fullWidth
                         margin="normal"
+                        inputProps={{ maxLength: 30 }}
                     />
                     <TextField
                         label="Tagline"
@@ -62,6 +63,7 @@ const NameEditor = ({ profile, setRefreshProfile }) => {
                         }}
                         fullWidth
                         margin="normal"
+                        inputProps={{ maxLength: 30 }}
                     />
                     <Button variant="contained" color="primary" onClick={handleSaveClick} disabled={saved}>
                         Save

@@ -73,35 +73,36 @@ const AssetEditor = ({ metadata, setTab, setRefreshKey }) => {
 
     return (
         <form>
-        <TextField
-        label="Title"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        fullWidth
-        margin="normal"
-        />
-        <FormControl fullWidth margin="normal">
-        <InputLabel id="collection-select-label">Collection</InputLabel>
-        <Select
-        labelId="collection-select-label"
-        value={selectedCollection}
-        onChange={(e) => setSelectedCollection(e.target.value)}
-        >
-        {collections.map((collection, index) => (
-            <MenuItem key={index} value={collection.xid}>
-            {collection.asset.title}
-            </MenuItem>
-            ))}
-            </Select>
+            <TextField
+                label="Title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                fullWidth
+                margin="normal"
+                inputProps={{ maxLength: 40 }}
+            />
+            <FormControl fullWidth margin="normal">
+                <InputLabel id="collection-select-label">Collection</InputLabel>
+                <Select
+                    labelId="collection-select-label"
+                    value={selectedCollection}
+                    onChange={(e) => setSelectedCollection(e.target.value)}
+                >
+                    {collections.map((collection, index) => (
+                        <MenuItem key={index} value={collection.xid}>
+                            {collection.asset.title}
+                        </MenuItem>
+                    ))}
+                </Select>
             </FormControl>
             <Button variant="contained" color="primary" onClick={handleSaveClick}>
-            Save
+                Save
             </Button>
             <Button variant="contained" color="primary" onClick={handleDeleteClick}>
-            Delete
+                Delete
             </Button>
-            </form>
-            );
-        };
+        </form>
+    );
+};
 
-        export default AssetEditor;
+export default AssetEditor;

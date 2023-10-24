@@ -461,7 +461,7 @@ app.patch('/api/v1/asset/:xid', ensureAuthenticated, async (req, res) => {
     }
 
     if (title) {
-      assetData.asset.title = title;
+      assetData.asset.title = title.substring(0, 40);
     }
 
     if (collection) {
@@ -666,11 +666,11 @@ app.patch('/api/v1/profile/', ensureAuthenticated, async (req, res) => {
     }
 
     if (name) {
-      agentData.name = name;
+      agentData.name = name.substring(0, 30);;
     }
 
     if (tagline !== undefined) {
-      agentData.tagline = tagline;
+      agentData.tagline = tagline.substring(0, 30);;
     }
 
     if (pfp) {
