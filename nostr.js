@@ -1,45 +1,34 @@
 
 const WebSocket = require('ws');
+const config = require('./config');
 
 const {
     finishEvent,
-    relayInit,
     validateEvent,
     verifySignature,
-    getSignature,
-    getEventHash,
     getPublicKey
 } = require('nostr-tools');
 
-const config = {
-    nostr_relay: 'strfry:7777',
-    nostr_sk: '531622b8f6eb29937abfea6029d70a00ec925a081e565d5875661002b49551fb',
-};
+const RELAYS = {};
 
-config.nostr_pk = getPublicKey(config.nostr_sk);
-
-const createEvent = async (message) => {
+function createMessage(message) {
     let event = {
         kind: 1,
         created_at: Math.floor(Date.now() / 1000),
         tags: [],
         content: message,
-        pubkey: getPublicKey(config.nostr_sk),
+        pubkey: getPublicKey(config.nostr_key),
     };
 
-    finishEvent(event, config.nostr_sk);
+    finishEvent(event, config.nostr_key);
 
-    let ok = validateEvent(event);
-    let veryOk = verifySignature(event);
+    const valid = validateEvent(event);
+    const verified = verifySignature(event);
 
-    console.log('Event:', event);
-    console.log('Validation result:', ok);
-    console.log('Signature verification result:', veryOk);
-
-    return event;
+    if (valid && verified) {
+        return event;
+    }
 };
-
-const RELAYS = {};
 
 function openRelay(wsurl) {
     const ws = new WebSocket(wsurl);
@@ -84,6 +73,15 @@ function countOpenRelays() {
     return count;
 }
 
+function subscribeToRelays() {
+    const filters = {
+        kinds: [1],
+        limit: 1000,
+    };
+
+    sendRequest(filters);
+}
+
 function sendEvent(event) {
     const message = JSON.stringify(["EVENT", event]);
 
@@ -100,10 +98,37 @@ function sendEvent(event) {
     }
 }
 
+function sendMessage(message) {
+    const event = createMessage(message);
+
+    if (event) {
+        sendEvent(event);
+    }
+}
+
+function sendRequest(filters) {
+    const sub = "foo";
+    const message = JSON.stringify(["REQ", sub, filters]);
+
+    for (let key in RELAYS) {
+        const ws = RELAYS[key];
+
+        if (ws.readyState === WebSocket.OPEN) {
+            ws.send(message);
+            console.log(`ws req sent to ${key}`);
+        }
+        else {
+            console.log(`ws ${key} not open`);
+        }
+    }
+}
+
 module.exports = {
-    createEvent,
-    openRelay,
     closeRelays,
     countOpenRelays,
+    createMessage,
+    openRelay,
     sendEvent,
+    sendMessage,
+    subscribeToRelays,
 };
