@@ -1,6 +1,7 @@
 # Custom ignores
 data/
 frontend/build/
+nostr/strfry-db
 
 # Logs
 logs

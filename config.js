@@ -21,6 +21,7 @@ const config = {
     ln_wallet: process.env.LN_WALLET,
     ln_api_key: process.env.LN_API_KEY,
     ln_admin_key: process.env.LN_ADMIN_KEY,
+    nostr_key: process.env.NOSTR_KEY,
     data: 'data',
     uploads: 'data/uploads',
     assets: 'data/assets',
