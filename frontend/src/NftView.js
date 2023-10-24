@@ -58,9 +58,7 @@ const NftView = ({ navigate }) => {
                     scrollButtons="auto"
                 >
                     <Tab key="edition" value="edition" label={'NFT'} />
-                    {isAuthenticated &&
-                        <Tab key="trade" value="trade" label={'Buy/Sell'} />
-                    }
+                    <Tab key="trade" value="trade" label={'Buy/Sell'} />
                     {isOwner &&
                         <Tab key="pfp" value="pfp" label={'Pfp'} />
                     }
