@@ -1580,4 +1580,5 @@ module.exports = {
     saveTxnLog,
     transferAsset,
     unmintToken,
+    uuidToBase58,
 };
