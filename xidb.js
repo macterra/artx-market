@@ -929,8 +929,8 @@ const getNft = (xid) => {
     const metadataContent = fs.readFileSync(jsonPath, 'utf-8');
     const metadata = JSON.parse(metadataContent);
 
-    // Retrieve latest history
     metadata.token = getAsset(metadata.token.xid);
+    enrichAsset(metadata.token); // Retrieve latest history
 
     const adminData = getAdmin();
     const certId = adminData.latest;
