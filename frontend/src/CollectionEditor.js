@@ -34,7 +34,7 @@ const CollectionEditor = ({ navigate }) => {
     const handleSaveClick = async () => {
         try {
             const response = await fetch(`/api/v1/collections/${selectedCollection.xid}`, {
-                method: 'POST',
+                method: 'PATCH',
                 headers: { 'Content-Type': 'application/json', },
                 body: JSON.stringify(selectedCollection),
             });
@@ -43,7 +43,7 @@ const CollectionEditor = ({ navigate }) => {
                 setSaved(true);
             } else {
                 const data = await response.json();
-                console.error('Error updating profile:', data.message);
+                console.error('Error updating collection:', data.message);
                 alert(data.message);
             }
         } catch (error) {
@@ -161,6 +161,7 @@ const CollectionEditor = ({ navigate }) => {
                             }
                             fullWidth
                             margin="normal"
+                            inputProps={{ maxLength: 40 }}
                         />
                         <TextField
                             label="Default Title"
@@ -170,6 +171,7 @@ const CollectionEditor = ({ navigate }) => {
                             }
                             fullWidth
                             margin="normal"
+                            inputProps={{ maxLength: 40 }}
                         />
                         <Select
                             label="Default License"

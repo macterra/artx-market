@@ -1573,6 +1573,7 @@ module.exports = {
     removeCollection,
     saveAdmin,
     saveAgent,
+    saveAsset,
     saveAuditLog,
     saveCollection,
     saveHistory,

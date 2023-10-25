@@ -7,6 +7,7 @@ const LnurlAuth = require('passport-lnurl-auth');
 const session = require('express-session');
 const morgan = require('morgan');
 const cron = require('node-cron');
+const assert = require('assert');
 const { requestInvoice } = require('lnurl-pay');
 const axios = require('axios');
 
@@ -200,18 +201,18 @@ app.get('/api/v1/rates', async (req, res) => {
   }
 });
 
-app.get('/api/v1/licenses', async (req, res) => {
-  licenses = {
-    "CC BY": "https://creativecommons.org/licenses/by/4.0/",
-    "CC BY-SA": "https://creativecommons.org/licenses/by-sa/4.0/",
-    "CC BY-NC": "https://creativecommons.org/licenses/by-nc/4.0/",
-    "CC BY-ND": "https://creativecommons.org/licenses/by-nd/4.0/",
-    "CC BY-NC-SA": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
-    "CC BY-NC-ND": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
-    "CC0": "https://creativecommons.org/publicdomain/zero/1.0/",
-  };
+const ValidLicenses = {
+  "CC BY": "https://creativecommons.org/licenses/by/4.0/",
+  "CC BY-SA": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "CC BY-NC": "https://creativecommons.org/licenses/by-nc/4.0/",
+  "CC BY-ND": "https://creativecommons.org/licenses/by-nd/4.0/",
+  "CC BY-NC-SA": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+  "CC BY-NC-ND": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+  "CC0": "https://creativecommons.org/publicdomain/zero/1.0/",
+};
 
-  res.json(licenses);
+app.get('/api/v1/licenses', async (req, res) => {
+  res.json(ValidLicenses);
 });
 
 app.get('/api/v1/admin', ensureAuthenticated, async (req, res) => {
@@ -784,11 +785,12 @@ app.get('/api/v1/collections/:xid', async (req, res) => {
   }
 });
 
-app.post('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => {
+app.patch('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => {
   try {
+    const userId = req.user?.xid;
     const collection = req.body;
 
-    if (req.user.xid != collection.asset.owner) {
+    if (userId != collection.asset.owner) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
@@ -796,7 +798,42 @@ app.post('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const ok = xidb.saveCollection(collection);
+    const currentCollection = xidb.getAsset(req.params.xid);
+
+    assert.ok(collection.xid === currentCollection.xid);
+    assert.ok(currentCollection.collection);
+
+    const title = collection.asset.title.substring(0, 40);
+
+    if (title.length) {
+      currentCollection.asset.title = title;
+    }
+
+    const defaultTitle = collection.collection.default.title.substring(0, 40);
+
+    if (defaultTitle.length) {
+      currentCollection.collection.default.title = defaultTitle;
+    }
+
+    const defaultLicense = collection.collection.default.license;
+
+    if (ValidLicenses.hasOwnProperty(defaultLicense)) {
+      currentCollection.collection.default.license = defaultLicense;
+    }
+
+    const defaultRoyalty = parseInt(collection.collection.default.royalty);
+
+    if (defaultRoyalty >= 0 && defaultRoyalty <= 25) {
+      currentCollection.collection.default.royalty = defaultRoyalty;
+    }
+
+    const defaultEditions = parseInt(collection.collection.default.editions);
+
+    if (defaultEditions >= 0 && defaultEditions <= 100) {
+      currentCollection.collection.default.editions = defaultEditions;
+    }
+
+    xidb.saveAsset(currentCollection);
     xidb.commitChanges(`Updated collection ${collection.xid}`);
     res.json({ message: 'Collection updated successfully' });
   } catch (error) {
