@@ -15,7 +15,7 @@ import {
 import axios from 'axios';
 import InvoiceView from './InvoiceView';
 
-const TokenTrader = ({ metadata, setRefreshKey }) => {
+const TokenTrader = ({ metadata, xid, setRefreshKey }) => {
     const [nfts, setNfts] = useState(0);
     const [exchangeRate, setExchangeRate] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
@@ -32,10 +32,18 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
 
                 const nfts = [];
 
-                for (const xid of metadata.token.nfts) {
+                if (xid) {
+                    // single NFT specified from NftView
                     const response = await fetch(`/api/v1/asset/${xid}`);
                     const nft = await response.json();
                     nfts.push(nft);
+                }
+                else {
+                    for (const xid of metadata.token.nfts) {
+                        const response = await fetch(`/api/v1/asset/${xid}`);
+                        const nft = await response.json();
+                        nfts.push(nft);
+                    }
                 }
 
                 setNfts(nfts);
@@ -94,7 +102,7 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
 
         return (
             <TableRow>
-                <TableCell>{nft.asset.title}</TableCell>
+                <TableCell><a href={`/nft/${nft.xid}`}>{nft.asset.title}</a></TableCell>
                 <TableCell align="right">{usdPrice}</TableCell>
                 {nft.userIsOwner ?
                     (
@@ -217,12 +225,18 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
                     <TableBody>
                         <TableRow>
                             <TableCell>Title:</TableCell>
-                            <TableCell>{metadata.asset.title}</TableCell>
+                            {xid ? (
+                                <TableCell>{metadata.asset.title} ({nfts[0].asset.title})</TableCell>
+                            ) : (
+                                <TableCell>{metadata.asset.title}</TableCell>
+                            )}
                         </TableRow>
-                        <TableRow>
-                            <TableCell>Editions:</TableCell>
-                            <TableCell>{metadata.token.editions > 1 ? metadata.token.editions : "1 of 1"}</TableCell>
-                        </TableRow>
+                        {!xid &&
+                            <TableRow>
+                                <TableCell>Editions:</TableCell>
+                                <TableCell>{metadata.token.editions > 1 ? metadata.token.editions : "1 of 1"}</TableCell>
+                            </TableRow>
+                        }
                         <TableRow>
                             <TableCell>Exchange rate:</TableCell>
                             <TableCell>{exchangeRate} USD/BTC</TableCell>
