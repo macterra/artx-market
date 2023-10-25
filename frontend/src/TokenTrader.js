@@ -228,8 +228,7 @@ const TokenTrader = ({ metadata, setRefreshKey }) => {
                             <TableCell>{exchangeRate} USD/BTC</TableCell>
                         </TableRow>
                         <TableRow>
-                            <TableCell>Trade:</TableCell>
-                            <TableCell>
+                            <TableCell colSpan={2}>
                                 <TableContainer component={Paper} style={{ maxHeight: '600px', overflow: 'auto' }}>
                                     <Table>
                                         <TableHead>
