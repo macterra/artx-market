@@ -833,7 +833,7 @@ app.patch('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => {
       currentCollection.collection.default.editions = defaultEditions;
     }
 
-    xidb.saveAsset(currentCollection);
+    xidb.saveCollection(currentCollection);
     xidb.commitChanges(`Updated collection ${collection.xid}`);
     res.json({ message: 'Collection updated successfully' });
   } catch (error) {
