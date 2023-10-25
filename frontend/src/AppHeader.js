@@ -83,8 +83,8 @@ const AppHeader = ({ navigate, xid }) => {
                     <Button color="inherit" onClick={() => navigate('/')}>
                         Home
                     </Button>
-                    {userId && xid === userId ?
-                        (
+                    {userId && (
+                        xid === userId ? (
                             <Button color="inherit" onClick={() => navigate(`/profile/edit/`)}>
                                 Edit Profile
                             </Button>
@@ -92,7 +92,8 @@ const AppHeader = ({ navigate, xid }) => {
                             <Button color="inherit" onClick={() => navigate(`/profile/${userId}`)}>
                                 Profile
                             </Button>
-                        )}
+                        )
+                    )}
                     {isAdmin &&
                         <Button color="inherit" onClick={() => navigate('/admin')}>
                             Admin
