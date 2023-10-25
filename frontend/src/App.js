@@ -75,7 +75,7 @@ function ViewProfile() {
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
       <div className="App">
-        <AppHeader navigate={navigate} />
+        <AppHeader navigate={navigate} xid={userId} />
         <header className="App-header">
           <Box display="flex" flexDirection="column" flexGrow={1}>
             <ProfileHeader

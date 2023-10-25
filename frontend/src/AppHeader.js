@@ -16,7 +16,7 @@ import {
 
 import BuildTime from './BuildTime';
 
-const AppHeader = ({ navigate }) => {
+const AppHeader = ({ navigate, xid }) => {
 
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [userId, setUserId] = useState(null);
@@ -83,11 +83,16 @@ const AppHeader = ({ navigate }) => {
                     <Button color="inherit" onClick={() => navigate('/')}>
                         Home
                     </Button>
-                    {userId && (
-                        <Button color="inherit" onClick={() => navigate(`/profile/${userId}`)}>
-                            Profile
-                        </Button>
-                    )}
+                    {userId && xid === userId ?
+                        (
+                            <Button color="inherit" onClick={() => navigate(`/profile/edit/`)}>
+                                Edit Profile
+                            </Button>
+                        ) : (
+                            <Button color="inherit" onClick={() => navigate(`/profile/${userId}`)}>
+                                Profile
+                            </Button>
+                        )}
                     {isAdmin &&
                         <Button color="inherit" onClick={() => navigate('/admin')}>
                             Admin

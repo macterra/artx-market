@@ -73,8 +73,8 @@ const ProfileHeader = ({ navigate, userId, refreshProfile }) => {
             </div>
             {profile.isUser &&
                 <div style={{ marginLeft: 'auto', marginRight: '20px' }}>
-                    <Button variant="contained" color="primary" onClick={() => navigate('/profile/edit')} style={{ marginRight: '10px' }}>
-                        Edit Profile
+                    <Button variant="contained" color="primary" onClick={() => navigate('/profile/edit/coll')} style={{ marginRight: '10px' }}>
+                        Edit Collections
                     </Button>
                     <Button variant="contained" color="primary" onClick={() => navigate('/profile/edit/credits')}>
                         Credits: {profile.credits}

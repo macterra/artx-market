@@ -51,8 +51,8 @@ const ProfileEditor = ({ navigate, refreshProfile, setRefreshProfile }) => {
     return (
         <Box>
             <Box display="flex" alignItems="center" justifyContent="center">
-                <div>Edit Profile ::</div>
                 <AgentBadge agent={profile} refreshProfile={refreshProfile} />
+                <div>Edit Profile</div>
             </Box>
             <Tabs
                 value={tab}
