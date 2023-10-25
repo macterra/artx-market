@@ -42,7 +42,7 @@ const ProfileEditor = ({ navigate, refreshProfile, setRefreshProfile }) => {
         };
 
         fetchProfile();
-    }, [navigate, jump, refreshProfile]);
+    }, [navigate, tab, jump, refreshProfile]);
 
     if (!profile) {
         return;

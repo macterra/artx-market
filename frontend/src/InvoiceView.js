@@ -7,9 +7,9 @@ const InvoiceView = ({ invoice }) => {
     const [expired, setExpired] = useState(false);
     const [paid, setPaid] = useState(false);
 
-    let timerId;
-
     useEffect(() => {
+        let timerId;
+
         if (paid) {
             clearInterval(timerId);
             return;

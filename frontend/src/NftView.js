@@ -14,17 +14,13 @@ const NftView = ({ navigate }) => {
     const [isOwner, setIsOwner] = useState(false);
     const [tab, setTab] = useState("edition");
     const [refreshKey, setRefreshKey] = useState(0);
-    const [isAuthenticated, setIsAuthenticated] = useState(null);
 
     useEffect(() => {
         const fetchMetadata = async () => {
             try {
-                const auth = await axios.get('/check-auth');
-                const isAuthenticated = auth.data.isAuthenticated;
                 const asset = await axios.get(`/api/v1/nft/${xid}`);
                 const nft = asset.data;
 
-                setIsAuthenticated(isAuthenticated);
                 setNft(nft);
                 setIsOwner(nft.owned);
             } catch (error) {

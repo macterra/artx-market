@@ -19,35 +19,18 @@ const AssetView = ({ navigate }) => {
     const [isDeleted, setIsDeleted] = useState(false);
     const [tab, setTab] = useState("meta");
     const [refreshKey, setRefreshKey] = useState(0);
-    const [isAuthenticated, setIsAuthenticated] = useState(null);
 
     useEffect(() => {
         const fetchMetadata = async () => {
             try {
-                const auth = await axios.get('/check-auth');
-                const isAuthenticated = auth.data.isAuthenticated;
-                setIsAuthenticated(isAuthenticated);
-
                 const asset = await axios.get(`/api/v1/asset/${xid}`);
                 const metadata = asset.data;
                 setMetadata(metadata);
-
-                const isToken = !!metadata.token;
-                setIsToken(isToken);
-
-                if (metadata.asset.collection === 'deleted') {
-                    setIsDeleted(true);
-                } else {
-                    setIsDeleted(false);
-                }
-
-                if (isAuthenticated) {
-                    setIsOwner(metadata.userIsOwner);
-                } else {
-                    setIsOwner(false);
-                }
+                setIsToken(!!metadata.token);
+                setIsDeleted(metadata.asset.collection === 'deleted');
+                setIsOwner(metadata.userIsOwner);
             } catch (error) {
-                console.error('Error fetching image metadata:', error);
+                console.error('Error fetching metadata:', error);
             }
         };
 

@@ -8,7 +8,6 @@ import {
     TableHead,
     Paper,
 } from '@mui/material';
-import AgentBadge from './AgentBadge';
 
 const AuditLog = () => {
     const [txnlog, setTxnLog] = useState([]);
