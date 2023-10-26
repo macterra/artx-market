@@ -81,7 +81,7 @@ passport.use(new LnurlAuth.Strategy(async function (pubkey, done) {
 
       if (!agentData) {
         agentData = await xidb.createAgent(pubkey);
-        xidb.commitChanges(`New agent ${agentData.xid}`);
+        xidb.commitChanges({ type: 'create', agent: agentData.xid });
       }
 
       console.log(`passport ${pubkey} ${agentData.xid}`);
@@ -240,6 +240,7 @@ app.get('/api/v1/admin/claim', ensureAuthenticated, async (req, res) => {
 
     adminData.owner = req.user.xid;
     const savedAdmin = await xidb.saveAdmin(adminData);
+    adminData.githash = await xidb.commitChanges({ type: 'claim-state', agent: req.user.xid, state: savedAdmin.xid });
     res.json(savedAdmin);
   } catch (error) {
     console.error('Error reading metadata:', error);
@@ -256,6 +257,7 @@ app.get('/api/v1/admin/save', ensureAuthenticated, async (req, res) => {
     }
 
     const savedAdmin = await xidb.saveAdmin(adminData);
+    adminData.githash = await xidb.commitChanges({ type: 'save-state', agent: req.user.xid, state: savedAdmin.xid });
     res.json(savedAdmin);
   } catch (error) {
     console.error('Error reading metadata:', error);
@@ -276,6 +278,7 @@ app.get('/api/v1/admin/register', ensureAuthenticated, async (req, res) => {
     }
 
     const savedAdmin = await xidb.registerState(adminData);
+    adminData.githash = await xidb.commitChanges({ type: 'register-state', agent: req.user.xid, state: savedAdmin.xid });
     res.json(savedAdmin);
   } catch (error) {
     console.error('Error reading metadata:', error);
@@ -300,6 +303,11 @@ app.get('/api/v1/admin/notarize', ensureAuthenticated, async (req, res) => {
     }
 
     const savedAdmin = await xidb.notarizeState(adminData);
+
+    if (savedAdmin.pending) {
+      savedAdmin.githash = await xidb.commitChanges({ type: 'notarize-state', agent: req.user.xid, state: savedAdmin.xid, txn: savedAdmin.pending });
+    }
+
     res.json(savedAdmin);
   } catch (error) {
     console.error('Error reading metadata:', error);
@@ -320,6 +328,11 @@ app.get('/api/v1/admin/certify', ensureAuthenticated, async (req, res) => {
     }
 
     const savedAdmin = await xidb.certifyState(adminData);
+
+    if (!savedAdmin.pending) {
+      savedAdmin.githash = await xidb.commitChanges({ type: 'certify-state', agent: req.user.xid, state: savedAdmin.xid, cert: savedAdmin.latest });
+    }
+
     res.json(savedAdmin);
   } catch (error) {
     console.error('Error reading metadata:', error);
@@ -470,9 +483,10 @@ app.patch('/api/v1/asset/:xid', ensureAuthenticated, async (req, res) => {
       assetData.asset.collection = collection;
     }
 
-    await xidb.commitAsset(assetData);
+    xidb.saveAsset(assetData);
+    xidb.commitChanges({ type: 'update', agent: userId, asset: assetData.xid });
 
-    res.json({ message: 'Metadata updated successfully' });
+    res.json({ message: 'Asset saved successfully' });
   } catch (error) {
     console.error('Error updating metadata:', error);
     res.status(500).json({ message: 'Error updating metadata' });
@@ -497,8 +511,8 @@ app.post('/api/v1/asset/:xid/mint', ensureAuthenticated, async (req, res) => {
     }
 
     const record = {
-      "type": "mint",
-      "creator": userId,
+      type: "mint",
+      creator: userId,
     };
 
     xidb.saveHistory(xid, record);
@@ -506,13 +520,13 @@ app.post('/api/v1/asset/:xid/mint', ensureAuthenticated, async (req, res) => {
     const mint = await xidb.createToken(userId, xid, editions, license, royalty / 100);
 
     const txn = {
-      'type': 'mint',
-      'xid': xid,
-      'credits': mint.mintFee,
+      type: 'mint',
+      xid: xid,
+      credits: mint.mintFee,
     };
 
     xidb.saveTxnLog(userId, txn);
-    xidb.commitChanges(`Minted ${editions} edition(s) of ${xid}`);
+    xidb.commitChanges({ type: 'mint', agent: userId, asset: xid, editions: editions });
 
     res.json(mint);
   } catch (error) {
@@ -540,13 +554,14 @@ app.get('/api/v1/asset/:xid/unmint', ensureAuthenticated, async (req, res) => {
     const unmint = await xidb.unmintToken(userId, xid);
 
     const txn = {
-      'type': 'unmint',
-      'xid': xid,
-      'credits': unmint.refund,
+      type: 'unmint',
+      xid: xid,
+      credits: unmint.refund,
     };
 
     xidb.saveTxnLog(userId, txn);
-    xidb.commitChanges(`Unminted ${xid}`);
+    xidb.commitChanges({ type: 'unmint', agent: userId, asset: xid });
+
     res.json(unmint);
   } catch (error) {
     console.error('Error:', error);
@@ -577,17 +592,18 @@ app.post('/api/v1/asset/:xid/list', ensureAuthenticated, async (req, res) => {
       assetData.nft.price = newPrice;
 
       const record = {
-        "type": "list",
-        "seller": userId,
-        "edition": xid,
-        "price": newPrice
+        type: 'list',
+        seller: userId,
+        edition: xid,
+        price: newPrice
       };
 
       xidb.saveHistory(assetData.nft.asset, record);
-      await xidb.commitAsset(assetData, 'Listed');
-    }
+      xidb.saveAsset(assetData);
+      xidb.commitChanges({ type: 'list', agent: userId, asset: xid, price: newPrice });
 
-    res.json({ ok: true, message: 'Success' });
+      res.json({ message: 'Asset listed successfully' });
+    }
   } catch (error) {
     console.error('Error:', error);
     res.status(500).json({ message: 'Error' });
@@ -609,13 +625,11 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
       return res.status(500).json({ message: "Already owned" });
     }
 
-    const purchase = await xidb.purchaseAsset(xid, buyerId, invoice);
+    const sale = await xidb.purchaseAsset(xid, buyerId, invoice);
 
-    if (purchase.ok) {
-      xidb.commitChanges(purchase.message);
-    }
+    xidb.commitChanges({ type: 'sale', agent: buyerId, asset: xid, price: assetData.nft.price });
 
-    res.json(purchase);
+    res.json(sale);
   } catch (error) {
     console.error('Error:', error);
     res.status(500).json({ message: 'Error' });
@@ -705,7 +719,7 @@ app.patch('/api/v1/profile/', ensureAuthenticated, async (req, res) => {
     }
 
     xidb.saveAgent(agentData);
-    xidb.commitChanges(`Updated agent ${agentData.xid}`);
+    xidb.commitChanges({ type: 'update', agent: userId });
     res.json({ message: 'Metadata updated successfully' });
   } catch (error) {
     console.error('Error updating metadata:', error);
@@ -749,8 +763,8 @@ app.post('/api/v1/profile/credit', ensureAuthenticated, async (req, res) => {
         'credits': invoice.amount,
       };
 
-      xidb.saveTxnLog(req.user.xid, txn);
-      xidb.commitChanges(`Agent ${req.user.xid} bought ${invoice.amount} credits`);
+      xidb.saveTxnLog(userId, txn);
+      xidb.commitChanges({ type: 'credits', agent: userId, credits: invoice.amount });
       res.json(agentData);
     }
     else {
@@ -766,7 +780,7 @@ app.get('/api/v1/collections/', async (req, res) => {
   try {
     const userId = req.user?.xid;
     const collection = xidb.createCollection(userId, "new");
-    xidb.commitChanges(`New collection ${collection.xid}`);
+    xidb.commitChanges({ type: 'create', agent: userId, asset: collection.xid });
     res.json(collection);
   } catch (error) {
     console.error('Error processing request:', error);
@@ -809,6 +823,13 @@ app.patch('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => {
       currentCollection.asset.title = title;
     }
 
+    const thumbnail = collection.collection.thumbnail;
+
+    if (thumbnail) {
+      /// !!! validate thumbnail
+      currentCollection.collection.thumbnail = thumbnail;
+    }
+
     const defaultTitle = collection.collection.default.title.substring(0, 40);
 
     if (defaultTitle.length) {
@@ -834,7 +855,7 @@ app.patch('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => {
     }
 
     xidb.saveCollection(currentCollection);
-    xidb.commitChanges(`Updated collection ${collection.xid}`);
+    xidb.commitChanges({ type: 'update', agent: userId, asset: collection.xid });
     res.json({ message: 'Collection updated successfully' });
   } catch (error) {
     console.error('Error processing request:', error);
@@ -878,29 +899,8 @@ app.get('/api/v1/collections/:xid/mint-all', ensureAuthenticated, async (req, re
       }
     }
 
-    xidb.commitChanges(`Mint all unminted assets of ${xid}`);
+    xidb.commitChanges({ type: 'mint-all', agent: userId, asset: xid });
     res.json({ message: 'Mint all success' });
-  } catch (error) {
-    console.error('Error processing request:', error);
-    res.status(500).json({ error: 'An error occurred while processing the request.' });
-  }
-});
-
-app.patch('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => {
-  try {
-    const { thumbnail } = req.body;
-    const collection = xidb.getAsset(req.params.xid);
-
-    if (req.user.xid != collection.asset.owner) {
-      return res.status(401).json({ message: 'Unauthorized' });
-    }
-
-    if (thumbnail) {
-      collection.collection.thumbnail = thumbnail;
-    }
-
-    await xidb.commitAsset(collection);
-    res.json({ message: 'Collection updated successfully' });
   } catch (error) {
     console.error('Error processing request:', error);
     res.status(500).json({ error: 'An error occurred while processing the request.' });
@@ -921,7 +921,7 @@ app.delete('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => 
     }
 
     xidb.removeCollection(collection);
-    xidb.commitChanges(`Deleted collection ${collection.xid}`);
+    xidb.commitChanges({ type: 'delete', agent: userId, asset: collection.xid });
     res.json({ message: 'Collection removed successfully' });
   } catch (error) {
     console.error('Error processing request:', error);
@@ -941,7 +941,7 @@ app.post('/api/v1/collections/:xid/upload', ensureAuthenticated, upload.array('i
       'credits': upload.creditsDebited,
     };
     xidb.saveTxnLog(req.user.xid, txn);
-    xidb.commitChanges(`${upload.filesUploaded} assets uploaded by ${req.user.xid}`);
+    xidb.commitChanges({ type: 'upload', agent: req.user.xid, asset: collectionId, files: upload.filesUploaded, bytes: upload.bytesUploaded });
     res.status(200).json(upload);
   } catch (error) {
     console.error('Error processing files:', error);
@@ -977,7 +977,7 @@ cron.schedule('* * * * *', async () => {
     console.log(`Pending txn ${adminData.pending}...`);
     const savedAdmin = await xidb.certifyState(adminData);
     if (!savedAdmin.pending) {
-      console.log(`New certificate ${adminData.latest}`);
+      xidb.commitChanges({ type: 'certify-state', state: savedAdmin.xid, cert: savedAdmin.latest });
     }
   }
 });
@@ -989,12 +989,23 @@ cron.schedule('0 0 * * *', async () => {
     console.log(`Notarizing market state...`);
     const savedAdmin = await xidb.notarizeState(adminData);
     if (savedAdmin.pending) {
-      console.log(`Pending txn ${adminData.pending}`);
+      xidb.commitChanges({ type: 'notarize-state', state: savedAdmin.xid, txn: savedAdmin.pending });
     }
   }
 });
 
+// Check pending txn every minute
+// cron.schedule('* * * * *', async () => {
+//   const res = xidb.sendAnnouncements();
+//   if (res.message) {
+//     xidb.commitChanges(res.message);
+//   }
+// });
+
 xidb.integrityCheck().then(() => {
+
+  xidb.commitChanges({ type: 'restart' });
+
   app.listen(config.port, () => {
     console.log(`ArtX server running on ${config.host}:${config.port}`);
   });

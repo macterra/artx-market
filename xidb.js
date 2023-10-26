@@ -11,7 +11,9 @@ const config = require('./config');
 const lnbits = require('./lnbits');
 
 // Function to add all changes, commit, and push
-const commitChanges = async (commitMessage) => {
+const commitChanges = async (event) => {
+    const commitMessage = JSON.stringify(event);
+    
     try {
         const response = await fetch(`${config.archiver}/api/v1/commit`, {
             method: 'POST',
@@ -105,8 +107,6 @@ const saveAdmin = async (adminData) => {
     // Make sure we have something to commitq
     fs.writeFileSync(jsonPath, JSON.stringify(adminData, null, 2));
 
-    adminData.githash = await commitChanges("Save admin");
-
     return adminData;
 };
 
@@ -170,8 +170,6 @@ const certifyState = async (adminState) => {
 
             const jsonPath = path.join(config.data, 'meta.json');
             fs.writeFileSync(jsonPath, JSON.stringify(adminState, null, 2));
-
-            await commitChanges(`new certificate ${cert.xid}`);
         }
     }
 
@@ -257,8 +255,6 @@ const integrityCheck = async () => {
             console.log(`${index} Agent ${xid} ✘ ${res.message}`);
         }
     }
-
-    await commitChanges("All assets and agents updated and/or repaired");
 };
 
 const allAssets = () => {
@@ -1032,11 +1028,6 @@ const saveHistory = (xid, record) => {
     fs.appendFileSync(jsonlPath, recordString + '\n');
 };
 
-const commitAsset = async (metadata, action) => {
-    saveAsset(metadata);
-    await commitChanges(`${action || 'Updated'} asset ${metadata.xid}`);
-};
-
 const isOwner = (metadata, agentId) => {
     if (!agentId) {
         return false;
@@ -1242,12 +1233,12 @@ const createToken = async (userId, xid, editions, license, royalty) => {
     saveAgent(agentData);
 
     return {
-        "xid": xid,
-        "cid": ipfs.cid,
-        "editions": editions,
-        "storageFee": storageFee,
-        "editionFee": editionFee,
-        "mintFee": mintFee,
+        xid: xid,
+        cid: ipfs.cid,
+        editions: editions,
+        storageFee: storageFee,
+        editionFee: editionFee,
+        mintFee: mintFee,
     };
 };
 
@@ -1474,7 +1465,7 @@ const purchaseAsset = async (xid, buyerId, invoice) => {
 
     saveAuditLog(audit);
 
-    return { ok: true, message: `Purchase: ${sellerId} sold ${xid} to ${buyerId} for ${price} sats` };
+    return record;
 };
 
 const pinAsset = async (xid) => {
@@ -1545,7 +1536,6 @@ module.exports = {
     allAssets,
     buyCredits,
     certifyState,
-    commitAsset,
     commitChanges,
     createAgent,
     createAssets,
