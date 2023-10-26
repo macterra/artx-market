@@ -225,13 +225,13 @@ const TokenTrader = ({ metadata, xid, setRefreshKey }) => {
                     <TableBody>
                         <TableRow>
                             <TableCell>Title:</TableCell>
-                            {xid ? (
+                            {nfts.length === 1 ? (
                                 <TableCell>{metadata.asset.title} ({nfts[0].asset.title})</TableCell>
                             ) : (
                                 <TableCell>{metadata.asset.title}</TableCell>
                             )}
                         </TableRow>
-                        {!xid &&
+                        {nfts.length > 1 &&
                             <TableRow>
                                 <TableCell>Editions:</TableCell>
                                 <TableCell>{metadata.token.editions > 1 ? metadata.token.editions : "1 of 1"}</TableCell>
