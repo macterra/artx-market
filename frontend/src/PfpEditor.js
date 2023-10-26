@@ -46,10 +46,14 @@ const PfpEditor = ({ metadata, setTab }) => {
 
     const handleSaveThumbnail = async () => {
         try {
-            const response = await fetch(`/api/v1/collections/${metadata.asset.collection}`, {
+            const response = await fetch(`/api/v1/asset/${metadata.asset.collection}`);
+            const collection = await response.json();
+            collection.collection.thumbnail = metadata.file.path;
+
+            response = await fetch(`/api/v1/collections/${metadata.asset.collection}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json', },
-                body: JSON.stringify({ thumbnail: metadata.file.path }),
+                body: JSON.stringify(collection),
             });
 
             if (response.ok) {
