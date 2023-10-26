@@ -1,4 +1,5 @@
 import React from 'react';
+import utils from './utils';
 
 const CollectionCard = ({ collection }) => {
     const cardStyle = {
@@ -38,21 +39,12 @@ const CollectionCard = ({ collection }) => {
         color: '#ffffff',
     };
 
-    function truncateTitle(title) {
-        if (title.length > 25) {
-            return title.substring(0, 25) + '...';
-        }
-        else {
-            return title;
-        }
-    }
-
     return (
         <div style={cardStyle}>
             <div style={imgContainerStyle}>
                 <img src={collection.collection.thumbnail} style={imgStyle} alt={collection.asset.title} />
             </div>
-            <p style={titleStyle}>{truncateTitle(collection.asset.title)}</p>
+            <p style={titleStyle}>{utils.truncateTitle(collection.asset.title)}</p>
             <p style={titleStyle}>{collection.collection.assets.length} items</p>
         </div>
     );

@@ -1,5 +1,5 @@
-
 import React from 'react';
+import utils from './utils';
 
 const ImageCard = ({ metadata }) => {
     const cardStyle = {
@@ -38,24 +38,12 @@ const ImageCard = ({ metadata }) => {
         color: '#ffffff',
     };
 
-    function truncateTitle(title) {
-        if (title.length > 25) {
-            return title.substring(0, 25) + '...';
-        }
-        else if (!title) {
-            return 'untitled';
-        }
-        else {
-            return title;
-        }
-    }
-
     return (
         <div style={cardStyle}>
             <div style={imgContainerStyle}>
                 <img src={metadata.file.path} style={imgStyle} alt={metadata.asset.title || 'untitled'} />
             </div>
-            <p style={titleStyle}>{truncateTitle(metadata.asset.title)}</p>
+            <p style={titleStyle}>{utils.truncateTitle(metadata.asset.title)}</p>
             {metadata.label &&
                 <p style={titleStyle}>{metadata.label}</p>
             }

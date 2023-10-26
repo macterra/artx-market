@@ -7,6 +7,8 @@ import {
     TableRow,
     Button,
 } from '@mui/material';
+
+import utils from './utils';
 import AgentBadge from './AgentBadge';
 
 function findAdjacentXids(list, targetXid) {
@@ -64,7 +66,7 @@ const MetadataView = ({ navigate, metadata }) => {
                     const { firstXid, prevXid, nextXid, lastXid } = findAdjacentXids(collectionData.collection.assets, metadata.xid);
 
                     setCollectionId(collectionData.xid);
-                    setCollectionName(collectionData.asset.title);
+                    setCollectionName(utils.truncateTitle(collectionData.asset.title, 20));
                     setFirstXid(firstXid);
                     setPrevXid(prevXid);
                     setNextXid(nextXid);
@@ -89,32 +91,6 @@ const MetadataView = ({ navigate, metadata }) => {
                     <TableRow>
                         <TableCell>Title:</TableCell>
                         <TableCell>{metadata.asset.title}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                        <TableCell>Creator:</TableCell>
-                        <TableCell>
-                            <AgentBadge xid={metadata.asset.owner} />
-                        </TableCell>
-                    </TableRow>
-                    <TableRow>
-                        <TableCell>Created:</TableCell>
-                        <TableCell>{metadata.asset.created}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                        <TableCell>Updated:</TableCell>
-                        <TableCell>{metadata.asset.updated}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                        <TableCell>File size:</TableCell>
-                        <TableCell>{metadata.file.size} bytes</TableCell>
-                    </TableRow>
-                    <TableRow>
-                        <TableCell>Image size:</TableCell>
-                        <TableCell>{metadata.image.width} x {metadata.image.height}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                        <TableCell>Image format:</TableCell>
-                        <TableCell>{metadata.image.format}</TableCell>
                     </TableRow>
                     {!isDeleted &&
                         <TableRow>
@@ -153,6 +129,32 @@ const MetadataView = ({ navigate, metadata }) => {
                             </TableCell>
                         </TableRow>
                     }
+                    <TableRow>
+                        <TableCell>Creator:</TableCell>
+                        <TableCell>
+                            <AgentBadge xid={metadata.asset.owner} />
+                        </TableCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableCell>Created:</TableCell>
+                        <TableCell>{metadata.asset.created}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableCell>Updated:</TableCell>
+                        <TableCell>{metadata.asset.updated}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableCell>File size:</TableCell>
+                        <TableCell>{metadata.file.size} bytes</TableCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableCell>Image size:</TableCell>
+                        <TableCell>{metadata.image.width} x {metadata.image.height}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableCell>Image format:</TableCell>
+                        <TableCell>{metadata.image.format}</TableCell>
+                    </TableRow>
                 </TableBody>
             </Table>
         </TableContainer>
