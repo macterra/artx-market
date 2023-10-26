@@ -15,8 +15,12 @@ services:
       LN_ADMIN_KEY: ${LN_ADMIN_KEY}
       LN_API_KEY: ${LN_API_KEY}
       LN_WALLET: ${LN_WALLET}
+      NOSTR_KEY: ${NOSTR_KEY}
+      NOSTR_RELAYS: ws://nostr:7777,ws://taranis:4848
+      NOSTR_ANNOUNCE: sale,list
     depends_on:
       - archiver
+      - nostr
 
   ipfs:
     image: ipfs/go-ipfs:v0.20.0

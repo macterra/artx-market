@@ -22,6 +22,8 @@ const config = {
     ln_api_key: process.env.LN_API_KEY,
     ln_admin_key: process.env.LN_ADMIN_KEY,
     nostr_key: process.env.NOSTR_KEY,
+    nostr_relays: process.env.NOSTR_RELAYS,
+    nostr_announce: process.env.NOSTR_ANNOUNCE,
     data: 'data',
     uploads: 'data/uploads',
     assets: 'data/assets',

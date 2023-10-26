@@ -1,13 +1,14 @@
 
 const WebSocket = require('ws');
-const config = require('./config');
-
 const {
     finishEvent,
     validateEvent,
     verifySignature,
     getPublicKey
 } = require('nostr-tools');
+
+const config = require('./config');
+const xidb = require('./xidb');
 
 const RELAYS = {};
 
@@ -76,7 +77,7 @@ function countOpenRelays() {
 function subscribeToRelays() {
     const filters = {
         kinds: [1],
-        limit: 1000,
+        limit: 0,
     };
 
     sendRequest(filters);
@@ -123,7 +124,52 @@ function sendRequest(filters) {
     }
 }
 
+function createAnnouncement(event) {
+    if (event.type === 'list') {
+        const nft = xidb.getNft(event.asset);
+        const announcement = `New listing! "${nft.token.asset.title} (${nft.asset.title})" by ${nft.creator.name} for ${event.price} sats\n\n${nft.nft.link}\n\n${nft.nft.preview}`;
+        return createMessage(announcement);
+    }
+
+    if (event.type === 'sale') {
+        const nft = xidb.getNft(event.asset);
+        const announcement = `Congratulations to ${nft.owner.name} for collecting "${nft.token.asset.title} (${nft.asset.title})" by ${nft.creator.name}!\n\n${nft.nft.link}\n\n${nft.nft.preview}`;
+        return createMessage(announcement);
+    }
+};
+
+async function announce(event) {
+    console.log(`nostr: announce types ${config.nostr_announce} to relays ${config.nostr_relays}`);
+
+    const types = config.nostr_announce.split(',');
+
+    if (!types.includes(event.type)) {
+        console.log(`nostr: ${event.type} not in ${config.nostr_announce} so no announcement`);
+        return;
+    }
+
+    const message = createAnnouncement(event);
+    const relays = config.nostr_relays.split(',');
+
+    for (let relay of relays) {
+        openRelay(relay);
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 3000));
+
+    subscribeToRelays();
+
+    console.log(`nostr: announce: ${message.content} on open relays: ${countOpenRelays()}`);
+
+    sendEvent(message);
+
+    await new Promise(resolve => setTimeout(resolve, 3000));
+
+    closeRelays();
+}
+
 module.exports = {
+    announce,
     closeRelays,
     countOpenRelays,
     createMessage,

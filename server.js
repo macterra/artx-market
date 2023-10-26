@@ -14,6 +14,7 @@ const axios = require('axios');
 const config = require('./config');
 const lnbits = require('./lnbits');
 const xidb = require('./xidb');
+const nostr = require('./nostr');
 
 const app = express();
 
@@ -600,7 +601,10 @@ app.post('/api/v1/asset/:xid/list', ensureAuthenticated, async (req, res) => {
 
       xidb.saveHistory(assetData.nft.asset, record);
       xidb.saveAsset(assetData);
-      xidb.commitChanges({ type: 'list', agent: userId, asset: xid, price: newPrice });
+
+      const event = { type: 'list', agent: userId, asset: xid, price: newPrice };
+      xidb.commitChanges(event);
+      nostr.announce(event);
 
       res.json({ message: 'Asset listed successfully' });
     }
@@ -627,7 +631,9 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
 
     const sale = await xidb.purchaseAsset(xid, buyerId, invoice);
 
-    xidb.commitChanges({ type: 'sale', agent: buyerId, asset: xid, price: assetData.nft.price });
+    const event = { type: 'sale', agent: buyerId, asset: xid, price: assetData.nft.price };
+    xidb.commitChanges(event);
+    nostr.announce(event);
 
     res.json(sale);
   } catch (error) {
