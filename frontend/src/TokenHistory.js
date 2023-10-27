@@ -9,6 +9,7 @@ import {
     Paper,
 } from '@mui/material';
 import AgentBadge from './AgentBadge';
+import utils from './utils';
 
 const TokenHistory = ({ metadata, xid }) => {
     const [history, setHistory] = useState([]);
@@ -37,7 +38,7 @@ const TokenHistory = ({ metadata, xid }) => {
         useEffect(() => {
             const fetchInfo = async () => {
                 setMessage(`unknown record type ${record.type}`);
-                setTime(record.time);
+                setTime(utils.formatTime(record.time));
 
                 if (record.type === 'mint') {
                     if (metadata.token) {

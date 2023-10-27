@@ -8,6 +8,7 @@ import {
     TableHead,
     Paper,
 } from '@mui/material';
+import utils from './utils';
 
 const AuditLog = () => {
     const [txnlog, setTxnLog] = useState([]);
@@ -37,7 +38,7 @@ const AuditLog = () => {
         useEffect(() => {
             const fetchInfo = async () => {
                 setMessage(`unknown type: ${record.type}`);
-                setTime(record.time);
+                setTime(utils.formatTime(record.time));
 
                 if (record.type === 'sale') {
                     const amount = record.invoice?.amount || record.charge?.amount;

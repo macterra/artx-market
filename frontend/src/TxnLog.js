@@ -8,7 +8,6 @@ import {
     TableHead,
     Paper,
 } from '@mui/material';
-import { format } from 'date-fns';
 import utils from './utils';
 
 const TxnLog = ({ profile, refreshProfile }) => {
@@ -87,11 +86,6 @@ const TxnLog = ({ profile, refreshProfile }) => {
         return getObject(xid, `/api/v1/profile/${xid}`);
     }
 
-    function formatTime(timestamp) {
-        const date = new Date(timestamp);
-        return format(date, "yyyy-MM-dd HH:mm:ss");
-    }
-
     function HistoryRow({ record }) {
         const [time, setTime] = useState("");
         const [message, setMessage] = useState(null);
@@ -101,7 +95,7 @@ const TxnLog = ({ profile, refreshProfile }) => {
         useEffect(() => {
             const fetchInfo = async () => {
                 setMessage(`Unknown record type ${record.type}`);
-                setTime(formatTime(record.time));
+                setTime(utils.formatTime(record.time));
 
                 if (record.type === 'credits') {
                     setMessage(`Traded sats for credits.`);
