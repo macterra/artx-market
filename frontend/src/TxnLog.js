@@ -61,6 +61,47 @@ const TxnLog = ({ profile, refreshProfile }) => {
         }
     }
 
+    const ObjectCache = {};
+    const locks = {};
+
+    async function getObject(xid, url) {
+        if (!ObjectCache[xid]) {
+            if (!locks[xid]) {
+                locks[xid] = true;
+
+                ObjectCache[xid] = fetch(url)
+                    .then(response => response.json())
+                    .catch(error => {
+                        console.error(`Failed to fetch asset ${xid}: ${error}`);
+                        delete ObjectCache[xid]; // remove failed promise from cache
+                        throw error; // re-throw the error to be handled by the caller
+                    })
+                    .finally(() => {
+                        delete locks[xid]; // release the lock
+                    });
+            } else {
+                await new Promise(resolve => {
+                    const intervalId = setInterval(() => {
+                        if (!locks[xid]) {
+                            clearInterval(intervalId);
+                            resolve();
+                        }
+                    }, 50);
+                });
+            }
+        }
+
+        return ObjectCache[xid];
+    }
+
+    async function getAsset(xid) {
+        return getObject(xid, `/api/v1/asset/${xid}`);
+    }
+
+    async function getProfile(xid) {
+        return getObject(xid, `/api/v1/profile/${xid}`);
+    }
+
     function HistoryRow({ record }) {
         const [time, setTime] = useState("");
         const [message, setMessage] = useState(null);
@@ -79,8 +120,7 @@ const TxnLog = ({ profile, refreshProfile }) => {
                 }
 
                 if (record.type === 'mint') {
-                    const response = await fetch(`/api/v1/asset/${record.xid}`);
-                    const metadata = await response.json();
+                    const metadata = await getAsset(record.xid);
 
                     if (metadata.token) {
                         if (metadata.token.editions === 1) {
@@ -98,16 +138,15 @@ const TxnLog = ({ profile, refreshProfile }) => {
                 }
 
                 if (record.type === 'unmint') {
-                    const response = await fetch(`/api/v1/asset/${record.xid}`);
-                    const metadata = await response.json();
+                    const metadata = await getAsset(record.xid);
 
                     setMessage(<div>Unminted {assetLink(metadata)}.</div>);
                     setCredits(record.credits);
                 }
 
                 if (record.type === 'upload') {
-                    const response = await fetch(`/api/v1/asset/${record.xid}`);
-                    const metadata = await response.json();
+                    const metadata = await getAsset(record.xid);
+
                     const mb = (record.bytes / 1000000).toFixed(2);
 
                     if (record.files === 1) {
@@ -121,14 +160,9 @@ const TxnLog = ({ profile, refreshProfile }) => {
                 }
 
                 if (record.type === 'sell') {
-                    const response1 = await fetch(`/api/v1/asset/${record.edition}`);
-                    const edition = await response1.json();
-
-                    const response2 = await fetch(`/api/v1/asset/${edition.nft.asset}`);
-                    const token = await response2.json();
-
-                    const response3 = await fetch(`/api/v1/profile/${record.buyer}`);
-                    const buyer = await response3.json();
+                    const edition = await getAsset(record.edition);
+                    const token = await getAsset(edition.nft.asset);
+                    const buyer = await getProfile(record.buyer);
 
                     setMessage(<div>Sold "{assetLink(token)} ({nftLink(edition)})" to {profileLink(buyer)}.</div>);
                     setSats(record.sats || record.price);
@@ -136,31 +170,19 @@ const TxnLog = ({ profile, refreshProfile }) => {
                 }
 
                 if (record.type === 'buy') {
-                    const response1 = await fetch(`/api/v1/asset/${record.edition}`);
-                    const edition = await response1.json();
-
-                    const response2 = await fetch(`/api/v1/asset/${edition.nft.asset}`);
-                    const token = await response2.json();
-
-                    const response3 = await fetch(`/api/v1/profile/${record.seller}`);
-                    const seller = await response3.json();
+                    const edition = await getAsset(record.edition);
+                    const token = await getAsset(edition.nft.asset);
+                    const seller = await getProfile(record.seller);
 
                     setMessage(<div>Bought "{assetLink(token)} ({nftLink(edition)})" from {profileLink(seller)}.</div>);
                     setSats(-(record.sats || record.price));
                 }
 
                 if (record.type === 'royalty') {
-                    const response1 = await fetch(`/api/v1/asset/${record.edition}`);
-                    const edition = await response1.json();
-
-                    const response2 = await fetch(`/api/v1/asset/${edition.nft.asset}`);
-                    const token = await response2.json();
-
-                    const response3 = await fetch(`/api/v1/profile/${record.seller}`);
-                    const seller = await response3.json();
-
-                    const response4 = await fetch(`/api/v1/profile/${record.buyer}`);
-                    const buyer = await response4.json();
+                    const edition = await getAsset(record.edition);
+                    const token = await getAsset(edition.nft.asset);
+                    const buyer = await getProfile(record.buyer);
+                    const seller = await getProfile(record.seller);
 
                     setMessage(<div>Royalty when {profileLink(seller)} sold "{assetLink(token)} ({nftLink(edition)})" to {profileLink(buyer)}.</div>);
                     setSats(record.sats);
