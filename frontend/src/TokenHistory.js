@@ -65,14 +65,6 @@ const TokenHistory = ({ metadata, xid }) => {
                     }
                 }
 
-                if (record.type === 'unmint') {
-                    setMessage(
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                            <AgentBadge xid={record.creator} />{"unminted the token."}
-                        </div>
-                    );
-                }
-
                 if (record.type === 'list') {
                     const response = await fetch(`/api/v1/asset/${record.edition}`);
                     const edition = await response.json();
