@@ -8,7 +8,11 @@ import {
     TableHead,
     Paper,
 } from '@mui/material';
+import axios from 'axios';
+import { setupCache } from 'axios-cache-interceptor';
 import utils from './utils';
+
+const cachedAxios = setupCache(axios);
 
 const TxnLog = ({ profile, refreshProfile }) => {
     const [txnlog, setTxnLog] = useState([]);
@@ -45,45 +49,14 @@ const TxnLog = ({ profile, refreshProfile }) => {
         return <a href={`/profile/${agent.xid}`}>{name}</a>;
     }
 
-    const ObjectCache = {};
-    const locks = {};
-
-    async function getObject(xid, url) {
-        if (!ObjectCache[xid]) {
-            if (!locks[xid]) {
-                locks[xid] = true;
-
-                ObjectCache[xid] = fetch(url)
-                    .then(response => response.json())
-                    .catch(error => {
-                        console.error(`Failed to fetch asset ${xid}: ${error}`);
-                        delete ObjectCache[xid]; // remove failed promise from cache
-                        throw error; // re-throw the error to be handled by the caller
-                    })
-                    .finally(() => {
-                        delete locks[xid]; // release the lock
-                    });
-            } else {
-                await new Promise(resolve => {
-                    const intervalId = setInterval(() => {
-                        if (!locks[xid]) {
-                            clearInterval(intervalId);
-                            resolve();
-                        }
-                    }, 50);
-                });
-            }
-        }
-
-        return ObjectCache[xid];
-    }
-
     async function getAsset(xid) {
-        return getObject(xid, `/api/v1/asset/${xid}`);
+        const response = await cachedAxios.get(`/api/v1/asset/${xid}`);
+        return response.data;
     }
 
     async function getProfile(xid) {
-        return getObject(xid, `/api/v1/profile/${xid}`);
+        const response = await cachedAxios.get(`/api/v1/profile/${xid}`);
+        return response.data;
     }
 
     function HistoryRow({ record }) {
@@ -130,7 +103,6 @@ const TxnLog = ({ profile, refreshProfile }) => {
 
                 if (record.type === 'upload') {
                     const metadata = await getAsset(record.xid);
-
                     const mb = (record.bytes / 1000000).toFixed(2);
 
                     if (record.files === 1) {
