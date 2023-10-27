@@ -8,6 +8,7 @@ import {
     TableHead,
     Paper,
 } from '@mui/material';
+import utils from './utils';
 
 const TxnLog = ({ profile, refreshProfile }) => {
     const [txnlog, setTxnLog] = useState([]);
@@ -25,40 +26,23 @@ const TxnLog = ({ profile, refreshProfile }) => {
     }
 
     function assetLink(metadata) {
-        const title = metadata.asset.title;
-
-        if (title.length > 20) {
-            return <a href={`/asset/${metadata.xid}`}>{title.substring(0, 20)}...</a>;
-        }
-        else {
-            return <a href={`/asset/${metadata.xid}`}>{title}</a>;
-        }
+        const title = utils.truncateTitle(metadata.asset.title, 20);
+        return <a href={`/asset/${metadata.xid}`}>{title}</a>;
     }
 
     function collectionLink(metadata) {
-        const title = metadata.asset.title;
-
-        if (title.length > 20) {
-            return <a href={`/collection/${metadata.xid}`}>{title.substring(0, 20)}...</a>;
-        }
-        else {
-            return <a href={`/collection/${metadata.xid}`}>{title}</a>;
-        }
+        const title = utils.truncateTitle(metadata.asset.title, 20);
+        return <a href={`/collection/${metadata.xid}`}>{title}</a>;
     }
 
     function nftLink(metadata) {
-        return <a href={`/nft/${metadata.xid}`}>{metadata.asset.title}</a>;
+        const title = utils.truncateTitle(metadata.asset.title, 20);
+        return <a href={`/nft/${metadata.xid}`}>{title}</a>;
     }
 
     function profileLink(agent) {
-        const name = agent.name.substring(0, 20);
-
-        if (name.length > 20) {
-            return <a href={`/profile/${agent.xid}`}>{name.substring(0, 20)}...</a>;
-        }
-        else {
-            return <a href={`/profile/${agent.xid}`}>{name}</a>;
-        }
+        const name = utils.truncateTitle(agent.name, 20);
+        return <a href={`/profile/${agent.xid}`}>{name}</a>;
     }
 
     const ObjectCache = {};
