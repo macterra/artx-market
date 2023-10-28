@@ -78,25 +78,32 @@ const getListings = async (max = 8) => {
     const logs = await getLogs();
     let listings = logs.filter(log => log.type === 'list');
     let selected = [];
-    const seen = {};
+    let seen = {};
 
     for (let listing of listings) {
-        console.log(`getListing for ${listing.asset}`);
 
         if (seen[listing.asset]) {
             continue;
         }
 
-        seen[listing.asset] = true;
-
         try {
             const nft = getAsset(listing.asset);
+
+            if (nft.asset.owner !== listing.agent) {
+                continue;
+            }
+
+            if (nft.nft.price !== listing.price) {
+                continue;
+            }
+
             const token = getAsset(nft.nft.asset);
 
             listing.title = `${token.asset.title} (${nft.asset.title})`;
             listing.image = token.file.path;
 
             selected.push(listing);
+            seen[listing.asset] = true;
         }
         catch (error) {
             console.log(`getListings error: ${error}`);
