@@ -74,25 +74,36 @@ const getLogs = async () => {
     }
 };
 
-const getListings = async () => {
+const getListings = async (max = 8) => {
     const logs = await getLogs();
-    const listings = logs.filter(log => log.type === 'list');
+    let listings = logs.filter(log => log.type === 'list');
+    let selected = [];
+    const seen = {};
 
     for (let listing of listings) {
         console.log(`getListing for ${listing.asset}`);
 
+        if (seen[listing.asset]) {
+            continue;
+        }
+
+        seen[listing.asset] = true;
+
         try {
-            listing.nft = getAsset(listing.asset);
-            enrichAsset(listing.nft);
-            listing.token = getAsset(listing.nft.nft.asset);
-            //listing.seller = getAgent(listing.agent);
+            const nft = getAsset(listing.asset);
+            const token = getAsset(nft.nft.asset);
+
+            listing.title = `${token.asset.title} (${nft.asset.title})`;
+            listing.image = token.file.path;
+
+            selected.push(listing);
         }
         catch (error) {
             console.log(`getListings error: ${error}`);
         }
     }
 
-    return listings;
+    return selected.slice(0, max);
 };
 
 function getMarketId() {

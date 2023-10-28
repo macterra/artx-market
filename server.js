@@ -644,9 +644,9 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
 
 app.get('/api/v1/listings', async (req, res) => {
   try {
-    const logs = await xidb.getListings();
-    console.log(`listings: ${JSON.stringify(logs, null, 4)}`);
-    res.status(200).json({ ok: true });
+    const listings = await xidb.getListings();
+    console.log(`listings: ${JSON.stringify(listings, null, 4)}`);
+    res.status(200).json(listings);
   } catch (error) {
     console.error('Error:', error);
     res.status(500).json({ message: 'Error' });
