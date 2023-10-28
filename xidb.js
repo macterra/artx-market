@@ -89,6 +89,10 @@ const getListings = async (max = 8) => {
         try {
             const nft = getAsset(listing.asset);
 
+            if (!nft) {
+                continue;
+            }
+
             if (nft.asset.owner !== listing.agent) {
                 continue;
             }
@@ -98,6 +102,10 @@ const getListings = async (max = 8) => {
             }
 
             const token = getAsset(nft.nft.asset);
+
+            if (!token) {
+                continue;
+            }
 
             listing.title = `${token.asset.title} (${nft.asset.title})`;
             listing.image = token.file.path;
