@@ -53,7 +53,7 @@ const TokenTrader = ({ metadata, xid, setRefreshKey }) => {
         };
 
         fetchProfile();
-    }, [metadata]);
+    }, [metadata, xid]);
 
     if (!metadata || !metadata.token || !nfts) {
         return;

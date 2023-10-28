@@ -46,7 +46,7 @@ const PfpEditor = ({ metadata, setTab }) => {
 
     const handleSaveThumbnail = async () => {
         try {
-            const response = await fetch(`/api/v1/asset/${metadata.asset.collection}`);
+            let response = await fetch(`/api/v1/asset/${metadata.asset.collection}`);
             const collection = await response.json();
             collection.collection.thumbnail = metadata.file.path;
 
