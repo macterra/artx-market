@@ -13,7 +13,7 @@ const lnbits = require('./lnbits');
 // Function to add all changes, commit, and push
 const commitChanges = async (event) => {
     const commitMessage = JSON.stringify(event);
-    
+
     try {
         const response = await fetch(`${config.archiver}/api/v1/commit`, {
             method: 'POST',
@@ -53,6 +53,46 @@ const pushChanges = async () => {
     } catch (err) {
         console.error('Failed to push changes:', err);
     }
+};
+
+const getLogs = async () => {
+    try {
+        const response = await fetch(`${config.archiver}/api/v1/logs`);
+
+        if (response.ok) {
+            const res = await response.json()
+
+            if (res.error) {
+                console.log(`Failed to get logs: ${res.error}`);
+            }
+            else {
+                return res.logs;
+            }
+        }
+    } catch (err) {
+        console.error('Failed to push changes:', err);
+    }
+};
+
+const getListings = async () => {
+    const logs = await getLogs();
+    const listings = logs.filter(log => log.type === 'list');
+
+    for (let listing of listings) {
+        console.log(`getListing for ${listing.asset}`);
+
+        try {
+            listing.nft = getAsset(listing.asset);
+            enrichAsset(listing.nft);
+            listing.token = getAsset(listing.nft.nft.asset);
+            //listing.seller = getAgent(listing.agent);
+        }
+        catch (error) {
+            console.log(`getListings error: ${error}`);
+        }
+    }
+
+    return listings;
 };
 
 function getMarketId() {
@@ -1552,6 +1592,8 @@ module.exports = {
     getAuditLog,
     getCert,
     getCollection,
+    getListings,
+    getLogs,
     getNft,
     getWalletInfo,
     integrityCheck,

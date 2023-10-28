@@ -642,6 +642,17 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
   }
 });
 
+app.get('/api/v1/listings', async (req, res) => {
+  try {
+    const logs = await xidb.getListings();
+    console.log(`listings: ${JSON.stringify(logs, null, 4)}`);
+    res.status(200).json({ ok: true });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ message: 'Error' });
+  }
+});
+
 app.get('/api/v1/profiles/', async (req, res) => {
   try {
     const profiles = await xidb.getAllAgents();

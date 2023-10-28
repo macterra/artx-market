@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Box } from '@mui/material';
+import axios from 'axios';
 import ProfileGrid from './ProfileGrid';
 
 const MainView = ({ navigate }) => {
@@ -10,10 +11,10 @@ const MainView = ({ navigate }) => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetch(`/api/v1/profiles`);
-                const data = await response.json();
+                const profiles = await axios.get(`/api/v1/profiles`);
+                setProfiles(profiles.data);
 
-                setProfiles(data);
+                const listings = await axios.get(`/api/v1/listings`);
             } catch (error) {
                 console.error('Error fetching profile data:', error);
             }

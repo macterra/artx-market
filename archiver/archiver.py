@@ -1,11 +1,15 @@
 import os
 import time
+import re
+import json
+
 from flask import Flask, jsonify, request
 from git import Repo
 from git.exc import GitCommandError
 from ipfs import *
-#from datetime import datetime
+from datetime import datetime
 from threading import Lock
+
 import authorizer
 
 app = Flask(__name__)
@@ -91,6 +95,42 @@ def push():
             return jsonify({'error': f'Failed to push changes: {str(error)}'}), 500
 
     return jsonify({'ok': 1})
+
+@app.route('/api/v1/logs', methods=['GET'])
+def logs():
+    with lock:
+        try:
+            raw_logs = repo.git.log('-n', '100', '--pretty=format:"%h - %ad - %s"').split('\n')
+        except GitCommandError as error:
+            print(f'Failed to fetch logs: {str(error)}')
+            return jsonify({'error': f'Failed to fetch logs: {str(error)}'}), 500
+
+    parsed_logs = []
+    for log in raw_logs:
+        match = re.match(r'"(\w+) - (.+?) - (.+)"', log)
+        if match:
+            hash_value, date_str, json_str = match.groups()
+
+            try:
+                # Parse the date to datetime object
+                date_obj = datetime.strptime(date_str, '%a %b %d %H:%M:%S %Y %z')
+                # Convert the datetime object to ISO format
+                iso_date = date_obj.isoformat()
+            except ValueError:
+                print(f"Failed to parse date: {date_str}")
+                continue
+
+            try:
+                json_obj = json.loads(json_str)
+            except json.JSONDecodeError:
+                print(f"Failed to decode JSON: {json_str}")
+                continue
+
+            json_obj["hash"] = hash_value
+            json_obj["date"] = iso_date
+            parsed_logs.append(json_obj)
+
+    return jsonify({'logs': parsed_logs})
 
 @app.route('/api/v1/register', methods=['POST'])
 def register():
