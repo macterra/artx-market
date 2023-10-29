@@ -10,7 +10,7 @@ const ListingCard = ({ listing }) => {
         justifyContent: 'center',
         overflow: 'hidden',
         position: 'relative',
-        border: listing.pro ? '1px solid #0ff' : listing.published ? '1px solid #0f0' : '1px solid #ccc',
+        border: '1px solid #0f0',
         borderRadius: '4px', // Add a border radius
         padding: '8px', // Add padding
     };

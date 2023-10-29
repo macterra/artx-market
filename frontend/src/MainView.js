@@ -32,9 +32,9 @@ const MainView = ({ navigate }) => {
 
     return (
         <Box>
-            <h2>Recent Listings</h2>
+            <p>Recent Listings</p>
             <ListingsGrid listings={listings} />
-            <h2>Featured Artists</h2>
+            <p>Featured Artists</p>
             <ProfileGrid collection={profiles} />
         </Box>
     );
