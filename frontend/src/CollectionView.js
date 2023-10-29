@@ -9,6 +9,7 @@ import AgentBadge from './AgentBadge';
 const CollectionView = ({ navigate }) => {
     const { xid } = useParams();
     const [collection, setCollection] = useState(null);
+    const [images, setImages] = useState(null);
     const [refreshKey, setRefreshKey] = useState(0);
     const [credits, setCredits] = useState(0);
     const [disableUpload, setDisableUpload] = useState(null);
@@ -17,16 +18,20 @@ const CollectionView = ({ navigate }) => {
     const [budget, setBudget] = useState(0);
 
     useEffect(() => {
-        const fetchProfile = async () => {
+        const fetchCollection = async () => {
             try {
-                const collection = await axios.get(`/api/v1/collections/${xid}`);
-                const collectionData = collection.data;
+                console.log(`fetchCollection ${refreshKey}`);
 
-                if (!collectionData.error) {
-                    setCollection(collectionData);
+                // Force refresh with ever-changing URL
+                const response = await axios.get(`/api/v1/collections/${xid}?_=${Date.now()}`);
+                const collection = response.data;
+
+                if (collection) {
+                    setCollection(collection);
+                    setImages(collection.collection.assets);
                 }
                 else {
-                    navigate('/');
+                    return navigate('/');
                 }
 
                 const rates = await axios.get('/api/v1/rates');
@@ -38,21 +43,21 @@ const CollectionView = ({ navigate }) => {
                 setCredits(credits);
                 setDisableUpload(credits < 1);
 
-                setShowMintAll(collectionData.costToMintAll > 0);
-                setDisableMintAll(collectionData.costToMintAll > credits);
+                setShowMintAll(collection.costToMintAll > 0);
+                setDisableMintAll(collection.costToMintAll > credits);
 
                 const budget = credits / uploadRate / 1000000;
                 setBudget(budget.toFixed(2));
             } catch (error) {
-                console.error('Error fetching profile data:', error);
+                console.error('Error fetching data:', error);
             }
         };
 
-        fetchProfile();
+        fetchCollection();
     }, [navigate, xid, refreshKey]);
 
     if (!collection) {
-        return <p></p>;
+        return;
     }
 
     const handleUpload = async (event) => {
@@ -63,31 +68,35 @@ const CollectionView = ({ navigate }) => {
             for (const file of files) {
                 formData.append('images', file);
             }
+            const response = await axios.post(`/api/v1/collections/${collection.xid}/upload`, formData);
+            const data = response.data;
 
-            const response = await fetch(`/api/v1/collections/${collection.xid}/upload`, {
-                method: 'POST',
-                body: formData,
-            });
+            if (data.filesUploaded) {
+                const mb = data.bytesUploaded / 1000000;
+                alert(`You were debited ${data.creditsDebited} credits to upload ${data.filesUploaded} files (${mb.toFixed(2)} MB)`);
+                setRefreshKey((prevKey) => prevKey + 1);
+            }
 
-            const data = await response.json();
-
-            if (data.ok) {
-                if (data.filesUploaded > 0) {
-                    const mb = data.bytesUploaded / 1000000;
-                    alert(`You were debited ${data.creditsDebited} credits to upload ${data.filesUploaded} files (${mb.toFixed(2)} MB)`);
-                    setRefreshKey((prevKey) => prevKey + 1);
+            if (data.filesSkipped) {
+                if (data.filesSkipped === 1) {
+                    alert(`1 file was skipped due to insufficient credits.`);
                 }
-                if (data.filesSkipped) {
-                    if (data.filesSkipped === 1) {
-                        alert(`1 file was skipped due to insufficient credits.`);
-                    }
-                    else {
-                        alert(`${data.filesSkipped} files were skipped due to insufficient credits.`);
-                    }
+                else {
+                    alert(`${data.filesSkipped} files were skipped due to insufficient credits.`);
+                }
+            }
+
+            if (data.filesErrored) {
+                if (data.filesErrored === 1) {
+                    alert(`1 file was skipped due to error reading image.`);
+                }
+                else {
+                    alert(`${data.filesErrored} files were skipped due to error reading image.`);
                 }
             }
         } catch (error) {
-            console.error('Error uploading image:', error);
+            console.error('Error uploading images:', error);
+            alert('Error uploading images');
         }
     };
 
@@ -166,7 +175,7 @@ const CollectionView = ({ navigate }) => {
                     </Grid>
                 </Box>
             }
-            <ImageGrid collection={collection.collection.assets} />
+            <ImageGrid collection={images} />
         </Box>
     );
 };

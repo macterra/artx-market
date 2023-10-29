@@ -949,6 +949,11 @@ app.post('/api/v1/collections/:xid/upload', ensureAuthenticated, upload.array('i
   try {
     const collectionId = req.params.xid;
     const upload = await xidb.createAssets(req.user.xid, req.files, collectionId);
+
+    if (!upload.filesUploaded) {
+      return res.status(500).json({ message: 'Error processing images' });
+    }
+
     const txn = {
       'type': 'upload',
       'xid': collectionId,
@@ -956,12 +961,13 @@ app.post('/api/v1/collections/:xid/upload', ensureAuthenticated, upload.array('i
       'bytes': upload.bytesUploaded,
       'credits': upload.creditsDebited,
     };
+    
     xidb.saveTxnLog(req.user.xid, txn);
     xidb.commitChanges({ type: 'upload', agent: req.user.xid, asset: collectionId, files: upload.filesUploaded, bytes: upload.bytesUploaded });
     res.status(200).json(upload);
   } catch (error) {
     console.error('Error processing files:', error);
-    res.status(500).json({ message: 'Error processing files' });
+    res.status(500).json({ message: 'Error processing images' });
   }
 });
 

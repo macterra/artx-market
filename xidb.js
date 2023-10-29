@@ -882,16 +882,18 @@ const getCollection = (collectionId, userId) => {
     const agentData = getAgentAndCollections(collection.asset.owner, userId);
     collection = agentData.collections[collectionId];
 
-    collection.isOwnedByUser = (userId == collection.asset.owner);
-    collection.costToMintAll = 0;
+    if (collection?.collection) {
+        collection.isOwnedByUser = (userId == collection.asset.owner);
+        collection.costToMintAll = 0;
 
-    if (collection.isOwnedByUser) {
-        const editionsCost = collection.collection.default.editions * config.editionRate;
+        if (collection.isOwnedByUser) {
+            const editionsCost = collection.collection.default.editions * config.editionRate;
 
-        for (const asset of collection.collection.assets) {
-            if (!asset.token) {
-                const storageCost = Math.round(asset.file.size * config.storageRate);
-                collection.costToMintAll += editionsCost + storageCost;
+            for (const asset of collection.collection.assets) {
+                if (!asset.token) {
+                    const storageCost = Math.round(asset.file.size * config.storageRate);
+                    collection.costToMintAll += editionsCost + storageCost;
+                }
             }
         }
     }
@@ -1127,6 +1129,8 @@ function gitHash(fileBuffer) {
 
 // createAsset has to be async to get image metadata from sharp
 const createAsset = async (file, title, userId, collectionId) => {
+    // Get image metadata using sharp
+    const imageMetadata = await sharp(file.path).metadata();
     const xid = uuid.v4();
 
     // Calculate the Git hash
@@ -1143,9 +1147,6 @@ const createAsset = async (file, title, userId, collectionId) => {
     const assetName = '_' + path.extname(file.originalname);
     const newPath = path.join(assetFolder, assetName);
     fs.renameSync(file.path, newPath);
-
-    // Get image metadata using sharp
-    const imageMetadata = await sharp(newPath).metadata();
 
     // Create the metadata object
     const metadata = {
@@ -1178,6 +1179,9 @@ const createAsset = async (file, title, userId, collectionId) => {
 };
 
 const createAssets = async (userId, files, collectionId) => {
+
+    console.log(`createAssets ${JSON.stringify(files)}`);
+
     const agentData = getAgent(userId);
     const collectionData = getCollection(collectionId, userId);
     const defaultTitle = collectionData.collection.default.title;
@@ -1186,43 +1190,54 @@ const createAssets = async (userId, files, collectionId) => {
     let bytesUploaded = 0;
     let filesUploaded = 0;
     let filesSkipped = 0;
+    let filesErrored = 0;
     let creditsDebited = 0;
 
-    for (const file of files) {
-        const uploadFee = Math.round(file.size * config.uploadRate);
+    if (files) {
+        for (const file of files) {
+            const uploadFee = Math.round(file.size * config.uploadRate);
 
-        if (agentData.credits < uploadFee) {
-            fs.unlinkSync(file.path);
-            filesSkipped += 1;
-            continue;
+            if (agentData.credits < uploadFee) {
+                fs.unlinkSync(file.path);
+                filesSkipped += 1;
+                continue;
+            }
+
+            agentData.credits -= uploadFee;
+            creditsDebited += uploadFee;
+
+            let title = 'untitled';
+
+            if (defaultTitle) {
+                collectionCount += 1;
+                title = defaultTitle.replace("{N}", collectionCount);
+                title = title.replace("%N%", collectionCount); // deprecated
+            }
+
+            try {
+                await createAsset(file, title, userId, collectionId);
+                bytesUploaded += file.size;
+                filesUploaded += 1;
+            }
+            catch (error) {
+                console.log(`createAssets: error on ${file.path}: ${error}`);
+                filesErrored += 1;
+                fs.unlinkSync(file.path);
+            }
         }
 
-        agentData.credits -= uploadFee;
-        creditsDebited += uploadFee;
-
-        let title = 'untitled';
-
-        if (defaultTitle) {
-            collectionCount += 1;
-            title = defaultTitle.replace("{N}", collectionCount);
-            title = title.replace("%N%", collectionCount); // deprecated
+        if (filesUploaded > 0) {
+            saveAgent(agentData);
         }
-
-        const assetData = await createAsset(file, title, userId, collectionId);
-        bytesUploaded += file.size;
-        filesUploaded += 1;
-    }
-
-    if (filesUploaded > 0) {
-        saveAgent(agentData);
     }
 
     return {
-        'ok': true,
-        'filesUploaded': filesUploaded,
-        'filesSkipped': filesSkipped,
-        'bytesUploaded': bytesUploaded,
-        'creditsDebited': creditsDebited,
+        ok: true,
+        filesUploaded: filesUploaded,
+        filesSkipped: filesSkipped,
+        filesErrored: filesErrored,
+        bytesUploaded: bytesUploaded,
+        creditsDebited: creditsDebited,
     }
 };
 
