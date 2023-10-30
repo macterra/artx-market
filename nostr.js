@@ -1,5 +1,6 @@
 
 const WebSocket = require('ws');
+const assert = require('assert');
 const {
     finishEvent,
     validateEvent,
@@ -127,45 +128,68 @@ function sendRequest(filters) {
 function createAnnouncement(event) {
     if (event.type === 'list') {
         const nft = xidb.getNft(event.asset);
+
+        assert.ok(nft);
+        assert.ok(nft.token.asset.title);
+        assert.ok(nft.asset.title);
+        assert.ok(nft.creator.name);
+        assert.ok(event.price);
+        assert.ok(nft.nft.link);
+        assert.ok(nft.nft.preview);
+
         const announcement = `New listing! "${nft.token.asset.title} (${nft.asset.title})" by ${nft.creator.name} for ${event.price} sats\n\n${nft.nft.link}\n\n${nft.nft.preview}`;
         return createMessage(announcement);
     }
 
     if (event.type === 'sale') {
         const nft = xidb.getNft(event.asset);
+
+        assert.ok(nft);
+        assert.ok(nft.owner.name);
+        assert.ok(nft.token.asset.title);
+        assert.ok(nft.asset.title);
+        assert.ok(nft.creator.name);
+        assert.ok(nft.nft.link);
+        assert.ok(nft.nft.preview);
+
         const announcement = `Congratulations to ${nft.owner.name} for collecting "${nft.token.asset.title} (${nft.asset.title})" by ${nft.creator.name}!\n\n${nft.nft.link}\n\n${nft.nft.preview}`;
         return createMessage(announcement);
     }
 };
 
 async function announce(event) {
-    console.log(`nostr: announce types ${config.nostr_announce} to relays ${config.nostr_relays}`);
+    try {
+        console.log(`nostr: announce types ${config.nostr_announce} to relays ${config.nostr_relays}`);
 
-    const types = config.nostr_announce.split(',');
+        const types = config.nostr_announce.split(',');
 
-    if (!types.includes(event.type)) {
-        console.log(`nostr: ${event.type} not in ${config.nostr_announce} so no announcement`);
-        return;
+        if (!types.includes(event.type)) {
+            console.log(`nostr: ${event.type} not in ${config.nostr_announce} so no announcement`);
+            return;
+        }
+
+        const message = createAnnouncement(event);
+        const relays = config.nostr_relays.split(',');
+
+        for (let relay of relays) {
+            openRelay(relay);
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 3000));
+
+        subscribeToRelays();
+
+        console.log(`nostr: announce: ${message.content} on open relays: ${countOpenRelays()}`);
+
+        sendEvent(message);
+
+        await new Promise(resolve => setTimeout(resolve, 3000));
+
+        closeRelays();
     }
-
-    const message = createAnnouncement(event);
-    const relays = config.nostr_relays.split(',');
-
-    for (let relay of relays) {
-        openRelay(relay);
+    catch (error) {
+        console.log(`nostr announce error: ${error}`);
     }
-
-    await new Promise(resolve => setTimeout(resolve, 3000));
-
-    subscribeToRelays();
-
-    console.log(`nostr: announce: ${message.content} on open relays: ${countOpenRelays()}`);
-
-    sendEvent(message);
-
-    await new Promise(resolve => setTimeout(resolve, 3000));
-
-    closeRelays();
 }
 
 module.exports = {
