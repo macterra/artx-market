@@ -12,7 +12,9 @@ import axios from 'axios';
 import { setupCache } from 'axios-cache-interceptor';
 import utils from './utils';
 
-const cachedAxios = setupCache(axios);
+// Causing issues elsewhere with caching
+//const cachedAxios = setupCache(axios);
+const cachedAxios = axios;
 
 const TxnLog = ({ profile, refreshProfile }) => {
     const [txnlog, setTxnLog] = useState([]);

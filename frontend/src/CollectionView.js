@@ -22,8 +22,7 @@ const CollectionView = ({ navigate }) => {
             try {
                 console.log(`fetchCollection ${refreshKey}`);
 
-                // Force refresh with ever-changing URL
-                const response = await axios.get(`/api/v1/collections/${xid}?_=${Date.now()}`);
+                const response = await axios.get(`/api/v1/collections/${xid}`);
                 const collection = response.data;
 
                 if (collection) {

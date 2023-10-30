@@ -41,27 +41,29 @@ const AppHeader = ({ navigate, xid }) => {
         setAboutOpen(false);
     };
 
-    const checkAuthStatus = async () => {
-        try {
-            const check = await axios.get('/check-auth');
-            if (check.data.isAuthenticated) {
-                setIsAuthenticated(true);
-                setUserId(check.data.userId);
-                setIsAdmin(check.data.isAdmin);
-            } else {
+    useEffect(() => {
+        const checkAuthStatus = async () => {
+            try {
+                const response = await axios.get(`/check-auth`);
+                const check = response.data;
+
+                if (check.isAuthenticated) {
+                    setIsAuthenticated(true);
+                    setUserId(check.userId);
+                    setIsAdmin(check.isAdmin);
+                } else {
+                    setIsAuthenticated(false);
+                    setIsAdmin(false);
+                }
+            } catch (error) {
+                console.error('Error fetching authentication status:', error);
                 setIsAuthenticated(false);
                 setIsAdmin(false);
             }
-        } catch (error) {
-            console.error('Error fetching authentication status:', error);
-            setIsAuthenticated(false);
-            setIsAdmin(false);
-        }
-    };
+        };
 
-    useEffect(() => {
         checkAuthStatus();
-    });
+    }, [xid]);
 
     const handleLogin = () => {
         window.open('/login');
