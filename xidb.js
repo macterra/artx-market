@@ -11,7 +11,7 @@ const config = require('./config');
 const lnbits = require('./lnbits');
 
 // Function to add all changes, commit, and push
-const commitChanges = async (event) => {
+async function commitChanges(event) {
     const commitMessage = JSON.stringify(event);
 
     try {
@@ -37,9 +37,9 @@ const commitChanges = async (event) => {
     } catch (err) {
         console.error('Failed to commit changes:', err);
     }
-};
+}
 
-const pushChanges = async () => {
+async function pushChanges() {
     try {
         const response = await fetch(`${config.archiver}/api/v1/push`);
 
@@ -53,9 +53,9 @@ const pushChanges = async () => {
     } catch (err) {
         console.error('Failed to push changes:', err);
     }
-};
+}
 
-const getLogs = async () => {
+async function getLogs() {
     try {
         const response = await fetch(`${config.archiver}/api/v1/logs`);
 
@@ -72,9 +72,9 @@ const getLogs = async () => {
     } catch (err) {
         console.error('Failed to push changes:', err);
     }
-};
+}
 
-const getListings = async (max = 8) => {
+async function getListings(max = 8) {
     const logs = await getLogs();
     let listings = logs.filter(log => log.type === 'list');
     let selected = [];
@@ -119,7 +119,7 @@ const getListings = async (max = 8) => {
     }
 
     return selected.slice(0, max);
-};
+}
 
 function getMarketId() {
     const dns_ns = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
@@ -138,7 +138,7 @@ function uuidToBase58(uuidString) {
     return base58;
 }
 
-const getAdmin = () => {
+function getAdmin() {
     const jsonPath = path.join(config.data, 'meta.json');
 
     // Check if the agent.json file exists
@@ -164,9 +164,9 @@ const getAdmin = () => {
     }
 
     return jsonData;
-};
+}
 
-const saveAdmin = async (adminData) => {
+async function saveAdmin(adminData) {
 
     const jsonPath = path.join(config.data, 'meta.json');
     adminData.updated = new Date().toISOString();
@@ -174,9 +174,9 @@ const saveAdmin = async (adminData) => {
     fs.writeFileSync(jsonPath, JSON.stringify(adminData, null, 2));
 
     return adminData;
-};
+}
 
-const registerState = async (adminState) => {
+async function registerState(adminState) {
 
     adminState = await saveAdmin(adminState);
 
@@ -193,9 +193,9 @@ const registerState = async (adminState) => {
     fs.writeFileSync(jsonPath, JSON.stringify(adminState, null, 2));
 
     return adminState;
-};
+}
 
-const notarizeState = async (adminState) => {
+async function notarizeState(adminState) {
 
     adminState = await saveAdmin(adminState);
 
@@ -212,9 +212,9 @@ const notarizeState = async (adminState) => {
     fs.writeFileSync(jsonPath, JSON.stringify(adminState, null, 2));
 
     return adminState;
-};
+}
 
-const certifyState = async (adminState) => {
+async function certifyState(adminState) {
 
     if (adminState.pending) {
         const response = await fetch(`${config.archiver}/api/v1/certify`, {
@@ -240,13 +240,13 @@ const certifyState = async (adminState) => {
     }
 
     return adminState;
-};
+}
 
-const getWalletInfo = async () => {
+async function getWalletInfo() {
     const response = await fetch(`${config.archiver}/api/v1/walletinfo`);
     const walletinfo = await response.json();
     return walletinfo;
-};
+}
 
 async function waitForArchiver() {
     let isReady = false;
@@ -290,7 +290,7 @@ async function waitForLightning() {
     console.log('LNbits service is ready!');
 }
 
-const integrityCheck = async () => {
+async function integrityCheck() {
     await waitForArchiver();
     await waitForLightning();
 
@@ -321,23 +321,23 @@ const integrityCheck = async () => {
             console.log(`${index} Agent ${xid} ✘ ${res.message}`);
         }
     }
-};
+}
 
-const allAssets = () => {
+function allAssets() {
     const assets = fs.readdirSync(config.assets, { withFileTypes: true })
         .filter(dirent => dirent.isDirectory())
         .map(dirent => dirent.name);
     return assets;
-};
+}
 
-const allAgents = () => {
+function allAgents() {
     const agents = fs.readdirSync(config.agents, { withFileTypes: true })
         .filter(dirent => dirent.isDirectory())
         .map(dirent => dirent.name);
     return agents;
-};
+}
 
-const removeAsset = (xid) => {
+function removeAsset(xid) {
     const assetPath = path.join(config.assets, xid);
 
     rimraf.rimrafSync(assetPath);
@@ -349,9 +349,9 @@ const removeAsset = (xid) => {
         fixed: true,
         message: 'asset removed',
     };
-};
+}
 
-const repairAsset = (xid) => {
+function repairAsset(xid) {
     const assetData = getAsset(xid);
 
     if (!assetData) {
@@ -475,9 +475,9 @@ const repairAsset = (xid) => {
         fixed: true,
         message: "",
     }
-};
+}
 
-const repairAgent = (xid) => {
+function repairAgent(xid) {
     const agentData = getAgent(xid);
     const assets = agentGetAssets(xid);
     let ownershipFixed = false;
@@ -525,7 +525,7 @@ const repairAgent = (xid) => {
         fixed: true,
         message: "",
     }
-};
+}
 
 function getFileObject(filePath) {
     try {
@@ -550,7 +550,7 @@ function agentId(key) {
     return userId;
 }
 
-const createAgent = async (key) => {
+async function createAgent(key) {
     const userId = agentId(key);
 
     agentData = {
@@ -581,15 +581,15 @@ const createAgent = async (key) => {
     }
 
     return agentData;
-};
+}
 
-const getAgentFromKey = (key) => {
+function getAgentFromKey(key) {
     const xid = agentId(key);
-    const agentData = getAgent(xid);
-    return agentData;
-};
+    const agent = getAgent(xid);
+    return agent;
+}
 
-const getAgent = (xid) => {
+function getAgent(xid) {
     const agentJsonPath = path.join(config.agents, xid, 'agent.json');
 
     // Check if the agent.json file exists
@@ -601,9 +601,9 @@ const getAgent = (xid) => {
     const agentData = JSON.parse(agentJsonContent);
 
     return agentData;
-};
+}
 
-const saveAgent = (agentData) => {
+function saveAgent(agentData) {
     const agentFolder = path.join(config.agents, agentData.xid);
     const agentJsonPath = path.join(agentFolder, 'agent.json');
 
@@ -613,9 +613,9 @@ const saveAgent = (agentData) => {
 
     agentData.updated = new Date().toISOString();
     fs.writeFileSync(agentJsonPath, JSON.stringify(agentData, null, 2));
-};
+}
 
-const addCredits = (userId, amount) => {
+function addCredits(userId, amount) {
     const agentData = getAgent(userId);
 
     if (agentData) {
@@ -630,9 +630,9 @@ const addCredits = (userId, amount) => {
         saveAgent(agentData);
         return agentData;
     }
-};
+}
 
-const buyCredits = async (userId, invoice) => {
+async function buyCredits(userId, invoice) {
     const agentData = getAgent(userId);
 
     if (agentData && invoice?.payment_hash) {
@@ -661,9 +661,9 @@ const buyCredits = async (userId, invoice) => {
             console.log(`buyCredits: payment check failed`);
         }
     }
-};
+}
 
-const agentGetAssets = (userId) => {
+function agentGetAssets(userId) {
     const agentFolder = path.join(config.agents, userId);
     const jsonPath = path.join(agentFolder, 'assets.json');
 
@@ -681,18 +681,18 @@ const agentGetAssets = (userId) => {
     }
 
     return assetData;
-};
+}
 
-const agentSaveAssets = (assetData) => {
+function agentSaveAssets(assetData) {
     const agentFolder = path.join(config.agents, assetData.owner);
     const jsonPath = path.join(agentFolder, 'assets.json');
 
     assetData.updated = new Date().toISOString();
 
     fs.writeFileSync(jsonPath, JSON.stringify(assetData, null, 2));
-};
+}
 
-const agentAddAsset = (metadata) => {
+function agentAddAsset(metadata) {
     let assetData = agentGetAssets(metadata.asset.owner);
 
     if (metadata.file) {
@@ -702,9 +702,9 @@ const agentAddAsset = (metadata) => {
     }
 
     agentSaveAssets(assetData);
-};
+}
 
-const agentRemoveAsset = (metadata) => {
+function agentRemoveAsset(metadata) {
     let assetData = agentGetAssets(metadata.asset.owner);
 
     if (metadata.nft) {
@@ -717,9 +717,9 @@ const agentRemoveAsset = (metadata) => {
 
     agentSaveAssets(assetData);
     return removeAsset(metadata.xid);
-};
+}
 
-const getAgentTxnLog = (userId) => {
+function getAgentTxnLog(userId) {
     try {
         const jsonlPath = path.join(config.agents, userId, 'txnlog.jsonl');
         const data = fs.readFileSync(jsonlPath, 'utf-8');
@@ -729,9 +729,9 @@ const getAgentTxnLog = (userId) => {
     } catch (error) {
         return [];
     }
-};
+}
 
-const getAgentAndCollections = (profileId, userId) => {
+function getAgentAndCollections(profileId, userId) {
     if (!profileId) {
         profileId = userId;
     }
@@ -856,9 +856,9 @@ const getAgentAndCollections = (profileId, userId) => {
     }
 
     return agentData;
-};
+}
 
-const getAllAgents = async () => {
+async function getAllAgents() {
     const agentFolders = fs.readdirSync(config.agents, { withFileTypes: true })
         .filter(dirent => dirent.isDirectory())
         .map(dirent => dirent.name);
@@ -874,9 +874,9 @@ const getAllAgents = async () => {
     }
 
     return profiles;
-};
+}
 
-const getCollection = (collectionId, userId) => {
+function getCollection(collectionId, userId) {
     let collection = getAsset(collectionId);
 
     const agentData = getAgentAndCollections(collection.asset.owner, userId);
@@ -899,9 +899,9 @@ const getCollection = (collectionId, userId) => {
     }
 
     return collection;
-};
+}
 
-const getCert = (xid) => {
+function getCert(xid) {
     const certPath = path.join(config.certs, xid, 'meta.json');
     const certContent = fs.readFileSync(certPath, 'utf-8');
     const cert = JSON.parse(certContent);
@@ -911,9 +911,9 @@ const getCert = (xid) => {
     cert.ipfs_link = `${config.ipfs_link}/${cert.auth.cid}`;
 
     return cert;
-};
+}
 
-const getHistory = (xid) => {
+function getHistory(xid) {
     try {
         const historyPath = path.join(config.assets, xid, 'history.jsonl');
         const data = fs.readFileSync(historyPath, 'utf-8');
@@ -923,7 +923,7 @@ const getHistory = (xid) => {
     } catch (error) {
         return [];
     }
-};
+}
 
 function getAgentMinimal(xid) {
     const agent = getAgent(xid);
@@ -935,7 +935,7 @@ function getAgentMinimal(xid) {
     }
 }
 
-const saveNft = (xid) => {
+function saveNft(xid) {
     const metadata = getAsset(xid);
     const tokenId = metadata.nft.asset;
     const tokenData = getAsset(tokenId);
@@ -981,9 +981,9 @@ const saveNft = (xid) => {
     fs.writeFileSync(jsonPath, JSON.stringify(metadata, null, 2));
 
     return metadata;
-};
+}
 
-const getNft = (xid) => {
+function getNft(xid) {
     const jsonPath = path.join(config.assets, xid, 'nft.json');
 
     if (!fs.existsSync(jsonPath)) {
@@ -1010,9 +1010,9 @@ const getNft = (xid) => {
     }
 
     return metadata;
-};
+}
 
-const getAsset = (xid) => {
+function getAsset(xid) {
     let metadata = null;
 
     try {
@@ -1023,9 +1023,9 @@ const getAsset = (xid) => {
     catch (error) { }
 
     return metadata;
-};
+}
 
-const enrichAsset = (metadata) => {
+function enrichAsset(metadata) {
     if (metadata.token) {
         metadata.history = getHistory(metadata.xid);
 
@@ -1043,9 +1043,9 @@ const enrichAsset = (metadata) => {
         const token = getAsset(metadata.nft.asset);
         metadata.nft.title = `${token.asset.title} (${metadata.asset.title})`;
     }
-};
+}
 
-const saveAsset = (metadata) => {
+function saveAsset(metadata) {
     const current = getAsset(metadata.xid);
 
     if (JSON.stringify(metadata) == JSON.stringify(current)) {
@@ -1061,9 +1061,9 @@ const saveAsset = (metadata) => {
 
     metadata.asset.updated = new Date().toISOString();
     fs.writeFileSync(assetJsonPath, JSON.stringify(metadata, null, 2));
-};
+}
 
-const getAuditLog = () => {
+function getAuditLog() {
     try {
         const jsonlPath = path.join(config.data, 'auditlog.jsonl');
         const data = fs.readFileSync(jsonlPath, 'utf-8');
@@ -1073,30 +1073,30 @@ const getAuditLog = () => {
     } catch (error) {
         return [];
     }
-};
+}
 
-const saveAuditLog = (record) => {
+function saveAuditLog(record) {
     record.time = new Date().toISOString();
     const recordString = JSON.stringify(record);
     const jsonlPath = path.join(config.data, 'auditlog.jsonl');
     fs.appendFileSync(jsonlPath, recordString + '\n');
-};
+}
 
-const saveTxnLog = (xid, record) => {
+function saveTxnLog(xid, record) {
     record.time = new Date().toISOString();
     const recordString = JSON.stringify(record);
     const jsonlPath = path.join(config.agents, xid, 'txnlog.jsonl');
     fs.appendFileSync(jsonlPath, recordString + '\n');
-};
+}
 
-const saveHistory = (xid, record) => {
+function saveHistory(xid, record) {
     record.time = new Date().toISOString();
     const recordString = JSON.stringify(record);
     const jsonlPath = path.join(config.assets, xid, 'history.jsonl');
     fs.appendFileSync(jsonlPath, recordString + '\n');
-};
+}
 
-const isOwner = (metadata, agentId) => {
+function isOwner(metadata, agentId) {
     if (!agentId) {
         return false;
     }
@@ -1118,7 +1118,7 @@ const isOwner = (metadata, agentId) => {
     }
 
     return false;
-};
+}
 
 function gitHash(fileBuffer) {
     const hasher = crypto.createHash('sha1');
@@ -1128,8 +1128,8 @@ function gitHash(fileBuffer) {
 }
 
 // createAsset has to be async to get image metadata from sharp
-const createAsset = async (file, title, userId, collectionId) => {
-    // Get image metadata using sharp
+async function createAsset(file, title, userId, collectionId) {
+    // Get image metadata using sharp first so that it throws exception if not image
     const imageMetadata = await sharp(file.path).metadata();
     const xid = uuid.v4();
 
@@ -1176,12 +1176,9 @@ const createAsset = async (file, title, userId, collectionId) => {
     agentAddAsset(metadata);
 
     return metadata;
-};
+}
 
-const createAssets = async (userId, files, collectionId) => {
-
-    console.log(`createAssets ${JSON.stringify(files)}`);
-
+async function createAssets(userId, files, collectionId) {
     const agentData = getAgent(userId);
     const collectionData = getCollection(collectionId, userId);
     const defaultTitle = collectionData.collection.default.title;
@@ -1239,9 +1236,9 @@ const createAssets = async (userId, files, collectionId) => {
         bytesUploaded: bytesUploaded,
         creditsDebited: creditsDebited,
     }
-};
+}
 
-const createEdition = (owner, asset, edition, editions) => {
+function createEdition(owner, asset, edition, editions) {
     const xid = uuid.v4();
     const assetFolder = path.join(config.assets, xid);
     fs.mkdirSync(assetFolder);
@@ -1270,10 +1267,10 @@ const createEdition = (owner, asset, edition, editions) => {
     saveNft(xid);
 
     return xid;
-};
+}
 
 // createToken has to be async to get the IPFS cid
-const createToken = async (userId, xid, editions, license, royalty) => {
+async function createToken(userId, xid, editions, license, royalty) {
     let assetData = getAsset(xid);
 
     const assetPath = path.join(config.assets, xid);
@@ -1321,9 +1318,9 @@ const createToken = async (userId, xid, editions, license, royalty) => {
         editionFee: editionFee,
         mintFee: mintFee,
     };
-};
+}
 
-const unmintToken = async (userId, xid) => {
+async function unmintToken(userId, xid) {
     let assetData = getAsset(xid);
 
     const editions = assetData.token.editions;
@@ -1352,9 +1349,9 @@ const unmintToken = async (userId, xid) => {
         editions: editions,
         refund: refund,
     };
-};
+}
 
-const transferAsset = (xid, nextOwnerId) => {
+function transferAsset(xid, nextOwnerId) {
     const assetData = getAsset(xid);
 
     assert.ok(assetData.nft);
@@ -1373,9 +1370,9 @@ const transferAsset = (xid, nextOwnerId) => {
     assetData.nft.price = 0;
     saveAsset(assetData);
     saveNft(xid);
-};
+}
 
-const purchaseAsset = async (xid, buyerId, invoice) => {
+async function purchaseAsset(xid, buyerId, invoice) {
     const assetData = getAsset(xid);
     const buyer = getAgent(buyerId);
     const sellerId = assetData.asset.owner;
@@ -1547,16 +1544,16 @@ const purchaseAsset = async (xid, buyerId, invoice) => {
     saveAuditLog(audit);
 
     return record;
-};
+}
 
-const pinAsset = async (xid) => {
+async function pinAsset(xid) {
     const assetPath = path.join(config.assets, xid);
     const response = await fetch(`${config.archiver}/api/v1/pin/${assetPath}`);
     const ipfs = await response.json();
     return ipfs;
-};
+}
 
-const createCollection = (userId, name) => {
+function createCollection(userId, name) {
     const metadata = {
         xid: uuid.v4(),
         asset: {
@@ -1579,9 +1576,9 @@ const createCollection = (userId, name) => {
 
     saveCollection(metadata);
     return metadata;
-};
+}
 
-const saveCollection = (collection) => {
+function saveCollection(collection) {
     assert.ok(collection.collection);
 
     const agentData = getAgent(collection.asset.owner);
@@ -1595,9 +1592,9 @@ const saveCollection = (collection) => {
     // assets are generated at runtime because metadata.asset.collection is the source of truth
     collection.collection.assets = [];
     saveAsset(collection);
-};
+}
 
-const removeCollection = (collection) => {
+function removeCollection(collection) {
     assert.ok(collection.collection);
 
     const agentData = getAgent(collection.asset.owner);
@@ -1609,7 +1606,7 @@ const removeCollection = (collection) => {
     }
 
     return removeAsset(collectionId);
-};
+}
 
 module.exports = {
     addCredits,
