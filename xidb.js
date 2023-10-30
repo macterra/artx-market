@@ -410,6 +410,12 @@ function repairAsset(xid) {
             }
         }
 
+        const nft = getNft(xid);
+
+        if (!nft.nft.preview) {
+            doSave = true;
+        }
+
         if (doSave) {
             saveNft(xid);
 
