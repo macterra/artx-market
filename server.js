@@ -638,7 +638,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
     res.json(sale);
   } catch (error) {
     console.error('Error:', error);
-    res.status(500).json({ message: 'Error' });
+    res.status(500).json({ message: `Error: ${error}` });
   }
 });
 
@@ -961,7 +961,7 @@ app.post('/api/v1/collections/:xid/upload', ensureAuthenticated, upload.array('i
       'bytes': upload.bytesUploaded,
       'credits': upload.creditsDebited,
     };
-    
+
     xidb.saveTxnLog(req.user.xid, txn);
     xidb.commitChanges({ type: 'upload', agent: req.user.xid, asset: collectionId, files: upload.filesUploaded, bytes: upload.bytesUploaded });
     res.status(200).json(upload);

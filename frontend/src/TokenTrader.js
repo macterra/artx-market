@@ -197,21 +197,13 @@ const TokenTrader = ({ metadata, xid, setRefreshKey }) => {
 
         if (invoice.paid) {
             try {
-                const response = await fetch(`/api/v1/asset/${nftSale.xid}/buy`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', },
-                    body: JSON.stringify({ invoice: invoice }),
-                });
-
-                if (response.ok) {
-                    setRefreshKey((prevKey) => prevKey + 1);
-                } else {
-                    const data = await response.json();
-                    console.error('Error:', data.message);
-                    alert(data.message);
-                }
-            } catch (error) {
+                await axios.post(`/api/v1/asset/${nftSale.xid}/buy`, { invoice: invoice });
+                setRefreshKey((prevKey) => prevKey + 1);
+                alert(`Congratulations on collecting ${nftSale.asset.title}!`);
+            }
+            catch (error) {
                 console.error('Error:', error);
+                alert(error.response.data?.message || error);
             }
         }
 
