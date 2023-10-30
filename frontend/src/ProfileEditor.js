@@ -29,11 +29,8 @@ const ProfileEditor = ({ navigate, refreshProfile, setRefreshProfile }) => {
                     navigate('/');
                 }
 
-                if (jump) {
-                    setTab(jump);
-                }
-                else if (!tab) {
-                    setTab('name');
+                if (!tab) {
+                    setTab(jump || 'name');
                 }
             } catch (error) {
                 console.error('Error fetching profile data:', error);
