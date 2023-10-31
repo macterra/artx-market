@@ -589,6 +589,10 @@ app.post('/api/v1/asset/:xid/list', ensureAuthenticated, async (req, res) => {
 
     const newPrice = parseInt(price, 10);
 
+    if (newPrice < 0) {
+      res.status(500).json({ message: `Error: negative price ${newPrice}` });
+    }
+
     if (newPrice !== assetData.nft.price) {
       assetData.nft.price = newPrice;
 
@@ -604,7 +608,10 @@ app.post('/api/v1/asset/:xid/list', ensureAuthenticated, async (req, res) => {
 
       const event = { type: 'list', agent: userId, asset: xid, price: newPrice };
       xidb.commitChanges(event);
-      nostr.announce(event);
+
+      if (newPrice) {
+        nostr.announce(event);
+      }
 
       res.json({ message: 'Asset listed successfully' });
     }

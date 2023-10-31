@@ -85,6 +85,12 @@ async function getListings(max = 8) {
             continue;
         }
 
+        seen[listing.asset] = true;
+
+        if (listing.price === 0) {
+            continue;
+        }
+
         try {
             const nft = getAsset(listing.asset);
 
@@ -110,7 +116,6 @@ async function getListings(max = 8) {
             listing.image = token.file.path;
 
             selected.push(listing);
-            seen[listing.asset] = true;
         }
         catch (error) {
             console.log(`getListings error: ${error}`);
