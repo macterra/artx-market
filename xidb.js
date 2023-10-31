@@ -6,7 +6,6 @@ const crypto = require('crypto');
 const uuid = require('uuid');
 const bs58 = require('bs58');
 const ejs = require('ejs');
-const rimraf = require('rimraf')
 const config = require('./config');
 const lnbits = require('./lnbits');
 
@@ -340,7 +339,7 @@ function allAgents() {
 function removeAsset(xid) {
     const assetPath = path.join(config.assets, xid);
 
-    rimraf.rimrafSync(assetPath);
+    fs.rmSync(assetPath, { recursive: true, force: true });
 
     console.log(`Deleted ${assetPath}`);
 
@@ -1189,7 +1188,7 @@ async function createAssets(userId, files, collectionId) {
             const uploadFee = Math.round(file.size * config.uploadRate);
 
             if (agentData.credits < uploadFee) {
-                fs.unlinkSync(file.path);
+                fs.rmSync(file.path);
                 filesSkipped += 1;
                 continue;
             }
@@ -1213,7 +1212,7 @@ async function createAssets(userId, files, collectionId) {
             catch (error) {
                 console.log(`createAssets: error on ${file.path}: ${error}`);
                 filesErrored += 1;
-                fs.unlinkSync(file.path);
+                fs.rmSync(file.path);
             }
         }
 
