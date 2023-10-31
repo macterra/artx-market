@@ -130,14 +130,13 @@ function createAnnouncement(event) {
         const nft = xidb.getNft(event.asset);
 
         assert.ok(nft);
-        assert.ok(nft.token.asset.title);
-        assert.ok(nft.asset.title);
+        assert.ok(nft.nft.title);
         assert.ok(nft.creator.name);
         assert.ok(event.price);
         assert.ok(nft.nft.link);
         assert.ok(nft.nft.preview);
 
-        const announcement = `New listing! "${nft.token.asset.title} (${nft.asset.title})" by ${nft.creator.name} for ${event.price} sats\n\n${nft.nft.link}\n\n${nft.nft.preview}`;
+        const announcement = `New listing! "${nft.nft.title}" by ${nft.creator.name} for ${event.price} sats\n\n${nft.nft.link}\n\n${nft.nft.preview}`;
         return createMessage(announcement);
     }
 
@@ -146,13 +145,12 @@ function createAnnouncement(event) {
 
         assert.ok(nft);
         assert.ok(nft.owner.name);
-        assert.ok(nft.token.asset.title);
-        assert.ok(nft.asset.title);
+        assert.ok(nft.nft.title);
         assert.ok(nft.creator.name);
         assert.ok(nft.nft.link);
         assert.ok(nft.nft.preview);
 
-        const announcement = `Congratulations to ${nft.owner.name} for collecting "${nft.token.asset.title} (${nft.asset.title})" by ${nft.creator.name}!\n\n${nft.nft.link}\n\n${nft.nft.preview}`;
+        const announcement = `Congratulations to ${nft.owner.name} for collecting "${nft.nft.title}" by ${nft.creator.name}!\n\n${nft.nft.link}\n\n${nft.nft.preview}`;
         return createMessage(announcement);
     }
 };

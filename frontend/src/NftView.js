@@ -42,7 +42,7 @@ const NftView = ({ navigate }) => {
     return (
         <div className="container">
             <div className="left-pane">
-                <img src={nft.token.file.path} alt={nft.token.asset.title} style={{ width: '100%', height: 'auto' }} />
+                <img src={nft.token.file.path} alt={nft.nft.title} style={{ width: '100%', height: 'auto' }} />
             </div>
             <div className="right-pane">
                 <Tabs

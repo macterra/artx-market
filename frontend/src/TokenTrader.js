@@ -168,7 +168,7 @@ const TokenTrader = ({ metadata, xid, setRefreshKey }) => {
 
         try {
             const response = await axios.post('/api/v1/invoice', {
-                description: `buy ${nft.asset.title}`,
+                description: `buy ${nft.nft.title}`,
                 amount: nft.nft.price
             });
 
@@ -199,7 +199,7 @@ const TokenTrader = ({ metadata, xid, setRefreshKey }) => {
             try {
                 await axios.post(`/api/v1/asset/${nftSale.xid}/buy`, { invoice: invoice });
                 setRefreshKey((prevKey) => prevKey + 1);
-                alert(`Congratulations on collecting ${nftSale.asset.title}!`);
+                alert(`Congratulations on collecting ${nftSale.nft.title}!`);
             }
             catch (error) {
                 console.error('Error:', error);
@@ -218,7 +218,7 @@ const TokenTrader = ({ metadata, xid, setRefreshKey }) => {
                         <TableRow>
                             <TableCell>Title:</TableCell>
                             {nfts.length === 1 ? (
-                                <TableCell>{metadata.asset.title} ({nfts[0].asset.title})</TableCell>
+                                <TableCell>{nfts[0].nft.title}</TableCell>
                             ) : (
                                 <TableCell>{metadata.asset.title}</TableCell>
                             )}

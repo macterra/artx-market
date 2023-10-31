@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <meta property="og:title" content="<%= token.asset.title %> (<%= asset.title %>)">
+    <meta property="og:title" content="<%= nft.title %>">
     <meta property="og:description" content="ArtX Market :: Built on Bitcoin">
     <meta property="og:image" content="<%= nft.preview %>">
     <meta property="og:url" content="<%= nft.link %>">
@@ -72,7 +72,7 @@
 <body>
     <div class="container">
         <div class="left">
-            <img src="<%= nft.image %>" alt="<%= token.asset.title %> (<%= asset.title %>)" style="width: 100%">
+            <img src="<%= nft.image %>" alt="<%= nft.title %>" style="width: 100%">
         </div>
         <div class="right">
             <table>
@@ -167,5 +167,4 @@
         </div>
     </div>
 </body>
-
 </html>

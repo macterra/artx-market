@@ -101,13 +101,13 @@ async function getListings(max = 8) {
                 continue;
             }
 
-            const token = getAsset(nft.nft.asset);
+            const token = getAsset(nft.nft.token);
 
             if (!token) {
                 continue;
             }
 
-            listing.title = `${token.asset.title} (${nft.asset.title})`;
+            listing.title = nft.nft.title;
             listing.image = token.file.path;
 
             selected.push(listing);
@@ -352,25 +352,25 @@ function removeAsset(xid) {
 }
 
 function repairAsset(xid) {
-    const assetData = getAsset(xid);
+    const metadata = getAsset(xid);
 
-    if (!assetData) {
+    if (!metadata) {
         return removeAsset(xid);
     }
 
-    if (!assetData.asset) {
+    if (!metadata.asset) {
         return removeAsset(xid);
     }
 
-    if (!assetData.asset.owner) {
+    if (!metadata.asset.owner) {
         return removeAsset(xid);
     }
 
-    if (!assetData.xid) {
+    if (!metadata.xid) {
         return removeAsset(xid);
     }
 
-    if (!uuid.validate(assetData.xid)) {
+    if (!uuid.validate(metadata.xid)) {
         return {
             xid: xid,
             fixed: false,
@@ -378,10 +378,10 @@ function repairAsset(xid) {
         }
     }
 
-    if (assetData.token) {
+    if (metadata.token) {
         const missingNftIds = [];
 
-        for (const nftId of assetData.token.nfts) {
+        for (const nftId of metadata.token.nfts) {
             const edition = getAsset(nftId);
             if (!edition) {
                 missingNftIds.push(nftId);
@@ -397,26 +397,17 @@ function repairAsset(xid) {
         }
     }
 
-    if (assetData.nft) {
+    if (metadata.nft) {
 
-        let doSave = false;
+        if (metadata.nft.asset) {
 
-        for (const file of ['_asset.png', '_asset.jpg', '_creator.jpg', '_owner.jpg', '_collection.jpg']) {
-            const filePath = path.join(config.assets, xid, file);
-            if (fs.existsSync(filePath)) {
-                fs.rmSync(filePath);
-                console.log(`removed ${filePath}`);
-                doSave = true;
-            }
-        }
+            metadata.nft.token = metadata.nft.asset;
+            delete metadata.nft.asset;
 
-        const nft = getNft(xid);
+            const token = getAsset(metadata.nft.token);
+            metadata.nft.title = `${token.asset.title} (${metadata.asset.title})`;
 
-        if (!nft.nft.preview) {
-            doSave = true;
-        }
-
-        if (doSave) {
+            saveAsset(metadata);
             saveNft(xid);
 
             return {
@@ -427,24 +418,24 @@ function repairAsset(xid) {
         }
     }
 
-    const agentData = getAgent(assetData.asset.owner);
+    const agentData = getAgent(metadata.asset.owner);
 
     if (!agentData) {
         return removeAsset(xid);
     }
 
-    const assets = agentGetAssets(assetData.asset.owner);
+    const assets = agentGetAssets(metadata.asset.owner);
     let ownershipFixed = false;
 
-    if (assetData.collection) {
+    if (metadata.collection) {
         if (!agentData.collections.includes(xid)) {
             agentData.collections.push(xid);
             saveAgent(agentData);
             ownershipFixed = true;
         }
     }
-    else if (assetData.nft) {
-        const token = getAsset(assetData.nft.asset);
+    else if (metadata.nft) {
+        const token = getAsset(metadata.nft.token);
 
         if (!token.token) {
             return removeAsset(xid);
@@ -833,7 +824,7 @@ function getAgentAndCollections(profileId, userId) {
 
     for (const assetId of assets.collected) {
         const editionData = getAsset(assetId);
-        const tokenId = editionData.nft.asset;
+        const tokenId = editionData.nft.token;
 
         if (!(tokenId in editions)) {
             editions[tokenId] = getAsset(tokenId);
@@ -943,7 +934,7 @@ function getAgentMinimal(xid) {
 
 function saveNft(xid) {
     const metadata = getAsset(xid);
-    const tokenId = metadata.nft.asset;
+    const tokenId = metadata.nft.token;
     const tokenData = getAsset(tokenId);
     const collectionId = tokenData.asset.collection;
     const collectionData = getAsset(collectionId);
@@ -1044,10 +1035,6 @@ function enrichAsset(metadata) {
 
         metadata.owners = owners.size;
         metadata.sold = owners.size > 1;
-    }
-    else if (metadata.nft) {
-        const token = getAsset(metadata.nft.asset);
-        metadata.nft.title = `${token.asset.title} (${metadata.asset.title})`;
     }
 }
 
@@ -1244,10 +1231,13 @@ async function createAssets(userId, files, collectionId) {
     }
 }
 
-function createEdition(owner, asset, edition, editions) {
+function createEdition(owner, tokenId, edition, editions) {
     const xid = uuid.v4();
     const assetFolder = path.join(config.assets, xid);
     fs.mkdirSync(assetFolder);
+
+    const title = `${edition} of ${editions}`;
+    const tokenData = getAsset(tokenId);
 
     const metadata = {
         xid: xid,
@@ -1256,10 +1246,11 @@ function createEdition(owner, asset, edition, editions) {
             created: new Date().toISOString(),
             updated: new Date().toISOString(),
             type: 'nft',
-            title: `${edition} of ${editions}`
+            title: title,
         },
         nft: {
-            asset: asset,
+            token: tokenId,
+            title: `${tokenData.asset.title} (${title})`,
             edition: edition,
             editions: editions,
             price: 0,
@@ -1386,8 +1377,6 @@ async function purchaseAsset(xid, buyerId, invoice) {
     const price = assetData.nft.price;
 
     assert.ok(assetData.nft);
-    enrichAsset(assetData); // get nft title
-
     assert.ok(invoice.payment_hash);
 
     const payment = await lnbits.checkPayment(invoice.payment_hash);
@@ -1400,8 +1389,8 @@ async function purchaseAsset(xid, buyerId, invoice) {
 
     transferAsset(xid, buyerId);
 
-    const tokenData = getAsset(assetData.nft.asset);
-    const assetName = `"${tokenData.asset.title}" (${assetData.asset.title})`;
+    const tokenData = getAsset(assetData.nft.token);
+    const assetName = assetData.nft.title;
     console.log(`audit: ${buyer.name} buying ${assetName} for ${price} from ${seller.name}`);
 
     let audit = {
@@ -1409,7 +1398,7 @@ async function purchaseAsset(xid, buyerId, invoice) {
         agent: buyerId,
         agentName: buyer.name,
         asset: xid,
-        assetName: assetData.nft.title,
+        assetName: assetName,
         invoice: invoice,
     };
 
@@ -1539,7 +1528,7 @@ async function purchaseAsset(xid, buyerId, invoice) {
         sats: price,
     };
 
-    saveHistory(assetData.nft.asset, record);
+    saveHistory(assetData.nft.token, record);
     saveTxnLog(sellerId, sellTxn);
     saveTxnLog(buyerId, buyTxn);
 

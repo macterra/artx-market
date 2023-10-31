@@ -119,7 +119,7 @@ const TxnLog = ({ profile, refreshProfile }) => {
 
                 if (record.type === 'sell') {
                     const edition = await getAsset(record.edition);
-                    const token = await getAsset(edition.nft.asset);
+                    const token = await getAsset(edition.nft.token);
                     const buyer = await getProfile(record.buyer);
 
                     setMessage(<div>Sold "{assetLink(token)} ({nftLink(edition)})" to {profileLink(buyer)}.</div>);
@@ -129,7 +129,7 @@ const TxnLog = ({ profile, refreshProfile }) => {
 
                 if (record.type === 'buy') {
                     const edition = await getAsset(record.edition);
-                    const token = await getAsset(edition.nft.asset);
+                    const token = await getAsset(edition.nft.token);
                     const seller = await getProfile(record.seller);
 
                     setMessage(<div>Bought "{assetLink(token)} ({nftLink(edition)})" from {profileLink(seller)}.</div>);
@@ -138,7 +138,7 @@ const TxnLog = ({ profile, refreshProfile }) => {
 
                 if (record.type === 'royalty') {
                     const edition = await getAsset(record.edition);
-                    const token = await getAsset(edition.nft.asset);
+                    const token = await getAsset(edition.nft.token);
                     const buyer = await getProfile(record.buyer);
                     const seller = await getProfile(record.seller);
 

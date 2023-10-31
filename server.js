@@ -599,7 +599,7 @@ app.post('/api/v1/asset/:xid/list', ensureAuthenticated, async (req, res) => {
         price: newPrice
       };
 
-      xidb.saveHistory(assetData.nft.asset, record);
+      xidb.saveHistory(assetData.nft.token, record);
       xidb.saveAsset(assetData);
 
       const event = { type: 'list', agent: userId, asset: xid, price: newPrice };
