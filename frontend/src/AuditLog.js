@@ -63,11 +63,33 @@ const AuditLog = () => {
                     setSats(txnfee);
                 }
 
-                if (record.type === 'credits') {
+                if (record.type === 'credits') { // deprecated
                     setMessage(
                         <div style={{ display: 'flex', alignItems: 'center' }}>
                             <a href={`/profile/${record.agent}`}>{record.agentName}</a>
                             &nbsp;bought&nbsp;{`${record.amount} credits`}
+                        </div>
+                    );
+
+                    setSats(record.amount);
+                }
+
+                if (record.type === 'buy-credits') {
+                    setMessage(
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <a href={`/profile/${record.agent}`}>{record.agentName}</a>
+                            &nbsp;bought&nbsp;{`${record.amount} credits`}
+                        </div>
+                    );
+
+                    setSats(record.amount);
+                }
+
+                if (record.type === 'add-credits') {
+                    setMessage(
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <a href={`/profile/${record.agent}`}>{record.agentName || 'some rando'}</a>
+                            &nbsp;earned&nbsp;{`${record.amount} credits`}
                         </div>
                     );
 

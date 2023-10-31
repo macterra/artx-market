@@ -619,9 +619,10 @@ function addCredits(userId, amount) {
         agentData.credits += amount;
 
         const record = {
-            "type": "add-credits",
-            "agent": userId,
-            "amount": amount,
+            type: "add-credits",
+            agent: userId,
+            agentName: agentData.name,
+            amount: amount,
         };
         saveAuditLog(record);
         saveAgent(agentData);
@@ -644,7 +645,7 @@ async function buyCredits(userId, invoice) {
             invoice.payment = payment;
 
             const record = {
-                type: "credits",
+                type: "buy-credits",
                 agent: agentData.xid,
                 agentName: agentData.name,
                 amount: amount,
