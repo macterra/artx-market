@@ -295,3 +295,35 @@ describe('allAgents', () => {
     });
 });
 
+describe('getAsset', () => {
+
+    afterEach(() => {
+        mockFs.restore();
+    });
+
+    it('should return the metadata of the specified asset', () => {
+        const xid = 'testXid';
+        const metadata = { key: 'value' };
+        mockFs({
+            [testConfig.assets]: {
+                [xid]: {
+                    'meta.json': JSON.stringify(metadata),
+                },
+            }
+        });
+
+        const result = xidb.getAsset(xid, testConfig);
+
+        expect(result).toEqual(metadata);
+    });
+
+    it('should return null if the specified asset does not exist', () => {
+        mockFs({
+            [testConfig.assets]: {}  // Empty directory
+        });
+
+        const result = xidb.getAsset('nonexistentXid', testConfig);
+
+        expect(result).toBeNull();
+    });
+});

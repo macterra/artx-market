@@ -977,11 +977,11 @@ function getNft(xid) {
     return metadata;
 }
 
-function getAsset(xid) {
+function getAsset(xid, config = realConfig) {
     let metadata = null;
 
     try {
-        const metadataPath = path.join(realConfig.assets, xid, 'meta.json');
+        const metadataPath = path.join(config.assets, xid, 'meta.json');
         const metadataContent = fs.readFileSync(metadataPath, 'utf-8');
         metadata = JSON.parse(metadataContent);
     }
@@ -1006,14 +1006,14 @@ function enrichAsset(metadata) {
     }
 }
 
-function saveAsset(metadata) {
+function saveAsset(metadata, config = realConfig) {
     const current = getAsset(metadata.xid);
 
     if (JSON.stringify(metadata) == JSON.stringify(current)) {
         return;
     }
 
-    const assetFolder = path.join(realConfig.assets, metadata.xid);
+    const assetFolder = path.join(config.assets, metadata.xid);
     const assetJsonPath = path.join(assetFolder, 'meta.json');
 
     if (!fs.existsSync(assetFolder)) {
