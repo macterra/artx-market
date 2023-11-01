@@ -6,7 +6,7 @@ const crypto = require('crypto');
 const uuid = require('uuid');
 const bs58 = require('bs58');
 const ejs = require('ejs');
-const config = require('./config');
+const realConfig = require('./config');
 const lnbits = require('./lnbits');
 
 // Function to add all changes, commit, and push
@@ -14,7 +14,7 @@ async function commitChanges(event) {
     const commitMessage = JSON.stringify(event);
 
     try {
-        const response = await fetch(`${config.archiver}/api/v1/commit`, {
+        const response = await fetch(`${realConfig.archiver}/api/v1/commit`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', },
             body: JSON.stringify({ message: commitMessage }),
@@ -40,7 +40,7 @@ async function commitChanges(event) {
 
 async function pushChanges() {
     try {
-        const response = await fetch(`${config.archiver}/api/v1/push`);
+        const response = await fetch(`${realConfig.archiver}/api/v1/push`);
 
         if (response.ok) {
             const push = await response.json()
@@ -56,7 +56,7 @@ async function pushChanges() {
 
 async function getLogs() {
     try {
-        const response = await fetch(`${config.archiver}/api/v1/logs`);
+        const response = await fetch(`${realConfig.archiver}/api/v1/logs`);
 
         if (response.ok) {
             const res = await response.json()
@@ -125,11 +125,8 @@ async function getListings(max = 8) {
     return selected.slice(0, max);
 }
 
-function getMarketId() {
-    const dns_ns = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
-    const marketId = uuid.v5(config.name || config.host, dns_ns);
-
-    return marketId;
+function getMarketId(config = realConfig) {
+    return uuid.v5(config.name || config.host, config.dns_ns);
 }
 
 function uuidToBase58(uuidString) {
@@ -143,14 +140,14 @@ function uuidToBase58(uuidString) {
 }
 
 function getAdmin() {
-    const jsonPath = path.join(config.data, 'meta.json');
+    const jsonPath = path.join(realConfig.data, 'meta.json');
 
     // Check if the agent.json file exists
     if (!fs.existsSync(jsonPath)) {
         const newXid = getMarketId();
 
         return {
-            name: config.name || config.host,
+            name: realConfig.name || realConfig.host,
             xid: newXid,
             xid58: uuidToBase58(newXid),
             created: new Date().toISOString(),
@@ -161,7 +158,7 @@ function getAdmin() {
     const jsonContent = fs.readFileSync(jsonPath, 'utf-8');
     const jsonData = JSON.parse(jsonContent);
 
-    const cidPath = path.join(config.data, "CID");
+    const cidPath = path.join(realConfig.data, "CID");
 
     if (fs.existsSync(cidPath)) {
         jsonData.cid = fs.readFileSync(cidPath, 'utf-8').trim();
@@ -172,7 +169,7 @@ function getAdmin() {
 
 async function saveAdmin(adminData) {
 
-    const jsonPath = path.join(config.data, 'meta.json');
+    const jsonPath = path.join(realConfig.data, 'meta.json');
     adminData.updated = new Date().toISOString();
     // Make sure we have something to commitq
     fs.writeFileSync(jsonPath, JSON.stringify(adminData, null, 2));
@@ -184,7 +181,7 @@ async function registerState(adminState) {
 
     adminState = await saveAdmin(adminState);
 
-    const response = await fetch(`${config.archiver}/api/v1/register`, {
+    const response = await fetch(`${realConfig.archiver}/api/v1/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', },
         body: JSON.stringify({ xid: adminState.xid, cid: adminState.cid }),
@@ -193,7 +190,7 @@ async function registerState(adminState) {
     const register = await response.json();
     adminState.pending = register.txid;
 
-    const jsonPath = path.join(config.data, 'meta.json');
+    const jsonPath = path.join(realConfig.data, 'meta.json');
     fs.writeFileSync(jsonPath, JSON.stringify(adminState, null, 2));
 
     return adminState;
@@ -203,7 +200,7 @@ async function notarizeState(adminState) {
 
     adminState = await saveAdmin(adminState);
 
-    const response = await fetch(`${config.archiver}/api/v1/notarize`, {
+    const response = await fetch(`${realConfig.archiver}/api/v1/notarize`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', },
         body: JSON.stringify({ xid: adminState.xid, cid: adminState.cid }),
@@ -212,7 +209,7 @@ async function notarizeState(adminState) {
     const notarize = await response.json();
     adminState.pending = notarize.txid;
 
-    const jsonPath = path.join(config.data, 'meta.json');
+    const jsonPath = path.join(realConfig.data, 'meta.json');
     fs.writeFileSync(jsonPath, JSON.stringify(adminState, null, 2));
 
     return adminState;
@@ -221,7 +218,7 @@ async function notarizeState(adminState) {
 async function certifyState(adminState) {
 
     if (adminState.pending) {
-        const response = await fetch(`${config.archiver}/api/v1/certify`, {
+        const response = await fetch(`${realConfig.archiver}/api/v1/certify`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', },
             body: JSON.stringify({ txid: adminState.pending }),
@@ -230,7 +227,7 @@ async function certifyState(adminState) {
         const cert = await response.json();
 
         if (cert.xid) {
-            const certPath = path.join(config.certs, cert.xid);
+            const certPath = path.join(realConfig.certs, cert.xid);
             fs.mkdirSync(certPath, { recursive: true });
             const certFile = path.join(certPath, 'meta.json');
             fs.writeFileSync(certFile, JSON.stringify(cert, null, 2));
@@ -238,7 +235,7 @@ async function certifyState(adminState) {
             adminState.latest = cert.xid;
             adminState.pending = null;
 
-            const jsonPath = path.join(config.data, 'meta.json');
+            const jsonPath = path.join(realConfig.data, 'meta.json');
             fs.writeFileSync(jsonPath, JSON.stringify(adminState, null, 2));
         }
     }
@@ -247,7 +244,7 @@ async function certifyState(adminState) {
 }
 
 async function getWalletInfo() {
-    const response = await fetch(`${config.archiver}/api/v1/walletinfo`);
+    const response = await fetch(`${realConfig.archiver}/api/v1/walletinfo`);
     const walletinfo = await response.json();
     return walletinfo;
 }
@@ -257,7 +254,7 @@ async function waitForArchiver() {
 
     while (!isReady) {
         try {
-            const response = await fetch(`${config.archiver}/api/v1/ready`);
+            const response = await fetch(`${realConfig.archiver}/api/v1/ready`);
             const data = await response.json();
             isReady = data.ready;
 
@@ -328,21 +325,21 @@ async function integrityCheck() {
 }
 
 function allAssets() {
-    const assets = fs.readdirSync(config.assets, { withFileTypes: true })
+    const assets = fs.readdirSync(realConfig.assets, { withFileTypes: true })
         .filter(dirent => dirent.isDirectory())
         .map(dirent => dirent.name);
     return assets;
 }
 
 function allAgents() {
-    const agents = fs.readdirSync(config.agents, { withFileTypes: true })
+    const agents = fs.readdirSync(realConfig.agents, { withFileTypes: true })
         .filter(dirent => dirent.isDirectory())
         .map(dirent => dirent.name);
     return agents;
 }
 
 function removeAsset(xid) {
-    const assetPath = path.join(config.assets, xid);
+    const assetPath = path.join(realConfig.assets, xid);
 
     fs.rmSync(assetPath, { recursive: true, force: true });
 
@@ -557,11 +554,11 @@ async function createAgent(key) {
     agentData = {
         xid: userId,
         pubkey: key,
-        name: config.newUser,
+        name: realConfig.newUser,
         tagline: '',
         description: '',
         collections: [],
-        credits: config.initialCredits,
+        credits: realConfig.initialCredits,
         depositToCredits: true,
     };
 
@@ -571,10 +568,10 @@ async function createAgent(key) {
     saveCollection(gallery);
     agentData = getAgent(userId);
 
-    if (fs.existsSync(config.defaultPfp)) {
-        const pfpName = path.basename(config.defaultPfp);
-        const pfpPath = path.join(config.uploads, pfpName);
-        fs.copyFileSync(config.defaultPfp, pfpPath);
+    if (fs.existsSync(realConfig.defaultPfp)) {
+        const pfpName = path.basename(realConfig.defaultPfp);
+        const pfpPath = path.join(realConfig.uploads, pfpName);
+        fs.copyFileSync(realConfig.defaultPfp, pfpPath);
         const file = getFileObject(pfpPath);
         const assetData = await createAsset(file, "default pfp", userId, gallery.xid);
         agentData.pfp = assetData.file.path;
@@ -591,7 +588,7 @@ function getAgentFromKey(key) {
 }
 
 function getAgent(xid) {
-    const agentJsonPath = path.join(config.agents, xid, 'agent.json');
+    const agentJsonPath = path.join(realConfig.agents, xid, 'agent.json');
 
     // Check if the agent.json file exists
     if (!fs.existsSync(agentJsonPath)) {
@@ -605,7 +602,7 @@ function getAgent(xid) {
 }
 
 function saveAgent(agentData) {
-    const agentFolder = path.join(config.agents, agentData.xid);
+    const agentFolder = path.join(realConfig.agents, agentData.xid);
     const agentJsonPath = path.join(agentFolder, 'agent.json');
 
     if (!fs.existsSync(agentFolder)) {
@@ -666,7 +663,7 @@ async function buyCredits(userId, invoice) {
 }
 
 function agentGetAssets(userId) {
-    const agentFolder = path.join(config.agents, userId);
+    const agentFolder = path.join(realConfig.agents, userId);
     const jsonPath = path.join(agentFolder, 'assets.json');
 
     let assetData = {};
@@ -686,7 +683,7 @@ function agentGetAssets(userId) {
 }
 
 function agentSaveAssets(assetData) {
-    const agentFolder = path.join(config.agents, assetData.owner);
+    const agentFolder = path.join(realConfig.agents, assetData.owner);
     const jsonPath = path.join(agentFolder, 'assets.json');
 
     assetData.updated = new Date().toISOString();
@@ -723,7 +720,7 @@ function agentRemoveAsset(metadata) {
 
 function getAgentTxnLog(userId) {
     try {
-        const jsonlPath = path.join(config.agents, userId, 'txnlog.jsonl');
+        const jsonlPath = path.join(realConfig.agents, userId, 'txnlog.jsonl');
         const data = fs.readFileSync(jsonlPath, 'utf-8');
         const lines = data.trim().split('\n');
         const log = lines.map(line => JSON.parse(line));
@@ -861,7 +858,7 @@ function getAgentAndCollections(profileId, userId) {
 }
 
 async function getAllAgents() {
-    const agentFolders = fs.readdirSync(config.agents, { withFileTypes: true })
+    const agentFolders = fs.readdirSync(realConfig.agents, { withFileTypes: true })
         .filter(dirent => dirent.isDirectory())
         .map(dirent => dirent.name);
 
@@ -889,11 +886,11 @@ function getCollection(collectionId, userId) {
         collection.costToMintAll = 0;
 
         if (collection.isOwnedByUser) {
-            const editionsCost = collection.collection.default.editions * config.editionRate;
+            const editionsCost = collection.collection.default.editions * realConfig.editionRate;
 
             for (const asset of collection.collection.assets) {
                 if (!asset.token) {
-                    const storageCost = Math.round(asset.file.size * config.storageRate);
+                    const storageCost = Math.round(asset.file.size * realConfig.storageRate);
                     collection.costToMintAll += editionsCost + storageCost;
                 }
             }
@@ -904,20 +901,20 @@ function getCollection(collectionId, userId) {
 }
 
 function getCert(xid) {
-    const certPath = path.join(config.certs, xid, 'meta.json');
+    const certPath = path.join(realConfig.certs, xid, 'meta.json');
     const certContent = fs.readFileSync(certPath, 'utf-8');
     const cert = JSON.parse(certContent);
 
-    cert.block_link = `${config.block_link}/${cert.auth.blockhash}`;
-    cert.txn_link = `${config.txn_link}/${cert.auth.tx.txid}`;
-    cert.ipfs_link = `${config.ipfs_link}/${cert.auth.cid}`;
+    cert.block_link = `${realConfig.block_link}/${cert.auth.blockhash}`;
+    cert.txn_link = `${realConfig.txn_link}/${cert.auth.tx.txid}`;
+    cert.ipfs_link = `${realConfig.ipfs_link}/${cert.auth.cid}`;
 
     return cert;
 }
 
 function getHistory(xid) {
     try {
-        const historyPath = path.join(config.assets, xid, 'history.jsonl');
+        const historyPath = path.join(realConfig.assets, xid, 'history.jsonl');
         const data = fs.readFileSync(historyPath, 'utf-8');
         const lines = data.trim().split('\n');
         const history = lines.map(line => JSON.parse(line));
@@ -954,7 +951,7 @@ function saveNft(xid) {
         'thumbnail': collectionData.collection.thumbnail,
     };
 
-    metadata.nft.preview = `${config.link}${metadata.token.file.path}`;
+    metadata.nft.preview = `${realConfig.link}${metadata.token.file.path}`;
     metadata.nft.image = metadata.token.file.path.replace("/data/assets", "..");
     metadata.owner.image = metadata.owner.pfp.replace("/data/assets", "..");
     metadata.creator.image = metadata.creator.pfp.replace("/data/assets", "..");
@@ -966,27 +963,27 @@ function saveNft(xid) {
         metadata.collection.image = metadata.nft.image;
     }
 
-    metadata.nft.link = `${config.link}/nft/${metadata.xid}`;
-    metadata.token.link = `${config.link}/asset/${metadata.token.xid}`;
-    metadata.collection.link = `${config.link}/collection/${metadata.collection.xid}`;
-    metadata.owner.link = `${config.link}/profile/${metadata.owner.xid}`;
-    metadata.creator.link = `${config.link}/profile/${metadata.creator.xid}`;
+    metadata.nft.link = `${realConfig.link}/nft/${metadata.xid}`;
+    metadata.token.link = `${realConfig.link}/asset/${metadata.token.xid}`;
+    metadata.collection.link = `${realConfig.link}/collection/${metadata.collection.xid}`;
+    metadata.owner.link = `${realConfig.link}/profile/${metadata.owner.xid}`;
+    metadata.creator.link = `${realConfig.link}/profile/${metadata.creator.xid}`;
 
-    const templatePath = path.join(config.data, 'nft.ejs');
+    const templatePath = path.join(realConfig.data, 'nft.ejs');
     const template = fs.readFileSync(templatePath, 'utf8');
     const html = ejs.render(template, metadata);
-    const htmlPath = path.join(config.assets, xid, 'index.html');
+    const htmlPath = path.join(realConfig.assets, xid, 'index.html');
     fs.writeFileSync(htmlPath, html);
 
     metadata.asset.updated = new Date().toISOString();
-    const jsonPath = path.join(config.assets, xid, 'nft.json');
+    const jsonPath = path.join(realConfig.assets, xid, 'nft.json');
     fs.writeFileSync(jsonPath, JSON.stringify(metadata, null, 2));
 
     return metadata;
 }
 
 function getNft(xid) {
-    const jsonPath = path.join(config.assets, xid, 'nft.json');
+    const jsonPath = path.join(realConfig.assets, xid, 'nft.json');
 
     if (!fs.existsSync(jsonPath)) {
         return;
@@ -1018,7 +1015,7 @@ function getAsset(xid) {
     let metadata = null;
 
     try {
-        const metadataPath = path.join(config.assets, xid, 'meta.json');
+        const metadataPath = path.join(realConfig.assets, xid, 'meta.json');
         const metadataContent = fs.readFileSync(metadataPath, 'utf-8');
         metadata = JSON.parse(metadataContent);
     }
@@ -1050,7 +1047,7 @@ function saveAsset(metadata) {
         return;
     }
 
-    const assetFolder = path.join(config.assets, metadata.xid);
+    const assetFolder = path.join(realConfig.assets, metadata.xid);
     const assetJsonPath = path.join(assetFolder, 'meta.json');
 
     if (!fs.existsSync(assetFolder)) {
@@ -1063,7 +1060,7 @@ function saveAsset(metadata) {
 
 function getAuditLog() {
     try {
-        const jsonlPath = path.join(config.data, 'auditlog.jsonl');
+        const jsonlPath = path.join(realConfig.data, 'auditlog.jsonl');
         const data = fs.readFileSync(jsonlPath, 'utf-8');
         const lines = data.trim().split('\n');
         const log = lines.map(line => JSON.parse(line));
@@ -1076,21 +1073,21 @@ function getAuditLog() {
 function saveAuditLog(record) {
     record.time = new Date().toISOString();
     const recordString = JSON.stringify(record);
-    const jsonlPath = path.join(config.data, 'auditlog.jsonl');
+    const jsonlPath = path.join(realConfig.data, 'auditlog.jsonl');
     fs.appendFileSync(jsonlPath, recordString + '\n');
 }
 
 function saveTxnLog(xid, record) {
     record.time = new Date().toISOString();
     const recordString = JSON.stringify(record);
-    const jsonlPath = path.join(config.agents, xid, 'txnlog.jsonl');
+    const jsonlPath = path.join(realConfig.agents, xid, 'txnlog.jsonl');
     fs.appendFileSync(jsonlPath, recordString + '\n');
 }
 
 function saveHistory(xid, record) {
     record.time = new Date().toISOString();
     const recordString = JSON.stringify(record);
-    const jsonlPath = path.join(config.assets, xid, 'history.jsonl');
+    const jsonlPath = path.join(realConfig.assets, xid, 'history.jsonl');
     fs.appendFileSync(jsonlPath, recordString + '\n');
 }
 
@@ -1136,7 +1133,7 @@ async function createAsset(file, title, userId, collectionId) {
     const fileHash = gitHash(fileBuffer);
 
     // Create the subfolder
-    const assetFolder = path.join(config.assets, xid);
+    const assetFolder = path.join(realConfig.assets, xid);
     if (!fs.existsSync(assetFolder)) {
         fs.mkdirSync(assetFolder);
     }
@@ -1160,7 +1157,7 @@ async function createAsset(file, title, userId, collectionId) {
             fileName: assetName,
             size: file.size,
             hash: fileHash,
-            path: `/${config.assets}/${xid}/${assetName}`,
+            path: `/${realConfig.assets}/${xid}/${assetName}`,
         },
         image: {
             width: imageMetadata.width,
@@ -1190,7 +1187,7 @@ async function createAssets(userId, files, collectionId) {
 
     if (files) {
         for (const file of files) {
-            const uploadFee = Math.round(file.size * config.uploadRate);
+            const uploadFee = Math.round(file.size * realConfig.uploadRate);
 
             if (agentData.credits < uploadFee) {
                 fs.rmSync(file.path);
@@ -1238,7 +1235,7 @@ async function createAssets(userId, files, collectionId) {
 
 function createEdition(owner, tokenId, edition, editions) {
     const xid = uuid.v4();
-    const assetFolder = path.join(config.assets, xid);
+    const assetFolder = path.join(realConfig.assets, xid);
     fs.mkdirSync(assetFolder);
 
     const title = `${edition} of ${editions}`;
@@ -1275,8 +1272,8 @@ function createEdition(owner, tokenId, edition, editions) {
 async function createToken(userId, xid, editions, license, royalty) {
     let assetData = getAsset(xid);
 
-    const assetPath = path.join(config.assets, xid);
-    const response = await fetch(`${config.archiver}/api/v1/pin/${assetPath}`);
+    const assetPath = path.join(realConfig.assets, xid);
+    const response = await fetch(`${realConfig.archiver}/api/v1/pin/${assetPath}`);
     const ipfs = await response.json();
 
     const nfts = [];
@@ -1305,8 +1302,8 @@ async function createToken(userId, xid, editions, license, royalty) {
     saveAsset(assetData);
 
     // Charge mint fee from agent credits
-    const storageFee = Math.round(assetData.file.size * config.storageRate);
-    const editionFee = editions * config.editionRate;
+    const storageFee = Math.round(assetData.file.size * realConfig.storageRate);
+    const editionFee = editions * realConfig.editionRate;
     const mintFee = storageFee + editionFee;
     const agentData = getAgent(userId);
     agentData.credits -= mintFee;
@@ -1335,12 +1332,12 @@ async function unmintToken(userId, xid) {
     delete assetData.token;
     saveAsset(assetData);
 
-    const jsonlPath = path.join(config.assets, xid, 'history.jsonl');
+    const jsonlPath = path.join(realConfig.assets, xid, 'history.jsonl');
     fs.rmSync(jsonlPath);
 
     // Refund mint fee to agent credits
-    const storageFee = Math.round(assetData.file.size * config.storageRate);
-    const editionFee = editions * config.editionRate;
+    const storageFee = Math.round(assetData.file.size * realConfig.storageRate);
+    const editionFee = editions * realConfig.editionRate;
     const refund = storageFee + editionFee;
     const agentData = getAgent(userId);
     agentData.credits += refund;
@@ -1455,7 +1452,7 @@ async function purchaseAsset(xid, buyerId, invoice) {
         }
     }
 
-    const txnFee = Math.round(config.txnFeeRate * price);
+    const txnFee = Math.round(realConfig.txnFeeRate * price);
     const payout = price - royalty - txnFee;
     let payoutPaid = false;
     let payoutSats = 0;
@@ -1489,12 +1486,12 @@ async function purchaseAsset(xid, buyerId, invoice) {
     }
 
     if (txnFee > 0) {
-        if (config.depositAddress) {
+        if (realConfig.depositAddress) {
             try {
-                await lnbits.sendPayment(config.depositAddress, txnFee, `txn fee for asset ${assetName}`);
-                console.log(`audit: txn fee ${txnFee} to ${config.depositAddress}`);
+                await lnbits.sendPayment(realConfig.depositAddress, txnFee, `txn fee for asset ${assetName}`);
+                console.log(`audit: txn fee ${txnFee} to ${realConfig.depositAddress}`);
                 audit.txnfee = {
-                    address: config.depositAddress,
+                    address: realConfig.depositAddress,
                     amount: txnFee,
                 };
             }
@@ -1547,8 +1544,8 @@ async function purchaseAsset(xid, buyerId, invoice) {
 }
 
 async function pinAsset(xid) {
-    const assetPath = path.join(config.assets, xid);
-    const response = await fetch(`${config.archiver}/api/v1/pin/${assetPath}`);
+    const assetPath = path.join(realConfig.assets, xid);
+    const response = await fetch(`${realConfig.archiver}/api/v1/pin/${assetPath}`);
     const ipfs = await response.json();
     return ipfs;
 }
@@ -1632,6 +1629,7 @@ module.exports = {
     getCollection,
     getListings,
     getLogs,
+    getMarketId,
     getNft,
     getWalletInfo,
     integrityCheck,
