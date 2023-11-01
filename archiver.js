@@ -21,7 +21,18 @@ async function notarize(xid, cid) {
     }
 }
 
+async function certify(txid) {
+    try {
+        const response = await axios.post(`${config.archiver}/api/v1/certify`, { txid: txid });
+        return response.data;
+    }
+    catch (error) {
+        console.error(`certify error: ${error}`);
+    }
+}
+
 module.exports = {
+    certify,
     notarize,
     register,
 };

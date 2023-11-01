@@ -195,19 +195,13 @@ async function notarizeState(adminState, config = realConfig) {
     return adminState;
 }
 
-async function certifyState(adminState) {
+async function certifyState(adminState, config = realConfig) {
 
     if (adminState.pending) {
-        const response = await fetch(`${realConfig.archiver}/api/v1/certify`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', },
-            body: JSON.stringify({ txid: adminState.pending }),
-        });
+        const cert = await archiver.certify(adminState.pending);
 
-        const cert = await response.json();
-
-        if (cert.xid) {
-            const certPath = path.join(realConfig.certs, cert.xid);
+        if (cert?.xid) {
+            const certPath = path.join(config.certs, cert.xid);
             fs.mkdirSync(certPath, { recursive: true });
             const certFile = path.join(certPath, 'meta.json');
             fs.writeFileSync(certFile, JSON.stringify(cert, null, 2));
@@ -215,8 +209,7 @@ async function certifyState(adminState) {
             adminState.latest = cert.xid;
             adminState.pending = null;
 
-            const jsonPath = path.join(realConfig.data, 'meta.json');
-            fs.writeFileSync(jsonPath, JSON.stringify(adminState, null, 2));
+            adminState = saveAdmin(adminState, config);
         }
     }
 

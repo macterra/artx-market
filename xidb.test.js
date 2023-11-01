@@ -8,9 +8,10 @@ const xidb = require('./xidb');
 const archiver = require('./archiver');
 
 const testConfig = {
-    data: 'testData',
     name: 'testName',
     host: 'testHost',
+    data: 'testData',
+    certs: 'testCerts',
     dns_ns: uuid.v4()
 };
 
@@ -188,5 +189,41 @@ describe('notarizeState', () => {
         // Read the data that was written to meta.json and check that it matches the expected data
         const writtenData = JSON.parse(fs.readFileSync(path.join(testConfig.data, 'meta.json'), 'utf-8'));
         expect(writtenData).toEqual(expectedAdminState);
+    });
+});
+
+
+describe('certifyState', () => {
+
+    afterEach(() => {
+        mockFs.restore();
+    });
+
+    it('should certify the admin state and save it', async () => {
+        const adminState = { key: 'value', pending: 'mockPending' };
+        const cert = { xid: 'mockXid' };
+        mockFs({
+            [testConfig.data]: {},  // Empty directory
+            [testConfig.certs]: {}  // Empty directory
+        });
+
+        // Mock archiver.certify to return the mock cert
+        jest.spyOn(archiver, 'certify').mockResolvedValue(cert);
+
+        const expectedAdminState = {
+            ...adminState,
+            latest: cert.xid,
+            pending: null,
+            updated: expect.any(String)
+        };
+
+        const result = await xidb.certifyState(adminState, testConfig);
+
+        expect(result).toEqual(expectedAdminState);
+
+        // Read the data that was written to meta.json and check that it matches the expected data
+        const certFile = path.join(testConfig.certs, cert.xid, 'meta.json');
+        const writtenData = JSON.parse(fs.readFileSync(certFile, 'utf-8'));
+        expect(writtenData).toEqual(cert);
     });
 });
