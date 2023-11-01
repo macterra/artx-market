@@ -878,9 +878,9 @@ function getCert(xid) {
     return cert;
 }
 
-function getHistory(xid) {
+function getHistory(xid, config = realConfig) {
     try {
-        const historyPath = path.join(realConfig.assets, xid, 'history.jsonl');
+        const historyPath = path.join(config.assets, xid, 'history.jsonl');
         const data = fs.readFileSync(historyPath, 'utf-8');
         const lines = data.trim().split('\n');
         const history = lines.map(line => JSON.parse(line));
@@ -1593,6 +1593,7 @@ module.exports = {
     getAuditLog,
     getCert,
     getCollection,
+    getHistory,
     getListings,
     getLogs,
     getMarketId,

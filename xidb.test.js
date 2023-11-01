@@ -327,3 +327,41 @@ describe('getAsset', () => {
         expect(result).toBeNull();
     });
 });
+
+describe('getHistory', () => {
+
+    afterEach(() => {
+        mockFs.restore();
+    });
+
+    it('should return the history of the specified asset', () => {
+        const xid = 'testXid';
+        const history = [
+            { event: 'event1' },
+            { event: 'event2' },
+            { event: 'event3' }
+        ];
+        const historyJsonl = history.map(JSON.stringify).join('\n');
+        mockFs({
+            [testConfig.assets]: {
+                [xid]: {
+                    'history.jsonl': historyJsonl,
+                },
+            }
+        });
+
+        const result = xidb.getHistory(xid, testConfig);
+
+        expect(result).toEqual(history.reverse());
+    });
+
+    it('should return an empty array if the history file does not exist', () => {
+        mockFs({
+            [testConfig.assets]: {}  // Empty directory
+        });
+
+        const result = xidb.getHistory('nonexistentXid', testConfig);
+
+        expect(result).toEqual([]);
+    });
+});
