@@ -866,14 +866,14 @@ function getCollection(collectionId, userId) {
     return collection;
 }
 
-function getCert(xid) {
-    const certPath = path.join(realConfig.certs, xid, 'meta.json');
+function getCert(xid, config = realConfig) {
+    const certPath = path.join(config.certs, xid, 'meta.json');
     const certContent = fs.readFileSync(certPath, 'utf-8');
     const cert = JSON.parse(certContent);
 
-    cert.block_link = `${realConfig.block_link}/${cert.auth.blockhash}`;
-    cert.txn_link = `${realConfig.txn_link}/${cert.auth.tx.txid}`;
-    cert.ipfs_link = `${realConfig.ipfs_link}/${cert.auth.cid}`;
+    cert.block_link = `${config.block_link}/${cert.auth.blockhash}`;
+    cert.txn_link = `${config.txn_link}/${cert.auth.tx.txid}`;
+    cert.ipfs_link = `${config.ipfs_link}/${cert.auth.cid}`;
 
     return cert;
 }
