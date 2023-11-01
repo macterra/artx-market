@@ -24,7 +24,8 @@ const NftView = ({ navigate }) => {
                 setNft(nft);
                 setIsOwner(nft.owned);
             } catch (error) {
-                console.error('Error fetching image nft.token:', error);
+                console.error('Error:', error);
+                navigate('/');
             }
         };
 

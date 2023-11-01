@@ -435,8 +435,14 @@ app.get('/api/v1/cert/:xid', async (req, res) => {
 app.get('/api/v1/nft/:xid', async (req, res) => {
   try {
     const nftData = xidb.getNft(req.params.xid);
-    nftData.owned = (req.user?.xid === nftData.owner.xid);
-    res.json(nftData);
+
+    if (nftData) {
+      nftData.owned = (req.user?.xid === nftData.owner.xid);
+      res.json(nftData);
+    }
+    else {
+      res.status(404).json({ message: 'NFT not found' });
+    }
   } catch (error) {
     console.error('Error:', error);
     res.status(404).json({ message: 'NFT not found' });
@@ -451,8 +457,11 @@ app.get('/api/v1/asset/:xid', async (req, res) => {
       xidb.enrichAsset(assetData);
       // user owns the asset or any editions
       assetData.userIsOwner = xidb.isOwner(assetData, req.user?.xid);
+      res.json(assetData);
     }
-    res.json(assetData);
+    else {
+      res.status(404).json({ message: 'Asset not found' });
+    }
   } catch (error) {
     console.error('Error:', error);
     res.status(404).json({ message: 'Asset not found' });

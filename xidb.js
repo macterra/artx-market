@@ -989,7 +989,7 @@ function getNft(xid) {
     const jsonPath = path.join(config.assets, xid, 'nft.json');
 
     if (!fs.existsSync(jsonPath)) {
-        return saveNft(xid);
+        return;
     }
 
     const metadataContent = fs.readFileSync(jsonPath, 'utf-8');
