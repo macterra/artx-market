@@ -139,15 +139,15 @@ function uuidToBase58(uuidString) {
     return base58;
 }
 
-function getAdmin() {
-    const jsonPath = path.join(realConfig.data, 'meta.json');
+function getAdmin(config = realConfig) {
+    const jsonPath = path.join(config.data, 'meta.json');
 
     // Check if the agent.json file exists
     if (!fs.existsSync(jsonPath)) {
-        const newXid = getMarketId();
+        const newXid = getMarketId(config);
 
         return {
-            name: realConfig.name || realConfig.host,
+            name: config.name || config.host,
             xid: newXid,
             xid58: uuidToBase58(newXid),
             created: new Date().toISOString(),
@@ -158,7 +158,7 @@ function getAdmin() {
     const jsonContent = fs.readFileSync(jsonPath, 'utf-8');
     const jsonData = JSON.parse(jsonContent);
 
-    const cidPath = path.join(realConfig.data, "CID");
+    const cidPath = path.join(config.data, "CID");
 
     if (fs.existsSync(cidPath)) {
         jsonData.cid = fs.readFileSync(cidPath, 'utf-8').trim();

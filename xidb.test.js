@@ -1,5 +1,7 @@
 const uuid = require('uuid');
 const bs58 = require('bs58');
+const mockFs = require('mock-fs');
+
 const xidb = require('./xidb');
 
 describe('uuidToBase58', () => {
@@ -40,5 +42,61 @@ describe('getMarketId', () => {
         const config = { host: 'testHost', dns_ns: ns };
         const expectedMarketId = uuid.v5(config.host, config.dns_ns);
         expect(xidb.getMarketId(config)).toEqual(expectedMarketId);
+    });
+});
+
+describe('getAdmin', () => {
+    afterEach(() => {
+        mockFs.restore();
+    });
+
+    const config = {
+        data: 'testData',
+        name: 'testName',
+        host: 'testHost',
+        dns_ns: uuid.v4()
+    };
+
+    it('should return a new admin object if meta.json does not exist', () => {
+        mockFs({
+            [config.data]: {}  // Empty directory
+        });
+
+        const xid = xidb.getMarketId(config);
+        const xid58 = xidb.uuidToBase58(xid);
+
+        const expectedAdmin = {
+            name: config.name,
+            xid: xid,
+            xid58: xid58,
+            created: expect.any(String),
+            updated: expect.any(String),
+        };
+
+        expect(xidb.getAdmin(config)).toEqual(expectedAdmin);
+    });
+
+    it('should return the content of meta.json if it exists', () => {
+        const metaJson = { key: 'value' };
+        mockFs({
+            [config.data]: {
+                'meta.json': JSON.stringify(metaJson)
+            }
+        });
+
+        expect(xidb.getAdmin(config)).toEqual(metaJson);
+    });
+
+    it('should add the content of CID to the returned object if CID exists', () => {
+        const metaJson = { key: 'value' };
+        const cidContent = 'cidContent';
+        mockFs({
+            [config.data]: {
+                'meta.json': JSON.stringify(metaJson),
+                'CID': cidContent
+            }
+        });
+
+        expect(xidb.getAdmin(config)).toEqual({ ...metaJson, cid: cidContent.trim() });
     });
 });
