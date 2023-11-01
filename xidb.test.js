@@ -1,5 +1,7 @@
 const uuid = require('uuid');
 const bs58 = require('bs58');
+const fs = require('fs');
+const path = require('path');
 const mockFs = require('mock-fs');
 
 const xidb = require('./xidb');
@@ -98,5 +100,37 @@ describe('getAdmin', () => {
         });
 
         expect(xidb.getAdmin(config)).toEqual({ ...metaJson, cid: cidContent.trim() });
+    });
+});
+
+describe('saveAdmin', () => {
+    afterEach(() => {
+        mockFs.restore();
+    });
+
+    const config = {
+        data: 'testData',
+        name: 'testName',
+        host: 'testHost',
+        dns_ns: uuid.v4()
+    };
+
+    it('should write admin data to meta.json and return the data', () => {
+        const adminData = { key: 'value' };
+        mockFs({
+            [config.data]: {}  // Empty directory
+        });
+
+        const expectedAdminData = {
+            ...adminData,
+            updated: expect.any(String)
+        };
+
+        const result = xidb.saveAdmin(adminData, config);
+
+        expect(result).toEqual(expectedAdminData);
+
+        const writtenData = JSON.parse(fs.readFileSync(path.join(config.data, 'meta.json'), 'utf-8'));
+        expect(writtenData).toEqual(expectedAdminData);
     });
 });

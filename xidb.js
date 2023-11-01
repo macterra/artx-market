@@ -167,11 +167,10 @@ function getAdmin(config = realConfig) {
     return jsonData;
 }
 
-async function saveAdmin(adminData) {
+function saveAdmin(adminData, config = realConfig) {
 
-    const jsonPath = path.join(realConfig.data, 'meta.json');
+    const jsonPath = path.join(config.data, 'meta.json');
     adminData.updated = new Date().toISOString();
-    // Make sure we have something to commitq
     fs.writeFileSync(jsonPath, JSON.stringify(adminData, null, 2));
 
     return adminData;
