@@ -180,7 +180,7 @@ function saveAdmin(adminData, config = realConfig) {
 async function registerState(adminState, config = realConfig) {
 
     adminState = saveAdmin(adminState, config);
-    adminState.pending = await archiver.register(adminState);
+    adminState.pending = await archiver.register(adminState.xid, adminState.cid);
     adminState = saveAdmin(adminState, config);
 
     return adminState;
@@ -189,7 +189,7 @@ async function registerState(adminState, config = realConfig) {
 async function notarizeState(adminState, config = realConfig) {
 
     adminState = saveAdmin(adminState, config);
-    adminState.pending = await archiver.notarize(adminState);
+    adminState.pending = await archiver.notarize(adminState.xid, adminState.cid);
     adminState = saveAdmin(adminState, config);
 
     return adminState;

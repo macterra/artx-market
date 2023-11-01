@@ -1,31 +1,23 @@
 const axios = require('axios');
 const config = require('./config');
 
-async function register(adminState) {
+async function register(xid, cid) {
     try {
-        const response = await axios.post(`${config.archiver}/api/v1/register`, {
-            xid: adminState.xid,
-            cid: adminState.cid
-        });
-
+        const response = await axios.post(`${config.archiver}/api/v1/register`, { xid: xid, cid: cid });
         return response.data.txid;
     }
     catch (error) {
-        console.error(`archiver.register error: ${error}`);
+        console.error(`register error: ${error}`);
     }
 }
 
-async function notarize(adminState) {
+async function notarize(xid, cid) {
     try {
-        const response = await axios.post(`${config.archiver}/api/v1/notarize`, {
-            xid: adminState.xid,
-            cid: adminState.cid
-        });
-
+        const response = await axios.post(`${config.archiver}/api/v1/notarize`, { xid: xid, cid: cid });
         return response.data.txid;
     }
     catch (error) {
-        console.error(`archiver.notarize error: ${error}`);
+        console.error(`notarize error: ${error}`);
     }
 }
 
