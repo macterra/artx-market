@@ -217,8 +217,7 @@ async function certifyState(adminState, config = realConfig) {
 }
 
 async function getWalletInfo() {
-    const response = await fetch(`${realConfig.archiver}/api/v1/walletinfo`);
-    const walletinfo = await response.json();
+    const walletinfo = await archiver.walletinfo();
     return walletinfo;
 }
 

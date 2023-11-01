@@ -31,8 +31,19 @@ async function certify(txid) {
     }
 }
 
+async function walletinfo() {
+    try {
+        const response = await axios.get(`${config.archiver}/api/v1/walletinfo`);
+        return response.data;
+    }
+    catch (error) {
+        console.error(`walletinfo error: ${error}`);
+    }
+}
+
 module.exports = {
     certify,
     notarize,
     register,
+    walletinfo,
 };

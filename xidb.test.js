@@ -192,7 +192,6 @@ describe('notarizeState', () => {
     });
 });
 
-
 describe('certifyState', () => {
 
     afterEach(() => {
@@ -225,5 +224,19 @@ describe('certifyState', () => {
         const certFile = path.join(testConfig.certs, cert.xid, 'meta.json');
         const writtenData = JSON.parse(fs.readFileSync(certFile, 'utf-8'));
         expect(writtenData).toEqual(cert);
+    });
+});
+
+describe('getWalletInfo', () => {
+
+    it('should return walletinfo from archiver', async () => {
+        const walletinfo = { key: 'value' };
+
+        // Mock archiver.certify to return the mock walletinfo
+        jest.spyOn(archiver, 'walletinfo').mockResolvedValue(walletinfo);
+
+        const result = await xidb.getWalletInfo();
+
+        expect(result).toEqual(walletinfo);
     });
 });
