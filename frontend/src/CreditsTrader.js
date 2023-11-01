@@ -31,7 +31,7 @@ const CreditsTrader = ({ profile, setRefreshProfile }) => {
 
         try {
             const response = await axios.post('/api/v1/invoice', {
-                description: 'add credits',
+                description: `${purchase} credits`,
                 amount: purchase
             });
 
@@ -156,7 +156,7 @@ const CreditsTrader = ({ profile, setRefreshProfile }) => {
                         alignItems: 'center',
                         justifyContent: 'center'
                     }}>
-                        <InvoiceView invoice={invoice} />
+                        <InvoiceView invoice={invoice} title='Buy Credits' />
                         <Button
                             style={{ marginTop: '20px' }}
                             variant="contained"

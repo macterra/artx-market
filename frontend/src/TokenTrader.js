@@ -278,7 +278,7 @@ const TokenTrader = ({ metadata, xid, setRefreshKey }) => {
                         alignItems: 'center',
                         justifyContent: 'center'
                     }}>
-                        <InvoiceView invoice={invoice} />
+                        <InvoiceView invoice={invoice} title='Buy NFT' />
                         <Button
                             style={{ marginTop: '20px' }}
                             variant="contained"

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 
-const InvoiceView = ({ invoice }) => {
+const InvoiceView = ({ invoice, title }) => {
 
     const [timeLeft, setTimeLeft] = useState(0);
     const [expired, setExpired] = useState(false);
@@ -126,7 +126,7 @@ const InvoiceView = ({ invoice }) => {
 
     return (
         <div style={{ width: '320px', wordWrap: 'normal' }}>
-            <p style={titleStyle}>Buy NFT</p>
+            <p style={titleStyle}>{title}</p>
             <p style={textStyle}>{invoice.memo} for {invoice.amount} sats</p>
             {paid ?
                 (
