@@ -7,6 +7,7 @@ const uuid = require('uuid');
 const bs58 = require('bs58');
 const ejs = require('ejs');
 const realConfig = require('./config');
+const archiver = require('./archiver');
 const lnbits = require('./lnbits');
 
 // Function to add all changes, commit, and push
@@ -176,40 +177,20 @@ function saveAdmin(adminData, config = realConfig) {
     return adminData;
 }
 
-async function registerState(adminState) {
+async function registerState(adminState, config = realConfig) {
 
-    adminState = await saveAdmin(adminState);
-
-    const response = await fetch(`${realConfig.archiver}/api/v1/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', },
-        body: JSON.stringify({ xid: adminState.xid, cid: adminState.cid }),
-    });
-
-    const register = await response.json();
-    adminState.pending = register.txid;
-
-    const jsonPath = path.join(realConfig.data, 'meta.json');
-    fs.writeFileSync(jsonPath, JSON.stringify(adminState, null, 2));
+    adminState = saveAdmin(adminState, config);
+    adminState.pending = await archiver.register(adminState);
+    adminState = saveAdmin(adminState, config);
 
     return adminState;
 }
 
-async function notarizeState(adminState) {
+async function notarizeState(adminState, config = realConfig) {
 
-    adminState = await saveAdmin(adminState);
-
-    const response = await fetch(`${realConfig.archiver}/api/v1/notarize`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', },
-        body: JSON.stringify({ xid: adminState.xid, cid: adminState.cid }),
-    });
-
-    const notarize = await response.json();
-    adminState.pending = notarize.txid;
-
-    const jsonPath = path.join(realConfig.data, 'meta.json');
-    fs.writeFileSync(jsonPath, JSON.stringify(adminState, null, 2));
+    adminState = saveAdmin(adminState, config);
+    adminState.pending = await archiver.notarize(adminState);
+    adminState = saveAdmin(adminState, config);
 
     return adminState;
 }

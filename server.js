@@ -278,12 +278,25 @@ app.get('/api/v1/admin/register', ensureAuthenticated, async (req, res) => {
       return res.status(500).json({ message: 'Already registered' });
     }
 
+    if (adminData.pending) {
+      return res.status(500).json({ message: 'Registration pending' });
+    }
+
     const savedAdmin = await xidb.registerState(adminData);
-    adminData.githash = await xidb.commitChanges({ type: 'register-state', agent: req.user.xid, state: savedAdmin.xid });
+
+    if (savedAdmin.pending) {
+      adminData.githash = await xidb.commitChanges({
+        type: 'register-state',
+        agent: req.user.xid,
+        state: savedAdmin.xid,
+        txn: savedAdmin.pending
+      });
+    }
+
     res.json(savedAdmin);
   } catch (error) {
-    console.error('Error reading metadata:', error);
-    res.status(404).json({ message: 'Asset not found' });
+    console.error('Error:', error);
+    res.status(500).json({ error: error });
   }
 });
 
@@ -306,13 +319,18 @@ app.get('/api/v1/admin/notarize', ensureAuthenticated, async (req, res) => {
     const savedAdmin = await xidb.notarizeState(adminData);
 
     if (savedAdmin.pending) {
-      savedAdmin.githash = await xidb.commitChanges({ type: 'notarize-state', agent: req.user.xid, state: savedAdmin.xid, txn: savedAdmin.pending });
+      savedAdmin.githash = await xidb.commitChanges({
+        type: 'notarize-state',
+        agent: req.user.xid,
+        state: savedAdmin.xid,
+        txn: savedAdmin.pending
+      });
     }
 
     res.json(savedAdmin);
   } catch (error) {
-    console.error('Error reading metadata:', error);
-    res.status(404).json({ message: 'Asset not found' });
+    console.error('Error:', error);
+    res.status(500).json({ error: error });
   }
 });
 
