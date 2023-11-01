@@ -225,18 +225,12 @@ async function waitForArchiver() {
     let isReady = false;
 
     while (!isReady) {
-        try {
-            const response = await fetch(`${realConfig.archiver}/api/v1/ready`);
-            const data = await response.json();
-            isReady = data.ready;
+        isReady = await archiver.ready();
 
-            if (!isReady) {
-                console.log('Waiting for Archiver to be ready...');
-                await new Promise(resolve => setTimeout(resolve, 1000)); // wait for 5 seconds before checking again
-            }
-        } catch (error) {
-            console.error('Waiting for Archiver to respond...');
-            await new Promise(resolve => setTimeout(resolve, 1000)); // wait for 5 seconds before checking again
+        if (!isReady) {
+            console.log('Waiting for Archiver to be ready...');
+            // wait for 1 second before checking again
+            await new Promise(resolve => setTimeout(resolve, 1000));
         }
     }
 

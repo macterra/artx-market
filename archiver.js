@@ -41,9 +41,20 @@ async function walletinfo() {
     }
 }
 
+async function ready() {
+    try {
+        const response = await axios.get(`${config.archiver}/api/v1/ready`);
+        return response.data.ready;
+    }
+    catch (error) {
+        console.error(`walletinfo error: ${error}`);
+    }
+}
+
 module.exports = {
     certify,
     notarize,
+    ready,
     register,
     walletinfo,
 };
