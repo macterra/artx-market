@@ -168,7 +168,7 @@ const TokenTrader = ({ metadata, xid, setRefreshKey }) => {
 
         try {
             const response = await axios.post('/api/v1/invoice', {
-                description: `buy ${nft.nft.title}`,
+                description: nft.nft.title,
                 amount: nft.nft.price
             });
 

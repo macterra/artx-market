@@ -18,6 +18,7 @@ const InvoiceView = ({ invoice }) => {
         let timeLeft = invoice.expiry;
         timerId = setInterval(() => {
             setTimeLeft(timeLeft--);
+
             if (timeLeft <= 0) {
                 clearInterval(timerId);
                 setExpired(true);
@@ -106,7 +107,7 @@ const InvoiceView = ({ invoice }) => {
     const titleStyle = {
         marginTop: '8px',
         marginBottom: '8px',
-        fontSize: '40px',
+        fontSize: '36px',
         color: '#ffffff',
         textAlign: 'center',
     };
@@ -124,36 +125,37 @@ const InvoiceView = ({ invoice }) => {
     };
 
     return (
-        <div>
-            <p style={titleStyle}>{invoice.memo}</p>
-            <p style={textStyle}>amount: {invoice.amount} sats</p>
+        <div style={{ width: '320px', wordWrap: 'normal' }}>
+            <p style={titleStyle}>Buy NFT</p>
+            <p style={textStyle}>{invoice.memo} for {invoice.amount} sats</p>
             {paid ?
                 (
-                    <div style={textStyle}>{`invoice paid`}</div>
+                    <div style={textStyle}>{`Invoice paid`}</div>
                 ) : expired ? (
-                    <div style={textStyle}>{`invoice expired`}</div>
+                    <div style={textStyle}>{`Invoice expired`}</div>
                 ) : (
-                    <div style={textStyle}>{`expires in: ${timeLeft} seconds`}</div>
+                    <div style={textStyle}>{`Invoice expires in: ${timeLeft} seconds`}</div>
                 )
             }
-            {!expired && paid ?
-                (
-                    <div style={cardStyle}>
-                        <div style={imgContainerStyle}>
-                            <img src={'/paid.png'} style={imgStyle} alt={'paid'} />
-                        </div>
-                    </div>
-                ) : (
-                    <a href={invoice.paylink}>
-                        <div style={linkStyle}>Click or scan this QR code to pay the lightning invoice.</div>
+            {!expired && (
+                paid ?
+                    (
                         <div style={cardStyle}>
                             <div style={imgContainerStyle}>
-                                <QRCodeSVG value={invoice.payment_request} size={256} />
+                                <img src={'/paid.png'} style={imgStyle} alt={'paid'} />
                             </div>
                         </div>
-                    </a>
-                )
-            }
+                    ) : (
+                        <a href={invoice.paylink}>
+                            <div style={linkStyle}>Click or scan this QR code to pay the lightning invoice.</div>
+                            <div style={cardStyle}>
+                                <div style={imgContainerStyle}>
+                                    <QRCodeSVG value={invoice.payment_request} size={256} />
+                                </div>
+                            </div>
+                        </a>
+                    )
+            )}
         </div>
     )
 };
