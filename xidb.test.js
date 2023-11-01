@@ -405,3 +405,97 @@ describe('getCert', () => {
         expect(result).toEqual(expectedCert);
     });
 });
+
+describe('enrichAsset', () => {
+
+    afterEach(() => {
+        mockFs.restore();
+    });
+
+    it('should enrich the asset metadata', () => {
+        const metadata = {
+            xid: 'testXid',
+            asset: { owner: 'owner1' },
+            token: { nfts: ['nft1', 'nft2'] },
+        };
+        const history = [{ event: 'event1' }];
+        const nft = { asset: { owner: 'owner2' } };
+
+        // Mock the file system
+        mockFs({
+            [testConfig.assets]: {
+                [metadata.xid]: {
+                    'history.jsonl': history.map(JSON.stringify).join('\n')
+                },
+                'nft1': {
+                    'meta.json': JSON.stringify(nft),
+                },
+                'nft2': {
+                    'meta.json': JSON.stringify(nft),
+                }
+            }
+        });
+
+        const expectedMetadata = {
+            ...metadata,
+            history,
+            owners: 2,
+            sold: true,
+        };
+
+        xidb.enrichAsset(metadata, testConfig);
+
+        expect(metadata).toEqual(expectedMetadata);
+    });
+
+    it('should detect single owner', () => {
+        const metadata = {
+            xid: 'testXid',
+            asset: { owner: 'owner1' },
+            token: { nfts: ['nft1', 'nft2'] },
+        };
+        const history = [{ event: 'event1' }];
+        const nft = { asset: { owner: 'owner1' } };
+
+        // Mock the file system
+        mockFs({
+            [testConfig.assets]: {
+                [metadata.xid]: {
+                    'history.jsonl': history.map(JSON.stringify).join('\n')
+                },
+                'nft1': {
+                    'meta.json': JSON.stringify(nft),
+                },
+                'nft2': {
+                    'meta.json': JSON.stringify(nft),
+                }
+            }
+        });
+
+        const expectedMetadata = {
+            ...metadata,
+            history,
+            owners: 1,
+            sold: false,
+        };
+
+        xidb.enrichAsset(metadata, testConfig);
+
+        expect(metadata).toEqual(expectedMetadata);
+    });
+
+    it('should not modify the metadata if it does not have a token', () => {
+        const metadata = {
+            xid: 'testXid',
+            asset: { owner: 'owner1' },
+        };
+
+        mockFs({});  // Empty file system
+
+        const expectedMetadata = { ...metadata };
+
+        xidb.enrichAsset(metadata, testConfig);
+
+        expect(metadata).toEqual(expectedMetadata);
+    });
+});

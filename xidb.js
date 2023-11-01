@@ -990,14 +990,14 @@ function getAsset(xid, config = realConfig) {
     return metadata;
 }
 
-function enrichAsset(metadata) {
+function enrichAsset(metadata, config = realConfig) {
     if (metadata.token) {
-        metadata.history = getHistory(metadata.xid);
+        metadata.history = getHistory(metadata.xid, config);
 
         const owners = new Set([metadata.asset.owner]);
 
         for (const nftId of metadata.token.nfts) {
-            const nft = getAsset(nftId);
+            const nft = getAsset(nftId, config);
             owners.add(nft.asset.owner);
         }
 
