@@ -11,7 +11,9 @@ const testConfig = {
     name: 'testName',
     host: 'testHost',
     data: 'testData',
-    certs: 'testCerts',
+    assets: 'testData/assets',
+    agents: 'testData/agents',
+    certs: 'testData/certs',
     dns_ns: uuid.v4()
 };
 
@@ -240,3 +242,56 @@ describe('getWalletInfo', () => {
         expect(result).toEqual(walletinfo);
     });
 });
+
+describe('allAssets', () => {
+
+    afterEach(() => {
+        mockFs.restore();
+    });
+
+    it('should return the names of all directories in the assets directory', () => {
+        const directories = ['dir1', 'dir2', 'dir3'];
+        mockFs({
+            [testConfig.assets]: {
+                'dir1': {},
+                'dir2': {
+                    'file1.txt': 'content',
+                    'file2.txt': 'more content'
+                },
+                'dir3': {},
+                'file1.txt': 'content',
+            }
+        });
+
+        const result = xidb.allAssets(testConfig);
+
+        expect(result).toEqual(directories);
+    });
+});
+
+describe('allAgents', () => {
+
+    afterEach(() => {
+        mockFs.restore();
+    });
+
+    it('should return the names of all directories in the agents directory', () => {
+        const directories = ['dir1', 'dir2', 'dir3'];
+        mockFs({
+            [testConfig.agents]: {
+                'dir1': {},
+                'dir2': {
+                    'file1.txt': 'content',
+                    'file2.txt': 'more content'
+                },
+                'dir3': {},
+                'file1.txt': 'content',
+            }
+        });
+
+        const result = xidb.allAgents(testConfig);
+
+        expect(result).toEqual(directories);
+    });
+});
+

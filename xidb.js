@@ -290,15 +290,15 @@ async function integrityCheck() {
     }
 }
 
-function allAssets() {
-    const assets = fs.readdirSync(realConfig.assets, { withFileTypes: true })
+function allAssets(config = realConfig) {
+    const assets = fs.readdirSync(config.assets, { withFileTypes: true })
         .filter(dirent => dirent.isDirectory())
         .map(dirent => dirent.name);
     return assets;
 }
 
-function allAgents() {
-    const agents = fs.readdirSync(realConfig.agents, { withFileTypes: true })
+function allAgents(config = realConfig) {
+    const agents = fs.readdirSync(config.agents, { withFileTypes: true })
         .filter(dirent => dirent.isDirectory())
         .map(dirent => dirent.name);
     return agents;
