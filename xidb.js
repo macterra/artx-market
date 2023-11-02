@@ -7,6 +7,7 @@ const uuid = require('uuid');
 const bs58 = require('bs58');
 const ejs = require('ejs');
 const realConfig = require('./config');
+const agent = require('./agent');
 const archiver = require('./archiver');
 const lnbits = require('./lnbits');
 
@@ -391,7 +392,7 @@ function repairAsset(xid) {
         return removeAsset(xid);
     }
 
-    const assets = agentGetAssets(metadata.asset.owner);
+    const assets = agent.getAssets(metadata.asset.owner);
     let ownershipFixed = false;
 
     if (metadata.collection) {
@@ -414,14 +415,14 @@ function repairAsset(xid) {
 
         if (!assets.collected.includes(xid)) {
             assets.collected.push(xid);
-            agentSaveAssets(assets);
+            agent.saveAssets(assets);
             ownershipFixed = true;
         }
     }
     else {
         if (!assets.created.includes(xid)) {
             assets.created.push(xid);
-            agentSaveAssets(assets);
+            agent.saveAssets(assets);
             ownershipFixed = true;
         }
     }
@@ -443,7 +444,7 @@ function repairAsset(xid) {
 
 function repairAgent(xid) {
     const agentData = getAgent(xid);
-    const assets = agentGetAssets(xid);
+    const assets = agent.getAssets(xid);
     let ownershipFixed = false;
 
     for (const collectionId of agentData.collections) {
@@ -461,7 +462,7 @@ function repairAgent(xid) {
 
         if (!asset) {
             assets.created = assets.created.filter(xid => xid !== assetId);
-            agentSaveAssets(assets);
+            agent.saveAssets(assets);
             ownershipFixed = true;
         }
     }
@@ -471,7 +472,7 @@ function repairAgent(xid) {
 
         if (!asset) {
             assets.collected = assets.collected.filter(xid => xid !== assetId);
-            agentSaveAssets(assets);
+            agent.saveAssets(assets);
             ownershipFixed = true;
         }
     }
@@ -628,74 +629,6 @@ async function buyCredits(userId, invoice) {
     }
 }
 
-function agentGetAssets(userId) {
-    const agentFolder = path.join(realConfig.agents, userId);
-    const jsonPath = path.join(agentFolder, 'assets.json');
-
-    let assetData = {};
-
-    // Check if the agent.json file exists
-    if (fs.existsSync(jsonPath)) {
-        const jsonContent = fs.readFileSync(jsonPath, 'utf-8');
-        assetData = JSON.parse(jsonContent);
-    }
-    else {
-        assetData.owner = userId;
-        assetData.created = [];
-        assetData.collected = [];
-    }
-
-    return assetData;
-}
-
-function agentSaveAssets(assetData) {
-    const agentFolder = path.join(realConfig.agents, assetData.owner);
-    const jsonPath = path.join(agentFolder, 'assets.json');
-
-    assetData.updated = new Date().toISOString();
-
-    fs.writeFileSync(jsonPath, JSON.stringify(assetData, null, 2));
-}
-
-function agentAddAsset(metadata) {
-    let assetData = agentGetAssets(metadata.asset.owner);
-
-    if (metadata.file) {
-        assetData.created.push(metadata.xid);
-    } else {
-        assetData.collected.push(metadata.xid);
-    }
-
-    agentSaveAssets(assetData);
-}
-
-function agentRemoveAsset(metadata) {
-    let assetData = agentGetAssets(metadata.asset.owner);
-
-    if (metadata.nft) {
-        assetData.collected = assetData.collected.filter(xid => xid != metadata.xid);
-    }
-    else {
-        console.log(`agentRemoveAsset ${metadata.xid} not an edition`);
-        return;
-    }
-
-    agentSaveAssets(assetData);
-    return removeAsset(metadata.xid);
-}
-
-function getAgentTxnLog(userId) {
-    try {
-        const jsonlPath = path.join(realConfig.agents, userId, 'txnlog.jsonl');
-        const data = fs.readFileSync(jsonlPath, 'utf-8');
-        const lines = data.trim().split('\n');
-        const log = lines.map(line => JSON.parse(line));
-        return log.reverse();
-    } catch (error) {
-        return [];
-    }
-}
-
 function getAgentAndCollections(profileId, userId) {
     if (!profileId) {
         profileId = userId;
@@ -706,7 +639,7 @@ function getAgentAndCollections(profileId, userId) {
     }
 
     let agentData = getAgent(profileId);
-    const assets = agentGetAssets(profileId);
+    const assets = agent.getAssets(profileId);
 
     let collections = {};
 
@@ -1043,13 +976,6 @@ function saveAuditLog(record) {
     fs.appendFileSync(jsonlPath, recordString + '\n');
 }
 
-function saveTxnLog(xid, record) {
-    record.time = new Date().toISOString();
-    const recordString = JSON.stringify(record);
-    const jsonlPath = path.join(realConfig.agents, xid, 'txnlog.jsonl');
-    fs.appendFileSync(jsonlPath, recordString + '\n');
-}
-
 function saveHistory(xid, record) {
     record.time = new Date().toISOString();
     const recordString = JSON.stringify(record);
@@ -1134,7 +1060,7 @@ async function createAsset(file, title, userId, collectionId) {
     };
 
     saveAsset(metadata);
-    agentAddAsset(metadata);
+    agent.addAsset(metadata);
 
     return metadata;
 }
@@ -1250,9 +1176,9 @@ async function createToken(userId, xid, editions, license, royalty) {
     }
 
     //console.log(nfts);
-    let assets = agentGetAssets(userId);
+    let assets = agent.getAssets(userId);
     assets.collected.push(...nfts);
-    agentSaveAssets(assets);
+    agent.saveAssets(assets);
 
     royalty = parseFloat(royalty);
 
@@ -1292,7 +1218,8 @@ async function unmintToken(userId, xid) {
 
     for (const nftId of assetData.token.nfts) {
         const nft = getAsset(nftId);
-        agentRemoveAsset(nft);
+        agent.removeAsset(nft);
+        removeAsset(nftId);
     }
 
     delete assetData.token;
@@ -1323,13 +1250,13 @@ function transferAsset(xid, nextOwnerId) {
 
     const prevOwnerId = assetData.asset.owner;
 
-    let assetsPrevOwner = agentGetAssets(prevOwnerId);
+    let assetsPrevOwner = agent.getAssets(prevOwnerId);
     assetsPrevOwner.collected = assetsPrevOwner.collected.filter(item => item !== xid);
-    agentSaveAssets(assetsPrevOwner);
+    agent.saveAssets(assetsPrevOwner);
 
-    let assetsNextOwner = agentGetAssets(nextOwnerId);
+    let assetsNextOwner = agent.getAssets(nextOwnerId);
     assetsNextOwner.collected.push(xid);
-    agentSaveAssets(assetsNextOwner);
+    agent.saveAssets(assetsNextOwner);
 
     assetData.asset.owner = nextOwnerId;
     assetData.nft.price = 0;
@@ -1497,11 +1424,11 @@ async function purchaseAsset(xid, buyerId, invoice) {
     };
 
     saveHistory(assetData.nft.token, record);
-    saveTxnLog(sellerId, sellTxn);
-    saveTxnLog(buyerId, buyTxn);
+    agent.saveTxnLog(sellerId, sellTxn);
+    agent.saveTxnLog(buyerId, buyTxn);
 
     if (royaltyPaid) {
-        saveTxnLog(creatorId, royaltyTxn);
+        agent.saveTxnLog(creatorId, royaltyTxn);
     }
 
     saveAuditLog(audit);
@@ -1587,7 +1514,6 @@ module.exports = {
     getAgent,
     getAgentAndCollections,
     getAgentFromKey,
-    getAgentTxnLog,
     getAllAgents,
     getAsset,
     getAuditLog,
@@ -1613,7 +1539,6 @@ module.exports = {
     saveCollection,
     saveHistory,
     saveNft,
-    saveTxnLog,
     transferAsset,
     unmintToken,
     uuidToBase58,

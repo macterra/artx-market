@@ -13,6 +13,7 @@ const axios = require('axios');
 
 const config = require('./config');
 const lnbits = require('./lnbits');
+const agent = require('./agent');
 const xidb = require('./xidb');
 const nostr = require('./nostr');
 
@@ -553,7 +554,7 @@ app.post('/api/v1/asset/:xid/mint', ensureAuthenticated, async (req, res) => {
       credits: mint.mintFee,
     };
 
-    xidb.saveTxnLog(userId, txn);
+    agent.saveTxnLog(userId, txn);
     xidb.commitChanges({ type: 'mint', agent: userId, asset: xid, editions: editions });
 
     res.json(mint);
@@ -587,7 +588,7 @@ app.get('/api/v1/asset/:xid/unmint', ensureAuthenticated, async (req, res) => {
       credits: unmint.refund,
     };
 
-    xidb.saveTxnLog(userId, txn);
+    agent.saveTxnLog(userId, txn);
     xidb.commitChanges({ type: 'unmint', agent: userId, asset: xid });
 
     res.json(unmint);
@@ -707,7 +708,7 @@ app.get('/api/v1/profile/:xid?', async (req, res) => {
       agentData.collections = Object.values(agentData.collections);
       agentData.isUser = (userId === agentData.xid);
       if (agentData.isUser) {
-        agentData.txnlog = xidb.getAgentTxnLog(userId);
+        agentData.txnlog = agent.getTxnLog(userId);
       }
       res.json(agentData);
     } else {
@@ -813,7 +814,7 @@ app.post('/api/v1/profile/credit', ensureAuthenticated, async (req, res) => {
         'credits': invoice.amount,
       };
 
-      xidb.saveTxnLog(userId, txn);
+      agent.saveTxnLog(userId, txn);
       xidb.commitChanges({ type: 'credits', agent: userId, credits: invoice.amount });
       res.json(agentData);
     }
@@ -945,7 +946,7 @@ app.get('/api/v1/collections/:xid/mint-all', ensureAuthenticated, async (req, re
           'credits': mint.mintFee,
         };
 
-        xidb.saveTxnLog(userId, txn);
+        agent.saveTxnLog(userId, txn);
       }
     }
 
@@ -996,7 +997,7 @@ app.post('/api/v1/collections/:xid/upload', ensureAuthenticated, upload.array('i
       'credits': upload.creditsDebited,
     };
 
-    xidb.saveTxnLog(req.user.xid, txn);
+    agent.saveTxnLog(req.user.xid, txn);
     xidb.commitChanges({ type: 'upload', agent: req.user.xid, asset: collectionId, files: upload.filesUploaded, bytes: upload.bytesUploaded });
     res.status(200).json(upload);
   } catch (error) {
