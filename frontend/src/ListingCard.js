@@ -51,7 +51,11 @@ const ListingCard = ({ listing }) => {
                 <img src={listing.image} style={imgStyle} alt={listing.title} />
             </div>
             <p style={titleStyle}>{listing.title}</p>
-            <span style={textStyle}>for {listing.price} sats</span>
+            {listing.editions === 1 ? (
+                <span style={textStyle}>for {listing.price} sats</span>
+            ) : (
+                <span style={textStyle}>{listing.editions} editions for {listing.min}-{listing.max} sats</span>
+            )}
         </div>
     );
 };

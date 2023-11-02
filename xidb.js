@@ -1346,6 +1346,7 @@ async function getListings(max = 8) {
     let listings = logs.filter(log => log.type === 'list');
     let selected = [];
     let seen = {};
+    let listingsByToken = {};
 
     for (let listing of listings) {
 
@@ -1380,10 +1381,24 @@ async function getListings(max = 8) {
                 continue;
             }
 
-            listing.title = nft.nft.title;
-            listing.image = token.file.path;
+            if (!listingsByToken[nft.nft.token]) {
+                listing.title = nft.nft.title;
+                listing.image = token.file.path;
+                listing.min = nft.nft.price;
+                listing.max = nft.nft.price;
+                listing.editions = 1;
+                listing.token = nft.nft.token;
 
-            selected.push(listing);
+                selected.push(listing);
+                listingsByToken[nft.nft.token] = listing;
+            }
+            else {
+                let tokenListing = listingsByToken[nft.nft.token];
+                tokenListing.title = token.asset.title;
+                tokenListing.editions += 1;
+                tokenListing.min = Math.min(tokenListing.min, listing.price);
+                tokenListing.max = Math.max(tokenListing.max, listing.price);
+            }
         }
         catch (error) {
             console.log(`getListings error: ${error}`);

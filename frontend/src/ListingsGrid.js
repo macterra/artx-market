@@ -16,7 +16,7 @@ const ListingsGrid = ({ listings }) => {
     return (
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'left' }}>
             {listings.map((listing, index) => (
-                <Link key={index} to={`/nft/${listing.asset}`} style={imageCardStyle}>
+                <Link key={index} to={listing.editions > 1 ? `/asset/${listing.token}` : `/nft/${listing.asset}`} style={imageCardStyle}>
                     <ListingCard key={index} listing={listing} />
                 </Link>
             ))}
