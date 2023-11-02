@@ -82,9 +82,9 @@ function removeAsset(metadata, config = realConfig) {
     saveAssets(assets, config);
 }
 
-function getTxnLog(userId, config = realConfig) {
+function getTxnLog(xid, config = realConfig) {
     try {
-        const jsonlPath = path.join(config.agents, userId, 'txnlog.jsonl');
+        const jsonlPath = path.join(config.agents, xid, 'txnlog.jsonl');
         const data = fs.readFileSync(jsonlPath, 'utf-8');
         const lines = data.trim().split('\n');
         const log = lines.map(line => JSON.parse(line));
@@ -94,10 +94,25 @@ function getTxnLog(userId, config = realConfig) {
     }
 }
 
+function saveTxnLog(xid, record, config = realConfig) {
+    record.time = new Date().toISOString();
+    const recordString = JSON.stringify(record);
+
+    const agentFolder = path.join(config.agents, xid);
+    const jsonlPath = path.join(agentFolder, 'txnlog.jsonl');
+
+    if (!fs.existsSync(agentFolder)) {
+        fs.mkdirSync(agentFolder);
+    }
+
+    fs.appendFileSync(jsonlPath, recordString + '\n');
+}
+
 module.exports = {
     addAsset,
     getAssets,
     getTxnLog,
     removeAsset,
     saveAssets,
+    saveTxnLog,
 };

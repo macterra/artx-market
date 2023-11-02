@@ -302,3 +302,35 @@ describe('getTxnLog', () => {
         expect(result).toEqual([]);
     });
 });
+
+describe('saveTxnLog', () => {
+    const config = {
+        agents: 'testAgents',
+    };
+
+    afterEach(() => {
+        mockFs.restore();
+    });
+
+    it('should append the record to the transaction log', () => {
+        const xid = 'testXid';
+        const record = { event: 'event1' };
+
+        // Mock the file system
+        mockFs({
+            [config.agents]: {
+                [xid]: {
+                    'txnlog.jsonl': '',
+                },
+            }
+        });
+
+        agent.saveTxnLog(xid, record, config);
+
+        // Read the data that was written to txnlog.jsonl and check that it matches the expected data
+        const jsonlPath = path.join(config.agents, xid, 'txnlog.jsonl');
+        const writtenData = fs.readFileSync(jsonlPath, 'utf-8');
+        const writtenRecord = JSON.parse(writtenData.trim());
+        expect(writtenRecord).toEqual({ ...record, time: expect.any(String) });
+    });
+});
