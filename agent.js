@@ -3,6 +3,31 @@ const fs = require('fs');
 
 const realConfig = require('./config');
 
+function getAgent(xid, config = realConfig) {
+    const agentJsonPath = path.join(config.agents, xid, 'agent.json');
+
+    if (!fs.existsSync(agentJsonPath)) {
+        return null;
+    }
+
+    const agentJsonContent = fs.readFileSync(agentJsonPath, 'utf-8');
+    const agentData = JSON.parse(agentJsonContent);
+
+    return agentData;
+}
+
+function saveAgent(agentData, config = realConfig) {
+    const agentFolder = path.join(config.agents, agentData.xid);
+    const agentJsonPath = path.join(agentFolder, 'agent.json');
+
+    if (!fs.existsSync(agentFolder)) {
+        fs.mkdirSync(agentFolder);
+    }
+
+    agentData.updated = new Date().toISOString();
+    fs.writeFileSync(agentJsonPath, JSON.stringify(agentData, null, 2));
+}
+
 function getAssets(xid, config = realConfig) {
     const agentFolder = path.join(config.agents, xid);
     const jsonPath = path.join(agentFolder, 'assets.json');
@@ -110,9 +135,11 @@ function saveTxnLog(xid, record, config = realConfig) {
 
 module.exports = {
     addAsset,
+    getAgent,
     getAssets,
     getTxnLog,
     removeAsset,
+    saveAgent,
     saveAssets,
     saveTxnLog,
 };

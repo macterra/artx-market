@@ -416,7 +416,7 @@ app.get('/api/v1/admin/agents', ensureAuthenticated, async (req, res) => {
     }
 
     const agentIds = xidb.allAgents();
-    const agents = agentIds.map(xid => xidb.getAgent(xid));
+    const agents = agentIds.map(xid => agent.getAgent(xid));
 
     res.json(agents);
   } catch (error) {
@@ -725,7 +725,7 @@ app.patch('/api/v1/profile/', ensureAuthenticated, async (req, res) => {
     const { name, tagline, pfp, deposit, depositToCredits, collections, links } = req.body;
     const userId = req.user.xid;
 
-    const agentData = xidb.getAgent(userId);
+    const agentData = agent.getAgent(userId);
 
     if (userId != agentData.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -769,7 +769,7 @@ app.patch('/api/v1/profile/', ensureAuthenticated, async (req, res) => {
       agentData.links = links;
     }
 
-    xidb.saveAgent(agentData);
+    agent.saveAgent(agentData);
     xidb.commitChanges({ type: 'update', agent: userId });
     res.json({ message: 'Metadata updated successfully' });
   } catch (error) {
@@ -783,7 +783,7 @@ app.post('/api/v1/profile/:xid/invoice', async (req, res) => {
   const { amount } = req.body;
 
   try {
-    const agentData = xidb.getAgent(profileId);
+    const agentData = agent.getAgent(profileId);
 
     if (agentData) {
       const { invoice } = await requestInvoice({

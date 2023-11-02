@@ -371,7 +371,7 @@ function repairAsset(xid) {
         }
     }
 
-    const agentData = getAgent(metadata.asset.owner);
+    const agentData = agent.getAgent(metadata.asset.owner);
 
     if (!agentData) {
         return removeAsset(xid);
@@ -383,7 +383,7 @@ function repairAsset(xid) {
     if (metadata.collection) {
         if (!agentData.collections.includes(xid)) {
             agentData.collections.push(xid);
-            saveAgent(agentData);
+            agent.saveAgent(agentData);
             ownershipFixed = true;
         }
     }
@@ -428,7 +428,7 @@ function repairAsset(xid) {
 }
 
 function repairAgent(xid) {
-    const agentData = getAgent(xid);
+    const agentData = agent.getAgent(xid);
     const assets = agent.getAssets(xid);
     let ownershipFixed = false;
 
@@ -437,7 +437,7 @@ function repairAgent(xid) {
 
         if (!collection) {
             agentData.collections = agentData.collections.filter(xid => xid !== collectionId);
-            saveAgent(agentData);
+            agent.saveAgent(agentData);
             ownershipFixed = true;
         }
     }
@@ -514,11 +514,11 @@ async function createAgent(key) {
         depositToCredits: true,
     };
 
-    saveAgent(agentData);
+    agent.saveAgent(agentData);
 
     const gallery = createCollection(userId, 'gallery');
     saveCollection(gallery);
-    agentData = getAgent(userId);
+    agentData = agent.getAgent(userId);
 
     if (fs.existsSync(realConfig.defaultPfp)) {
         const pfpName = path.basename(realConfig.defaultPfp);
@@ -527,7 +527,7 @@ async function createAgent(key) {
         const file = getFileObject(pfpPath);
         const assetData = await createAsset(file, "default pfp", userId, gallery.xid);
         agentData.pfp = assetData.file.path;
-        saveAgent(agentData);
+        agent.saveAgent(agentData);
     }
 
     return agentData;
@@ -535,38 +535,12 @@ async function createAgent(key) {
 
 function getAgentFromKey(key) {
     const xid = agentId(key);
-    const agent = getAgent(xid);
-    return agent;
-}
-
-function getAgent(xid) {
-    const agentJsonPath = path.join(realConfig.agents, xid, 'agent.json');
-
-    // Check if the agent.json file exists
-    if (!fs.existsSync(agentJsonPath)) {
-        return null;
-    }
-
-    const agentJsonContent = fs.readFileSync(agentJsonPath, 'utf-8');
-    const agentData = JSON.parse(agentJsonContent);
-
+    const agentData = agent.getAgent(xid);
     return agentData;
 }
 
-function saveAgent(agentData) {
-    const agentFolder = path.join(realConfig.agents, agentData.xid);
-    const agentJsonPath = path.join(agentFolder, 'agent.json');
-
-    if (!fs.existsSync(agentFolder)) {
-        fs.mkdirSync(agentFolder);
-    }
-
-    agentData.updated = new Date().toISOString();
-    fs.writeFileSync(agentJsonPath, JSON.stringify(agentData, null, 2));
-}
-
 function addCredits(userId, amount) {
-    const agentData = getAgent(userId);
+    const agentData = agent.getAgent(userId);
 
     if (agentData) {
         agentData.credits += amount;
@@ -578,13 +552,13 @@ function addCredits(userId, amount) {
             amount: amount,
         };
         saveAuditLog(record);
-        saveAgent(agentData);
+        agent.saveAgent(agentData);
         return agentData;
     }
 }
 
 async function buyCredits(userId, invoice) {
-    const agentData = getAgent(userId);
+    const agentData = agent.getAgent(userId);
 
     if (agentData && invoice?.payment_hash) {
         console.log(`buyCredits: ${JSON.stringify(invoice, null, 4)}`);
@@ -605,7 +579,7 @@ async function buyCredits(userId, invoice) {
                 invoice: invoice,
             };
             saveAuditLog(record);
-            saveAgent(agentData);
+            agent.saveAgent(agentData);
             return agentData;
         }
         else {
@@ -623,7 +597,7 @@ function getAgentAndCollections(profileId, userId) {
         return;
     }
 
-    let agentData = getAgent(profileId);
+    let agentData = agent.getAgent(profileId);
     const assets = agent.getAssets(profileId);
 
     let collections = {};
@@ -809,12 +783,12 @@ function getHistory(xid, config = realConfig) {
 }
 
 function getAgentMinimal(xid) {
-    const agent = getAgent(xid);
+    const agentData = agent.getAgent(xid);
 
     return {
-        'xid': agent.xid,
-        'name': agent.name,
-        'pfp': agent.pfp,
+        'xid': agentData.xid,
+        'name': agentData.name,
+        'pfp': agentData.pfp,
     }
 }
 
@@ -1051,7 +1025,7 @@ async function createAsset(file, title, userId, collectionId) {
 }
 
 async function createAssets(userId, files, collectionId) {
-    const agentData = getAgent(userId);
+    const agentData = agent.getAgent(userId);
     const collectionData = getCollection(collectionId, userId);
     const defaultTitle = collectionData.collection.default.title;
 
@@ -1096,7 +1070,7 @@ async function createAssets(userId, files, collectionId) {
         }
 
         if (filesUploaded > 0) {
-            saveAgent(agentData);
+            agent.saveAgent(agentData);
         }
     }
 
@@ -1182,9 +1156,9 @@ async function createToken(userId, xid, editions, license, royalty) {
     const storageFee = Math.round(assetData.file.size * realConfig.storageRate);
     const editionFee = editions * realConfig.editionRate;
     const mintFee = storageFee + editionFee;
-    const agentData = getAgent(userId);
+    const agentData = agent.getAgent(userId);
     agentData.credits -= mintFee;
-    saveAgent(agentData);
+    agent.saveAgent(agentData);
 
     return {
         xid: xid,
@@ -1217,9 +1191,9 @@ async function unmintToken(userId, xid) {
     const storageFee = Math.round(assetData.file.size * realConfig.storageRate);
     const editionFee = editions * realConfig.editionRate;
     const refund = storageFee + editionFee;
-    const agentData = getAgent(userId);
+    const agentData = agent.getAgent(userId);
     agentData.credits += refund;
-    saveAgent(agentData);
+    agent.saveAgent(agentData);
 
     return {
         xid: xid,
@@ -1251,9 +1225,9 @@ function transferAsset(xid, nextOwnerId) {
 
 async function purchaseAsset(xid, buyerId, invoice) {
     const assetData = getAsset(xid);
-    const buyer = getAgent(buyerId);
+    const buyer = agent.getAgent(buyerId);
     const sellerId = assetData.asset.owner;
-    const seller = getAgent(sellerId);
+    const seller = agent.getAgent(sellerId);
     const price = assetData.nft.price;
 
     assert.ok(assetData.nft);
@@ -1295,7 +1269,7 @@ async function purchaseAsset(xid, buyerId, invoice) {
     };
 
     if (creatorId !== seller.xid) {
-        const creator = getAgent(creatorId);
+        const creator = agent.getAgent(creatorId);
         royalty = Math.round(price * royaltyRate);
 
         if (royalty > 0) {
@@ -1456,12 +1430,12 @@ function createCollection(userId, name) {
 function saveCollection(collection) {
     assert.ok(collection.collection);
 
-    const agentData = getAgent(collection.asset.owner);
+    const agentData = agent.getAgent(collection.asset.owner);
     const collectionId = collection.xid;
 
     if (!agentData.collections.includes(collectionId)) {
         agentData.collections.push(collectionId);
-        saveAgent(agentData);
+        agent.saveAgent(agentData);
     }
 
     // assets are generated at runtime because metadata.asset.collection is the source of truth
@@ -1472,12 +1446,12 @@ function saveCollection(collection) {
 function removeCollection(collection) {
     assert.ok(collection.collection);
 
-    const agentData = getAgent(collection.asset.owner);
+    const agentData = agent.getAgent(collection.asset.owner);
     const collectionId = collection.xid;
 
     if (agentData.collections.includes(collectionId)) {
         agentData.collections = agentData.collections.filter(xid => xid !== collectionId);
-        saveAgent(agentData);
+        agent.saveAgent(agentData);
     }
 
     return removeAsset(collectionId);
@@ -1496,7 +1470,6 @@ module.exports = {
     createToken,
     enrichAsset,
     getAdmin,
-    getAgent,
     getAgentAndCollections,
     getAgentFromKey,
     getAllAgents,
@@ -1517,7 +1490,6 @@ module.exports = {
     registerState,
     removeCollection,
     saveAdmin,
-    saveAgent,
     saveAsset,
     saveAuditLog,
     saveCollection,

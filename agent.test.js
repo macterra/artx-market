@@ -7,6 +7,67 @@ const config = {
     agents: 'test/agents',
 };
 
+describe('getAgent', () => {
+
+    afterEach(() => {
+        mockFs.restore();
+    });
+
+    it('should return the agent data if the agent exists', () => {
+        const xid = 'testXid';
+        const agentData = { name: 'Test Agent' };
+
+        // Mock the file system
+        mockFs({
+            [config.agents]: {
+                [xid]: {
+                    'agent.json': JSON.stringify(agentData),
+                },
+            }
+        });
+
+        const result = agent.getAgent(xid, config);
+
+        expect(result).toEqual(agentData);
+    });
+
+    it('should return null if the agent does not exist', () => {
+        const xid = 'testXid';
+
+        // Mock the file system
+        mockFs({
+            [config.agents]: {}  // Empty directory
+        });
+
+        const result = agent.getAgent(xid, config);
+
+        expect(result).toBeNull();
+    });
+});
+
+describe('saveAgent', () => {
+
+    afterEach(() => {
+        mockFs.restore();
+    });
+
+    it('should save the agent data', () => {
+        const agentData = { xid: 'testXid', name: 'Test Agent' };
+
+        // Mock the file system
+        mockFs({
+            [config.agents]: {}  // Empty directory
+        });
+
+        agent.saveAgent(agentData, config);
+
+        // Read the data that was written to agent.json and check that it matches the expected data
+        const agentJsonPath = path.join(config.agents, agentData.xid, 'agent.json');
+        const writtenData = JSON.parse(fs.readFileSync(agentJsonPath, 'utf-8'));
+        expect(writtenData).toEqual({ ...agentData, updated: expect.any(String) });
+    });
+});
+
 describe('getAssets', () => {
 
     afterEach(() => {
