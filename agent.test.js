@@ -3,10 +3,11 @@ const path = require('path');
 const mockFs = require('mock-fs');
 const agent = require('./agent');
 
+const config = {
+    agents: 'test/agents',
+};
+
 describe('getAssets', () => {
-    const config = {
-        agents: 'testAgents',
-    };
 
     afterEach(() => {
         mockFs.restore();
@@ -53,9 +54,6 @@ describe('getAssets', () => {
 });
 
 describe('saveAssets', () => {
-    const config = {
-        agents: 'testAgents',
-    };
 
     afterEach(() => {
         mockFs.restore();
@@ -82,9 +80,6 @@ describe('saveAssets', () => {
 });
 
 describe('addAsset', () => {
-    const config = {
-        agents: 'testAgents',
-    };
 
     afterEach(() => {
         mockFs.restore();
@@ -180,9 +175,6 @@ describe('addAsset', () => {
 });
 
 describe('removeAsset', () => {
-    const config = {
-        agents: 'testAgents',
-    };
 
     afterEach(() => {
         mockFs.restore();
@@ -267,5 +259,46 @@ describe('removeAsset', () => {
         const jsonPath = path.join(config.agents, assets.owner, 'assets.json');
         const writtenData = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
         expect(writtenData.created).toContain(metadata.xid);
+    });
+});
+
+describe('getTxnLog', () => {
+
+    afterEach(() => {
+        mockFs.restore();
+    });
+
+    it('should return the transaction log for the specified user', () => {
+        const userId = 'testUser';
+        const log = [
+            { event: 'event1' },
+            { event: 'event2' },
+        ];
+
+        // Mock the file system
+        mockFs({
+            [config.agents]: {
+                [userId]: {
+                    'txnlog.jsonl': log.map(JSON.stringify).join('\n'),
+                },
+            }
+        });
+
+        const result = agent.getTxnLog(userId, config);
+
+        expect(result).toEqual(log.reverse());
+    });
+
+    it('should return an empty array if the transaction log does not exist', () => {
+        const userId = 'testUser';
+
+        // Mock the file system
+        mockFs({
+            [config.agents]: {}  // Empty directory
+        });
+
+        const result = agent.getTxnLog(userId, config);
+
+        expect(result).toEqual([]);
     });
 });
