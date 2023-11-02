@@ -75,7 +75,7 @@ function removeAsset(metadata, config = realConfig) {
         assets.collected = assets.collected.filter(xid => xid != metadata.xid);
     }
     else {
-        console.log(`removeAsset: unknown asset type ${metadata.xid}`);
+        //console.debug(`removeAsset: unknown asset type ${metadata.xid}`);
         return;
     }
 

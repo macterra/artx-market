@@ -178,3 +178,94 @@ describe('addAsset', () => {
         expect(writtenData.collections).not.toContain(metadata.xid);
     });
 });
+
+describe('removeAsset', () => {
+    const config = {
+        agents: 'testAgents',
+    };
+
+    afterEach(() => {
+        mockFs.restore();
+    });
+
+    it('should remove the asset from the appropriate list', () => {
+
+        const assets = {
+            owner: 'testXid',
+            created: [],
+            collected: [],
+            collections: [],
+        };
+
+        const fileAsset = {
+            xid: 'xid1',
+            asset: { owner: assets.owner },
+            file: {},
+        };
+
+        const nftAsset = {
+            xid: 'xid2',
+            asset: { owner: assets.owner },
+            nft: {},
+        };
+
+        const collectionAsset = {
+            xid: 'xid3',
+            asset: { owner: assets.owner },
+            collection: {},
+        };
+
+        assets.created = [fileAsset.xid];
+        assets.collected = [nftAsset.xid];
+        assets.collections = [collectionAsset.xid];
+
+        // Mock the file system
+        mockFs({
+            [config.agents]: {
+                [assets.owner]: {
+                    'assets.json': JSON.stringify(assets),
+                },
+            }
+        });
+
+        agent.removeAsset(fileAsset, config);
+        agent.removeAsset(nftAsset, config);
+        agent.removeAsset(collectionAsset, config);
+
+        // Read the data that was written to assets.json and check that it does not contain the removed asset
+        const jsonPath = path.join(config.agents, assets.owner, 'assets.json');
+        const writtenData = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
+        expect(writtenData.created).not.toContain(fileAsset.xid);
+        expect(writtenData.collected).not.toContain(nftAsset.xid);
+        expect(writtenData.collections).not.toContain(collectionAsset.xid);
+    });
+
+    it('should not modify the assets if the asset type is unknown', () => {
+        const assets = {
+            owner: 'testXid',
+            created: ['testAsset'],
+            collected: [],
+            collections: [],
+        };
+        const metadata = {
+            xid: 'testAsset',
+            asset: { owner: assets.owner },
+        };
+
+        // Mock the file system
+        mockFs({
+            [config.agents]: {
+                [assets.owner]: {
+                    'assets.json': JSON.stringify(assets),
+                },
+            }
+        });
+
+        agent.removeAsset(metadata, config);
+
+        // Read the data that was written to assets.json and check that it still contains the asset
+        const jsonPath = path.join(config.agents, assets.owner, 'assets.json');
+        const writtenData = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
+        expect(writtenData.created).toContain(metadata.xid);
+    });
+});
