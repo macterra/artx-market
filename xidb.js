@@ -4,10 +4,10 @@ const assert = require('assert');
 const sharp = require('sharp');
 const crypto = require('crypto');
 const uuid = require('uuid');
-const bs58 = require('bs58');
 const ejs = require('ejs');
 const realConfig = require('./config');
 const agent = require('./agent');
+const utils = require('./utils');
 const archiver = require('./archiver');
 const lnbits = require('./lnbits');
 
@@ -127,31 +127,17 @@ async function getListings(max = 8) {
     return selected.slice(0, max);
 }
 
-function getMarketId(config = realConfig) {
-    return uuid.v5(config.name || config.host, config.dns_ns);
-}
-
-function uuidToBase58(uuidString) {
-    // Parse the UUID and convert it to bytes
-    const bytes = uuid.parse(uuidString);
-
-    // Convert the bytes to base58
-    const base58 = bs58.encode(Buffer.from(bytes));
-
-    return base58;
-}
-
 function getAdmin(config = realConfig) {
     const jsonPath = path.join(config.data, 'meta.json');
 
     // Check if the agent.json file exists
     if (!fs.existsSync(jsonPath)) {
-        const newXid = getMarketId(config);
+        const newXid = utils.getMarketId(config);
 
         return {
             name: config.name || config.host,
             xid: newXid,
-            xid58: uuidToBase58(newXid),
+            xid58: utils.uuidToBase58(newXid),
             created: new Date().toISOString(),
             updated: new Date().toISOString(),
         };
@@ -159,7 +145,6 @@ function getAdmin(config = realConfig) {
 
     const jsonContent = fs.readFileSync(jsonPath, 'utf-8');
     const jsonData = JSON.parse(jsonContent);
-
     const cidPath = path.join(config.data, "CID");
 
     if (fs.existsSync(cidPath)) {
@@ -510,7 +495,7 @@ function getFileObject(filePath) {
 }
 
 function agentId(key) {
-    const namespace = getMarketId();
+    const namespace = utils.getMarketId();
     const userId = uuid.v5(key.toString(), namespace);
     return userId;
 }
@@ -1522,7 +1507,6 @@ module.exports = {
     getHistory,
     getListings,
     getLogs,
-    getMarketId,
     getNft,
     getWalletInfo,
     integrityCheck,
@@ -1541,5 +1525,4 @@ module.exports = {
     saveNft,
     transferAsset,
     unmintToken,
-    uuidToBase58,
 };
