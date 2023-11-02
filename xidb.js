@@ -11,77 +11,6 @@ const utils = require('./utils');
 const archiver = require('./archiver');
 const lnbits = require('./lnbits');
 
-async function getLogs() {
-    try {
-        const response = await fetch(`${realConfig.archiver}/api/v1/logs`);
-
-        if (response.ok) {
-            const res = await response.json()
-
-            if (res.error) {
-                console.log(`Failed to get logs: ${res.error}`);
-            }
-            else {
-                return res.logs;
-            }
-        }
-    } catch (err) {
-        console.error('Failed to push changes:', err);
-    }
-}
-
-async function getListings(max = 8) {
-    const logs = await getLogs();
-    let listings = logs.filter(log => log.type === 'list');
-    let selected = [];
-    let seen = {};
-
-    for (let listing of listings) {
-
-        if (seen[listing.asset]) {
-            continue;
-        }
-
-        seen[listing.asset] = true;
-
-        if (listing.price === 0) {
-            continue;
-        }
-
-        try {
-            const nft = getAsset(listing.asset);
-
-            if (!nft) {
-                continue;
-            }
-
-            if (nft.asset.owner !== listing.agent) {
-                continue;
-            }
-
-            if (nft.nft.price !== listing.price) {
-                continue;
-            }
-
-            const token = getAsset(nft.nft.token);
-
-            if (!token) {
-                continue;
-            }
-
-            listing.title = nft.nft.title;
-            listing.image = token.file.path;
-
-            selected.push(listing);
-        }
-        catch (error) {
-            console.log(`getListings error: ${error}`);
-        }
-    }
-
-    return selected.slice(0, max);
-}
-
 function getAdmin(config = realConfig) {
     const jsonPath = path.join(config.data, 'meta.json');
 
@@ -1412,6 +1341,58 @@ function removeCollection(collection) {
     return removeAsset(collectionId);
 }
 
+async function getListings(max = 8) {
+    const logs = await archiver.getLogs();
+    let listings = logs.filter(log => log.type === 'list');
+    let selected = [];
+    let seen = {};
+
+    for (let listing of listings) {
+
+        if (seen[listing.asset]) {
+            continue;
+        }
+
+        seen[listing.asset] = true;
+
+        if (listing.price === 0) {
+            continue;
+        }
+
+        try {
+            const nft = getAsset(listing.asset);
+
+            if (!nft) {
+                continue;
+            }
+
+            if (nft.asset.owner !== listing.agent) {
+                continue;
+            }
+
+            if (nft.nft.price !== listing.price) {
+                continue;
+            }
+
+            const token = getAsset(nft.nft.token);
+
+            if (!token) {
+                continue;
+            }
+
+            listing.title = nft.nft.title;
+            listing.image = token.file.path;
+
+            selected.push(listing);
+        }
+        catch (error) {
+            console.log(`getListings error: ${error}`);
+        }
+    }
+
+    return selected.slice(0, max);
+}
+
 module.exports = {
     addCredits,
     allAgents,
@@ -1433,7 +1414,6 @@ module.exports = {
     getCollection,
     getHistory,
     getListings,
-    getLogs,
     getNft,
     getWalletInfo,
     integrityCheck,

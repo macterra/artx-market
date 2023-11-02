@@ -59,7 +59,7 @@ async function commitChanges(event) {
         const commit = response.data;
 
         if (commit.error) {
-            console.log(`Failed to commit changes: ${commit.error}`);
+            console.error(`Failed to commit changes: ${commit.error}`);
         }
         else if (commit.githash) {
             const hash = commit.githash.substring(0, 8);
@@ -79,7 +79,7 @@ async function pushChanges() {
         const push = response.data;
 
         if (push.error) {
-            console.log(`Failed to push changes: ${push.error}`);
+            console.error(`Failed to push changes: ${push.error}`);
         }
     }
     catch (error) {
@@ -87,9 +87,27 @@ async function pushChanges() {
     }
 }
 
+async function getLogs() {
+    try {
+        const response = await axios.get(`${config.archiver}/api/v1/logs`);
+        const data = response.data;
+
+        if (data.error) {
+            console.error(`Failed to get logs: ${data.error}`);
+        }
+        else {
+            return data.logs;
+        }
+    }
+    catch (error) {
+        console.error(`Failed to get logs: ${error}`);
+    }
+}
+
 module.exports = {
     certify,
     commitChanges,
+    getLogs,
     notarize,
     ready,
     register,
