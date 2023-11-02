@@ -27,6 +27,10 @@ function saveAssets(assets, config = realConfig) {
     const agentFolder = path.join(config.agents, assets.owner);
     const jsonPath = path.join(agentFolder, 'assets.json');
 
+    if (!fs.existsSync(agentFolder)) {
+        fs.mkdirSync(agentFolder);
+    }
+
     assets.updated = new Date().toISOString();
 
     fs.writeFileSync(jsonPath, JSON.stringify(assets, null, 2));
