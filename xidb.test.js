@@ -369,6 +369,40 @@ describe('getHistory', () => {
     });
 });
 
+describe('saveAsset', () => {
+
+    afterEach(() => {
+        mockFs.restore();
+    });
+
+    it('should save the asset metadata if it is different from the current metadata', () => {
+        const metadata = {
+            xid: 'testXid',
+            asset: { owner: 'owner1' },
+        };
+
+        // Mock the file system
+        mockFs({
+            [testConfig.assets]: {}  // Empty directory
+        });
+
+        xidb.saveAsset(metadata, testConfig);
+
+        const expectedMetadata = {
+            xid: 'testXid',
+            asset: {
+                owner: 'owner1',
+                updated: expect.any(String)
+            },
+        };
+
+        // Read the data that was written to meta.json and check that it matches the expected data
+        const assetJsonPath = path.join(testConfig.assets, metadata.xid, 'meta.json');
+        const writtenData = JSON.parse(fs.readFileSync(assetJsonPath, 'utf-8'));
+        expect(writtenData).toEqual(expectedMetadata);
+    });
+});
+
 describe('getCert', () => {
 
     afterEach(() => {
