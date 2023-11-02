@@ -51,8 +51,45 @@ async function ready() {
     }
 }
 
+// Function to add all changes, commit, and push
+async function commitChanges(event) {
+    try {
+        const commitMessage = JSON.stringify(event);
+        const response = await axios.post(`${config.archiver}/api/v1/commit`, { message: commitMessage });
+        const commit = response.data;
+
+        if (commit.error) {
+            console.log(`Failed to commit changes: ${commit.error}`);
+        }
+        else if (commit.githash) {
+            const hash = commit.githash.substring(0, 8);
+            console.log(`Commit: ${commitMessage} (${hash})`);
+            pushChanges();
+            return commit.githash;
+        }
+    }
+    catch (error) {
+        console.error('Failed to commit changes:', error);
+    }
+}
+
+async function pushChanges() {
+    try {
+        const response = await axios.get(`${config.archiver}/api/v1/push`);
+        const push = response.data;
+
+        if (push.error) {
+            console.log(`Failed to push changes: ${push.error}`);
+        }
+    }
+    catch (error) {
+        console.error('Failed to push changes:', error);
+    }
+}
+
 module.exports = {
     certify,
+    commitChanges,
     notarize,
     ready,
     register,

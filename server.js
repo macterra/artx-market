@@ -15,6 +15,7 @@ const config = require('./config');
 const lnbits = require('./lnbits');
 const agent = require('./agent');
 const xidb = require('./xidb');
+const archiver = require('./archiver');
 const nostr = require('./nostr');
 
 const app = express();
@@ -83,7 +84,7 @@ passport.use(new LnurlAuth.Strategy(async function (pubkey, done) {
 
       if (!agentData) {
         agentData = await xidb.createAgent(pubkey);
-        xidb.commitChanges({ type: 'create', agent: agentData.xid });
+        archiver.commitChanges({ type: 'create', agent: agentData.xid });
       }
 
       console.log(`passport ${pubkey} ${agentData.xid}`);
@@ -242,7 +243,7 @@ app.get('/api/v1/admin/claim', ensureAuthenticated, async (req, res) => {
 
     adminData.owner = req.user.xid;
     const savedAdmin = await xidb.saveAdmin(adminData);
-    adminData.githash = await xidb.commitChanges({ type: 'claim-state', agent: req.user.xid, state: savedAdmin.xid });
+    adminData.githash = await archiver.commitChanges({ type: 'claim-state', agent: req.user.xid, state: savedAdmin.xid });
     res.json(savedAdmin);
   } catch (error) {
     console.error('Error reading metadata:', error);
@@ -259,7 +260,7 @@ app.get('/api/v1/admin/save', ensureAuthenticated, async (req, res) => {
     }
 
     const savedAdmin = await xidb.saveAdmin(adminData);
-    adminData.githash = await xidb.commitChanges({ type: 'save-state', agent: req.user.xid, state: savedAdmin.xid });
+    adminData.githash = await archiver.commitChanges({ type: 'save-state', agent: req.user.xid, state: savedAdmin.xid });
     res.json(savedAdmin);
   } catch (error) {
     console.error('Error reading metadata:', error);
@@ -286,7 +287,7 @@ app.get('/api/v1/admin/register', ensureAuthenticated, async (req, res) => {
     const savedAdmin = await xidb.registerState(adminData);
 
     if (savedAdmin.pending) {
-      adminData.githash = await xidb.commitChanges({
+      adminData.githash = await archiver.commitChanges({
         type: 'register-state',
         agent: req.user.xid,
         state: savedAdmin.xid,
@@ -320,7 +321,7 @@ app.get('/api/v1/admin/notarize', ensureAuthenticated, async (req, res) => {
     const savedAdmin = await xidb.notarizeState(adminData);
 
     if (savedAdmin.pending) {
-      savedAdmin.githash = await xidb.commitChanges({
+      savedAdmin.githash = await archiver.commitChanges({
         type: 'notarize-state',
         agent: req.user.xid,
         state: savedAdmin.xid,
@@ -350,7 +351,7 @@ app.get('/api/v1/admin/certify', ensureAuthenticated, async (req, res) => {
     const savedAdmin = await xidb.certifyState(adminData);
 
     if (!savedAdmin.pending) {
-      savedAdmin.githash = await xidb.commitChanges({ type: 'certify-state', agent: req.user.xid, state: savedAdmin.xid, cert: savedAdmin.latest });
+      savedAdmin.githash = await archiver.commitChanges({ type: 'certify-state', agent: req.user.xid, state: savedAdmin.xid, cert: savedAdmin.latest });
     }
 
     res.json(savedAdmin);
@@ -513,7 +514,7 @@ app.patch('/api/v1/asset/:xid', ensureAuthenticated, async (req, res) => {
     }
 
     xidb.saveAsset(assetData);
-    xidb.commitChanges({ type: 'update', agent: userId, asset: assetData.xid });
+    archiver.commitChanges({ type: 'update', agent: userId, asset: assetData.xid });
 
     res.json({ message: 'Asset saved successfully' });
   } catch (error) {
@@ -555,7 +556,7 @@ app.post('/api/v1/asset/:xid/mint', ensureAuthenticated, async (req, res) => {
     };
 
     agent.saveTxnLog(userId, txn);
-    xidb.commitChanges({ type: 'mint', agent: userId, asset: xid, editions: editions });
+    archiver.commitChanges({ type: 'mint', agent: userId, asset: xid, editions: editions });
 
     res.json(mint);
   } catch (error) {
@@ -589,7 +590,7 @@ app.get('/api/v1/asset/:xid/unmint', ensureAuthenticated, async (req, res) => {
     };
 
     agent.saveTxnLog(userId, txn);
-    xidb.commitChanges({ type: 'unmint', agent: userId, asset: xid });
+    archiver.commitChanges({ type: 'unmint', agent: userId, asset: xid });
 
     res.json(unmint);
   } catch (error) {
@@ -635,7 +636,7 @@ app.post('/api/v1/asset/:xid/list', ensureAuthenticated, async (req, res) => {
       xidb.saveAsset(assetData);
 
       const event = { type: 'list', agent: userId, asset: xid, price: newPrice };
-      xidb.commitChanges(event);
+      archiver.commitChanges(event);
 
       if (newPrice) {
         nostr.announce(event);
@@ -667,7 +668,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
     const sale = await xidb.purchaseAsset(xid, buyerId, invoice);
 
     const event = { type: 'sale', agent: buyerId, asset: xid, price: assetData.nft.price };
-    xidb.commitChanges(event);
+    archiver.commitChanges(event);
     nostr.announce(event);
 
     res.json(sale);
@@ -770,7 +771,7 @@ app.patch('/api/v1/profile/', ensureAuthenticated, async (req, res) => {
     }
 
     agent.saveAgent(agentData);
-    xidb.commitChanges({ type: 'update', agent: userId });
+    archiver.commitChanges({ type: 'update', agent: userId });
     res.json({ message: 'Metadata updated successfully' });
   } catch (error) {
     console.error('Error updating metadata:', error);
@@ -815,7 +816,7 @@ app.post('/api/v1/profile/credit', ensureAuthenticated, async (req, res) => {
       };
 
       agent.saveTxnLog(userId, txn);
-      xidb.commitChanges({ type: 'credits', agent: userId, credits: invoice.amount });
+      archiver.commitChanges({ type: 'credits', agent: userId, credits: invoice.amount });
       res.json(agentData);
     }
     else {
@@ -831,7 +832,7 @@ app.get('/api/v1/collections/', async (req, res) => {
   try {
     const userId = req.user?.xid;
     const collection = xidb.createCollection(userId, "new");
-    xidb.commitChanges({ type: 'create', agent: userId, asset: collection.xid });
+    archiver.commitChanges({ type: 'create', agent: userId, asset: collection.xid });
     res.json(collection);
   } catch (error) {
     console.error('Error processing request:', error);
@@ -906,7 +907,7 @@ app.patch('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => {
     }
 
     xidb.saveCollection(currentCollection);
-    xidb.commitChanges({ type: 'update', agent: userId, asset: collection.xid });
+    archiver.commitChanges({ type: 'update', agent: userId, asset: collection.xid });
     res.json({ message: 'Collection updated successfully' });
   } catch (error) {
     console.error('Error processing request:', error);
@@ -950,7 +951,7 @@ app.get('/api/v1/collections/:xid/mint-all', ensureAuthenticated, async (req, re
       }
     }
 
-    xidb.commitChanges({ type: 'mint-all', agent: userId, asset: xid });
+    archiver.commitChanges({ type: 'mint-all', agent: userId, asset: xid });
     res.json({ message: 'Mint all success' });
   } catch (error) {
     console.error('Error processing request:', error);
@@ -972,7 +973,7 @@ app.delete('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => 
     }
 
     xidb.removeCollection(collection);
-    xidb.commitChanges({ type: 'delete', agent: userId, asset: collection.xid });
+    archiver.commitChanges({ type: 'delete', agent: userId, asset: collection.xid });
     res.json({ message: 'Collection removed successfully' });
   } catch (error) {
     console.error('Error processing request:', error);
@@ -998,7 +999,7 @@ app.post('/api/v1/collections/:xid/upload', ensureAuthenticated, upload.array('i
     };
 
     agent.saveTxnLog(req.user.xid, txn);
-    xidb.commitChanges({ type: 'upload', agent: req.user.xid, asset: collectionId, files: upload.filesUploaded, bytes: upload.bytesUploaded });
+    archiver.commitChanges({ type: 'upload', agent: req.user.xid, asset: collectionId, files: upload.filesUploaded, bytes: upload.bytesUploaded });
     res.status(200).json(upload);
   } catch (error) {
     console.error('Error processing files:', error);
@@ -1034,7 +1035,7 @@ cron.schedule('* * * * *', async () => {
     console.log(`Pending txn ${adminData.pending}...`);
     const savedAdmin = await xidb.certifyState(adminData);
     if (!savedAdmin.pending) {
-      xidb.commitChanges({ type: 'certify-state', state: savedAdmin.xid, cert: savedAdmin.latest });
+      archiver.commitChanges({ type: 'certify-state', state: savedAdmin.xid, cert: savedAdmin.latest });
     }
   }
 });
@@ -1046,22 +1047,14 @@ cron.schedule('0 0 * * *', async () => {
     console.log(`Notarizing market state...`);
     const savedAdmin = await xidb.notarizeState(adminData);
     if (savedAdmin.pending) {
-      xidb.commitChanges({ type: 'notarize-state', state: savedAdmin.xid, txn: savedAdmin.pending });
+      archiver.commitChanges({ type: 'notarize-state', state: savedAdmin.xid, txn: savedAdmin.pending });
     }
   }
 });
 
-// Check pending txn every minute
-// cron.schedule('* * * * *', async () => {
-//   const res = xidb.sendAnnouncements();
-//   if (res.message) {
-//     xidb.commitChanges(res.message);
-//   }
-// });
-
 xidb.integrityCheck().then(() => {
 
-  xidb.commitChanges({ type: 'restart' });
+  archiver.commitChanges({ type: 'restart' });
 
   app.listen(config.port, () => {
     console.log(`ArtX server running on ${config.host}:${config.port}`);

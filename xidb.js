@@ -11,51 +11,6 @@ const utils = require('./utils');
 const archiver = require('./archiver');
 const lnbits = require('./lnbits');
 
-// Function to add all changes, commit, and push
-async function commitChanges(event) {
-    const commitMessage = JSON.stringify(event);
-
-    try {
-        const response = await fetch(`${realConfig.archiver}/api/v1/commit`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', },
-            body: JSON.stringify({ message: commitMessage }),
-        });
-
-        if (response.ok) {
-            const commit = await response.json()
-
-            if (commit.error) {
-                console.log(`Failed to commit changes: ${commit.error}`);
-            }
-            else if (commit.githash) {
-                const hash = commit.githash.substring(0, 8);
-                console.log(`Commit: ${commitMessage} (${hash})`);
-                pushChanges();
-                return commit.githash;
-            }
-        }
-    } catch (err) {
-        console.error('Failed to commit changes:', err);
-    }
-}
-
-async function pushChanges() {
-    try {
-        const response = await fetch(`${realConfig.archiver}/api/v1/push`);
-
-        if (response.ok) {
-            const push = await response.json()
-
-            if (push.error) {
-                console.log(`Failed to push changes: ${push.error}`);
-            }
-        }
-    } catch (err) {
-        console.error('Failed to push changes:', err);
-    }
-}
-
 async function getLogs() {
     try {
         const response = await fetch(`${realConfig.archiver}/api/v1/logs`);
@@ -1463,7 +1418,6 @@ module.exports = {
     allAssets,
     buyCredits,
     certifyState,
-    commitChanges,
     createAgent,
     createAssets,
     createCollection,
