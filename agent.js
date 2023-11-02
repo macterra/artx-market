@@ -40,16 +40,22 @@ function addAsset(metadata, config = realConfig) {
     let assets = getAssets(metadata.asset.owner, config);
 
     if (metadata.file) {
-        assets.created.push(metadata.xid);
+        if (!assets.created.includes(metadata.xid)) {
+            assets.created.push(metadata.xid);
+        }
     }
     else if (metadata.collection) {
-        assets.collections.push(metadata.xid);
+        if (!assets.collections.includes(metadata.xid)) {
+            assets.collections.push(metadata.xid);
+        }
     }
     else if (metadata.nft) {
-        assets.collected.push(metadata.xid);
+        if (!assets.collected.includes(metadata.xid)) {
+            assets.collected.push(metadata.xid);
+        }
     }
     else {
-        console.log(`addAsset: unknown asset type ${metadata.xid}`);
+        //console.log(`addAsset: unknown asset type ${metadata.xid}`);
         return;
     }
 
