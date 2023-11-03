@@ -206,3 +206,65 @@ describe('getWalletInfo', () => {
         expect(result).toEqual(walletinfo);
     });
 });
+
+describe('getAuditLog', () => {
+
+    afterEach(() => {
+        mockFs.restore();
+    });
+
+    it('should return the transaction log for the specified user', () => {
+        const log = [
+            { event: 'event1' },
+            { event: 'event2' },
+        ];
+
+        // Mock the file system
+        mockFs({
+            [testConfig.data]: {
+                'auditlog.jsonl': log.map(JSON.stringify).join('\n'),
+            }
+        });
+
+        const result = admin.getAuditLog(testConfig);
+
+        expect(result).toEqual(log.reverse());
+    });
+
+    it('should return an empty array if the transaction log does not exist', () => {
+        // Mock the file system
+        mockFs({
+            [testConfig.agents]: {}  // Empty directory
+        });
+
+        const result = admin.getAuditLog(testConfig);
+
+        expect(result).toEqual([]);
+    });
+});
+
+describe('saveAuditLog', () => {
+
+    afterEach(() => {
+        mockFs.restore();
+    });
+
+    it('should append the record to the transaction log', () => {
+        const record = { event: 'event1' };
+
+        // Mock the file system
+        mockFs({
+            [testConfig.data]: {
+                'auditlog.jsonl': '',
+            },
+        });
+
+        admin.saveAuditLog(record, testConfig);
+
+        // Read the data that was written to auditlog.jsonl and check that it matches the expected data
+        const jsonlPath = path.join(testConfig.data, 'auditlog.jsonl');
+        const writtenData = fs.readFileSync(jsonlPath, 'utf-8');
+        const writtenRecord = JSON.parse(writtenData.trim());
+        expect(writtenRecord).toEqual({ ...record, time: expect.any(String) });
+    });
+});

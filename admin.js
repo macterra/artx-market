@@ -85,11 +85,32 @@ async function getWalletInfo() {
     return walletinfo;
 }
 
+function getAuditLog(config = realConfig) {
+    try {
+        const jsonlPath = path.join(config.data, 'auditlog.jsonl');
+        const data = fs.readFileSync(jsonlPath, 'utf-8');
+        const lines = data.trim().split('\n');
+        const log = lines.map(line => JSON.parse(line));
+        return log.reverse();
+    } catch (error) {
+        return [];
+    }
+}
+
+function saveAuditLog(record, config = realConfig) {
+    record.time = new Date().toISOString();
+    const recordString = JSON.stringify(record);
+    const jsonlPath = path.join(config.data, 'auditlog.jsonl');
+    fs.appendFileSync(jsonlPath, recordString + '\n');
+}
+
 module.exports = {
     certifyState,
     getAdmin,
+    getAuditLog,
     getWalletInfo,
     notarizeState,
     registerState,
     saveAdmin,
+    saveAuditLog,
 };

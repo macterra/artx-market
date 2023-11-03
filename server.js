@@ -386,7 +386,7 @@ app.get('/api/v1/admin/auditlog', ensureAuthenticated, async (req, res) => {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const auditlog = await xidb.getAuditLog();
+    const auditlog = await admin.getAuditLog();
     res.json(auditlog);
   } catch (error) {
     console.error('Error:', error);

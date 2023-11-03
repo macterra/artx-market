@@ -353,7 +353,7 @@ function addCredits(userId, amount) {
             agentName: agentData.name,
             amount: amount,
         };
-        saveAuditLog(record);
+        admin.saveAuditLog(record);
         agent.saveAgent(agentData);
         return agentData;
     }
@@ -380,7 +380,7 @@ async function buyCredits(userId, invoice) {
                 amount: amount,
                 invoice: invoice,
             };
-            saveAuditLog(record);
+            admin.saveAuditLog(record);
             agent.saveAgent(agentData);
             return agentData;
         }
@@ -716,25 +716,6 @@ function saveAsset(metadata, config = realConfig) {
 
     metadata.asset.updated = new Date().toISOString();
     fs.writeFileSync(assetJsonPath, JSON.stringify(metadata, null, 2));
-}
-
-function getAuditLog() {
-    try {
-        const jsonlPath = path.join(realConfig.data, 'auditlog.jsonl');
-        const data = fs.readFileSync(jsonlPath, 'utf-8');
-        const lines = data.trim().split('\n');
-        const log = lines.map(line => JSON.parse(line));
-        return log.reverse();
-    } catch (error) {
-        return [];
-    }
-}
-
-function saveAuditLog(record) {
-    record.time = new Date().toISOString();
-    const recordString = JSON.stringify(record);
-    const jsonlPath = path.join(realConfig.data, 'auditlog.jsonl');
-    fs.appendFileSync(jsonlPath, recordString + '\n');
 }
 
 function saveHistory(xid, record) {
@@ -1201,7 +1182,7 @@ async function purchaseAsset(xid, buyerId, invoice) {
         agent.saveTxnLog(creatorId, royaltyTxn);
     }
 
-    saveAuditLog(audit);
+    admin.saveAuditLog(audit);
 
     return record;
 }
@@ -1350,7 +1331,6 @@ module.exports = {
     getAgentFromKey,
     getAllAgents,
     getAsset,
-    getAuditLog,
     getCert,
     getCollection,
     getHistory,
@@ -1363,7 +1343,6 @@ module.exports = {
     removeAsset,
     removeCollection,
     saveAsset,
-    saveAuditLog,
     saveCollection,
     saveHistory,
     saveNft,
