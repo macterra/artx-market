@@ -14,6 +14,7 @@ const axios = require('axios');
 const config = require('./config');
 const lnbits = require('./lnbits');
 const agent = require('./agent');
+const admin = require('./admin');
 const xidb = require('./xidb');
 const archiver = require('./archiver');
 const nostr = require('./nostr');
@@ -131,7 +132,7 @@ app.get('/logout', (req, res) => {
 app.get('/check-auth', async (req, res) => {
   if (req.isAuthenticated()) {
     const userId = req.user.xid;
-    const adminData = xidb.getAdmin();
+    const adminData = admin.getAdmin();
     const isAdmin = userId === adminData.owner;
 
     res.json({
@@ -220,7 +221,7 @@ app.get('/api/v1/licenses', async (req, res) => {
 
 app.get('/api/v1/admin', ensureAuthenticated, async (req, res) => {
   try {
-    const adminData = xidb.getAdmin();
+    const adminData = admin.getAdmin();
 
     if (adminData.owner && adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -235,14 +236,14 @@ app.get('/api/v1/admin', ensureAuthenticated, async (req, res) => {
 
 app.get('/api/v1/admin/claim', ensureAuthenticated, async (req, res) => {
   try {
-    const adminData = xidb.getAdmin();
+    const adminData = admin.getAdmin();
 
     if (adminData.owner) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
     adminData.owner = req.user.xid;
-    const savedAdmin = await xidb.saveAdmin(adminData);
+    const savedAdmin = await admin.saveAdmin(adminData);
     adminData.githash = await archiver.commitChanges({ type: 'claim-state', agent: req.user.xid, state: savedAdmin.xid });
     res.json(savedAdmin);
   } catch (error) {
@@ -253,13 +254,13 @@ app.get('/api/v1/admin/claim', ensureAuthenticated, async (req, res) => {
 
 app.get('/api/v1/admin/save', ensureAuthenticated, async (req, res) => {
   try {
-    const adminData = xidb.getAdmin();
+    const adminData = admin.getAdmin();
 
     if (!adminData.owner || adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const savedAdmin = await xidb.saveAdmin(adminData);
+    const savedAdmin = await admin.saveAdmin(adminData);
     adminData.githash = await archiver.commitChanges({ type: 'save-state', agent: req.user.xid, state: savedAdmin.xid });
     res.json(savedAdmin);
   } catch (error) {
@@ -270,7 +271,7 @@ app.get('/api/v1/admin/save', ensureAuthenticated, async (req, res) => {
 
 app.get('/api/v1/admin/register', ensureAuthenticated, async (req, res) => {
   try {
-    const adminData = xidb.getAdmin();
+    const adminData = admin.getAdmin();
 
     if (!adminData.owner || adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -284,7 +285,7 @@ app.get('/api/v1/admin/register', ensureAuthenticated, async (req, res) => {
       return res.status(500).json({ message: 'Registration pending' });
     }
 
-    const savedAdmin = await xidb.registerState(adminData);
+    const savedAdmin = await admin.registerState(adminData);
 
     if (savedAdmin.pending) {
       adminData.githash = await archiver.commitChanges({
@@ -304,7 +305,7 @@ app.get('/api/v1/admin/register', ensureAuthenticated, async (req, res) => {
 
 app.get('/api/v1/admin/notarize', ensureAuthenticated, async (req, res) => {
   try {
-    const adminData = xidb.getAdmin();
+    const adminData = admin.getAdmin();
 
     if (!adminData.owner || adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -318,7 +319,7 @@ app.get('/api/v1/admin/notarize', ensureAuthenticated, async (req, res) => {
       return res.status(500).json({ message: 'Authorization pending' });
     }
 
-    const savedAdmin = await xidb.notarizeState(adminData);
+    const savedAdmin = await admin.notarizeState(adminData);
 
     if (savedAdmin.pending) {
       savedAdmin.githash = await archiver.commitChanges({
@@ -338,7 +339,7 @@ app.get('/api/v1/admin/notarize', ensureAuthenticated, async (req, res) => {
 
 app.get('/api/v1/admin/certify', ensureAuthenticated, async (req, res) => {
   try {
-    const adminData = xidb.getAdmin();
+    const adminData = admin.getAdmin();
 
     if (!adminData.owner || adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -348,7 +349,7 @@ app.get('/api/v1/admin/certify', ensureAuthenticated, async (req, res) => {
       return res.status(500).json({ message: 'No authorization pending' });
     }
 
-    const savedAdmin = await xidb.certifyState(adminData);
+    const savedAdmin = await admin.certifyState(adminData);
 
     if (!savedAdmin.pending) {
       savedAdmin.githash = await archiver.commitChanges({ type: 'certify-state', agent: req.user.xid, state: savedAdmin.xid, cert: savedAdmin.latest });
@@ -363,13 +364,13 @@ app.get('/api/v1/admin/certify', ensureAuthenticated, async (req, res) => {
 
 app.get('/api/v1/admin/walletinfo', ensureAuthenticated, async (req, res) => {
   try {
-    const adminData = xidb.getAdmin();
+    const adminData = admin.getAdmin();
 
     if (!adminData.owner || adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const walletinfo = await xidb.getWalletInfo();
+    const walletinfo = await admin.getWalletInfo();
     res.json(walletinfo);
   } catch (error) {
     console.error('Error:', error);
@@ -379,7 +380,7 @@ app.get('/api/v1/admin/walletinfo', ensureAuthenticated, async (req, res) => {
 
 app.get('/api/v1/admin/auditlog', ensureAuthenticated, async (req, res) => {
   try {
-    const adminData = xidb.getAdmin();
+    const adminData = admin.getAdmin();
 
     if (!adminData.owner || adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -395,7 +396,7 @@ app.get('/api/v1/admin/auditlog', ensureAuthenticated, async (req, res) => {
 
 app.get('/api/v1/admin/assets', ensureAuthenticated, async (req, res) => {
   try {
-    const adminData = xidb.getAdmin();
+    const adminData = admin.getAdmin();
 
     if (!adminData.owner || adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -410,7 +411,7 @@ app.get('/api/v1/admin/assets', ensureAuthenticated, async (req, res) => {
 
 app.get('/api/v1/admin/agents', ensureAuthenticated, async (req, res) => {
   try {
-    const adminData = xidb.getAdmin();
+    const adminData = admin.getAdmin();
 
     if (!adminData.owner || adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -428,7 +429,7 @@ app.get('/api/v1/admin/agents', ensureAuthenticated, async (req, res) => {
 
 app.get('/api/v1/admin/pin/asset/:xid', async (req, res) => {
   try {
-    const adminData = xidb.getAdmin();
+    const adminData = admin.getAdmin();
 
     if (!adminData.owner || adminData.owner !== req.user.xid) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -1030,10 +1031,10 @@ app.use((req, res, next) => {
 
 // Check pending txn every minute
 cron.schedule('* * * * *', async () => {
-  const adminData = xidb.getAdmin();
+  const adminData = admin.getAdmin();
   if (adminData.pending) {
     console.log(`Pending txn ${adminData.pending}...`);
-    const savedAdmin = await xidb.certifyState(adminData);
+    const savedAdmin = await admin.certifyState(adminData);
     if (!savedAdmin.pending) {
       archiver.commitChanges({ type: 'certify-state', state: savedAdmin.xid, cert: savedAdmin.latest });
     }
@@ -1042,10 +1043,10 @@ cron.schedule('* * * * *', async () => {
 
 // Notarize market state at midnight
 cron.schedule('0 0 * * *', async () => {
-  const adminData = xidb.getAdmin();
+  const adminData = admin.getAdmin();
   if (!adminData.pending) {
     console.log(`Notarizing market state...`);
-    const savedAdmin = await xidb.notarizeState(adminData);
+    const savedAdmin = await admin.notarizeState(adminData);
     if (savedAdmin.pending) {
       archiver.commitChanges({ type: 'notarize-state', state: savedAdmin.xid, txn: savedAdmin.pending });
     }

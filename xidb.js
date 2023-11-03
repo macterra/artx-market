@@ -7,89 +7,10 @@ const uuid = require('uuid');
 const ejs = require('ejs');
 const realConfig = require('./config');
 const agent = require('./agent');
+const admin = require('./admin');
 const utils = require('./utils');
 const archiver = require('./archiver');
 const lnbits = require('./lnbits');
-
-function getAdmin(config = realConfig) {
-    const jsonPath = path.join(config.data, 'meta.json');
-
-    // Check if the agent.json file exists
-    if (!fs.existsSync(jsonPath)) {
-        const newXid = utils.getMarketId(config);
-
-        return {
-            name: config.name || config.host,
-            xid: newXid,
-            xid58: utils.uuidToBase58(newXid),
-            created: new Date().toISOString(),
-            updated: new Date().toISOString(),
-        };
-    }
-
-    const jsonContent = fs.readFileSync(jsonPath, 'utf-8');
-    const jsonData = JSON.parse(jsonContent);
-    const cidPath = path.join(config.data, "CID");
-
-    if (fs.existsSync(cidPath)) {
-        jsonData.cid = fs.readFileSync(cidPath, 'utf-8').trim();
-    }
-
-    return jsonData;
-}
-
-function saveAdmin(adminData, config = realConfig) {
-
-    const jsonPath = path.join(config.data, 'meta.json');
-    adminData.updated = new Date().toISOString();
-    fs.writeFileSync(jsonPath, JSON.stringify(adminData, null, 2));
-
-    return adminData;
-}
-
-async function registerState(adminState, config = realConfig) {
-
-    adminState = saveAdmin(adminState, config);
-    adminState.pending = await archiver.register(adminState.xid, adminState.cid);
-    adminState = saveAdmin(adminState, config);
-
-    return adminState;
-}
-
-async function notarizeState(adminState, config = realConfig) {
-
-    adminState = saveAdmin(adminState, config);
-    adminState.pending = await archiver.notarize(adminState.xid, adminState.cid);
-    adminState = saveAdmin(adminState, config);
-
-    return adminState;
-}
-
-async function certifyState(adminState, config = realConfig) {
-
-    if (adminState.pending) {
-        const cert = await archiver.certify(adminState.pending);
-
-        if (cert?.xid) {
-            const certPath = path.join(config.certs, cert.xid);
-            fs.mkdirSync(certPath, { recursive: true });
-            const certFile = path.join(certPath, 'meta.json');
-            fs.writeFileSync(certFile, JSON.stringify(cert, null, 2));
-
-            adminState.latest = cert.xid;
-            adminState.pending = null;
-
-            adminState = saveAdmin(adminState, config);
-        }
-    }
-
-    return adminState;
-}
-
-async function getWalletInfo() {
-    const walletinfo = await archiver.walletinfo();
-    return walletinfo;
-}
 
 async function waitForArchiver() {
     let isReady = false;
@@ -737,7 +658,7 @@ function getNft(xid) {
     metadata.token = getAsset(metadata.token.xid);
     enrichAsset(metadata.token); // Retrieve latest history
 
-    const adminData = getAdmin();
+    const adminData = admin.getAdmin();
     const certId = adminData.latest;
 
     if (certId) {
@@ -1413,13 +1334,11 @@ module.exports = {
     allAgents,
     allAssets,
     buyCredits,
-    certifyState,
     createAgent,
     createAssets,
     createCollection,
     createToken,
     enrichAsset,
-    getAdmin,
     getAgentAndCollections,
     getAgentFromKey,
     getAllAgents,
@@ -1430,15 +1349,11 @@ module.exports = {
     getHistory,
     getListings,
     getNft,
-    getWalletInfo,
     integrityCheck,
     isOwner,
-    notarizeState,
     pinAsset,
     purchaseAsset,
-    registerState,
     removeCollection,
-    saveAdmin,
     saveAsset,
     saveAuditLog,
     saveCollection,
