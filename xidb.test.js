@@ -1,11 +1,21 @@
 const uuid = require('uuid');
 const fs = require('fs');
 const path = require('path');
+//const sharp = require('sharp');
 const mockFs = require('mock-fs');
 
 const xidb = require('./xidb');
-const archiver = require('./archiver');
-const utils = require('./utils');
+
+jest.mock('uuid');
+
+jest.mock('sharp', () => jest.fn(() => ({
+    metadata: jest.fn(() => Promise.resolve({
+        width: 800,
+        height: 600,
+        depth: 24,
+        format: 'jpeg'
+    }))
+})));
 
 const testConfig = {
     name: 'testName',
@@ -14,6 +24,7 @@ const testConfig = {
     assets: 'testData/assets',
     agents: 'testData/agents',
     certs: 'testData/certs',
+    uploads: 'testData/uploads',
     dns_ns: uuid.v4(),
     block_link: 'http://block-link',
     txn_link: 'http://txn-link',
@@ -140,6 +151,68 @@ describe('getHistory', () => {
         const result = xidb.getHistory('nonexistentXid', testConfig);
 
         expect(result).toEqual([]);
+    });
+});
+
+describe('createAsset', () => {
+
+    afterEach(() => {
+        mockFs.restore();
+    });
+
+    it('should create an asset', async () => {
+        const file = {
+            path: `${testConfig.uploads}/test.jpg`,
+            originalname: 'test.jpg',
+            size: 1000
+        };
+        const title = 'Test Title';
+        const userId = 'testUser';
+        const collectionId = 'testCollection';
+
+        // Mock the file system
+        mockFs({
+            [testConfig.uploads]: {
+                'test.jpg': 'test',
+            },
+            [testConfig.agents]: {
+                'testUser': {}
+            },
+            [testConfig.assets]: {}  // Empty directory
+        });
+
+        // Mock uuid
+        uuid.v4.mockReturnValueOnce('testUuid');
+
+        const result = await xidb.createAsset(file, title, userId, collectionId, testConfig);
+
+        expect(result).toEqual(expect.objectContaining({
+            xid: 'testUuid',
+            asset: {
+                owner: userId,
+                title: title,
+                collection: collectionId,
+                created: expect.any(String),
+                updated: expect.any(String),
+            },
+            file: {
+                fileName: expect.any(String),
+                size: file.size,
+                hash: expect.any(String),
+                path: expect.any(String),
+            },
+            image: {
+                width: 800,
+                height: 600,
+                depth: 24,
+                format: 'jpeg',
+            }
+        }));
+
+        // Verify that the asset is correctly written to meta.json
+        const metaJsonPath = path.join(testConfig.assets, result.xid, 'meta.json');
+        const metaJsonContent = JSON.parse(fs.readFileSync(metaJsonPath, 'utf-8'));
+        expect(metaJsonContent).toEqual(result);
     });
 });
 

@@ -95,37 +95,34 @@ function allAgents(config = realConfig) {
     return agents;
 }
 
-function removeAsset(xid) {
-    const assetPath = path.join(realConfig.assets, xid);
-
-    fs.rmSync(assetPath, { recursive: true, force: true });
-
-    console.log(`Deleted ${assetPath}`);
-
-    return {
-        xid: xid,
-        fixed: true,
-        message: 'asset removed',
-    };
-}
-
 function repairAsset(xid) {
+
+    const removeInvalidAsset = (xid) => {
+        removeAsset(xid);
+
+        return {
+            xid: xid,
+            fixed: true,
+            message: 'asset removed',
+        };
+    };
+
     const metadata = getAsset(xid);
 
     if (!metadata) {
-        return removeAsset(xid);
+        return removeInvalidAsset(xid);
     }
 
     if (!metadata.asset) {
-        return removeAsset(xid);
+        return removeInvalidAsset(xid);
     }
 
     if (!metadata.asset.owner) {
-        return removeAsset(xid);
+        return removeInvalidAsset(xid);
     }
 
     if (!metadata.xid) {
-        return removeAsset(xid);
+        return removeInvalidAsset(xid);
     }
 
     if (!uuid.validate(metadata.xid)) {
@@ -179,7 +176,7 @@ function repairAsset(xid) {
     const agentData = agent.getAgent(metadata.asset.owner);
 
     if (!agentData) {
-        return removeAsset(xid);
+        return removeInvalidAsset(xid);
     }
 
     const assets = agent.getAssets(metadata.asset.owner);
@@ -196,11 +193,11 @@ function repairAsset(xid) {
         const token = getAsset(metadata.nft.token);
 
         if (!token.token) {
-            return removeAsset(xid);
+            return removeInvalidAsset(xid);
         }
 
         if (!token.token.nfts.includes(xid)) {
-            return removeAsset(xid);
+            return removeInvalidAsset(xid);
         }
 
         if (!assets.collected.includes(xid)) {
@@ -779,9 +776,10 @@ function gitHash(fileBuffer) {
 }
 
 // createAsset has to be async to get image metadata from sharp
-async function createAsset(file, title, userId, collectionId) {
+async function createAsset(file, title, userId, collectionId, config = realConfig) {
     // Get image metadata using sharp first so that it throws exception if not image
-    const imageMetadata = await sharp(file.path).metadata();
+    const sharpObj = sharp(file.path);
+    const imageMetadata = await sharpObj.metadata();
     const xid = uuid.v4();
 
     // Calculate the Git hash
@@ -789,7 +787,7 @@ async function createAsset(file, title, userId, collectionId) {
     const fileHash = gitHash(fileBuffer);
 
     // Create the subfolder
-    const assetFolder = path.join(realConfig.assets, xid);
+    const assetFolder = path.join(config.assets, xid);
     if (!fs.existsSync(assetFolder)) {
         fs.mkdirSync(assetFolder);
     }
@@ -813,7 +811,7 @@ async function createAsset(file, title, userId, collectionId) {
             fileName: assetName,
             size: file.size,
             hash: fileHash,
-            path: `/${realConfig.assets}/${xid}/${assetName}`,
+            path: `/${config.assets}/${xid}/${assetName}`,
         },
         image: {
             width: imageMetadata.width,
@@ -823,10 +821,18 @@ async function createAsset(file, title, userId, collectionId) {
         }
     };
 
-    saveAsset(metadata);
-    agent.addAsset(metadata);
+    saveAsset(metadata, config);
+    agent.addAsset(metadata, config);
 
     return metadata;
+}
+
+function removeAsset(xid, config = realConfig) {
+    const assetPath = path.join(config.assets, xid);
+
+    fs.rmSync(assetPath, { recursive: true, force: true });
+
+    console.log(`Removed asset: ${assetPath}`);
 }
 
 async function createAssets(userId, files, collectionId) {
@@ -983,7 +989,7 @@ async function unmintToken(userId, xid) {
     for (const nftId of assetData.token.nfts) {
         const nft = getAsset(nftId);
         agent.removeAsset(nft);
-        removeAsset(nftId);
+        removeInvalidAsset(nftId);
     }
 
     delete assetData.token;
@@ -1259,7 +1265,7 @@ function removeCollection(collection) {
         agent.saveAgent(agentData);
     }
 
-    return removeAsset(collectionId);
+    return removeInvalidAsset(collectionId);
 }
 
 async function getListings(max = 8) {
@@ -1335,6 +1341,7 @@ module.exports = {
     allAssets,
     buyCredits,
     createAgent,
+    createAsset,
     createAssets,
     createCollection,
     createToken,
@@ -1353,6 +1360,7 @@ module.exports = {
     isOwner,
     pinAsset,
     purchaseAsset,
+    removeAsset,
     removeCollection,
     saveAsset,
     saveAuditLog,
