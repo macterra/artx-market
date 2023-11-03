@@ -188,8 +188,7 @@ const TokenView = ({ metadata, setTab, setRefreshKey }) => {
                     }
                     {metadata.token.editions > 1 &&
                         <TableRow>
-                            <TableCell>Owners:</TableCell>
-                            <TableCell>
+                            <TableCell colSpan={2}>
                                 <TableContainer component={Paper} style={{ maxHeight: '300px', overflow: 'auto' }}>
                                     <Table>
                                         <TableHead>
