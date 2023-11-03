@@ -69,7 +69,7 @@ async function commitChanges(event) {
         }
     }
     catch (error) {
-        console.error('Failed to commit changes:', error.data.error);
+        console.error('Failed to commit changes:', error.data?.error || error);
     }
 }
 
