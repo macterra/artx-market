@@ -47,7 +47,7 @@ async function ready() {
         return response.data.ready;
     }
     catch (error) {
-        console.error(`walletinfo error: ${error}`);
+        console.error(`ready error: ${error}`);
     }
 }
 
@@ -59,7 +59,7 @@ async function commitChanges(event) {
         const commit = response.data;
 
         if (commit.error) {
-            console.error(`Failed to commit changes: ${commit.error}`);
+            console.error(`commitChanges error: ${commit.error}`);
         }
         else if (commit.githash) {
             const hash = commit.githash.substring(0, 8);
@@ -69,7 +69,7 @@ async function commitChanges(event) {
         }
     }
     catch (error) {
-        console.error('Failed to commit changes:', error.data?.error || error);
+        console.error(`commitChanges error: ${error.response.data?.error || error}`);
     }
 }
 
@@ -79,11 +79,11 @@ async function pushChanges() {
         const push = response.data;
 
         if (push.error) {
-            console.error(`Failed to push changes: ${push.error}`);
+            console.error(`pushChanges error: ${push.error}`);
         }
     }
     catch (error) {
-        console.error('Failed to push changes:', error);
+        console.error(`pushChanges error: ${error}`);
     }
 }
 
@@ -93,14 +93,14 @@ async function getLogs() {
         const data = response.data;
 
         if (data.error) {
-            console.error(`Failed to get logs: ${data.error}`);
+            console.error(`getLogs error: ${data.error}`);
         }
         else {
             return data.logs;
         }
     }
     catch (error) {
-        console.error(`Failed to get logs: ${error}`);
+        console.error(`getLogs error: ${error}`);
     }
 }
 
