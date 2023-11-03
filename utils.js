@@ -17,7 +17,14 @@ function uuidToBase58(uuidString) {
     return base58;
 }
 
+function getAgentId(key, config = realConfig) {
+    const namespace = getMarketId(config);
+    const userId = uuid.v5(key.toString(), namespace);
+    return userId;
+}
+
 module.exports = {
+    getAgentId,
     getMarketId,
     uuidToBase58,
 };

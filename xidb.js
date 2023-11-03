@@ -296,14 +296,8 @@ function getFileObject(filePath) {
     }
 }
 
-function agentId(key) {
-    const namespace = utils.getMarketId();
-    const userId = uuid.v5(key.toString(), namespace);
-    return userId;
-}
-
 async function createAgent(key) {
-    const userId = agentId(key);
+    const userId = utils.getAgentId(key);
 
     agentData = {
         xid: userId,
@@ -336,7 +330,7 @@ async function createAgent(key) {
 }
 
 function getAgentFromKey(key) {
-    const xid = agentId(key);
+    const xid = utils.getAgentId(key);
     const agentData = agent.getAgent(xid);
     return agentData;
 }

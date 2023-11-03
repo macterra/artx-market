@@ -41,3 +41,15 @@ describe('getMarketId', () => {
     });
 });
 
+
+describe('getAgentId', () => {
+    it('should return the correct agent ID', () => {
+        const key = 'testKey';
+        const config = { name: 'testName', dns_ns: uuid.v4() };
+        const marketId = utils.getMarketId(config);
+        const expectedAgentId = uuid.v5(key, marketId);
+        const agentId = utils.getAgentId(key, config);
+
+        expect(agentId).toBe(expectedAgentId);
+    });
+});
