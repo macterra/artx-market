@@ -53,8 +53,11 @@ const ListingCard = ({ listing }) => {
             <p style={titleStyle}>{listing.title}</p>
             {listing.editions === 1 ? (
                 <span style={textStyle}>for {listing.price} sats</span>
+            ) : (listing.min === listing.max ? (
+                <span style={textStyle}>{listing.editions} editions for {listing.min} sats</span>
             ) : (
                 <span style={textStyle}>{listing.editions} editions for {listing.min}-{listing.max} sats</span>
+            )
             )}
         </div>
     );
