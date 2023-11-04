@@ -435,7 +435,7 @@ app.get('/api/v1/admin/pin/asset/:xid', async (req, res) => {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const pin = await xidb.pinAsset(req.params.xid);
+    const pin = await archiver.pinAsset(req.params.xid);
     res.json(pin);
   } catch (error) {
     console.error('Error:', error);
@@ -548,7 +548,11 @@ app.post('/api/v1/asset/:xid/mint', ensureAuthenticated, async (req, res) => {
 
     xidb.saveHistory(xid, record);
 
-    const mint = await xidb.createToken(userId, xid, editions, license, royalty / 100);
+    const mint = await xidb.mintToken(userId, xid, editions, license, royalty / 100);
+
+    if (!mint) {
+      return res.status(500).json({ message: 'Error' });
+    }
 
     const txn = {
       type: 'mint',
@@ -563,6 +567,50 @@ app.post('/api/v1/asset/:xid/mint', ensureAuthenticated, async (req, res) => {
   } catch (error) {
     console.error('Error:', error);
     res.status(500).json({ message: 'Error' });
+  }
+});
+
+app.get('/api/v1/collections/:xid/mint-all', ensureAuthenticated, async (req, res) => {
+  try {
+    const xid = req.params.xid;
+    const userId = req.user?.xid;
+    const collection = xidb.getCollection(xid, userId);
+
+    if (userId != collection.asset.owner) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const editions = collection.collection.default.editions;
+    const license = collection.collection.default.license;
+    const royalty = collection.collection.default.royalty;
+
+    for (const asset of collection.collection.assets) {
+      if (!asset.token) {
+
+        const record = {
+          "type": "mint",
+          "creator": userId,
+        };
+
+        xidb.saveHistory(asset.xid, record);
+
+        const mint = await xidb.mintToken(userId, asset.xid, editions, license, royalty / 100);
+
+        const txn = {
+          'type': 'mint',
+          'xid': asset.xid,
+          'credits': mint.mintFee,
+        };
+
+        agent.saveTxnLog(userId, txn);
+      }
+    }
+
+    archiver.commitChanges({ type: 'mint-all', agent: userId, asset: xid });
+    res.json({ message: 'Mint all success' });
+  } catch (error) {
+    console.error('Error processing request:', error);
+    res.status(500).json({ error: 'An error occurred while processing the request.' });
   }
 });
 
@@ -910,50 +958,6 @@ app.patch('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => {
     xidb.saveCollection(currentCollection);
     archiver.commitChanges({ type: 'update', agent: userId, asset: collection.xid });
     res.json({ message: 'Collection updated successfully' });
-  } catch (error) {
-    console.error('Error processing request:', error);
-    res.status(500).json({ error: 'An error occurred while processing the request.' });
-  }
-});
-
-app.get('/api/v1/collections/:xid/mint-all', ensureAuthenticated, async (req, res) => {
-  try {
-    const xid = req.params.xid;
-    const userId = req.user?.xid;
-    const collection = xidb.getCollection(xid, userId);
-
-    if (userId != collection.asset.owner) {
-      return res.status(401).json({ message: 'Unauthorized' });
-    }
-
-    const editions = collection.collection.default.editions;
-    const license = collection.collection.default.license;
-    const royalty = collection.collection.default.royalty;
-
-    for (const asset of collection.collection.assets) {
-      if (!asset.token) {
-
-        const record = {
-          "type": "mint",
-          "creator": userId,
-        };
-
-        xidb.saveHistory(asset.xid, record);
-
-        const mint = await xidb.createToken(userId, asset.xid, editions, license, royalty / 100);
-
-        const txn = {
-          'type': 'mint',
-          'xid': asset.xid,
-          'credits': mint.mintFee,
-        };
-
-        agent.saveTxnLog(userId, txn);
-      }
-    }
-
-    archiver.commitChanges({ type: 'mint-all', agent: userId, asset: xid });
-    res.json({ message: 'Mint all success' });
   } catch (error) {
     console.error('Error processing request:', error);
     res.status(500).json({ error: 'An error occurred while processing the request.' });

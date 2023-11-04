@@ -905,13 +905,16 @@ function createEdition(owner, tokenId, edition, editions) {
     return xid;
 }
 
-// createToken has to be async to get the IPFS cid
-async function createToken(userId, xid, editions, license, royalty) {
+// mintToken has to be async to get the IPFS cid
+async function mintToken(userId, xid, editions, license, royalty) {
     let assetData = getAsset(xid);
 
-    const assetPath = path.join(realConfig.assets, xid);
-    const response = await fetch(`${realConfig.archiver}/api/v1/pin/${assetPath}`);
-    const ipfs = await response.json();
+    const ipfs = await archiver.pinAsset(xid);
+
+    if (!ipfs?.cid) {
+        console.error(`mintToken error: ipfs pin failed for ${xid}`);
+        return;
+    }
 
     const nfts = [];
     editions = parseInt(editions, 10);
@@ -964,7 +967,7 @@ async function unmintToken(userId, xid) {
     for (const nftId of assetData.token.nfts) {
         const nft = getAsset(nftId);
         agent.removeAsset(nft);
-        removeInvalidAsset(nftId);
+        removeAsset(nftId);
     }
 
     delete assetData.token;
@@ -1181,13 +1184,6 @@ async function purchaseAsset(xid, buyerId, invoice) {
     return record;
 }
 
-async function pinAsset(xid) {
-    const assetPath = path.join(realConfig.assets, xid);
-    const response = await fetch(`${realConfig.archiver}/api/v1/pin/${assetPath}`);
-    const ipfs = await response.json();
-    return ipfs;
-}
-
 function createCollection(userId, name) {
     const metadata = {
         xid: uuid.v4(),
@@ -1240,7 +1236,7 @@ function removeCollection(collection) {
         agent.saveAgent(agentData);
     }
 
-    return removeInvalidAsset(collectionId);
+    return removeAsset(collectionId);
 }
 
 async function getListings(max = 8) {
@@ -1319,7 +1315,6 @@ module.exports = {
     createAsset,
     createAssets,
     createCollection,
-    createToken,
     enrichAsset,
     getAgentAndCollections,
     getAgentFromKey,
@@ -1332,7 +1327,7 @@ module.exports = {
     getNft,
     integrityCheck,
     isOwner,
-    pinAsset,
+    mintToken,
     purchaseAsset,
     removeAsset,
     removeCollection,

@@ -110,22 +110,17 @@ const TokenMinter = ({ navigate, metadata, setTab, setRefreshKey }) => {
 
     const handleMintClick = async () => {
         try {
-            const mintResponse = await axios.post(`/api/v1/asset/${metadata.xid}/mint`, {
+            await axios.post(`/api/v1/asset/${metadata.xid}/mint`, {
                 license: license,
                 royalty: royalty,
                 editions: editions,
             });
 
-            if (mintResponse.status === 200) {
-                //alert(JSON.stringify(mintResponse.data));
-                setTab('token');
-                setRefreshKey((prevKey) => prevKey + 1);
-            } else {
-                console.error('Error minting:', mintResponse.data.message);
-                alert(mintResponse.data.message);
-            }
+            setTab('token');
+            setRefreshKey((prevKey) => prevKey + 1);
         } catch (error) {
             console.error('Error minting:', error);
+            alert("Error minting, try again later.");
         }
     };
 

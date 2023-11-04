@@ -1,3 +1,4 @@
+const path = require('path');
 const axios = require('axios');
 const config = require('./config');
 
@@ -104,11 +105,24 @@ async function getLogs() {
     }
 }
 
+async function pinAsset(xid) {
+    try {
+        const assetPath = path.join(config.assets, xid);
+        const response = await axios.get(`${config.archiver}/api/v1/pin/${assetPath}`);
+        const ipfs = response.data;
+        return ipfs;
+    }
+    catch (error) {
+        console.error(`pinAsset error: ${error}`);
+    }
+}
+
 module.exports = {
     certify,
     commitChanges,
     getLogs,
     notarize,
+    pinAsset,
     ready,
     register,
     walletinfo,
