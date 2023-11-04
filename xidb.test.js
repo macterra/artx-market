@@ -1,7 +1,6 @@
 const uuid = require('uuid');
 const fs = require('fs');
 const path = require('path');
-//const sharp = require('sharp');
 const mockFs = require('mock-fs');
 
 const xidb = require('./xidb');
@@ -213,6 +212,33 @@ describe('createAsset', () => {
         const metaJsonPath = path.join(testConfig.assets, result.xid, 'meta.json');
         const metaJsonContent = JSON.parse(fs.readFileSync(metaJsonPath, 'utf-8'));
         expect(metaJsonContent).toEqual(result);
+    });
+});
+
+describe('removeAsset', () => {
+
+    afterEach(() => {
+        mockFs.restore();
+    });
+
+    it('should remove the asset', () => {
+        const xid = 'testXid';
+
+        // Mock the file system
+        mockFs({
+            [testConfig.assets]: {
+                [xid]: {
+                    'file.txt': 'test',
+                },
+            },
+        });
+
+        xidb.removeAsset(xid, testConfig);
+
+        const assetPath = path.join(testConfig.assets, xid);
+
+        // Check that the asset folder has been removed
+        expect(fs.existsSync(assetPath)).toBe(false);
     });
 });
 

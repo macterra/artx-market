@@ -807,7 +807,7 @@ function removeAsset(xid, config = realConfig) {
 
     fs.rmSync(assetPath, { recursive: true, force: true });
 
-    console.log(`Removed asset: ${assetPath}`);
+    //console.log(`Removed asset: ${assetPath}`);
 }
 
 async function createAssets(userId, files, collectionId) {
