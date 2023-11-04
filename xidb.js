@@ -1014,23 +1014,30 @@ function transferAsset(xid, nextOwnerId) {
 
 async function purchaseAsset(xid, buyerId, invoice) {
     const assetData = getAsset(xid);
-    const buyer = agent.getAgent(buyerId);
-    const sellerId = assetData.asset.owner;
-    const seller = agent.getAgent(sellerId);
-    const price = assetData.nft.price;
 
     assert.ok(assetData.nft);
     assert.ok(invoice.payment_hash);
 
     const payment = await lnbits.checkPayment(invoice.payment_hash);
 
-    if (!payment || !payment.paid) {
+    if (payment?.paid) {
+        transferAsset(xid, buyerId);
+        return { ok: true, message: 'asset transferred', payment: payment };
+    }
+    else {
         return { ok: false, message: 'invoice not paid' };
     }
+}
 
-    invoice.payment = payment;
+async function payoutSale(xid, buyerId, invoice) {
+    const assetData = getAsset(xid);
+    const buyer = agent.getAgent(buyerId);
+    const sellerId = assetData.asset.owner;
+    const seller = agent.getAgent(sellerId);
+    const price = invoice.amount;
 
-    transferAsset(xid, buyerId);
+    assert.ok(assetData.nft);
+    assert.ok(price > 0);
 
     const tokenData = getAsset(assetData.nft.token);
     const assetName = assetData.nft.title;
@@ -1328,6 +1335,7 @@ module.exports = {
     integrityCheck,
     isOwner,
     mintToken,
+    payoutSale,
     purchaseAsset,
     removeAsset,
     removeCollection,

@@ -716,9 +716,19 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
 
     const sale = await xidb.purchaseAsset(xid, buyerId, invoice);
 
-    const event = { type: 'sale', agent: buyerId, asset: xid, price: assetData.nft.price };
-    archiver.commitChanges(event);
-    nostr.announce(event);
+    if (!sale.ok) {
+      return res.status(500).json(sale);
+    }
+
+    const completeSale = async () => {
+      invoice.payment = sale.payment;
+      await xidb.payoutSale(xid, buyerId, invoice);
+      const event = { type: 'sale', agent: buyerId, asset: xid, price: assetData.nft.price };
+      archiver.commitChanges(event);
+      nostr.announce(event);
+    };
+
+    completeSale();
 
     res.json(sale);
   } catch (error) {
