@@ -1,0 +1,21 @@
+digraph G {
+  node [shape=box];
+  xidb -> config;
+  xidb -> agent;
+  xidb -> admin;
+  xidb -> utils;
+  xidb -> archiver;
+  xidb -> lnbits;
+  agent -> config;
+  admin -> config;
+  admin -> utils;
+  admin -> archiver;
+  server -> config;
+  server -> lnbits;
+  server -> agent;
+  server -> admin;
+  server -> xidb;
+  server -> archiver;
+  server -> nostr;
+}
+
