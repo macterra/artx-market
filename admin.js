@@ -3,7 +3,6 @@ const fs = require('fs');
 const realConfig = require('./config');
 const utils = require('./utils');
 const archiver = require('./archiver');
-const { builtinModules } = require('module');
 
 function getAdmin(config = realConfig) {
     const jsonPath = path.join(config.data, 'meta.json');
@@ -104,10 +103,23 @@ function saveAuditLog(record, config = realConfig) {
     fs.appendFileSync(jsonlPath, recordString + '\n');
 }
 
+function getCert(xid, config = realConfig) {
+    const certPath = path.join(config.certs, xid, 'meta.json');
+    const certContent = fs.readFileSync(certPath, 'utf-8');
+    const cert = JSON.parse(certContent);
+
+    cert.block_link = `${config.block_link}/${cert.auth.blockhash}`;
+    cert.txn_link = `${config.txn_link}/${cert.auth.tx.txid}`;
+    cert.ipfs_link = `${config.ipfs_link}/${cert.auth.cid}`;
+
+    return cert;
+}
+
 module.exports = {
     certifyState,
     getAdmin,
     getAuditLog,
+    getCert,
     getWalletInfo,
     notarizeState,
     registerState,

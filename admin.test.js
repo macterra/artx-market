@@ -268,3 +268,40 @@ describe('saveAuditLog', () => {
         expect(writtenRecord).toEqual({ ...record, time: expect.any(String) });
     });
 });
+
+describe('getCert', () => {
+
+    afterEach(() => {
+        mockFs.restore();
+    });
+
+    it('should return the certificate of the specified xid', () => {
+        const xid = 'testXid';
+        const cert = {
+            auth: {
+                blockhash: 'testBlockhash',
+                tx: { txid: 'testTxid' },
+                cid: 'testCid',
+            },
+        };
+        const certJson = JSON.stringify(cert);
+        mockFs({
+            [testConfig.certs]: {
+                [xid]: {
+                    'meta.json': certJson,
+                },
+            },
+        });
+
+        const expectedCert = {
+            ...cert,
+            block_link: `${testConfig.block_link}/${cert.auth.blockhash}`,
+            txn_link: `${testConfig.txn_link}/${cert.auth.tx.txid}`,
+            ipfs_link: `${testConfig.ipfs_link}/${cert.auth.cid}`,
+        };
+
+        const result = admin.getCert(xid, testConfig);
+
+        expect(result).toEqual(expectedCert);
+    });
+});

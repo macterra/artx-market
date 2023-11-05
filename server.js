@@ -472,7 +472,7 @@ app.get('/api/v1/admin/pin/asset/:xid', async (req, res) => {
 
 app.get('/api/v1/cert/:xid', async (req, res) => {
   try {
-    const cert = xidb.getCert(req.params.xid);
+    const cert = admin.getCert(req.params.xid);
     res.json(cert);
   } catch (error) {
     console.error('Error:', error);

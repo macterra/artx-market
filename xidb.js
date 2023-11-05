@@ -495,18 +495,6 @@ function getCollection(collectionId, userId) {
     return collection;
 }
 
-function getCert(xid, config = realConfig) {
-    const certPath = path.join(config.certs, xid, 'meta.json');
-    const certContent = fs.readFileSync(certPath, 'utf-8');
-    const cert = JSON.parse(certContent);
-
-    cert.block_link = `${config.block_link}/${cert.auth.blockhash}`;
-    cert.txn_link = `${config.txn_link}/${cert.auth.tx.txid}`;
-    cert.ipfs_link = `${config.ipfs_link}/${cert.auth.cid}`;
-
-    return cert;
-}
-
 function getHistory(xid, config = realConfig) {
     try {
         const historyPath = path.join(config.assets, xid, 'history.jsonl');
@@ -594,7 +582,7 @@ function getNft(xid) {
     const certId = adminData.latest;
 
     if (certId) {
-        const cert = getCert(certId);
+        const cert = admin.getCert(certId);
         const authTime = new Date(cert.auth.time);
         const updated = new Date(metadata.asset.updated);
 
@@ -1255,7 +1243,6 @@ module.exports = {
     getAgentFromKey,
     getAllAgents,
     getAsset,
-    getCert,
     getCollection,
     getHistory,
     getListings,
