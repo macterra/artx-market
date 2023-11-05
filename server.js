@@ -269,6 +269,29 @@ app.get('/api/v1/admin/save', ensureAuthenticated, async (req, res) => {
   }
 });
 
+app.patch('/api/v1/admin/save', ensureAuthenticated, async (req, res) => {
+  const { default_pfp } = req.body;
+
+  try {
+    const adminData = admin.getAdmin();
+
+    if (!adminData.owner || adminData.owner !== req.user.xid) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    if (default_pfp) {
+      adminData.default_pfp = default_pfp;
+    }
+
+    const savedAdmin = await admin.saveAdmin(adminData);
+    adminData.githash = await archiver.commitChanges({ type: 'save-state', agent: req.user.xid, state: savedAdmin.xid });
+    res.json(savedAdmin);
+  } catch (error) {
+    console.error('Error reading metadata:', error);
+    res.status(404).json({ message: 'Asset not found' });
+  }
+});
+
 app.get('/api/v1/admin/register', ensureAuthenticated, async (req, res) => {
   try {
     const adminData = admin.getAdmin();
