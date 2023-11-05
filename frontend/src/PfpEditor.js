@@ -1,6 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@mui/material';
+import axios from 'axios';
 
 const PfpEditor = ({ metadata, setTab }) => {
     const [profile, setProfile] = useState({});
@@ -11,8 +11,8 @@ const PfpEditor = ({ metadata, setTab }) => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const response = await fetch(`/api/v1/profile`);
-                const profile = await response.json();
+                const response = await axios.get(`/api/v1/profile`);
+                const profile = response.data;
                 setProfile(profile);
                 setShowThumbnailButton(metadata.asset.owner === profile.xid);
             } catch (error) {
@@ -25,46 +25,25 @@ const PfpEditor = ({ metadata, setTab }) => {
 
     const handleSavePfp = async () => {
         try {
-            const response = await fetch('/api/v1/profile', {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json', },
-                body: JSON.stringify({ pfp: metadata.file.path }),
-            });
-
-            if (response.ok) {
-                profile.pfp = metadata.file.path;
-                setDisablePfp(true);
-            } else {
-                const data = await response.json();
-                console.error('Error updating profile:', data.message);
-                alert(data.message);
-            }
-        } catch (error) {
+            await axios.patch('/api/v1/profile', { pfp: metadata.file.path });
+            profile.pfp = metadata.file.path;
+            setDisablePfp(true);
+        }
+        catch (error) {
             console.error('Error updating profile:', error);
         }
     };
 
     const handleSaveThumbnail = async () => {
         try {
-            let response = await fetch(`/api/v1/asset/${metadata.asset.collection}`);
-            const collection = await response.json();
+            const response = await axios.get(`/api/v1/asset/${metadata.asset.collection}`);
+            const collection = response.data;
             collection.collection.thumbnail = metadata.file.path;
-
-            response = await fetch(`/api/v1/collections/${metadata.asset.collection}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json', },
-                body: JSON.stringify(collection),
-            });
-
-            if (response.ok) {
-                setDisableThumbnail(true);
-            } else {
-                const data = await response.json();
-                console.error('Error updating profile:', data.message);
-                alert(data.message);
-            }
-        } catch (error) {
-            console.error('Error updating profile:', error);
+            await axios.patch(`/api/v1/collections/${metadata.asset.collection}`, collection);
+            setDisableThumbnail(true);
+        }
+        catch (error) {
+            console.error('Error updating collection:', error);
         }
     };
 
