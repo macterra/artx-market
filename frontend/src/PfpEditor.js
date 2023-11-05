@@ -7,8 +7,9 @@ const PfpEditor = ({ metadata }) => {
     const [disablePfp, setDisablePfp] = useState(false);
     const [showThumbnailButton, setShowThumbnailButton] = useState(true);
     const [disableThumbnail, setDisableThumbnail] = useState(false);
-    const [showDefaultPfpButton, setShowDefaultPfpButton] = useState(true);
+    const [showDefaultButton, setShowDefaultButton] = useState(true);
     const [disableDefaultPfp, setDisableDefaultPfp] = useState(false);
+    const [disableDefaultThumbnail, setDisableDefaultThumbnail] = useState(false);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -18,7 +19,7 @@ const PfpEditor = ({ metadata }) => {
                 const response = await axios.get(`/api/v1/profile`);
                 const profile = response.data;
 
-                setShowDefaultPfpButton(auth.isAdmin);
+                setShowDefaultButton(auth.isAdmin);
                 setProfile(profile);
                 setShowThumbnailButton(metadata.asset.owner === profile.xid);
             } catch (error) {
@@ -55,11 +56,21 @@ const PfpEditor = ({ metadata }) => {
 
     const handleDefaultPfp = async () => {
         try {
-            await axios.patch('/api/v1/admin/save', { default_pfp: metadata.file.path });
+            await axios.patch('/api/v1/admin/', { default_pfp: metadata.file.path });
             setDisableDefaultPfp(true);
         }
         catch (error) {
             console.error('Error updating default pfp:', error);
+        }
+    };
+
+    const handleDefaultThumbnail = async () => {
+        try {
+            await axios.patch('/api/v1/admin/', { default_thumbnail: metadata.file.path });
+            setDisableDefaultThumbnail(true);
+        }
+        catch (error) {
+            console.error('Error updating default thumbnail:', error);
         }
     };
 
@@ -95,13 +106,23 @@ const PfpEditor = ({ metadata }) => {
                     </Button>
                 }
                 <br></br>
-                {showDefaultPfpButton &&
+                {showDefaultButton &&
                     <Button
                         variant="contained"
                         color="primary"
                         onClick={handleDefaultPfp}
                         disabled={disableDefaultPfp}>
                         Set Default Pfp
+                    </Button>
+                }
+                <br></br>
+                {showDefaultButton &&
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleDefaultThumbnail}
+                        disabled={disableDefaultThumbnail}>
+                        Set Default Thumbnail
                     </Button>
                 }
             </form>

@@ -235,52 +235,23 @@ function repairAgent(xid) {
     }
 }
 
-function getFileObject(filePath) {
-    try {
-        const contents = fs.readFileSync(filePath);
-        return {
-            path: filePath,
-            originalname: path.basename(filePath),
-            encoding: '7bit', // This is a default value. Actual encoding may vary.
-            mimetype: 'application/octet-stream', // This is a default value. Actual MIME type may vary.
-            size: contents.length,
-            buffer: contents
-        };
-    } catch (error) {
-        console.error('Error reading file:', error);
-        return null;
-    }
-}
-
-async function createAgent(key) {
+async function createAgent(key, config = realConfig) {
     const userId = utils.getAgentId(key);
 
     agentData = {
         xid: userId,
         pubkey: key,
-        name: realConfig.newUser,
+        name: config.newUser,
         tagline: '',
         description: '',
         collections: [],
-        credits: realConfig.initialCredits,
+        credits: config.initialCredits,
         depositToCredits: true,
     };
 
     agent.saveAgent(agentData);
 
-    const gallery = createCollection(userId, 'gallery');
-    saveCollection(gallery);
-    agentData = agent.getAgent(userId);
-
-    if (fs.existsSync(realConfig.defaultPfp)) {
-        const pfpName = path.basename(realConfig.defaultPfp);
-        const pfpPath = path.join(realConfig.uploads, pfpName);
-        fs.copyFileSync(realConfig.defaultPfp, pfpPath);
-        const file = getFileObject(pfpPath);
-        const assetData = await createAsset(file, "default pfp", userId, gallery.xid);
-        agentData.pfp = assetData.file.path;
-        agent.saveAgent(agentData);
-    }
+    createCollection(userId, 'gallery');
 
     return agentData;
 }
@@ -414,11 +385,20 @@ function getAgentAndCollections(profileId, userId) {
         }
     }
 
+    // Set thumbnails for collections missing thumbnails
     for (let xid in collections) {
-        const count = collections[xid].collection.assets.length;
+        if (!collections[xid].collection.thumbnail) {
+            const count = collections[xid].collection.assets.length;
 
-        if (count > 0 && !collections[xid].collection.thumbnail) {
-            collections[xid].collection.thumbnail = collections[xid].collection.assets[0].file.path;
+            if (count > 0) {
+                // Make the thumbnail the first asset
+                collections[xid].collection.thumbnail = collections[xid].collection.assets[0].file.path;
+            }
+            else {
+                // Otherwise make it the system default
+                const adminData = admin.getAdmin();
+                collections[xid].collection.thumbnail = adminData.default_thumbnail;
+            }
         }
     }
 
@@ -462,6 +442,11 @@ function getAgentAndCollections(profileId, userId) {
 
     if (profileId === userId) {
         agentData.deleted = deleted;
+    }
+
+    if (!agentData.pfp) {
+        const adminData = admin.getAdmin();
+        agentData.pfp = adminData.default_pfp;
     }
 
     return agentData;

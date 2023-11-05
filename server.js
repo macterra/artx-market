@@ -269,8 +269,8 @@ app.get('/api/v1/admin/save', ensureAuthenticated, async (req, res) => {
   }
 });
 
-app.patch('/api/v1/admin/save', ensureAuthenticated, async (req, res) => {
-  const { default_pfp } = req.body;
+app.patch('/api/v1/admin/', ensureAuthenticated, async (req, res) => {
+  const { default_pfp, default_thumbnail } = req.body;
 
   try {
     const adminData = admin.getAdmin();
@@ -281,6 +281,10 @@ app.patch('/api/v1/admin/save', ensureAuthenticated, async (req, res) => {
 
     if (default_pfp) {
       adminData.default_pfp = default_pfp;
+    }
+
+    if (default_thumbnail) {
+      adminData.default_thumbnail = default_thumbnail;
     }
 
     const savedAdmin = await admin.saveAdmin(adminData);
