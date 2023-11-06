@@ -49,40 +49,22 @@ const ProfileView = ({ navigate }) => {
                 {profile.isUser && <Tab key="deleted" value="deleted" label={'Deleted'} />}
             </Tabs>
             {tab === 'created' &&
-                <div>
-                    <p>Collections</p>
-                    <CollectionGrid userId={profile.xid} list={profile.collections} />
-                </div>
+                <CollectionGrid userId={profile.xid} list={profile.collections} />
             }
             {tab === 'minted' &&
-                <div>
-                    <p>Minted</p>
-                    <ImageGrid collection={profile.minted} />
-                </div>
+                <ImageGrid collection={profile.minted} />
             }
             {tab === 'collected' &&
-                <div>
-                    <p>Collected</p>
-                    <ImageGrid collection={profile.collected} />
-                </div>
+                <ImageGrid collection={profile.collected} />
             }
             {tab === 'listed' &&
-                <div>
-                    <p>Listed</p>
-                    <ImageGrid collection={profile.listed} />
-                </div>
+                <ImageGrid collection={profile.listed} />
             }
             {tab === 'unlisted' &&
-                <div>
-                    <p>Unlisted</p>
-                    <ImageGrid collection={profile.unlisted} />
-                </div>
+                <ImageGrid collection={profile.unlisted} />
             }
             {tab === 'deleted' &&
-                <div>
-                    <p>Deleted</p>
-                    <ImageGrid collection={profile.deleted} />
-                </div>
+                <ImageGrid collection={profile.deleted} />
             }
         </Box>
     );
