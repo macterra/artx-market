@@ -492,10 +492,6 @@ function getCollection(collectionId, userId, config = realConfig) {
         }
     }
 
-    collection.collection.assets = collection.collection.assets.sort((a, b) => {
-        return a.asset.created.localeCompare(b.asset.created);
-    });
-
     return collection;
 }
 

@@ -793,7 +793,13 @@ app.get('/api/v1/profile/:xid?', async (req, res) => {
     const agentData = xidb.getAgentAndCollections(profileId, userId);
 
     if (agentData) {
-      agentData.collections = Object.values(agentData.collections);
+      const collections = Object.values(agentData.collections);
+
+      // Sort collections by created date
+      agentData.collections = collections.sort((a, b) => {
+        return a.asset.created.localeCompare(b.asset.created);
+      });
+
       agentData.isUser = (userId === agentData.xid);
       if (agentData.isUser) {
         agentData.txnlog = agent.getTxnLog(userId);
@@ -931,6 +937,12 @@ app.get('/api/v1/collections/:xid', async (req, res) => {
   try {
     const userId = req.user?.xid;
     const collection = xidb.getCollection(req.params.xid, userId);
+
+    // Sort assets by created date
+    collection.collection.assets = collection.collection.assets.sort((a, b) => {
+        return a.asset.created.localeCompare(b.asset.created);
+    });
+
     res.json(collection);
   } catch (error) {
     console.error('Error processing request:', error);
