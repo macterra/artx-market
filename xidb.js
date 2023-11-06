@@ -471,9 +471,8 @@ async function getAllAgents() {
     return profiles;
 }
 
-function getCollection(collectionId, userId) {
+function getCollection(collectionId, userId, config = realConfig) {
     let collection = asset.getAsset(collectionId);
-
     const agentData = getAgentAndCollections(collection.asset.owner, userId);
     collection = agentData.collections[collectionId];
 
@@ -482,16 +481,20 @@ function getCollection(collectionId, userId) {
         collection.costToMintAll = 0;
 
         if (collection.isOwnedByUser) {
-            const editionsCost = collection.collection.default.editions * realConfig.editionRate;
+            const editionsCost = collection.collection.default.editions * config.editionRate;
 
             for (const asset of collection.collection.assets) {
                 if (!asset.token) {
-                    const storageCost = Math.round(asset.file.size * realConfig.storageRate);
+                    const storageCost = Math.round(asset.file.size * config.storageRate);
                     collection.costToMintAll += editionsCost + storageCost;
                 }
             }
         }
     }
+
+    collection.collection.assets = collection.collection.assets.sort((a, b) => {
+        return a.asset.created.localeCompare(b.asset.created);
+    });
 
     return collection;
 }
