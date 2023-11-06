@@ -12,6 +12,8 @@ const config = {
     block_link: 'http://block-link',
     txn_link: 'http://txn-link',
     ipfs_link: 'http://ipfs-link',
+    newUser: 'TestUser',
+    initialCredits: 999,
 };
 
 module.exports = config;

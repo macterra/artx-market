@@ -2,10 +2,41 @@ const fs = require('fs');
 const path = require('path');
 const mockFs = require('mock-fs');
 const agent = require('./agent');
+const config = require('./test-config');
 
-const config = {
-    agents: 'test/agents',
-};
+describe('createAgent', () => {
+    afterEach(() => {
+        mockFs.restore();
+    });
+
+    it('initializes and saves an agent', async () => {
+        // Arrange
+        const mockKey = 'mockKey';
+
+        const expectedAgentData = {
+            xid: expect.any(String),
+            pubkey: mockKey,
+            name: config.newUser,
+            tagline: '',
+            description: '',
+            credits: config.initialCredits,
+            depositToCredits: true,
+            created: expect.any(String),
+            updated: expect.any(String),
+        };
+
+        // Mock the file system
+        mockFs({
+            [config.agents]: {}
+        });
+
+        // Act
+        const agentData = await agent.createAgent(mockKey, config);
+
+        // Assert
+        expect(agentData).toEqual(expectedAgentData);
+    });
+});
 
 describe('getAgent', () => {
 

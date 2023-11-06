@@ -85,7 +85,8 @@ passport.use(new LnurlAuth.Strategy(async function (pubkey, done) {
       let agentData = xidb.getAgentFromKey(pubkey);
 
       if (!agentData) {
-        agentData = await xidb.createAgent(pubkey);
+        agentData = await agent.createAgent(pubkey);
+        xidb.createCollection(agentData.xid, 'gallery');
         archiver.commitChanges({ type: 'create', agent: agentData.xid });
       }
 

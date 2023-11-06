@@ -236,27 +236,6 @@ function repairAgent(xid) {
     }
 }
 
-async function createAgent(key, config = realConfig) {
-    const userId = utils.getAgentId(key);
-
-    agentData = {
-        xid: userId,
-        pubkey: key,
-        name: config.newUser,
-        tagline: '',
-        description: '',
-        collections: [],
-        credits: config.initialCredits,
-        depositToCredits: true,
-    };
-
-    agent.saveAgent(agentData);
-
-    createCollection(userId, 'gallery');
-
-    return agentData;
-}
-
 function getAgentFromKey(key) {
     const xid = utils.getAgentId(key);
     const agentData = agent.getAgent(xid);
@@ -1115,7 +1094,6 @@ module.exports = {
     allAgents,
     allAssets,
     buyCredits,
-    createAgent,
     createAssets,
     createCollection,
     getAgentAndCollections,

@@ -1,7 +1,28 @@
 const path = require('path');
 const fs = require('fs');
 
+const utils = require('./utils');
 const realConfig = require('./config');
+
+async function createAgent(key, config = realConfig) {
+    const userId = utils.getAgentId(key, config);
+
+    agentData = {
+        xid: userId,
+        pubkey: key,
+        name: config.newUser,
+        tagline: '',
+        description: '',
+        credits: config.initialCredits,
+        depositToCredits: true,
+        created: new Date().toISOString(),
+        updated: new Date().toISOString(),
+    };
+
+    saveAgent(agentData, config);
+
+    return agentData;
+}
 
 function getAgent(xid, config = realConfig) {
     const agentJsonPath = path.join(config.agents, xid, 'agent.json');
@@ -135,6 +156,7 @@ function saveTxnLog(xid, record, config = realConfig) {
 
 module.exports = {
     addAsset,
+    createAgent,
     getAgent,
     getAssets,
     getTxnLog,
