@@ -74,21 +74,44 @@ function ViewProfile() {
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
-      <div className="App">
+      <header className="App">
         <AppHeader navigate={navigate} xid={userId} />
-        <header className="App-header">
-          <Box display="flex" flexDirection="column" flexGrow={1}>
-            <ProfileHeader
-              navigate={navigate}
-              userId={userId}
-              refreshProfile={refreshProfile}
-            />
-            <ProfileView
-              navigate={navigate}
-              setRefreshProfile={setRefreshProfile}
-            />
-          </Box>
-        </header>
+      </header>
+      <div className="App-body">
+        <Box display="flex" flexDirection="column" flexGrow={1}>
+          <ProfileHeader
+            navigate={navigate}
+            userId={userId}
+            refreshProfile={refreshProfile}
+          />
+          <ProfileView
+            navigate={navigate}
+            setRefreshProfile={setRefreshProfile}
+          />
+        </Box>
+      </div>
+    </ThemeProvider>
+  );
+}
+
+function EditProfile() {
+  const [refreshProfile, setRefreshProfile] = useState(null);
+  const navigate = useNavigate();
+
+  return (
+    <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
+      <header className="App">
+        <AppHeader navigate={navigate} />
+      </header>
+      <div className="App-body">
+        <Box display="flex" flexDirection="column" flexGrow={1}>
+          <ProfileEditor
+            navigate={navigate}
+            refreshProfile={refreshProfile}
+            setRefreshProfile={setRefreshProfile}
+          />
+        </Box>
       </div>
     </ThemeProvider>
   );
@@ -111,30 +134,6 @@ function ViewCollection() {
     </ThemeProvider>
   );
 }
-
-function EditProfile() {
-  const [refreshProfile, setRefreshProfile] = useState(null);
-  const navigate = useNavigate();
-
-  return (
-    <ThemeProvider theme={darkTheme}>
-      <CssBaseline />
-      <div className="App">
-        <AppHeader navigate={navigate} />
-        <header className="App-header">
-          <Box display="flex" flexDirection="column" flexGrow={1}>
-            <ProfileEditor
-              navigate={navigate}
-              refreshProfile={refreshProfile}
-              setRefreshProfile={setRefreshProfile}
-            />
-          </Box>
-        </header>
-      </div>
-    </ThemeProvider>
-  );
-}
-
 function ViewAsset() {
   const navigate = useNavigate();
 
