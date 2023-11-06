@@ -13,6 +13,7 @@ const axios = require('axios');
 
 const config = require('./config');
 const lnbits = require('./lnbits');
+const asset = require('./asset');
 const agent = require('./agent');
 const admin = require('./admin');
 const xidb = require('./xidb');
@@ -499,10 +500,10 @@ app.get('/api/v1/nft/:xid', async (req, res) => {
 
 app.get('/api/v1/asset/:xid', async (req, res) => {
   try {
-    const assetData = xidb.getAsset(req.params.xid);
+    const assetData = asset.getAsset(req.params.xid);
 
     if (assetData) {
-      xidb.enrichAsset(assetData);
+      asset.enrichAsset(assetData);
       // user owns the asset or any editions
       assetData.userIsOwner = xidb.isOwner(assetData, req.user?.xid);
       res.json(assetData);
@@ -522,7 +523,7 @@ app.patch('/api/v1/asset/:xid', ensureAuthenticated, async (req, res) => {
   const userId = req.user.xid;
 
   try {
-    let assetData = xidb.getAsset(xid);
+    let assetData = asset.getAsset(xid);
 
     if (userId != assetData.asset.owner) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -541,7 +542,7 @@ app.patch('/api/v1/asset/:xid', ensureAuthenticated, async (req, res) => {
       assetData.asset.collection = collection;
     }
 
-    xidb.saveAsset(assetData);
+    asset.saveAsset(assetData);
     archiver.commitChanges({ type: 'update', agent: userId, asset: assetData.xid });
 
     res.json({ message: 'Asset saved successfully' });
@@ -556,7 +557,7 @@ app.post('/api/v1/asset/:xid/mint', ensureAuthenticated, async (req, res) => {
     const xid = req.params.xid;
     const { editions, license, royalty } = req.body;
     const userId = req.user.xid;
-    const assetData = xidb.getAsset(xid);
+    const assetData = asset.getAsset(xid);
 
     if (assetData.asset.owner != userId) {
       console.log('mint unauthorized');
@@ -573,7 +574,7 @@ app.post('/api/v1/asset/:xid/mint', ensureAuthenticated, async (req, res) => {
       creator: userId,
     };
 
-    xidb.saveHistory(xid, record);
+    asset.saveHistory(xid, record);
 
     const mint = await xidb.mintToken(userId, xid, editions, license, royalty / 100);
 
@@ -611,21 +612,21 @@ app.get('/api/v1/collections/:xid/mint-all', ensureAuthenticated, async (req, re
     const license = collection.collection.default.license;
     const royalty = collection.collection.default.royalty;
 
-    for (const asset of collection.collection.assets) {
-      if (!asset.token) {
+    for (const assetData of collection.collection.assets) {
+      if (!assetData.token) {
 
         const record = {
           "type": "mint",
           "creator": userId,
         };
 
-        xidb.saveHistory(asset.xid, record);
+        asset.saveHistory(assetData.xid, record);
 
-        const mint = await xidb.mintToken(userId, asset.xid, editions, license, royalty / 100);
+        const mint = await xidb.mintToken(userId, assetData.xid, editions, license, royalty / 100);
 
         const txn = {
           'type': 'mint',
-          'xid': asset.xid,
+          'xid': assetData.xid,
           'credits': mint.mintFee,
         };
 
@@ -645,7 +646,7 @@ app.get('/api/v1/asset/:xid/unmint', ensureAuthenticated, async (req, res) => {
   try {
     const xid = req.params.xid;
     const userId = req.user.xid;
-    const assetData = xidb.getAsset(xid);
+    const assetData = asset.getAsset(xid);
 
     if (assetData.asset.owner != userId) {
       console.log('mint unauthorized');
@@ -680,7 +681,7 @@ app.post('/api/v1/asset/:xid/list', ensureAuthenticated, async (req, res) => {
     const xid = req.params.xid;
     const { price } = req.body;
     const userId = req.user.xid;
-    const assetData = xidb.getAsset(xid);
+    const assetData = asset.getAsset(xid);
 
     console.log(`list ${xid} with price=${price}`);
 
@@ -708,8 +709,8 @@ app.post('/api/v1/asset/:xid/list', ensureAuthenticated, async (req, res) => {
         price: newPrice
       };
 
-      xidb.saveHistory(assetData.nft.token, record);
-      xidb.saveAsset(assetData);
+      asset.saveHistory(assetData.nft.token, record);
+      asset.saveAsset(assetData);
 
       const event = { type: 'list', agent: userId, asset: xid, price: newPrice };
       archiver.commitChanges(event);
@@ -731,7 +732,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
     const xid = req.params.xid;
     const buyerId = req.user.xid;
     const { invoice } = req.body;
-    const assetData = xidb.getAsset(xid);
+    const assetData = asset.getAsset(xid);
 
     if (!assetData.nft) {
       return res.status(500).json({ message: 'Error' });
@@ -950,7 +951,7 @@ app.patch('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const currentCollection = xidb.getAsset(req.params.xid);
+    const currentCollection = asset.getAsset(req.params.xid);
 
     assert.ok(collection.xid === currentCollection.xid);
     assert.ok(currentCollection.collection);

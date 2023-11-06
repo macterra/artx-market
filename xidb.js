@@ -6,6 +6,7 @@ const crypto = require('crypto');
 const uuid = require('uuid');
 const ejs = require('ejs');
 const realConfig = require('./config');
+const asset = require('./asset');
 const agent = require('./agent');
 const admin = require('./admin');
 const utils = require('./utils');
@@ -97,17 +98,17 @@ function rebuildAssets() {
     }
 
     for (const xid of allAssets()) {
-        const asset = getAsset(xid);
-        const owner = asset?.asset?.owner;
+        const assetData = asset.getAsset(xid);
+        const owner = assetData?.asset?.owner;
 
         if (owner && agents[owner]) {
-            if (asset.collection) {
+            if (assetData.collection) {
                 agents[owner].collections.push(xid);
             }
-            else if (asset.nft) {
+            else if (assetData.nft) {
                 agents[owner].collected.push(xid);
             }
-            else if (asset.file) {
+            else if (assetData.file) {
                 agents[owner].created.push(xid);
             }
         }
@@ -136,7 +137,7 @@ function allAgents(config = realConfig) {
 function repairAsset(xid) {
 
     const removeInvalidAsset = (xid) => {
-        removeAsset(xid);
+        asset.removeAsset(xid);
 
         return {
             xid: xid,
@@ -145,33 +146,33 @@ function repairAsset(xid) {
         };
     };
 
-    const metadata = getAsset(xid);
+    const assetData = asset.getAsset(xid);
 
-    if (!metadata) {
+    if (!assetData) {
         return removeInvalidAsset(xid);
     }
 
-    if (!metadata.asset) {
+    if (!assetData.asset) {
         return removeInvalidAsset(xid);
     }
 
-    if (!metadata.asset.owner) {
+    if (!assetData.asset.owner) {
         return removeInvalidAsset(xid);
     }
 
-    if (!metadata.xid) {
+    if (!assetData.xid) {
         return removeInvalidAsset(xid);
     }
 
-    if (!uuid.validate(metadata.xid)) {
+    if (!uuid.validate(assetData.xid)) {
         return removeInvalidAsset(xid);
     }
 
-    if (metadata.token) {
+    if (assetData.token) {
         const missingNftIds = [];
 
-        for (const nftId of metadata.token.nfts) {
-            const edition = getAsset(nftId);
+        for (const nftId of assetData.token.nfts) {
+            const edition = asset.getAsset(nftId);
             if (!edition) {
                 missingNftIds.push(nftId);
             }
@@ -186,17 +187,17 @@ function repairAsset(xid) {
         }
     }
 
-    if (metadata.nft) {
+    if (assetData.nft) {
 
-        if (metadata.nft.asset) {
+        if (assetData.nft.asset) {
 
-            metadata.nft.token = metadata.nft.asset;
-            delete metadata.nft.asset;
+            assetData.nft.token = assetData.nft.asset;
+            delete assetData.nft.asset;
 
-            const token = getAsset(metadata.nft.token);
-            metadata.nft.title = `${token.asset.title} (${metadata.asset.title})`;
+            const token = asset.getAsset(assetData.nft.token);
+            assetData.nft.title = `${token.asset.title} (${assetData.asset.title})`;
 
-            saveAsset(metadata);
+            asset.saveAsset(assetData);
             saveNft(xid);
 
             return {
@@ -327,7 +328,7 @@ function getAgentAndCollections(profileId, userId) {
 
     if (assets.collections) {
         for (const collectionId of assets.collections) {
-            let collectionData = getAsset(collectionId);
+            let collectionData = asset.getAsset(collectionId);
             collectionData.collection.assets = [];
             collections[collectionId] = collectionData;
         }
@@ -338,8 +339,8 @@ function getAgentAndCollections(profileId, userId) {
 
     if (profileId === userId) {
         for (const assetId of assets.created) {
-            let assetData = getAsset(assetId);
-            enrichAsset(assetData);
+            let assetData = asset.getAsset(assetId);
+            asset.enrichAsset(assetData);
 
             if (assetData.asset.collection in collections) {
                 collections[assetData.asset.collection].collection.assets.push(assetData);
@@ -365,8 +366,8 @@ function getAgentAndCollections(profileId, userId) {
     else {
         // Only show tokens (minted assets) to other users
         for (const assetId of assets.created) {
-            let assetData = getAsset(assetId);
-            enrichAsset(assetData);
+            let assetData = asset.getAsset(assetId);
+            asset.enrichAsset(assetData);
 
             if (assetData.token) {
                 minted.push(assetData);
@@ -415,11 +416,11 @@ function getAgentAndCollections(profileId, userId) {
     let editions = {};
 
     for (const assetId of assets.collected) {
-        const editionData = getAsset(assetId);
+        const editionData = asset.getAsset(assetId);
         const tokenId = editionData.nft.token;
 
         if (!(tokenId in editions)) {
-            editions[tokenId] = getAsset(tokenId);
+            editions[tokenId] = asset.getAsset(tokenId);
             editions[tokenId].owned = 1;
             editions[tokenId].label = editionData.asset.title;
             editions[tokenId].maxprice = editionData.nft.price;
@@ -471,7 +472,7 @@ async function getAllAgents() {
 }
 
 function getCollection(collectionId, userId) {
-    let collection = getAsset(collectionId);
+    let collection = asset.getAsset(collectionId);
 
     const agentData = getAgentAndCollections(collection.asset.owner, userId);
     collection = agentData.collections[collectionId];
@@ -495,78 +496,8 @@ function getCollection(collectionId, userId) {
     return collection;
 }
 
-function getHistory(xid, config = realConfig) {
-    try {
-        const historyPath = path.join(config.assets, xid, 'history.jsonl');
-        const data = fs.readFileSync(historyPath, 'utf-8');
-        const lines = data.trim().split('\n');
-        const history = lines.map(line => JSON.parse(line));
-        return history.reverse();
-    } catch (error) {
-        return [];
-    }
-}
-
-function getAgentMinimal(xid) {
-    const agentData = agent.getAgent(xid);
-
-    return {
-        'xid': agentData.xid,
-        'name': agentData.name,
-        'pfp': agentData.pfp,
-    }
-}
-
-function saveNft(xid) {
-    const metadata = getAsset(xid);
-    const tokenId = metadata.nft.token;
-    const tokenData = getAsset(tokenId);
-    const collectionId = tokenData.asset.collection;
-    const collectionData = getAsset(collectionId);
-
-    metadata.owner = getAgentMinimal(metadata.asset.owner);
-    metadata.creator = getAgentMinimal(tokenData.asset.owner);
-    metadata.token = tokenData;
-
-    metadata.collection = {
-        'xid': collectionData.xid,
-        'title': collectionData.asset.title,
-        'thumbnail': collectionData.collection.thumbnail,
-    };
-
-    metadata.nft.preview = `${realConfig.link}${metadata.token.file.path}`;
-    metadata.nft.image = metadata.token.file.path.replace("/data/assets", "..");
-    metadata.owner.image = metadata.owner.pfp.replace("/data/assets", "..");
-    metadata.creator.image = metadata.creator.pfp.replace("/data/assets", "..");
-
-    if (metadata.collection.thumbnail) {
-        metadata.collection.image = metadata.collection.thumbnail.replace("/data/assets", "..");
-    }
-    else {
-        metadata.collection.image = metadata.nft.image;
-    }
-
-    metadata.nft.link = `${realConfig.link}/nft/${metadata.xid}`;
-    metadata.token.link = `${realConfig.link}/asset/${metadata.token.xid}`;
-    metadata.collection.link = `${realConfig.link}/collection/${metadata.collection.xid}`;
-    metadata.owner.link = `${realConfig.link}/profile/${metadata.owner.xid}`;
-    metadata.creator.link = `${realConfig.link}/profile/${metadata.creator.xid}`;
-
-    const templatePath = path.join(realConfig.data, 'nft.ejs');
-    const template = fs.readFileSync(templatePath, 'utf8');
-    const html = ejs.render(template, metadata);
-    const htmlPath = path.join(realConfig.assets, xid, 'index.html');
-    fs.writeFileSync(htmlPath, html);
-
-    metadata.asset.updated = new Date().toISOString();
-    const jsonPath = path.join(realConfig.assets, xid, 'nft.json');
-    fs.writeFileSync(jsonPath, JSON.stringify(metadata, null, 2));
-
-    return metadata;
-}
-
-function getNft(xid) {
-    const jsonPath = path.join(realConfig.assets, xid, 'nft.json');
+function getNft(xid, config = realConfig) {
+    const jsonPath = path.join(config.assets, xid, 'nft.json');
 
     if (!fs.existsSync(jsonPath)) {
         return;
@@ -575,8 +506,8 @@ function getNft(xid) {
     const metadataContent = fs.readFileSync(jsonPath, 'utf-8');
     const metadata = JSON.parse(metadataContent);
 
-    metadata.token = getAsset(metadata.token.xid);
-    enrichAsset(metadata.token); // Retrieve latest history
+    metadata.token = asset.getAsset(metadata.token.xid);
+    asset.enrichAsset(metadata.token); // Retrieve latest history
 
     const adminData = admin.getAdmin();
     const certId = adminData.latest;
@@ -594,58 +525,75 @@ function getNft(xid) {
     return metadata;
 }
 
-function getAsset(xid, config = realConfig) {
-    let metadata = null;
+function getAgentMinimal(xid) {
+    const agentData = agent.getAgent(xid);
 
-    try {
-        const metadataPath = path.join(config.assets, xid, 'meta.json');
-        const metadataContent = fs.readFileSync(metadataPath, 'utf-8');
-        metadata = JSON.parse(metadataContent);
-    }
-    catch (error) { }
-
-    return metadata;
-}
-
-function enrichAsset(metadata, config = realConfig) {
-    if (metadata.token) {
-        metadata.history = getHistory(metadata.xid, config);
-
-        const owners = new Set([metadata.asset.owner]);
-
-        for (const nftId of metadata.token.nfts) {
-            const nft = getAsset(nftId, config);
-            owners.add(nft.asset.owner);
-        }
-
-        metadata.owners = owners.size;
-        metadata.sold = owners.size > 1;
+    return {
+        'xid': agentData.xid,
+        'name': agentData.name,
+        'pfp': agentData.pfp,
     }
 }
 
-function saveAsset(metadata, config = realConfig) {
-    const current = getAsset(metadata.xid);
+function saveNft(xid, config = realConfig) {
+    const assetData = asset.getAsset(xid);
+    const tokenId = assetData.nft.token;
+    const tokenData = asset.getAsset(tokenId);
+    const collectionId = tokenData.asset.collection;
+    const collectionData = asset.getAsset(collectionId);
+    const adminData = admin.getAdmin();
 
-    if (JSON.stringify(metadata) == JSON.stringify(current)) {
-        return;
+    assetData.owner = getAgentMinimal(assetData.asset.owner);
+    assetData.creator = getAgentMinimal(tokenData.asset.owner);
+    assetData.token = tokenData;
+
+    assetData.collection = {
+        'xid': collectionData.xid,
+        'title': collectionData.asset.title,
+        'thumbnail': collectionData.collection.thumbnail,
+    };
+
+    assetData.nft.preview = `${config.link}${assetData.token.file.path}`;
+    assetData.nft.image = assetData.token.file.path.replace("/data/assets", "..");
+
+    if (assetData.owner.pfp) {
+        assetData.owner.image = assetData.owner.pfp.replace("/data/assets", "..");
+    }
+    else {
+        assetData.owner.image = adminData.default_pfp.replace("/data/assets", "..");
     }
 
-    const assetFolder = path.join(config.assets, metadata.xid);
-    const assetJsonPath = path.join(assetFolder, 'meta.json');
-
-    if (!fs.existsSync(assetFolder)) {
-        fs.mkdirSync(assetFolder);
+    if (assetData.creator.pfp) {
+        assetData.creator.image = assetData.creator.pfp.replace("/data/assets", "..");
+    }
+    else {
+        assetData.creator.image = adminData.default_pfp.replace("/data/assets", "..");
     }
 
-    metadata.asset.updated = new Date().toISOString();
-    fs.writeFileSync(assetJsonPath, JSON.stringify(metadata, null, 2));
-}
+    if (assetData.collection.thumbnail) {
+        assetData.collection.image = assetData.collection.thumbnail.replace("/data/assets", "..");
+    }
+    else {
+        assetData.collection.image = assetData.nft.image;
+    }
 
-function saveHistory(xid, record) {
-    record.time = new Date().toISOString();
-    const recordString = JSON.stringify(record);
-    const jsonlPath = path.join(realConfig.assets, xid, 'history.jsonl');
-    fs.appendFileSync(jsonlPath, recordString + '\n');
+    assetData.nft.link = `${config.link}/nft/${assetData.xid}`;
+    assetData.token.link = `${config.link}/asset/${assetData.token.xid}`;
+    assetData.collection.link = `${config.link}/collection/${assetData.collection.xid}`;
+    assetData.owner.link = `${config.link}/profile/${assetData.owner.xid}`;
+    assetData.creator.link = `${config.link}/profile/${assetData.creator.xid}`;
+
+    const templatePath = path.join(config.data, 'nft.ejs');
+    const template = fs.readFileSync(templatePath, 'utf8');
+    const html = ejs.render(template, assetData);
+    const htmlPath = path.join(config.assets, xid, 'index.html');
+    fs.writeFileSync(htmlPath, html);
+
+    assetData.asset.updated = new Date().toISOString();
+    const jsonPath = path.join(config.assets, xid, 'nft.json');
+    fs.writeFileSync(jsonPath, JSON.stringify(assetData, null, 2));
+
+    return assetData;
 }
 
 function isOwner(metadata, agentId) {
@@ -662,7 +610,7 @@ function isOwner(metadata, agentId) {
     }
 
     for (const editionId of metadata.token.nfts) {
-        const edition = getAsset(editionId);
+        const edition = asset.getAsset(editionId);
 
         if (edition.asset.owner === agentId) {
             return true;
@@ -670,73 +618,6 @@ function isOwner(metadata, agentId) {
     }
 
     return false;
-}
-
-function gitHash(fileBuffer) {
-    const hasher = crypto.createHash('sha1');
-    hasher.update('blob ' + fileBuffer.length + '\0');
-    hasher.update(fileBuffer);
-    return hasher.digest('hex');
-}
-
-// createAsset has to be async to get image metadata from sharp
-async function createAsset(file, title, userId, collectionId, config = realConfig) {
-    // Get image metadata using sharp first so that it throws exception if not image
-    const sharpObj = sharp(file.path);
-    const imageMetadata = await sharpObj.metadata();
-    const xid = uuid.v4();
-
-    // Calculate the Git hash
-    const fileBuffer = fs.readFileSync(file.path);
-    const fileHash = gitHash(fileBuffer);
-
-    // Create the subfolder
-    const assetFolder = path.join(config.assets, xid);
-    if (!fs.existsSync(assetFolder)) {
-        fs.mkdirSync(assetFolder);
-    }
-
-    // Move the file to the subfolder and rename it to "_"
-    const assetName = '_' + path.extname(file.originalname);
-    const newPath = path.join(assetFolder, assetName);
-    fs.renameSync(file.path, newPath);
-
-    // Create the metadata object
-    const metadata = {
-        xid: xid,
-        asset: {
-            owner: userId,
-            title: title,
-            created: new Date().toISOString(),
-            updated: new Date().toISOString(),
-            collection: collectionId,
-        },
-        file: {
-            fileName: assetName,
-            size: file.size,
-            hash: fileHash,
-            path: `/${config.assets}/${xid}/${assetName}`,
-        },
-        image: {
-            width: imageMetadata.width,
-            height: imageMetadata.height,
-            depth: imageMetadata.depth,
-            format: imageMetadata.format,
-        }
-    };
-
-    saveAsset(metadata, config);
-    agent.addAsset(metadata, config);
-
-    return metadata;
-}
-
-function removeAsset(xid, config = realConfig) {
-    const assetPath = path.join(config.assets, xid);
-
-    fs.rmSync(assetPath, { recursive: true, force: true });
-
-    //console.log(`Removed asset: ${assetPath}`);
 }
 
 async function createAssets(userId, files, collectionId) {
@@ -773,7 +654,8 @@ async function createAssets(userId, files, collectionId) {
             }
 
             try {
-                await createAsset(file, title, userId, collectionId);
+                const assetData = await asset.createAsset(file, title, userId, collectionId);
+                agent.addAsset(assetData);
                 bytesUploaded += file.size;
                 filesUploaded += 1;
             }
@@ -805,7 +687,7 @@ function createEdition(owner, tokenId, edition, editions) {
     fs.mkdirSync(assetFolder);
 
     const title = `${edition} of ${editions}`;
-    const tokenData = getAsset(tokenId);
+    const tokenData = asset.getAsset(tokenId);
 
     const metadata = {
         xid: xid,
@@ -836,7 +718,7 @@ function createEdition(owner, tokenId, edition, editions) {
 
 // mintToken has to be async to get the IPFS cid
 async function mintToken(userId, xid, editions, license, royalty) {
-    let assetData = getAsset(xid);
+    let assetData = asset.getAsset(xid);
 
     const ipfs = await archiver.pinAsset(xid);
 
@@ -868,7 +750,7 @@ async function mintToken(userId, xid, editions, license, royalty) {
         nfts: nfts,
     };
 
-    saveAsset(assetData);
+    asset.saveAsset(assetData);
 
     // Charge mint fee from agent credits
     const storageFee = Math.round(assetData.file.size * realConfig.storageRate);
@@ -889,18 +771,18 @@ async function mintToken(userId, xid, editions, license, royalty) {
 }
 
 async function unmintToken(userId, xid) {
-    let assetData = getAsset(xid);
+    let assetData = asset.getAsset(xid);
 
     const editions = assetData.token.editions;
 
     for (const nftId of assetData.token.nfts) {
-        const nft = getAsset(nftId);
+        const nft = asset.getAsset(nftId);
         agent.removeAsset(nft);
-        removeAsset(nftId);
+        asset.removeAsset(nftId);
     }
 
     delete assetData.token;
-    saveAsset(assetData);
+    asset.saveAsset(assetData);
 
     const jsonlPath = path.join(realConfig.assets, xid, 'history.jsonl');
     fs.rmSync(jsonlPath);
@@ -921,7 +803,7 @@ async function unmintToken(userId, xid) {
 }
 
 function transferAsset(xid, nextOwnerId) {
-    const assetData = getAsset(xid);
+    const assetData = asset.getAsset(xid);
 
     assert.ok(assetData.nft);
 
@@ -937,12 +819,12 @@ function transferAsset(xid, nextOwnerId) {
 
     assetData.asset.owner = nextOwnerId;
     assetData.nft.price = 0;
-    saveAsset(assetData);
+    asset.saveAsset(assetData);
     saveNft(xid);
 }
 
 async function purchaseAsset(xid, buyerId, invoice) {
-    const assetData = getAsset(xid);
+    const assetData = asset.getAsset(xid);
 
     assert.ok(assetData.nft);
     assert.ok(invoice.payment_hash);
@@ -959,7 +841,7 @@ async function purchaseAsset(xid, buyerId, invoice) {
 }
 
 async function payoutSale(xid, buyerId, invoice) {
-    const assetData = getAsset(xid);
+    const assetData = asset.getAsset(xid);
     const buyer = agent.getAgent(buyerId);
     const sellerId = assetData.asset.owner;
     const seller = agent.getAgent(sellerId);
@@ -968,7 +850,7 @@ async function payoutSale(xid, buyerId, invoice) {
     assert.ok(assetData.nft);
     assert.ok(price > 0);
 
-    const tokenData = getAsset(assetData.nft.token);
+    const tokenData = asset.getAsset(assetData.nft.token);
     const assetName = assetData.nft.title;
     console.log(`audit: ${buyer.name} buying ${assetName} for ${price} from ${seller.name}`);
 
@@ -1107,7 +989,7 @@ async function payoutSale(xid, buyerId, invoice) {
         sats: price,
     };
 
-    saveHistory(assetData.nft.token, record);
+    asset.saveHistory(assetData.nft.token, record);
     agent.saveTxnLog(sellerId, sellTxn);
     agent.saveTxnLog(buyerId, buyTxn);
 
@@ -1152,14 +1034,14 @@ function saveCollection(collection) {
 
     // assets are collected at runtime because metadata.asset.collection is the source of truth
     collection.collection.assets = [];
-    saveAsset(collection);
+    asset.saveAsset(collection);
 }
 
 function removeCollection(collection) {
     assert.ok(collection.collection);
 
     agent.removeAsset(collection);
-    removeAsset(collection.xid);
+    asset.removeAsset(collection.xid);
 }
 
 async function getListings(max = 8) {
@@ -1182,7 +1064,7 @@ async function getListings(max = 8) {
         }
 
         try {
-            const nft = getAsset(listing.asset);
+            const nft = asset.getAsset(listing.asset);
 
             if (!nft) {
                 continue;
@@ -1196,7 +1078,7 @@ async function getListings(max = 8) {
                 continue;
             }
 
-            const token = getAsset(nft.nft.token);
+            const token = asset.getAsset(nft.nft.token);
 
             if (!token) {
                 continue;
@@ -1235,16 +1117,12 @@ module.exports = {
     allAssets,
     buyCredits,
     createAgent,
-    createAsset,
     createAssets,
     createCollection,
-    enrichAsset,
     getAgentAndCollections,
     getAgentFromKey,
     getAllAgents,
-    getAsset,
     getCollection,
-    getHistory,
     getListings,
     getNft,
     integrityCheck,
@@ -1252,11 +1130,8 @@ module.exports = {
     mintToken,
     payoutSale,
     purchaseAsset,
-    removeAsset,
     removeCollection,
-    saveAsset,
     saveCollection,
-    saveHistory,
     saveNft,
     transferAsset,
     unmintToken,

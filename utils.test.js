@@ -41,7 +41,6 @@ describe('getMarketId', () => {
     });
 });
 
-
 describe('getAgentId', () => {
     it('should return the correct agent ID', () => {
         const key = 'testKey';

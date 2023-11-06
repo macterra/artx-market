@@ -4,31 +4,7 @@ const path = require('path');
 const mockFs = require('mock-fs');
 
 const xidb = require('./xidb');
-
-jest.mock('uuid');
-
-jest.mock('sharp', () => jest.fn(() => ({
-    metadata: jest.fn(() => Promise.resolve({
-        width: 800,
-        height: 600,
-        depth: 24,
-        format: 'jpeg'
-    }))
-})));
-
-const testConfig = {
-    name: 'testName',
-    host: 'testHost',
-    data: 'testData',
-    assets: 'testData/assets',
-    agents: 'testData/agents',
-    certs: 'testData/certs',
-    uploads: 'testData/uploads',
-    dns_ns: uuid.v4(),
-    block_link: 'http://block-link',
-    txn_link: 'http://txn-link',
-    ipfs_link: 'http://ipfs-link',
-};
+const config = require('./test-config');
 
 describe('allAssets', () => {
 
@@ -39,7 +15,7 @@ describe('allAssets', () => {
     it('should return the names of all directories in the assets directory', () => {
         const directories = ['dir1', 'dir2', 'dir3'];
         mockFs({
-            [testConfig.assets]: {
+            [config.assets]: {
                 'dir1': {},
                 'dir2': {
                     'file1.txt': 'content',
@@ -50,7 +26,7 @@ describe('allAssets', () => {
             }
         });
 
-        const result = xidb.allAssets(testConfig);
+        const result = xidb.allAssets(config);
 
         expect(result).toEqual(directories);
     });
@@ -65,7 +41,7 @@ describe('allAgents', () => {
     it('should return the names of all directories in the agents directory', () => {
         const directories = ['dir1', 'dir2', 'dir3'];
         mockFs({
-            [testConfig.agents]: {
+            [config.agents]: {
                 'dir1': {},
                 'dir2': {
                     'file1.txt': 'content',
@@ -76,296 +52,8 @@ describe('allAgents', () => {
             }
         });
 
-        const result = xidb.allAgents(testConfig);
+        const result = xidb.allAgents(config);
 
         expect(result).toEqual(directories);
-    });
-});
-
-describe('getAsset', () => {
-
-    afterEach(() => {
-        mockFs.restore();
-    });
-
-    it('should return the metadata of the specified asset', () => {
-        const xid = 'testXid';
-        const metadata = { key: 'value' };
-        mockFs({
-            [testConfig.assets]: {
-                [xid]: {
-                    'meta.json': JSON.stringify(metadata),
-                },
-            }
-        });
-
-        const result = xidb.getAsset(xid, testConfig);
-
-        expect(result).toEqual(metadata);
-    });
-
-    it('should return null if the specified asset does not exist', () => {
-        mockFs({
-            [testConfig.assets]: {}  // Empty directory
-        });
-
-        const result = xidb.getAsset('nonexistentXid', testConfig);
-
-        expect(result).toBeNull();
-    });
-});
-
-describe('getHistory', () => {
-
-    afterEach(() => {
-        mockFs.restore();
-    });
-
-    it('should return the history of the specified asset', () => {
-        const xid = 'testXid';
-        const history = [
-            { event: 'event1' },
-            { event: 'event2' },
-            { event: 'event3' }
-        ];
-        const historyJsonl = history.map(JSON.stringify).join('\n');
-        mockFs({
-            [testConfig.assets]: {
-                [xid]: {
-                    'history.jsonl': historyJsonl,
-                },
-            }
-        });
-
-        const result = xidb.getHistory(xid, testConfig);
-
-        expect(result).toEqual(history.reverse());
-    });
-
-    it('should return an empty array if the history file does not exist', () => {
-        mockFs({
-            [testConfig.assets]: {}  // Empty directory
-        });
-
-        const result = xidb.getHistory('nonexistentXid', testConfig);
-
-        expect(result).toEqual([]);
-    });
-});
-
-describe('createAsset', () => {
-
-    afterEach(() => {
-        mockFs.restore();
-    });
-
-    it('should create an asset', async () => {
-        const file = {
-            path: `${testConfig.uploads}/test.jpg`,
-            originalname: 'test.jpg',
-            size: 1000
-        };
-        const title = 'Test Title';
-        const userId = 'testUser';
-        const collectionId = 'testCollection';
-
-        // Mock the file system
-        mockFs({
-            [testConfig.uploads]: {
-                'test.jpg': 'test',
-            },
-            [testConfig.agents]: {
-                'testUser': {}
-            },
-            [testConfig.assets]: {}  // Empty directory
-        });
-
-        // Mock uuid
-        uuid.v4.mockReturnValueOnce('testUuid');
-
-        const result = await xidb.createAsset(file, title, userId, collectionId, testConfig);
-
-        expect(result).toEqual(expect.objectContaining({
-            xid: 'testUuid',
-            asset: {
-                owner: userId,
-                title: title,
-                collection: collectionId,
-                created: expect.any(String),
-                updated: expect.any(String),
-            },
-            file: {
-                fileName: expect.any(String),
-                size: file.size,
-                hash: expect.any(String),
-                path: expect.any(String),
-            },
-            image: {
-                width: 800,
-                height: 600,
-                depth: 24,
-                format: 'jpeg',
-            }
-        }));
-
-        // Verify that the asset is correctly written to meta.json
-        const metaJsonPath = path.join(testConfig.assets, result.xid, 'meta.json');
-        const metaJsonContent = JSON.parse(fs.readFileSync(metaJsonPath, 'utf-8'));
-        expect(metaJsonContent).toEqual(result);
-    });
-});
-
-describe('removeAsset', () => {
-
-    afterEach(() => {
-        mockFs.restore();
-    });
-
-    it('should remove the asset', () => {
-        const xid = 'testXid';
-
-        // Mock the file system
-        mockFs({
-            [testConfig.assets]: {
-                [xid]: {
-                    'file.txt': 'test',
-                },
-            },
-        });
-
-        xidb.removeAsset(xid, testConfig);
-
-        const assetPath = path.join(testConfig.assets, xid);
-
-        // Check that the asset folder has been removed
-        expect(fs.existsSync(assetPath)).toBe(false);
-    });
-});
-
-describe('saveAsset', () => {
-
-    afterEach(() => {
-        mockFs.restore();
-    });
-
-    it('should save the asset metadata if it is different from the current metadata', () => {
-        const metadata = {
-            xid: 'testXid',
-            asset: { owner: 'owner1' },
-        };
-
-        // Mock the file system
-        mockFs({
-            [testConfig.assets]: {}  // Empty directory
-        });
-
-        xidb.saveAsset(metadata, testConfig);
-
-        const expectedMetadata = {
-            xid: 'testXid',
-            asset: {
-                owner: 'owner1',
-                updated: expect.any(String)
-            },
-        };
-
-        // Read the data that was written to meta.json and check that it matches the expected data
-        const assetJsonPath = path.join(testConfig.assets, metadata.xid, 'meta.json');
-        const writtenData = JSON.parse(fs.readFileSync(assetJsonPath, 'utf-8'));
-        expect(writtenData).toEqual(expectedMetadata);
-    });
-});
-
-describe('enrichAsset', () => {
-
-    afterEach(() => {
-        mockFs.restore();
-    });
-
-    it('should enrich the asset metadata', () => {
-        const metadata = {
-            xid: 'testXid',
-            asset: { owner: 'owner1' },
-            token: { nfts: ['nft1', 'nft2'] },
-        };
-        const history = [{ event: 'event1' }];
-        const nft = { asset: { owner: 'owner2' } };
-
-        // Mock the file system
-        mockFs({
-            [testConfig.assets]: {
-                [metadata.xid]: {
-                    'history.jsonl': history.map(JSON.stringify).join('\n')
-                },
-                'nft1': {
-                    'meta.json': JSON.stringify(nft),
-                },
-                'nft2': {
-                    'meta.json': JSON.stringify(nft),
-                }
-            }
-        });
-
-        const expectedMetadata = {
-            ...metadata,
-            history,
-            owners: 2,
-            sold: true,
-        };
-
-        xidb.enrichAsset(metadata, testConfig);
-
-        expect(metadata).toEqual(expectedMetadata);
-    });
-
-    it('should detect single owner', () => {
-        const metadata = {
-            xid: 'testXid',
-            asset: { owner: 'owner1' },
-            token: { nfts: ['nft1', 'nft2'] },
-        };
-        const history = [{ event: 'event1' }];
-        const nft = { asset: { owner: 'owner1' } };
-
-        // Mock the file system
-        mockFs({
-            [testConfig.assets]: {
-                [metadata.xid]: {
-                    'history.jsonl': history.map(JSON.stringify).join('\n')
-                },
-                'nft1': {
-                    'meta.json': JSON.stringify(nft),
-                },
-                'nft2': {
-                    'meta.json': JSON.stringify(nft),
-                }
-            }
-        });
-
-        const expectedMetadata = {
-            ...metadata,
-            history,
-            owners: 1,
-            sold: false,
-        };
-
-        xidb.enrichAsset(metadata, testConfig);
-
-        expect(metadata).toEqual(expectedMetadata);
-    });
-
-    it('should not modify the metadata if it does not have a token', () => {
-        const metadata = {
-            xid: 'testXid',
-            asset: { owner: 'owner1' },
-        };
-
-        mockFs({});  // Empty file system
-
-        const expectedMetadata = { ...metadata };
-
-        xidb.enrichAsset(metadata, testConfig);
-
-        expect(metadata).toEqual(expectedMetadata);
     });
 });
