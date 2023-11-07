@@ -396,10 +396,6 @@ describe('getTxnLog', () => {
 });
 
 describe('saveTxnLog', () => {
-    const config = {
-        agents: 'testAgents',
-    };
-
     afterEach(() => {
         mockFs.restore();
     });
@@ -424,5 +420,69 @@ describe('saveTxnLog', () => {
         const writtenData = fs.readFileSync(jsonlPath, 'utf-8');
         const writtenRecord = JSON.parse(writtenData.trim());
         expect(writtenRecord).toEqual({ ...record, time: expect.any(String) });
+    });
+});
+
+describe('addCredits', () => {
+
+    afterEach(() => {
+        mockFs.restore();
+    });
+
+    it('adds credits to an agent and saves an audit log', () => {
+        // Arrange
+        const mockUserId = 'mockUserId';
+        const mockAgentName = 'mockAgentName';
+        const mockAmount = 100;
+        const mockAgentData = {
+            xid: mockUserId,
+            name: mockAgentName,
+            credits: mockAmount,
+        }
+
+        // Mock the file system
+        mockFs({
+            [config.agents]: {
+                [mockUserId]: {
+                    'agent.json': JSON.stringify(mockAgentData)
+                },
+            }
+        });
+
+        const expectedAgentData = {
+            ...mockAgentData,
+            credits: mockAgentData.credits + mockAmount,
+            updated: expect.any(String),
+         };
+
+        const expectedRecord = {
+            type: 'add-credits',
+            agent: mockUserId,
+            agentName: mockAgentData.name,
+            amount: mockAmount,
+        };
+
+        // Act
+        const agentData = agent.addCredits(mockUserId, mockAmount, config);
+
+        // Assert
+        expect(agentData).toEqual(expectedAgentData);
+    });
+
+    it('does nothing when the agent does not exist', () => {
+        // Arrange
+        const mockUserId = 'nonexistentUserId';
+        const mockAmount = 100;
+
+        // Mock the file system
+        mockFs({
+            [config.agents]: { }
+        });
+
+        // Act
+        const agentData = agent.addCredits(mockUserId, mockAmount, config);
+
+        // Assert
+        expect(agentData).toBeUndefined();
     });
 });

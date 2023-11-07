@@ -2,7 +2,16 @@ const path = require('path');
 const fs = require('fs');
 
 const utils = require('./utils');
+const admin = require('./admin');
+const lnbits = require('./lnbits');
+
 const realConfig = require('./config');
+
+function getAgentFromKey(key) {
+    const xid = utils.getAgentId(key);
+    const agentData = getAgent(xid);
+    return agentData;
+}
 
 async function createAgent(key, config = realConfig) {
     const userId = utils.getAgentId(key, config);
@@ -154,10 +163,63 @@ function saveTxnLog(xid, record, config = realConfig) {
     fs.appendFileSync(jsonlPath, recordString + '\n');
 }
 
+function addCredits(userId, amount, config = realConfig) {
+    const agentData = getAgent(userId, config);
+
+    if (agentData) {
+        agentData.credits += amount;
+
+        const record = {
+            type: "add-credits",
+            agent: userId,
+            agentName: agentData.name,
+            amount: amount,
+        };
+
+        admin.saveAuditLog(record, config);
+        saveAgent(agentData, config);
+        return agentData;
+    }
+}
+
+async function buyCredits(userId, invoice) {
+    const agentData = agent.getAgent(userId);
+
+    if (agentData && invoice?.payment_hash) {
+        console.log(`buyCredits: ${JSON.stringify(invoice, null, 4)}`);
+
+        const payment = await lnbits.checkPayment(invoice.payment_hash);
+
+        if (payment?.paid) {
+            const amount = Math.round(payment.details.amount / 1000);
+
+            agentData.credits += amount;
+            invoice.payment = payment;
+
+            const record = {
+                type: "buy-credits",
+                agent: agentData.xid,
+                agentName: agentData.name,
+                amount: amount,
+                invoice: invoice,
+            };
+            admin.saveAuditLog(record);
+            saveAgent(agentData);
+            return agentData;
+        }
+        else {
+            console.log(`buyCredits: payment check failed`);
+        }
+    }
+}
+
 module.exports = {
     addAsset,
+    addCredits,
+    buyCredits,
     createAgent,
     getAgent,
+    getAgentFromKey,
     getAssets,
     getTxnLog,
     removeAsset,
