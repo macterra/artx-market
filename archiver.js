@@ -65,7 +65,7 @@ async function commitChanges(event) {
         else if (commit.githash) {
             const hash = commit.githash.substring(0, 8);
             console.log(`Commit: ${commitMessage} (${hash})`);
-            pushChanges();
+            await pushChanges();
             return commit.githash;
         }
     }

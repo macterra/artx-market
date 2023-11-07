@@ -87,7 +87,7 @@ passport.use(new LnurlAuth.Strategy(async function (pubkey, done) {
       if (!agentData) {
         agentData = await agent.createAgent(pubkey);
         xidb.createCollection(agentData.xid, 'gallery');
-        archiver.commitChanges({ type: 'create', agent: agentData.xid });
+        await archiver.commitChanges({ type: 'create', agent: agentData.xid });
       }
 
       console.log(`passport ${pubkey} ${agentData.xid}`);
@@ -544,7 +544,7 @@ app.patch('/api/v1/asset/:xid', ensureAuthenticated, async (req, res) => {
     }
 
     asset.saveAsset(assetData);
-    archiver.commitChanges({ type: 'update', agent: userId, asset: assetData.xid });
+    await archiver.commitChanges({ type: 'update', agent: userId, asset: assetData.xid });
 
     res.json({ message: 'Asset saved successfully' });
   } catch (error) {
@@ -590,7 +590,7 @@ app.post('/api/v1/asset/:xid/mint', ensureAuthenticated, async (req, res) => {
     };
 
     agent.saveTxnLog(userId, txn);
-    archiver.commitChanges({ type: 'mint', agent: userId, asset: xid, editions: editions });
+    await archiver.commitChanges({ type: 'mint', agent: userId, asset: xid, editions: editions });
 
     res.json(mint);
   } catch (error) {
@@ -635,7 +635,7 @@ app.get('/api/v1/collections/:xid/mint-all', ensureAuthenticated, async (req, re
       }
     }
 
-    archiver.commitChanges({ type: 'mint-all', agent: userId, asset: xid });
+    await archiver.commitChanges({ type: 'mint-all', agent: userId, asset: xid });
     res.json({ message: 'Mint all success' });
   } catch (error) {
     console.error('Error processing request:', error);
@@ -668,7 +668,7 @@ app.get('/api/v1/asset/:xid/unmint', ensureAuthenticated, async (req, res) => {
     };
 
     agent.saveTxnLog(userId, txn);
-    archiver.commitChanges({ type: 'unmint', agent: userId, asset: xid });
+    await archiver.commitChanges({ type: 'unmint', agent: userId, asset: xid });
 
     res.json(unmint);
   } catch (error) {
@@ -714,7 +714,7 @@ app.post('/api/v1/asset/:xid/list', ensureAuthenticated, async (req, res) => {
       asset.saveAsset(assetData);
 
       const event = { type: 'list', agent: userId, asset: xid, price: newPrice };
-      archiver.commitChanges(event);
+      await archiver.commitChanges(event);
 
       if (newPrice) {
         nostr.announce(event);
@@ -754,7 +754,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
       invoice.payment = sale.payment;
       await xidb.payoutSale(xid, buyerId, sellerId, invoice);
       const event = { type: 'sale', agent: buyerId, asset: xid, price: assetData.nft.price };
-      archiver.commitChanges(event);
+      await archiver.commitChanges(event);
       nostr.announce(event);
     };
 
@@ -866,7 +866,7 @@ app.patch('/api/v1/profile/', ensureAuthenticated, async (req, res) => {
     }
 
     agent.saveAgent(agentData);
-    archiver.commitChanges({ type: 'update', agent: userId });
+    await archiver.commitChanges({ type: 'update', agent: userId });
     res.json({ message: 'Metadata updated successfully' });
   } catch (error) {
     console.error('Error updating metadata:', error);
@@ -904,7 +904,7 @@ app.post('/api/v1/profile/credit', ensureAuthenticated, async (req, res) => {
     const agentData = await agent.buyCredits(userId, invoice);
 
     if (agentData) {
-      archiver.commitChanges({ type: 'credits', agent: userId, credits: invoice.amount });
+      await archiver.commitChanges({ type: 'credits', agent: userId, credits: invoice.amount });
       res.json(agentData);
     }
     else {
@@ -920,7 +920,7 @@ app.get('/api/v1/collections/', async (req, res) => {
   try {
     const userId = req.user?.xid;
     const collection = xidb.createCollection(userId, "new");
-    archiver.commitChanges({ type: 'create', agent: userId, asset: collection.xid });
+    await archiver.commitChanges({ type: 'create', agent: userId, asset: collection.xid });
     res.json(collection);
   } catch (error) {
     console.error('Error processing request:', error);
@@ -1001,7 +1001,7 @@ app.patch('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => {
     }
 
     xidb.saveCollection(currentCollection);
-    archiver.commitChanges({ type: 'update', agent: userId, asset: collection.xid });
+    await archiver.commitChanges({ type: 'update', agent: userId, asset: collection.xid });
     res.json({ message: 'Collection updated successfully' });
   } catch (error) {
     console.error('Error processing request:', error);
@@ -1023,7 +1023,7 @@ app.delete('/api/v1/collections/:xid', ensureAuthenticated, async (req, res) => 
     }
 
     xidb.removeCollection(collection);
-    archiver.commitChanges({ type: 'delete', agent: userId, asset: collection.xid });
+    await archiver.commitChanges({ type: 'delete', agent: userId, asset: collection.xid });
     res.json({ message: 'Collection removed successfully' });
   } catch (error) {
     console.error('Error processing request:', error);
@@ -1049,7 +1049,7 @@ app.post('/api/v1/collections/:xid/upload', ensureAuthenticated, upload.array('i
     };
 
     agent.saveTxnLog(req.user.xid, txn);
-    archiver.commitChanges({ type: 'upload', agent: req.user.xid, asset: collectionId, files: upload.filesUploaded, bytes: upload.bytesUploaded });
+    await archiver.commitChanges({ type: 'upload', agent: req.user.xid, asset: collectionId, files: upload.filesUploaded, bytes: upload.bytesUploaded });
     res.status(200).json(upload);
   } catch (error) {
     console.error('Error processing files:', error);
@@ -1085,7 +1085,7 @@ cron.schedule('* * * * *', async () => {
     console.log(`Pending txn ${adminData.pending}...`);
     const savedAdmin = await admin.certifyState(adminData);
     if (!savedAdmin.pending) {
-      archiver.commitChanges({ type: 'certify-state', state: savedAdmin.xid, cert: savedAdmin.latest });
+      await archiver.commitChanges({ type: 'certify-state', state: savedAdmin.xid, cert: savedAdmin.latest });
     }
   }
 });
@@ -1097,7 +1097,7 @@ cron.schedule('0 0 * * *', async () => {
     console.log(`Notarizing market state...`);
     const savedAdmin = await admin.notarizeState(adminData);
     if (savedAdmin.pending) {
-      archiver.commitChanges({ type: 'notarize-state', state: savedAdmin.xid, txn: savedAdmin.pending });
+      await archiver.commitChanges({ type: 'notarize-state', state: savedAdmin.xid, txn: savedAdmin.pending });
     }
   }
 });

@@ -9,6 +9,7 @@ const CollectionEditor = ({ navigate }) => {
     const [selectedCollection, setSelectedCollection] = useState(null);
     const [saved, setSaved] = useState(true);
     const [removeable, setRemoveable] = useState(false);
+    const [disableAdd, setDisableAdd] = useState(false);
     const [licenses, setLicenses] = useState([]);
 
     useEffect(() => {
@@ -72,6 +73,8 @@ const CollectionEditor = ({ navigate }) => {
     };
 
     const handleAddCollection = async () => {
+        setDisableAdd(true);
+
         try {
             const response = await axios.get(`/api/v1/collections/`);
             const newCollections = [...collections, response.data];
@@ -87,9 +90,13 @@ const CollectionEditor = ({ navigate }) => {
             console.error('Error adding collection:', error);
             alert("Add failed");
         }
+
+        setDisableAdd(false);
     };
 
     const handleRemoveCollection = async () => {
+        setRemoveable(false);
+
         try {
             await axios.delete(`/api/v1/collections/${selectedCollection.xid}`);
 
@@ -98,7 +105,6 @@ const CollectionEditor = ({ navigate }) => {
             setSelectedIndex(0);
             setSelectedCollection(newCollections[0]);
             setSaved(false);
-            setRemoveable(false);
         }
         catch (error) {
             console.error('Error adding collection:', error);
@@ -236,7 +242,7 @@ const CollectionEditor = ({ navigate }) => {
             </Grid>
             <Grid container direction="row" justifyContent="center" alignItems="center" spacing={3}>
                 <Grid item>
-                    <Button variant="contained" color="primary" onClick={handleAddCollection}>
+                    <Button variant="contained" color="primary" onClick={handleAddCollection} disabled={disableAdd}>
                         Add Collection
                     </Button>
                 </Grid>
