@@ -236,61 +236,6 @@ function repairAgent(xid) {
     }
 }
 
-function getAgentFromKey(key) {
-    const xid = utils.getAgentId(key);
-    const agentData = agent.getAgent(xid);
-    return agentData;
-}
-
-function addCredits(userId, amount) {
-    const agentData = agent.getAgent(userId);
-
-    if (agentData) {
-        agentData.credits += amount;
-
-        const record = {
-            type: "add-credits",
-            agent: userId,
-            agentName: agentData.name,
-            amount: amount,
-        };
-        admin.saveAuditLog(record);
-        agent.saveAgent(agentData);
-        return agentData;
-    }
-}
-
-async function buyCredits(userId, invoice) {
-    const agentData = agent.getAgent(userId);
-
-    if (agentData && invoice?.payment_hash) {
-        console.log(`buyCredits: ${JSON.stringify(invoice, null, 4)}`);
-
-        const payment = await lnbits.checkPayment(invoice.payment_hash);
-
-        if (payment?.paid) {
-            const amount = Math.round(payment.details.amount / 1000);
-
-            agentData.credits += amount;
-            invoice.payment = payment;
-
-            const record = {
-                type: "buy-credits",
-                agent: agentData.xid,
-                agentName: agentData.name,
-                amount: amount,
-                invoice: invoice,
-            };
-            admin.saveAuditLog(record);
-            agent.saveAgent(agentData);
-            return agentData;
-        }
-        else {
-            console.log(`buyCredits: payment check failed`);
-        }
-    }
-}
-
 function getAgentAndCollections(profileId, userId) {
     if (!profileId) {
         profileId = userId;
@@ -818,10 +763,9 @@ async function purchaseAsset(xid, buyerId, invoice) {
     }
 }
 
-async function payoutSale(xid, buyerId, invoice) {
+async function payoutSale(xid, buyerId, sellerId, invoice) {
     const assetData = asset.getAsset(xid);
     const buyer = agent.getAgent(buyerId);
-    const sellerId = assetData.asset.owner;
     const seller = agent.getAgent(sellerId);
     const price = invoice.amount;
 
@@ -876,7 +820,7 @@ async function payoutSale(xid, buyerId, invoice) {
             }
 
             if (!royaltyPaid) {
-                addCredits(creator.xid, royalty);
+                agent.addCredits(creator.xid, royalty);
                 console.log(`audit: royalty ${royalty} credits to ${creator.xid}`);
                 audit.royalty = {
                     address: creator.xid,
@@ -912,7 +856,7 @@ async function payoutSale(xid, buyerId, invoice) {
     }
 
     if (!payoutPaid) {
-        addCredits(seller.xid, payout);
+        agent.addCredits(seller.xid, payout);
         console.log(`audit: payout ${payout} credits to ${seller.xid}`);
         audit.payout = {
             address: seller.xid,
@@ -1090,14 +1034,11 @@ async function getListings(max = 8) {
 }
 
 module.exports = {
-    addCredits,
     allAgents,
     allAssets,
-    buyCredits,
     createAssets,
     createCollection,
     getAgentAndCollections,
-    getAgentFromKey,
     getAllAgents,
     getCollection,
     getListings,

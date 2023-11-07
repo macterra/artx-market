@@ -186,8 +186,6 @@ async function buyCredits(userId, invoice, config = realConfig) {
     const agentData = getAgent(userId, config);
 
     if (agentData && invoice?.payment_hash) {
-        console.log(`buyCredits: ${JSON.stringify(invoice, null, 4)}`);
-
         const payment = await lnbits.checkPayment(invoice.payment_hash);
 
         if (payment?.paid) {
@@ -204,11 +202,16 @@ async function buyCredits(userId, invoice, config = realConfig) {
                 invoice: invoice,
             };
             admin.saveAuditLog(record, config);
+
+            const txn = {
+                'type': 'credits',
+                'credits': amount,
+            };
+
+            saveTxnLog(userId, txn, config);
             saveAgent(agentData, config);
+
             return agentData;
-        }
-        else {
-            console.log(`buyCredits: payment check failed`);
         }
     }
 }

@@ -82,7 +82,7 @@ passport.use(new LnurlAuth.Strategy(async function (pubkey, done) {
   let user = map.user.get(pubkey);
   if (!user) {
     try {
-      let agentData = xidb.getAgentFromKey(pubkey);
+      let agentData = agent.getAgentFromKey(pubkey);
 
       if (!agentData) {
         agentData = await agent.createAgent(pubkey);
@@ -743,6 +743,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
       return res.status(500).json({ message: "Already owned" });
     }
 
+    const sellerId = assetData.asset.owner;
     const sale = await xidb.purchaseAsset(xid, buyerId, invoice);
 
     if (!sale.ok) {
@@ -751,7 +752,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
 
     const completeSale = async () => {
       invoice.payment = sale.payment;
-      await xidb.payoutSale(xid, buyerId, invoice);
+      await xidb.payoutSale(xid, buyerId, sellerId, invoice);
       const event = { type: 'sale', agent: buyerId, asset: xid, price: assetData.nft.price };
       archiver.commitChanges(event);
       nostr.announce(event);
@@ -900,16 +901,9 @@ app.post('/api/v1/profile/credit', ensureAuthenticated, async (req, res) => {
   const { invoice } = req.body;
 
   try {
-    const agentData = await xidb.buyCredits(userId, invoice);
+    const agentData = await agent.buyCredits(userId, invoice);
 
     if (agentData) {
-
-      const txn = {
-        'type': 'credits',
-        'credits': invoice.amount,
-      };
-
-      agent.saveTxnLog(userId, txn);
       archiver.commitChanges({ type: 'credits', agent: userId, credits: invoice.amount });
       res.json(agentData);
     }
@@ -941,7 +935,7 @@ app.get('/api/v1/collections/:xid', async (req, res) => {
 
     // Sort assets by created date
     collection.collection.assets = collection.collection.assets.sort((a, b) => {
-        return a.asset.created.localeCompare(b.asset.created);
+      return a.asset.created.localeCompare(b.asset.created);
     });
 
     res.json(collection);
