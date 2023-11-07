@@ -1,15 +1,12 @@
 const path = require('path');
 const fs = require('fs');
 const assert = require('assert');
-const sharp = require('sharp');
-const crypto = require('crypto');
 const uuid = require('uuid');
 const ejs = require('ejs');
 const realConfig = require('./config');
 const asset = require('./asset');
 const agent = require('./agent');
 const admin = require('./admin');
-const utils = require('./utils');
 const archiver = require('./archiver');
 const lnbits = require('./lnbits');
 
@@ -448,8 +445,8 @@ function getNft(xid, config = realConfig) {
     return metadata;
 }
 
-function getAgentMinimal(xid) {
-    const agentData = agent.getAgent(xid);
+function getAgentMinimal(xid, config = realConfig) {
+    const agentData = agent.getAgent(xid, config);
 
     return {
         'xid': agentData.xid,
@@ -459,15 +456,15 @@ function getAgentMinimal(xid) {
 }
 
 function saveNft(xid, config = realConfig) {
-    const assetData = asset.getAsset(xid);
+    const assetData = asset.getAsset(xid, config);
     const tokenId = assetData.nft.token;
-    const tokenData = asset.getAsset(tokenId);
+    const tokenData = asset.getAsset(tokenId, config);
     const collectionId = tokenData.asset.collection;
-    const collectionData = asset.getAsset(collectionId);
+    const collectionData = asset.getAsset(collectionId, config);
     const adminData = admin.getAdmin();
 
-    assetData.owner = getAgentMinimal(assetData.asset.owner);
-    assetData.creator = getAgentMinimal(tokenData.asset.owner);
+    assetData.owner = getAgentMinimal(assetData.asset.owner, config);
+    assetData.creator = getAgentMinimal(tokenData.asset.owner, config);
     assetData.token = tokenData;
 
     assetData.collection = {
@@ -725,25 +722,14 @@ async function unmintToken(userId, xid) {
     };
 }
 
-function transferAsset(xid, nextOwnerId) {
-    const assetData = asset.getAsset(xid);
-
+function transferAsset(xid, nextOwnerId, config = realConfig) {
+    const assetData = asset.getAsset(xid, config);
     assert.ok(assetData.nft);
-
-    const prevOwnerId = assetData.asset.owner;
-
-    let assetsPrevOwner = agent.getAssets(prevOwnerId);
-    assetsPrevOwner.collected = assetsPrevOwner.collected.filter(item => item !== xid);
-    agent.saveAssets(assetsPrevOwner);
-
-    let assetsNextOwner = agent.getAssets(nextOwnerId);
-    assetsNextOwner.collected.push(xid);
-    agent.saveAssets(assetsNextOwner);
-
+    agent.removeAsset(assetData, config);
     assetData.asset.owner = nextOwnerId;
     assetData.nft.price = 0;
-    asset.saveAsset(assetData);
-    saveNft(xid);
+    agent.addAsset(assetData, config);
+    asset.saveAsset(assetData, config);
 }
 
 async function purchaseAsset(xid, buyerId, invoice) {
@@ -756,6 +742,7 @@ async function purchaseAsset(xid, buyerId, invoice) {
 
     if (payment?.paid) {
         transferAsset(xid, buyerId);
+        saveNft(xid);
         return { ok: true, message: 'asset transferred', payment: payment };
     }
     else {
