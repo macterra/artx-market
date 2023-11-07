@@ -2,7 +2,10 @@ const fs = require('fs');
 const path = require('path');
 const mockFs = require('mock-fs');
 const agent = require('./agent');
+const lnbits = require('./lnbits');
 const config = require('./test-config');
+
+jest.mock('./lnbits');
 
 describe('createAgent', () => {
     afterEach(() => {
@@ -453,7 +456,7 @@ describe('addCredits', () => {
             ...mockAgentData,
             credits: mockAgentData.credits + mockAmount,
             updated: expect.any(String),
-         };
+        };
 
         const expectedRecord = {
             type: 'add-credits',
@@ -476,11 +479,100 @@ describe('addCredits', () => {
 
         // Mock the file system
         mockFs({
-            [config.agents]: { }
+            [config.agents]: {}
         });
 
         // Act
         const agentData = agent.addCredits(mockUserId, mockAmount, config);
+
+        // Assert
+        expect(agentData).toBeUndefined();
+    });
+});
+
+describe('buyCredits', () => {
+
+    afterEach(() => {
+        mockFs.restore();
+    });
+
+    it('buys credits for an agent and saves an audit log', async () => {
+        // Arrange
+        const mockUserId = 'mockUserId';
+        const mockInvoice = { payment_hash: 'mockPaymentHash' };
+        const mockAgentData = { xid: 'mockXid', name: 'mockName', credits: 200 };
+        const mockPayment = { paid: true, details: { amount: 2000 } };
+
+        const expectedAgentData = {
+            ...mockAgentData,
+            credits: mockAgentData.credits + Math.round(mockPayment.details.amount / 1000),
+            updated: expect.any(String),
+        };
+
+        const expectedRecord = {
+            type: 'buy-credits',
+            agent: mockAgentData.xid,
+            agentName: mockAgentData.name,
+            amount: Math.round(mockPayment.details.amount / 1000),
+            invoice: { ...mockInvoice, payment: mockPayment },
+        };
+
+        // Mock the file system
+        mockFs({
+            [config.agents]: {
+                [mockUserId]: {
+                    'agent.json': JSON.stringify(mockAgentData)
+                },
+            }
+        });
+
+        lnbits.checkPayment.mockResolvedValue(mockPayment);
+
+        // Act
+        const agentData = await agent.buyCredits(mockUserId, mockInvoice, config);
+
+        // Assert
+        expect(agentData).toEqual(expectedAgentData);
+    });
+
+    it('does nothing when the agent does not exist or the invoice is invalid', async () => {
+        // Arrange
+        const mockUserId = 'nonexistentUserId';
+        const mockInvoice = {};
+
+        // Mock the file system
+        mockFs({
+            [config.agents]: {
+                [mockUserId]: {},
+            }
+        });
+
+        // Act
+        const agentData = await agent.buyCredits(mockUserId, mockInvoice, config);
+
+        // Assert
+        expect(agentData).toBeUndefined();
+    });
+
+    it('does nothing when the payment check fails', async () => {
+        // Arrange
+        const mockUserId = 'mockUserId';
+        const mockInvoice = { payment_hash: 'mockPaymentHash' };
+        const mockAgentData = { xid: 'mockXid', name: 'mockName', credits: 200 };
+
+        // Mock the file system
+        mockFs({
+            [config.agents]: {
+                [mockUserId]: {
+                    'agent.json': JSON.stringify(mockAgentData)
+                },
+            }
+        });
+
+        lnbits.checkPayment.mockResolvedValue(null);
+
+        // Act
+        const agentData = await agent.buyCredits(mockUserId, mockInvoice, config);
 
         // Assert
         expect(agentData).toBeUndefined();

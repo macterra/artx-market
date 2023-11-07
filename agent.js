@@ -182,8 +182,8 @@ function addCredits(userId, amount, config = realConfig) {
     }
 }
 
-async function buyCredits(userId, invoice) {
-    const agentData = agent.getAgent(userId);
+async function buyCredits(userId, invoice, config = realConfig) {
+    const agentData = getAgent(userId, config);
 
     if (agentData && invoice?.payment_hash) {
         console.log(`buyCredits: ${JSON.stringify(invoice, null, 4)}`);
@@ -203,8 +203,8 @@ async function buyCredits(userId, invoice) {
                 amount: amount,
                 invoice: invoice,
             };
-            admin.saveAuditLog(record);
-            saveAgent(agentData);
+            admin.saveAuditLog(record, config);
+            saveAgent(agentData, config);
             return agentData;
         }
         else {
