@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button, TextField, Grid, Select, MenuItem } from '@mui/material';
+import axios from 'axios';
 
 const CollectionEditor = ({ navigate }) => {
     const [collections, setCollections] = useState([]);
@@ -13,15 +14,15 @@ const CollectionEditor = ({ navigate }) => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                let response = await fetch(`/api/v1/profile`);
-                const profileData = await response.json();
+                const profileResponse = await axios.get('/api/v1/profile');
+                const profileData = profileResponse.data;
                 setCollections(profileData.collections);
                 setRemoveable(false);
                 setSelectedIndex(0);
                 setSelectedCollection(profileData.collections[0]);
 
-                response = await fetch('/api/v1/licenses');
-                const licenses = await response.json();
+                const licensesResponse = await axios.get('/api/v1/licenses');
+                const licenses = licensesResponse.data;
                 setLicenses(Object.keys(licenses));
             } catch (error) {
                 console.error('Error fetching profile data:', error);
@@ -32,22 +33,34 @@ const CollectionEditor = ({ navigate }) => {
     }, []);
 
     const handleSaveClick = async () => {
-        try {
-            const response = await fetch(`/api/v1/collections/${selectedCollection.xid}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json', },
-                body: JSON.stringify(selectedCollection),
-            });
 
-            if (response.ok) {
-                setSaved(true);
-            } else {
-                const data = await response.json();
-                console.error('Error updating collection:', data.message);
-                alert(data.message);
-            }
-        } catch (error) {
+        const title = selectedCollection.asset.title.trim();
+
+        if (!title) {
+            alert("Title can't be blank");
+            return;
+        }
+        else {
+            selectedCollection.asset.title = title;
+        }
+
+        const defaultTitle = selectedCollection.collection.default.title.trim();
+
+        if (!defaultTitle) {
+            alert("Default title can't be blank");
+            return;
+        }
+        else {
+            selectedCollection.collection.default.title = defaultTitle;
+        }
+
+        try {
+            await axios.patch(`/api/v1/collections/${selectedCollection.xid}`, selectedCollection);
+            setSaved(true);
+        }
+        catch (error) {
             console.error('Error updating profile:', error);
+            alert("Save failed");
         }
     };
 
@@ -59,31 +72,37 @@ const CollectionEditor = ({ navigate }) => {
     };
 
     const handleAddCollection = async () => {
-        const response = await fetch(`/api/v1/collections/`);
-        const data = await response.json();
-        const newCollections = [...collections, data];
-        const newIndex = newCollections.length - 1;
+        try {
+            const response = await axios.get(`/api/v1/collections/`);
+            const newCollections = [...collections, response.data];
+            const newIndex = newCollections.length - 1;
 
-        setCollections(newCollections);
-        setSelectedIndex(newIndex);
-        setSelectedCollection(newCollections[newIndex]);
-        setSaved(false);
-        setRemoveable(true);
+            setCollections(newCollections);
+            setSelectedIndex(newIndex);
+            setSelectedCollection(newCollections[newIndex]);
+            setSaved(false);
+            setRemoveable(true);
+        }
+        catch (error) {
+            console.error('Error adding collection:', error);
+            alert("Add failed");
+        }
     };
 
     const handleRemoveCollection = async () => {
-        const response = await fetch(`/api/v1/collections/${selectedCollection.xid}`, {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json', },
-        });
+        try {
+            await axios.delete(`/api/v1/collections/${selectedCollection.xid}`);
 
-        if (response.ok) {
             const newCollections = collections.filter((_, index) => index !== selectedIndex);
             setCollections(newCollections);
             setSelectedIndex(0);
             setSelectedCollection(newCollections[0]);
             setSaved(false);
             setRemoveable(false);
+        }
+        catch (error) {
+            console.error('Error adding collection:', error);
+            alert("Delete failed");
         }
     };
 
@@ -127,6 +146,10 @@ const CollectionEditor = ({ navigate }) => {
         setSaved(false);
     };
 
+    if (!selectedCollection) {
+        return;
+    }
+
     return (
         <Grid container direction="column" justifyContent="flex-start" alignItems="center" spacing={3} >
             <Grid item>
@@ -144,76 +167,72 @@ const CollectionEditor = ({ navigate }) => {
                 </Select>
             </Grid>
             <Grid item>
-                {selectedCollection !== null && (
-                    <span style={{ fontSize: '12px', display: 'block' }}>
-                        {selectedCollection.collection?.assets?.length} items
-                    </span>
-                )}
+                <span style={{ fontSize: '12px', display: 'block' }}>
+                    {selectedCollection.collection?.assets?.length} items
+                </span>
             </Grid>
             <Grid item>
-                {selectedCollection !== null && (
-                    <form style={{ width: '300px' }}>
-                        <TextField
-                            label="Collection Name"
-                            value={selectedCollection.asset.title}
-                            onChange={(e) =>
-                                handleNameChange(e.target.value)
-                            }
-                            fullWidth
-                            margin="normal"
-                            inputProps={{ maxLength: 40 }}
-                        />
-                        <TextField
-                            label="Default Title"
-                            value={selectedCollection.collection.default.title}
-                            onChange={(e) =>
-                                handleDefaultTitleChange(e.target.value)
-                            }
-                            fullWidth
-                            margin="normal"
-                            inputProps={{ maxLength: 40 }}
-                        />
-                        <Select
-                            label="Default License"
-                            value={selectedCollection.collection.default.license}
-                            onChange={(e) => handleDefaultLicenseChange(e.target.value)}
-                            fullWidth
-                            margin="normal"
-                        >
-                            {licenses.map((licenseName, index) => (
-                                <MenuItem key={index} value={licenseName}>
-                                    {licenseName}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                        <TextField
-                            label="Default Royalty (0-25%)"
-                            type="number"
-                            value={selectedCollection.collection.default.royalty || 0}
-                            onChange={(e) =>
-                                handleDefaultRoyaltyChange(e.target.value)
-                            }
-                            fullWidth
-                            margin="normal"
-                            inputProps={{
-                                min: 0,
-                                max: 25,
-                            }}
-                        />
-                        <TextField
-                            label="Default Editions (1-100)"
-                            type="number"
-                            value={selectedCollection.collection.default.editions || 1}
-                            onChange={(e) => handleDefaultEditionsChange(e.target.value)}
-                            fullWidth
-                            margin="normal"
-                            inputProps={{
-                                min: 1,
-                                max: 100,
-                            }}
-                        />
-                    </form>
-                )}
+                <form style={{ width: '300px' }}>
+                    <TextField
+                        label="Collection Name"
+                        value={selectedCollection.asset.title}
+                        onChange={(e) =>
+                            handleNameChange(e.target.value)
+                        }
+                        fullWidth
+                        margin="normal"
+                        inputProps={{ maxLength: 40 }}
+                    />
+                    <TextField
+                        label="Default Title"
+                        value={selectedCollection.collection.default.title}
+                        onChange={(e) =>
+                            handleDefaultTitleChange(e.target.value)
+                        }
+                        fullWidth
+                        margin="normal"
+                        inputProps={{ maxLength: 40 }}
+                    />
+                    <Select
+                        label="Default License"
+                        value={selectedCollection.collection.default.license}
+                        onChange={(e) => handleDefaultLicenseChange(e.target.value)}
+                        fullWidth
+                        margin="normal"
+                    >
+                        {licenses.map((licenseName, index) => (
+                            <MenuItem key={index} value={licenseName}>
+                                {licenseName}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                    <TextField
+                        label="Default Royalty (0-25%)"
+                        type="number"
+                        value={selectedCollection.collection.default.royalty || 0}
+                        onChange={(e) =>
+                            handleDefaultRoyaltyChange(e.target.value)
+                        }
+                        fullWidth
+                        margin="normal"
+                        inputProps={{
+                            min: 0,
+                            max: 25,
+                        }}
+                    />
+                    <TextField
+                        label="Default Editions (1-100)"
+                        type="number"
+                        value={selectedCollection.collection.default.editions || 1}
+                        onChange={(e) => handleDefaultEditionsChange(e.target.value)}
+                        fullWidth
+                        margin="normal"
+                        inputProps={{
+                            min: 1,
+                            max: 100,
+                        }}
+                    />
+                </form>
             </Grid>
             <Grid container direction="row" justifyContent="center" alignItems="center" spacing={3}>
                 <Grid item>

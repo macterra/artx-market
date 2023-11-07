@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Grid, Button, TextField } from '@mui/material';
+import axios from 'axios';
 
 const NameEditor = ({ profile, setRefreshProfile }) => {
     const [name, setName] = useState(null);
@@ -17,25 +18,30 @@ const NameEditor = ({ profile, setRefreshProfile }) => {
     }, [profile]);
 
     const handleSaveClick = async () => {
-        try {
-            const response = await fetch('/api/v1/profile', {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json', },
-                body: JSON.stringify({ name: name, tagline: tagline }),
-            });
 
-            if (response.ok) {
-                profile.name = name;
-                profile.tagline = tagline;
-                setSaved(true);
-                setRefreshProfile((prevKey) => prevKey + 1);
-            } else {
-                const data = await response.json();
-                console.error('Error updating profile:', data.message);
-                alert(data.message);
-            }
-        } catch (error) {
+        const newName = name.trim();
+
+        if (!newName) {
+            alert("Name can't be blank");
+            return;
+        }
+
+        let newTagline = tagline.trim();
+
+        if (!newTagline) {
+            newTagline = " ";
+        }
+
+        try {
+            await axios.patch('/api/v1/profile', { name: newName, tagline: newTagline });
+            profile.name = newName;
+            profile.tagline = newTagline;
+            setSaved(true);
+            setRefreshProfile((prevKey) => prevKey + 1);
+        }
+        catch (error) {
             console.error('Error updating profile:', error);
+            alert("Could not save");
         }
     };
 
