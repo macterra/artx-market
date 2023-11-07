@@ -113,7 +113,7 @@ app.get('/login',
   },
   new LnurlAuth.Middleware({
     title: 'Login with ⚡Lightning⚡',
-    instruction: 'Click or scan the QR code to login',
+    instruction: 'Click or scan the QR code with wallet to login',
     loginTemplateFilePath: path.join(config.data, 'login.html'),
     callbackUrl: config.url + '/login',
     cancelUrl: config.url
