@@ -17,6 +17,7 @@ const config = {
     storageRate: process.env.STORAGE_RATE || 0.001,
     editionRate: process.env.EDITION_RATE || 100,
     uploadRate: process.env.STORAGE_RATE || 0.0001,
+    promoteFee: process.env.PROMOTE_FEE || 100,
     ln_host: process.env.LN_HOST,
     ln_wallet: process.env.LN_WALLET,
     ln_api_key: process.env.LN_API_KEY,

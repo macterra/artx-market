@@ -1070,8 +1070,7 @@ app.post('/api/v1/promote', ensureAuthenticated, async (req, res) => {
         const { message, xid } = req.body;
         const userId = req.user.xid;
         const agentData = agent.getAgent(userId);
-
-        const promoteFee = 100; // !!! get from config
+        const promoteFee = config.promoteFee;
 
         if (agentData.credits < promoteFee) {
             return res.status(400).json({ message: 'Insufficient credits' });
@@ -1113,7 +1112,8 @@ app.post('/api/v1/promote', ensureAuthenticated, async (req, res) => {
         tokenData.token.promoted = new Date().toISOString();
         asset.saveAsset(tokenData);
 
-        await archiver.commitChanges({ type: 'promote', agent: userId, asset: xid });
+        // No need to wait for commit since we prevent repeats
+        archiver.commitChanges({ type: 'promote', agent: userId, asset: xid });
 
         res.status(200).json({ message: `Promotion sent and ${promoteFee} credits charged` });
     } catch (error) {
