@@ -1,17 +1,16 @@
 digraph G {
   node [shape=box];
-  xidb -> config;
   xidb -> agent;
   xidb -> asset;
   xidb -> admin;
   xidb -> utils;
   xidb -> archiver;
   xidb -> lnbits;
-  agent -> config;
-  admin -> config;
+  agent -> admin;
+  agent -> lnbits;
+  agent -> utils;
   admin -> utils;
   admin -> archiver;
-  server -> config;
   server -> lnbits;
   server -> agent;
   server -> asset;
@@ -20,7 +19,6 @@ digraph G {
   server -> archiver;
   server -> nostr;
   nostr -> xidb;
-  asset -> config;
   asset -> admin;
 }
 
