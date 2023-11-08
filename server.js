@@ -1086,7 +1086,8 @@ app.post('/api/v1/promote', ensureAuthenticated, async (req, res) => {
             oneDayAgo.setHours(oneDayAgo.getHours() - 24);
 
             if (promotedDate > oneDayAgo) {
-                return res.status(400).json({ message: 'Token was already promoted in the last 24 hours' });
+                const timeRemaining = Math.ceil((promotedDate.getTime() - oneDayAgo.getTime()) / (1000 * 60 * 60));
+                return res.status(400).json({ message: `Token was already promoted recently.\nPlease wait ${timeRemaining} hour(s) before trying again.` });
             }
         }
 

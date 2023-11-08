@@ -103,6 +103,19 @@ const TxnLog = ({ profile, refreshProfile }) => {
                     setCredits(record.credits);
                 }
 
+                if (record.type === 'promote') {
+                    const metadata = await getAsset(record.xid);
+
+                    if (metadata.nft) {
+                        setMessage(<div>Promoted {nftLink(metadata)}.</div>);
+                    }
+                    else {
+                        setMessage(<div>Promoted {assetLink(metadata)}.</div>);
+                    }
+
+                    setCredits(-record.credits);
+                }
+
                 if (record.type === 'upload') {
                     const metadata = await getAsset(record.xid);
                     const mb = (record.bytes / 1000000).toFixed(2);
