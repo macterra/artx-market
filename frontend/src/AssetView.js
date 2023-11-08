@@ -9,6 +9,7 @@ import PfpEditor from './PfpEditor';
 import TokenView from './TokenView';
 import TokenTrader from './TokenTrader';
 import TokenHistory from './TokenHistory';
+import PromotionEditor from './PromotionEditor';
 
 const AssetView = ({ navigate }) => {
     const { xid } = useParams();
@@ -61,7 +62,8 @@ const AssetView = ({ navigate }) => {
                 >
                     <Tab key="meta" value="meta" label={'Metadata'} />
                     {isToken && <Tab key="token" value="token" label={'Token'} />}
-                    {isToken && !isDeleted && <Tab key="trade" value="trade" label={'Buy/Sell'} />}
+                    {isToken && <Tab key="trade" value="trade" label={'Buy/Sell'} />}
+                    {isOwner && isToken && <Tab key="promote" value="promote" label={'Promote'} />}
                     {isOwner && !isToken && <Tab key="edit" value="edit" label={'Edit'} />}
                     {isOwner && !isToken && !isDeleted && <Tab key="mint" value="mint" label={'Mint'} />}
                     {isOwner && !isDeleted && <Tab key="pfp" value="pfp" label={'Pfp'} />}
@@ -70,6 +72,7 @@ const AssetView = ({ navigate }) => {
                 {tab === 'meta' && <MetadataView navigate={navigate} metadata={metadata} />}
                 {tab === 'token' && <TokenView metadata={metadata} setTab={setTab} setRefreshKey={setRefreshKey} />}
                 {tab === 'trade' && <TokenTrader metadata={metadata} setRefreshKey={setRefreshKey} />}
+                {tab === 'promote' && <PromotionEditor metadata={metadata} />}
                 {tab === 'edit' && <AssetEditor metadata={metadata} setTab={setTab} setRefreshKey={setRefreshKey} />}
                 {tab === 'mint' && <TokenMinter navigate={navigate} metadata={metadata} setTab={setTab} setRefreshKey={setRefreshKey} />}
                 {tab === 'pfp' && <PfpEditor metadata={metadata} setTab={setTab} />}
