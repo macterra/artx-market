@@ -4,6 +4,7 @@ const config = {
     name: 'testName',
     host: 'testHost',
     data: 'testData',
+    link: 'http://testLink',
     assets: 'testData/assets',
     agents: 'testData/agents',
     certs: 'testData/certs',
