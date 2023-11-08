@@ -1074,18 +1074,29 @@ app.post('/api/v1/promote', ensureAuthenticated, async (req, res) => {
         const promoteFee = 100; // !!! get from config
 
         if (agentData.credits < promoteFee) {
-            return res.status(500).json({ message: 'Insufficient credits' });
+            return res.status(400).json({ message: 'Insufficient credits' });
         }
 
         const assetData = asset.getAsset(xid);
         const tokenData = assetData.token ? assetData : asset.getAsset(assetData.nft.token);
+
+        if (tokenData.token.promoted) {
+            const promotedDate = new Date(tokenData.token.promoted);
+            const oneDayAgo = new Date();
+            oneDayAgo.setHours(oneDayAgo.getHours() - 24);
+
+            if (promotedDate > oneDayAgo) {
+                return res.status(400).json({ message: 'Token was already promoted in the last 24 hours' });
+            }
+        }
+
         const imageLink = `${config.link}${tokenData.file.path}`;
         const assetKind = assetData.nft ? 'nft' : 'asset';
         const assetLink = `${config.link}/${assetKind}/${assetData.xid}`;
         const announcement = `${message}\n\n${assetLink}\n\n${imageLink}`;
         const nostrMessage = nostr.createMessage(announcement);
 
-        await nostr.announceMessage(nostrMessage);
+        nostr.announceMessage(nostrMessage);
 
         agentData.credits -= promoteFee;
         agent.saveAgent(agentData);
@@ -1098,7 +1109,12 @@ app.post('/api/v1/promote', ensureAuthenticated, async (req, res) => {
 
         agent.saveTxnLog(userId, txn);
 
-        res.status(200).json({ message: 'Promotion sent' });
+        tokenData.token.promoted = new Date().toISOString();
+        asset.saveAsset(tokenData);
+
+        await archiver.commitChanges({ type: 'promote', agent: userId, asset: xid });
+
+        res.status(200).json({ message: `Promotion sent and ${promoteFee} credits charged` });
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({ message: 'Error' });

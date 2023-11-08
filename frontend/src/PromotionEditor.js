@@ -52,11 +52,15 @@ const PromotionEditor = ({ metadata }) => {
         }
 
         try {
-            await axios.post('/api/v1/promote', { message: theMessage, xid: metadata.xid });
+            const response = await axios.post('/api/v1/promote', { message: theMessage, xid: metadata.xid });
+            alert(response.data.message || "Announcement sent!");
         }
         catch (error) {
             console.error('Error:', error);
-            alert("Could not send");
+
+            if (error.response) {
+                alert(error.response.data?.message || 'Could not send');
+            }
         }
     };
 
