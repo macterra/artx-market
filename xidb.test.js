@@ -151,7 +151,7 @@ describe('saveNft', () => {
         const mockNftData = {
             xid: mockNftXid,
             asset: { owner: mockOwnerXid },
-            nft: { token: mockTokenXid }
+            nft: { token: mockTokenXid, title: 'mockNftTitle' }
         };
 
         const prefix = `/${config.assets}`;
@@ -189,7 +189,31 @@ describe('saveNft', () => {
             default_thumbnail: 'mockDefaultThumbnail',
         };
 
-        const mockTemplate = 'mockTemplate';
+        const mockTemplate = `
+        <!DOCTYPE html>
+        <html>
+            <head>
+                <title><%= nft.title %></title>
+            </head>
+            <body>
+                <h1><%= nft.title %></h1>
+                <p>Owner: <%= owner.name %></p>
+                <p>Creator: <%= creator.name %></p>
+            </body>
+        </html>`;
+
+        const expectedHtml = `
+        <!DOCTYPE html>
+        <html>
+            <head>
+                <title>${mockNftData.nft.title}</title>
+            </head>
+            <body>
+                <h1>${mockNftData.nft.title}</h1>
+                <p>Owner: ${mockOwnerData.name}</p>
+                <p>Creator: ${mockCreatorData.name}</p>
+            </body>
+        </html>`;
 
         const expectedNftData = {
             xid: mockNftXid,
@@ -199,6 +223,7 @@ describe('saveNft', () => {
             },
             nft: {
                 token: mockTokenData.xid,
+                title: mockNftData.nft.title,
                 preview: `${config.link}${mockTokenData.file.path}`,
                 image: '../mockPreviewImage',
                 link: `${config.link}/nft/${mockNftXid}`,
@@ -255,6 +280,6 @@ describe('saveNft', () => {
 
         const nftHtmlPath = path.join(config.assets, mockNftData.xid, 'index.html');
         const nftHtmlData = fs.readFileSync(nftHtmlPath, 'utf-8');
-        expect(nftHtmlData).toEqual(mockTemplate);
+        expect(nftHtmlData).toEqual(expectedHtml);
     });
 });
