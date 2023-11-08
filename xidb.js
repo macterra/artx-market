@@ -474,24 +474,27 @@ function saveNft(xid, config = realConfig) {
     };
 
     assetData.nft.preview = `${config.link}${assetData.token.file.path}`;
-    assetData.nft.image = assetData.token.file.path.replace(config.assets, "..");
+
+    const prefix = `/${config.assets}`;
+
+    assetData.nft.image = assetData.token.file.path.replace(prefix, "..");
 
     if (assetData.owner.pfp) {
-        assetData.owner.image = assetData.owner.pfp.replace(config.assets, "..");
+        assetData.owner.image = assetData.owner.pfp.replace(prefix, "..");
     }
     else {
-        assetData.owner.image = adminData.default_pfp.replace(config.assets, "..");
+        assetData.owner.image = adminData.default_pfp.replace(prefix, "..");
     }
 
     if (assetData.creator.pfp) {
-        assetData.creator.image = assetData.creator.pfp.replace(config.assets, "..");
+        assetData.creator.image = assetData.creator.pfp.replace(prefix, "..");
     }
     else {
-        assetData.creator.image = adminData.default_pfp.replace(config.assets, "..");
+        assetData.creator.image = adminData.default_pfp.replace(prefix, "..");
     }
 
     if (assetData.collection.thumbnail) {
-        assetData.collection.image = assetData.collection.thumbnail.replace(config.assets, "..");
+        assetData.collection.image = assetData.collection.thumbnail.replace(prefix, "..");
     }
     else {
         assetData.collection.image = assetData.nft.image;

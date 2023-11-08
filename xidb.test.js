@@ -154,10 +154,12 @@ describe('saveNft', () => {
             nft: { token: mockTokenXid }
         };
 
+        const prefix = `/${config.assets}`;
+
         const mockTokenData = {
             xid: mockTokenXid,
             asset: { owner: mockCreatorXid, collection: mockCollectionXid },
-            file: { path: path.join(config.assets, 'mockPreviewImage') }
+            file: { path: path.join(prefix, 'mockPreviewImage') }
         };
 
         const mockCollectionData = {
@@ -166,20 +168,20 @@ describe('saveNft', () => {
                 title: 'mockCollection'
             },
             collection: {
-                thumbnail: path.join(config.assets, 'mockCollectionThumbnail')
+                thumbnail: path.join(prefix, 'mockCollectionThumbnail')
             }
         };
 
         const mockOwnerData = {
             xid: mockOwnerXid,
             name: 'mockOwner',
-            pfp: path.join(config.assets, 'mockOwnerPfp'),
+            pfp: path.join(prefix, 'mockOwnerPfp'),
         };
 
         const mockCreatorData = {
             xid: mockCreatorXid,
             name: 'mockCreator',
-            pfp: path.join(config.assets, 'mockCreatorPfp'),
+            pfp: path.join(prefix, 'mockCreatorPfp'),
         };
 
         const mockAdminData = {
