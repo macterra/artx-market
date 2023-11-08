@@ -155,18 +155,8 @@ function createAnnouncement(event) {
     }
 };
 
-async function announce(event) {
+async function announceMessage(message) {
     try {
-        console.log(`nostr: announce types ${config.nostr_announce} to relays ${config.nostr_relays}`);
-
-        const types = config.nostr_announce.split(',');
-
-        if (!types.includes(event.type)) {
-            console.log(`nostr: ${event.type} not in ${config.nostr_announce} so no announcement`);
-            return;
-        }
-
-        const message = createAnnouncement(event);
         const relays = config.nostr_relays.split(',');
 
         for (let relay of relays) {
@@ -182,8 +172,28 @@ async function announce(event) {
         sendEvent(message);
 
         await new Promise(resolve => setTimeout(resolve, 3000));
-
+    }
+    catch (error) {
+        console.log(`nostr: announceMessage error: ${error}`);
+    }
+    finally {
         closeRelays();
+    }
+}
+
+async function announceEvent(event) {
+    try {
+        console.log(`nostr: announce types ${config.nostr_announce} to relays ${config.nostr_relays}`);
+
+        const types = config.nostr_announce.split(',');
+
+        if (!types.includes(event.type)) {
+            console.log(`nostr: ${event.type} not in ${config.nostr_announce} so no announcement`);
+            return;
+        }
+
+        const message = createAnnouncement(event);
+        await announceMessage(message);
     }
     catch (error) {
         console.log(`nostr announce error: ${error}`);
@@ -191,7 +201,8 @@ async function announce(event) {
 }
 
 module.exports = {
-    announce,
+    announceEvent,
+    announceMessage,
     closeRelays,
     countOpenRelays,
     createMessage,

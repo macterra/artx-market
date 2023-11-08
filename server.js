@@ -751,7 +751,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
             await xidb.payoutSale(xid, buyerId, sellerId, invoice);
             const event = { type: 'sale', agent: buyerId, asset: xid, price: assetData.nft.price };
             await archiver.commitChanges(event);
-            nostr.announce(event);
+            nostr.announceEvent(event);
         };
 
         completeSale();
@@ -1059,6 +1059,46 @@ app.post('/api/v1/invoice', ensureAuthenticated, async (req, res) => {
         const expiry = 120; // get from config
         const invoice = await lnbits.createInvoice(amount, description, expiry);
         res.status(200).json(invoice);
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ message: 'Error' });
+    }
+});
+
+app.post('/api/v1/promote', ensureAuthenticated, async (req, res) => {
+    try {
+        const { message, xid } = req.body;
+        const userId = req.user.xid;
+        const agentData = agent.getAgent(userId);
+
+        const promoteFee = 100; // !!! get from config
+
+        if (agentData.credits < promoteFee) {
+            return res.status(500).json({ message: 'Insufficient credits' });
+        }
+
+        const assetData = asset.getAsset(xid);
+        const tokenData = assetData.token ? assetData : asset.getAsset(assetData.nft.token);
+        const imageLink = `${config.link}${tokenData.file.path}`;
+        const assetKind = assetData.nft ? 'nft' : 'asset';
+        const assetLink = `${config.link}/${assetKind}/${assetData.xid}`;
+        const announcement = `${message}\n\n${assetLink}\n\n${imageLink}`;
+        const nostrMessage = nostr.createMessage(announcement);
+
+        await nostr.announceMessage(nostrMessage);
+
+        agentData.credits -= promoteFee;
+        agent.saveAgent(agentData);
+
+        const txn = {
+            type: 'promote',
+            xid: xid,
+            credits: promoteFee,
+        };
+
+        agent.saveTxnLog(userId, txn);
+
+        res.status(200).json({ message: 'Promotion sent' });
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({ message: 'Error' });

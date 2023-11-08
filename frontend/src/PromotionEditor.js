@@ -52,7 +52,7 @@ const PromotionEditor = ({ metadata }) => {
         }
 
         try {
-            await axios.patch('/api/v1/announce', { message: theMessage });
+            await axios.post('/api/v1/promote', { message: theMessage, xid: metadata.xid });
         }
         catch (error) {
             console.error('Error:', error);
