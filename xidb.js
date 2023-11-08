@@ -461,7 +461,7 @@ function saveNft(xid, config = realConfig) {
     const tokenData = asset.getAsset(tokenId, config);
     const collectionId = tokenData.asset.collection;
     const collectionData = asset.getAsset(collectionId, config);
-    const adminData = admin.getAdmin();
+    const adminData = admin.getAdmin(config);
 
     assetData.owner = getAgentMinimal(assetData.asset.owner, config);
     assetData.creator = getAgentMinimal(tokenData.asset.owner, config);
@@ -474,24 +474,24 @@ function saveNft(xid, config = realConfig) {
     };
 
     assetData.nft.preview = `${config.link}${assetData.token.file.path}`;
-    assetData.nft.image = assetData.token.file.path.replace("/data/assets", "..");
+    assetData.nft.image = assetData.token.file.path.replace(config.assets, "..");
 
     if (assetData.owner.pfp) {
-        assetData.owner.image = assetData.owner.pfp.replace("/data/assets", "..");
+        assetData.owner.image = assetData.owner.pfp.replace(config.assets, "..");
     }
     else {
-        assetData.owner.image = adminData.default_pfp.replace("/data/assets", "..");
+        assetData.owner.image = adminData.default_pfp.replace(config.assets, "..");
     }
 
     if (assetData.creator.pfp) {
-        assetData.creator.image = assetData.creator.pfp.replace("/data/assets", "..");
+        assetData.creator.image = assetData.creator.pfp.replace(config.assets, "..");
     }
     else {
-        assetData.creator.image = adminData.default_pfp.replace("/data/assets", "..");
+        assetData.creator.image = adminData.default_pfp.replace(config.assets, "..");
     }
 
     if (assetData.collection.thumbnail) {
-        assetData.collection.image = assetData.collection.thumbnail.replace("/data/assets", "..");
+        assetData.collection.image = assetData.collection.thumbnail.replace(config.assets, "..");
     }
     else {
         assetData.collection.image = assetData.nft.image;
