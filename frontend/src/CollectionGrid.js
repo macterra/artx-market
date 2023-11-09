@@ -1,34 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import CollectionCard from './CollectionCard';
 
-const CollectionGrid = ({ userId, list }) => {
-    const [collections, setCollections] = useState([]);
+const CollectionGrid = ({ collections }) => {
 
-    useEffect(() => {
-        const fetchAssets = async () => {
-            try {
-                setCollections(list);
-            } catch (error) {
-                console.error('Error fetching image metadata:', error);
-            }
-        };
-        fetchAssets();
-    }, [list]);
-
-    if (!collections) {
-        return <p></p>;
+    if (collections.length === 0) {
+        return <p style={{ textAlign: 'center' }}>0 items</p>;
     }
-
-    const imageCardStyle = {
-        margin: '8px', // Add a margin around the ImageCard components
-        textDecoration: 'none', // Remove the text decoration from the Link component
-    };
 
     return (
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
             {collections.map((collection, index) => (
-                <Link key={index} to={`/collection/${collection.xid}`} style={imageCardStyle}>
+                <Link key={index} to={`/collection/${collection.xid}`} style={{ margin: '8px', textDecoration: 'none' }}>
                     <CollectionCard key={index} collection={collection} />
                 </Link>
             ))}

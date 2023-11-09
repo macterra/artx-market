@@ -174,7 +174,7 @@ const CollectionView = ({ navigate }) => {
                     </Grid>
                 </Box>
             }
-            <ImageGrid collection={images} />
+            <ImageGrid images={images} />
         </Box>
     );
 };
