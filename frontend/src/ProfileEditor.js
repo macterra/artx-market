@@ -67,7 +67,7 @@ const ProfileEditor = ({ navigate, refreshProfile, setRefreshProfile }) => {
                 <Tab key="log" value="log" label={'Log'} />
             </Tabs>
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                <Box style={{ width: '50vw' }}>
+                <Box style={{ width: '90vw' }}>
                     {tab === 'name' &&
                         <NameEditor profile={profile} setRefreshProfile={setRefreshProfile} />
                     }
