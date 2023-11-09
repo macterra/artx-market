@@ -9,7 +9,10 @@ import {
     TableHead,
     Paper,
     Button,
+    alertTitleClasses,
 } from '@mui/material';
+import axios from 'axios';
+
 import AgentBadge from './AgentBadge';
 
 function convertToRanges(arr) {
@@ -39,19 +42,20 @@ const TokenView = ({ metadata, setTab, setRefreshKey }) => {
     const [ownAll, setOwnAll] = useState(0);
     const [ranges, setRanges] = useState(null);
     const [licenseUrl, setLicenseUrl] = useState(null);
+    const [disableUnmint, setDisableUnmint] = useState(false);
 
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                let response = await fetch(`/api/v1/profile/`);
-                const myProfile = await response.json();
+                const getProfile = await axios.get(`/api/v1/profile/`);
+                const profile = getProfile.data;
 
-                response = await fetch(`/api/v1/collections/${metadata.asset.collection}`);
-                const collectionData = await response.json();
-                setCollection(collectionData.asset.title);
+                const getCollection = await axios.get(`/api/v1/collections/${metadata.asset.collection}`);
+                const collection = getCollection.data;
+                setCollection(collection.asset.title);
 
-                response = await fetch('/api/v1/licenses');
-                const licenses = await response.json();
+                const getLicenses = await axios.get('/api/v1/licenses');
+                const licenses = getLicenses.data;
                 setLicenseUrl(licenses[metadata.token.license]);
 
                 const nfts = [];
@@ -59,11 +63,12 @@ const TokenView = ({ metadata, setTab, setRefreshKey }) => {
                 const ownedEditions = [];
 
                 for (const xid of metadata.token.nfts) {
-                    response = await fetch(`/api/v1/asset/${xid}`);
-                    const nft = await response.json();
+                    const getNft = await axios.get(`/api/v1/asset/${xid}`);
+                    const nft = getNft.data;
+
                     nfts.push(nft);
 
-                    if (nft.asset.owner === myProfile.xid) {
+                    if (nft.asset.owner === profile.xid) {
                         owned += 1;
                         ownedEditions.push(nft.nft.edition);
                     }
@@ -71,9 +76,8 @@ const TokenView = ({ metadata, setTab, setRefreshKey }) => {
 
                 setNfts(nfts);
                 setOwned(owned);
-                setOwnAll(metadata.asset.owner === myProfile.xid && owned === metadata.token.editions);
+                setOwnAll(metadata.asset.owner === profile.xid && owned === metadata.token.editions);
                 setRanges(convertToRanges(ownedEditions));
-
             } catch (error) {
                 console.error('Error:', error);
             }
@@ -87,18 +91,19 @@ const TokenView = ({ metadata, setTab, setRefreshKey }) => {
     }
 
     const handleUnmint = async (event) => {
+        setDisableUnmint(true);
         try {
-            let response = await fetch(`/api/v1/asset/${metadata.xid}/unmint`);
+            const getUnmint = await axios.get(`/api/v1/asset/${metadata.xid}/unmint`);
+            const unmint = getUnmint.data;
 
-            if (response.ok) {
-                const unmint = await response.json();
-                alert(`${unmint.refund} credits refunded`);
-                setTab("meta");
-                setRefreshKey((prevKey) => prevKey + 1);
-            }
+            alert(`${unmint.refund} credits refunded`);
+            setTab("meta");
+            setRefreshKey((prevKey) => prevKey + 1);
         }
         catch (error) {
             console.error('Error:', error);
+            alert('Unmint failed');
+            setDisableUnmint(false);
         }
     };
 
@@ -152,7 +157,7 @@ const TokenView = ({ metadata, setTab, setRefreshKey }) => {
                             <TableCell>
                                 <a href={`/nft/${nfts[0].xid}`}>1 of 1</a>
                                 {ownAll &&
-                                    <Button variant="contained" color="primary" onClick={handleUnmint} style={{ marginLeft: '10px' }}>
+                                    <Button variant="contained" color="primary" onClick={handleUnmint} style={{ marginLeft: '10px' }} disabled={disableUnmint}>
                                         Unmint
                                     </Button>
                                 }
@@ -168,7 +173,7 @@ const TokenView = ({ metadata, setTab, setRefreshKey }) => {
                                 {ownAll ?
                                     <React.Fragment>
                                         all
-                                        <Button variant="contained" color="primary" onClick={handleUnmint} style={{ marginLeft: '10px' }}>
+                                        <Button variant="contained" color="primary" onClick={handleUnmint} style={{ marginLeft: '10px' }} disabled={disableUnmint}>
                                             Unmint
                                         </Button>
                                     </React.Fragment>

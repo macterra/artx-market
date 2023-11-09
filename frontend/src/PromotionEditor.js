@@ -28,7 +28,7 @@ const PromotionEditor = ({ metadata, xid }) => {
                         message = `New listing! "${nft.nft.title}" by ${creator.name} for ${nft.nft.price} sats`;
                     }
                     else {
-                        message = `Check out ${nft.nft.title} by ${creator.name}`;
+                        message = `Check out "${nft.nft.title}" by ${creator.name}`;
                     }
                 }
                 else {

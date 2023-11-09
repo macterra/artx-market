@@ -27,22 +27,25 @@ const TokenMinter = ({ navigate, metadata, setTab, setRefreshKey }) => {
     const [license, setLicense] = useState(null);
     const [licenses, setLicenses] = useState([]);
     const [disableMint, setDisableMint] = useState(false);
+    const [showAddCredits, setShowAddCredits] = useState(false);
     const [credits, setCredits] = useState(0);
 
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const profile = await axios.get(`/api/v1/profile/${metadata.asset.owner}`);
+                const getProfile = await axios.get(`/api/v1/profile/${metadata.asset.owner}`);
+                const profile = getProfile.data;
                 const fileSize = metadata.file.size;
                 const collectionId = metadata.asset.collection;
-                const collection = await axios.get(`/api/v1/collections/${collectionId}`);
-                const collectionName = collection.data.asset.title;
-                const defaultRoyalty = collection.data.collection.default.royalty;
-                const defaultEditions = collection.data.collection.default.editions;
-                const defaultLicense = collection.data.collection.default.license;
+                const getCollection = await axios.get(`/api/v1/collections/${collectionId}`);
+                const collection = getCollection.data;
+                const collectionName = collection.asset.title;
+                const defaultRoyalty = collection.collection.default.royalty;
+                const defaultEditions = collection.collection.default.editions;
+                const defaultLicense = collection.collection.default.license;
 
-                setOwner(profile.data.name);
-                setCredits(profile.data.credits);
+                setOwner(profile.name);
+                setCredits(profile.credits);
                 setCollection(collectionName);
                 setRoyalty(defaultRoyalty);
                 setLicense(defaultLicense);
@@ -64,7 +67,8 @@ const TokenMinter = ({ navigate, metadata, setTab, setRefreshKey }) => {
                 const totalFee = storageFee + editionFee;
                 setTotalFee(totalFee);
 
-                setDisableMint(totalFee > profile.data.credits);
+                setDisableMint(totalFee > profile.credits);
+                setShowAddCredits(totalFee > profile.credits)
             } catch (error) {
                 console.error('Error fetching image metadata:', error);
             }
@@ -109,6 +113,8 @@ const TokenMinter = ({ navigate, metadata, setTab, setRefreshKey }) => {
     };
 
     const handleMintClick = async () => {
+        setDisableMint(true);
+
         try {
             await axios.post(`/api/v1/asset/${metadata.xid}/mint`, {
                 license: license,
@@ -121,6 +127,7 @@ const TokenMinter = ({ navigate, metadata, setTab, setRefreshKey }) => {
         } catch (error) {
             console.error('Error minting:', error);
             alert("Error minting, try again later.");
+            setDisableMint(false);
         }
     };
 
@@ -225,7 +232,7 @@ const TokenMinter = ({ navigate, metadata, setTab, setRefreshKey }) => {
                                     style={{ marginRight: '10px' }} >
                                     Mint
                                 </Button>
-                                {disableMint &&
+                                {showAddCredits &&
                                     <Button variant="contained" color="primary" onClick={handleAddCredits}>
                                         Add Credits
                                     </Button>
