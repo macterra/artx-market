@@ -426,14 +426,14 @@ function getNft(xid, config = realConfig) {
     const metadataContent = fs.readFileSync(jsonPath, 'utf-8');
     const metadata = JSON.parse(metadataContent);
 
-    metadata.token = asset.getAsset(metadata.token.xid);
-    asset.enrichAsset(metadata.token); // Retrieve latest history
+    metadata.token = asset.getAsset(metadata.token.xid, config);
+    asset.enrichAsset(metadata.token, config); // Retrieve latest history
 
-    const adminData = admin.getAdmin();
+    const adminData = admin.getAdmin(config);
     const certId = adminData.latest;
 
     if (certId) {
-        const cert = admin.getCert(certId);
+        const cert = admin.getCert(certId, config);
         const authTime = new Date(cert.auth.time);
         const updated = new Date(metadata.asset.updated);
 

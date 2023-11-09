@@ -283,3 +283,87 @@ describe('saveNft', () => {
         expect(nftHtmlData).toEqual(expectedHtml);
     });
 });
+
+describe('getNft', () => {
+    const mockNftXid = 'mockNftXid';
+    const mockTokenXid = 'mockTokenXid';
+    const mockCertXid = 'mockCertXid';
+    const mockNftData = { token: { xid: mockTokenXid }, asset: { updated: '2023-05-01T00:00:00Z' } };
+    const mockTokenData = { xid: mockTokenXid };
+    const mockAdminData = { latest: mockCertXid };
+    const mockCertData1 = { auth: { time: '2023-06-02T00:00:00Z', blockhash: 'mockBlockhash', tx: { txid: 'mockTxid' }, cid: 'mockCid' } };
+    const mockCertData2 = { auth: { time: '2023-04-02T00:00:00Z', blockhash: 'mockBlockhash', tx: { txid: 'mockTxid' }, cid: 'mockCid' } };
+
+    afterEach(() => {
+        // Restore the real file system after each test
+        mockFs.restore();
+    });
+
+    it('returns the metadata with the cert if the cert auth time is later than the asset updated time', () => {
+
+        // Mock the file system
+        mockFs({
+            [config.data]: {
+                'meta.json': JSON.stringify(mockAdminData),
+            },
+            [config.certs]: {
+                [mockCertXid]: {
+                    'meta.json': JSON.stringify(mockCertData1),
+                },
+            },
+            [config.assets]: {
+                [mockTokenXid]: {
+                    'meta.json': JSON.stringify(mockTokenData),
+                },
+                [mockNftXid]: {
+                    'nft.json': JSON.stringify(mockNftData),
+                },
+            },
+        });
+
+        const expectedNftData = {
+            ...mockNftData,
+            cert: {
+                ...mockCertData1,
+                block_link: `${config.block_link}/mockBlockhash`,
+                ipfs_link: `${config.ipfs_link}/mockCid`,
+                txn_link: `${config.txn_link}/mockTxid`,
+            }
+        };
+
+        const nftData = xidb.getNft(mockNftXid, config);
+
+        // Assert
+        expect(nftData).toEqual(expectedNftData);
+    });
+
+    it('returns the metadata without the cert if the cert auth time is earlier than the asset updated time', () => {
+
+        // Mock the file system
+        mockFs({
+            [config.data]: {
+                'meta.json': JSON.stringify(mockAdminData),
+            },
+            [config.certs]: {
+                [mockCertXid]: {
+                    'meta.json': JSON.stringify(mockCertData2),
+                },
+            },
+            [config.assets]: {
+                [mockTokenXid]: {
+                    'meta.json': JSON.stringify(mockTokenData),
+                },
+                [mockNftXid]: {
+                    'nft.json': JSON.stringify(mockNftData),
+                },
+            },
+        });
+
+        const nftData = xidb.getNft(mockNftXid, config);
+
+        // Assert
+        expect(nftData).toEqual(mockNftData);
+    });
+
+    // Add more tests for different scenarios...
+});
