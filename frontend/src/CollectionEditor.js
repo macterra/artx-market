@@ -7,23 +7,24 @@ const CollectionEditor = ({ navigate }) => {
     const [collections, setCollections] = useState([]);
     const [selectedIndex, setSelectedIndex] = useState(null);
     const [selectedCollection, setSelectedCollection] = useState(null);
-    const [saved, setSaved] = useState(true);
     const [removeable, setRemoveable] = useState(false);
     const [disableAdd, setDisableAdd] = useState(false);
+    const [disableRemove, setDisableRemove] = useState(false);
+    const [disableSave, setDisableSave] = useState(false);
     const [licenses, setLicenses] = useState([]);
 
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const profileResponse = await axios.get('/api/v1/profile');
-                const profileData = profileResponse.data;
-                setCollections(profileData.collections);
+                const getProfiles = await axios.get('/api/v1/profile');
+                const profiles = getProfiles.data;
+                setCollections(profiles.collections);
                 setRemoveable(false);
                 setSelectedIndex(0);
-                setSelectedCollection(profileData.collections[0]);
+                setSelectedCollection(profiles.collections[0]);
 
-                const licensesResponse = await axios.get('/api/v1/licenses');
-                const licenses = licensesResponse.data;
+                const getLicenses = await axios.get('/api/v1/licenses');
+                const licenses = getLicenses.data;
                 setLicenses(Object.keys(licenses));
             } catch (error) {
                 console.error('Error fetching profile data:', error);
@@ -55,36 +56,42 @@ const CollectionEditor = ({ navigate }) => {
             selectedCollection.collection.default.title = defaultTitle;
         }
 
+        setDisableSave(true);
+
         try {
             await axios.patch(`/api/v1/collections/${selectedCollection.xid}`, selectedCollection);
-            setSaved(true);
         }
         catch (error) {
             console.error('Error updating profile:', error);
             alert("Save failed");
+            setDisableSave(false);
         }
     };
 
-    const handleCollectionSelected = async (index) => {
-        const items = collections[index].collection?.assets?.length;
+    async function updateSelection(index, colls) {
+        const items = colls[index].collection?.assets?.length;
         setRemoveable(items === 0);
         setSelectedIndex(index);
-        setSelectedCollection(collections[index]);
+        setSelectedCollection(colls[index]);
+        setDisableSave(true);
+    }
+
+    const handleCollectionSelected = async (index) => {
+        updateSelection(index, collections);
     };
 
     const handleAddCollection = async () => {
         setDisableAdd(true);
+        setDisableRemove(true);
+        setDisableSave(true);
 
         try {
-            const response = await axios.get(`/api/v1/collections/`);
-            const newCollections = [...collections, response.data];
+            const getCollections = await axios.get(`/api/v1/collections/`);
+            const newCollections = [...collections, getCollections.data];
             const newIndex = newCollections.length - 1;
 
             setCollections(newCollections);
-            setSelectedIndex(newIndex);
-            setSelectedCollection(newCollections[newIndex]);
-            setSaved(false);
-            setRemoveable(true);
+            updateSelection(newIndex, newCollections);
         }
         catch (error) {
             console.error('Error adding collection:', error);
@@ -92,24 +99,34 @@ const CollectionEditor = ({ navigate }) => {
         }
 
         setDisableAdd(false);
+        setDisableRemove(false);
     };
 
     const handleRemoveCollection = async () => {
-        setRemoveable(false);
+
+        if (!removeable) {
+            alert("Only collections with 0 items may be removed.")
+            return;
+        }
+
+        setDisableAdd(true);
+        setDisableRemove(true);
+        setDisableSave(true);
 
         try {
             await axios.delete(`/api/v1/collections/${selectedCollection.xid}`);
 
             const newCollections = collections.filter((_, index) => index !== selectedIndex);
             setCollections(newCollections);
-            setSelectedIndex(0);
-            setSelectedCollection(newCollections[0]);
-            setSaved(false);
+            updateSelection(0, newCollections);
         }
         catch (error) {
             console.error('Error adding collection:', error);
             alert("Delete failed");
         }
+
+        setDisableAdd(false);
+        setDisableRemove(false);
     };
 
     const handleNameChange = (val) => {
@@ -117,7 +134,7 @@ const CollectionEditor = ({ navigate }) => {
         newCollections[selectedIndex].asset.title = val;
         setCollections(newCollections);
         setSelectedCollection(newCollections[selectedIndex]);
-        setSaved(false);
+        setDisableSave(false);
     };
 
     const handleDefaultTitleChange = (val) => {
@@ -125,7 +142,7 @@ const CollectionEditor = ({ navigate }) => {
         newCollections[selectedIndex].collection.default.title = val;
         setCollections(newCollections);
         setSelectedCollection(newCollections[selectedIndex]);
-        setSaved(false);
+        setDisableSave(false);
     };
 
     const handleDefaultLicenseChange = (val) => {
@@ -133,7 +150,7 @@ const CollectionEditor = ({ navigate }) => {
         newCollections[selectedIndex].collection.default.license = val;
         setCollections(newCollections);
         setSelectedCollection(newCollections[selectedIndex]);
-        setSaved(false);
+        setDisableSave(false);
     };
 
     const handleDefaultRoyaltyChange = (val) => {
@@ -141,7 +158,7 @@ const CollectionEditor = ({ navigate }) => {
         newCollections[selectedIndex].collection.default.royalty = val;
         setCollections(newCollections);
         setSelectedCollection(newCollections[selectedIndex]);
-        setSaved(false);
+        setDisableSave(false);
     };
 
     const handleDefaultEditionsChange = (val) => {
@@ -149,7 +166,7 @@ const CollectionEditor = ({ navigate }) => {
         newCollections[selectedIndex].collection.default.editions = val;
         setCollections(newCollections);
         setSelectedCollection(newCollections[selectedIndex]);
-        setSaved(false);
+        setDisableSave(false);
     };
 
     if (!selectedCollection) {
@@ -247,12 +264,12 @@ const CollectionEditor = ({ navigate }) => {
                     </Button>
                 </Grid>
                 <Grid item>
-                    <Button variant="contained" color="primary" onClick={handleRemoveCollection} disabled={!removeable}>
+                    <Button variant="contained" color="primary" onClick={handleRemoveCollection} disabled={disableRemove}>
                         Remove
                     </Button>
                 </Grid>
                 <Grid item>
-                    <Button variant="contained" color="primary" onClick={handleSaveClick} disabled={saved}>
+                    <Button variant="contained" color="primary" onClick={handleSaveClick} disabled={disableSave}>
                         Save
                     </Button>
                 </Grid>
