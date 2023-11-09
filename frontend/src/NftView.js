@@ -6,6 +6,7 @@ import PfpEditor from './PfpEditor';
 import TokenTrader from './TokenTrader';
 import TokenHistory from './TokenHistory';
 import EditionView from './EditionView';
+import PromotionEditor from './PromotionEditor';
 
 const NftView = ({ navigate }) => {
     const { xid } = useParams();
@@ -56,13 +57,13 @@ const NftView = ({ navigate }) => {
                 >
                     <Tab key="edition" value="edition" label={'NFT'} />
                     <Tab key="trade" value="trade" label={'Buy/Sell'} />
-                    {isOwner &&
-                        <Tab key="pfp" value="pfp" label={'Pfp'} />
-                    }
+                    {isOwner && <Tab key="promote" value="promote" label={'Promote'} />}
+                    {isOwner && <Tab key="pfp" value="pfp" label={'Pfp'} />}
                     <Tab key="history" value="history" label={'History'} />
                 </Tabs>
                 {tab === 'edition' && <EditionView nft={nft} />}
                 {tab === 'trade' && <TokenTrader metadata={nft.token} xid={nft.xid} setRefreshKey={setRefreshKey} />}
+                {tab === 'promote' && <PromotionEditor metadata={nft.token} xid={nft.xid} />}
                 {tab === 'pfp' && <PfpEditor metadata={nft.token} setTab={setTab} />}
                 {tab === 'history' && <TokenHistory metadata={nft.token} xid={nft.xid} />}
             </div>

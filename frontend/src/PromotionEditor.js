@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Grid, Box, Button, Typography } from '@mui/material';
 import axios from 'axios';
 
-const PromotionEditor = ({ metadata }) => {
+const PromotionEditor = ({ metadata, xid }) => {
     const [message, setMessage] = useState(null);
     const [link, setLink] = useState(null);
     const [fee, setFee] = useState(null);
@@ -12,24 +12,37 @@ const PromotionEditor = ({ metadata }) => {
     useEffect(() => {
         const initState = async () => {
             try {
-                const response = await axios.get('/api/v1/listings');
-                const listings = response.data;
+                const getCreator = await axios.get(`/api/v1/profile/${metadata.asset.owner}`);
+                const creator = getCreator.data;
 
-                const creatorResponse = await axios.get(`/api/v1/profile/${metadata.asset.owner}`);
-                const creator = creatorResponse.data;
-
-                const ratesResponse = await axios.get('/api/v1/rates');
-                const rates = ratesResponse.data;
+                const getRates = await axios.get('/api/v1/rates');
+                const rates = getRates.data;
 
                 let message = `Check out "${metadata.asset.title}" by ${creator.name}`;
 
-                for (const listing of listings) {
-                    if (listing.token === metadata.xid) {
-                        if (listing.editions > 1) {
-                            message = `New listings! ${listing.editions} editions of "${listing.title}" by ${creator.name} for ${listing.min}-${listing.max} sats`;
-                        }
-                        else {
-                            message = `New listing! "${listing.title}" by ${creator.name} for ${listing.price} sats`;
+                if (xid) {
+                    const getNft = await axios.get(`/api/v1/asset/${xid}`);
+                    const nft = getNft.data;
+
+                    if (nft.nft.price) {
+                        message = `New listing! "${nft.nft.title}" by ${creator.name} for ${nft.nft.price} sats`;
+                    }
+                    else {
+                        message = `Check out ${nft.nft.title} by ${creator.name}`;
+                    }
+                }
+                else {
+                    const getListings = await axios.get('/api/v1/listings');
+                    const listings = getListings.data;
+
+                    for (const listing of listings) {
+                        if (listing.token === metadata.xid) {
+                            if (listing.editions > 1) {
+                                message = `New listings! ${listing.editions} editions of "${listing.title}" by ${creator.name} for ${listing.min}-${listing.max} sats`;
+                            }
+                            else {
+                                message = `New listing! "${listing.title}" by ${creator.name} for ${listing.price} sats`;
+                            }
                         }
                     }
                 }
@@ -44,7 +57,7 @@ const PromotionEditor = ({ metadata }) => {
         };
 
         initState();
-    }, [metadata]);
+    }, [metadata, xid]);
 
     const handleSendClick = async () => {
         setDisableSend(true);
