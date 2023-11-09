@@ -2,6 +2,7 @@ import os
 import time
 import re
 import json
+import requests
 
 from flask import Flask, jsonify, request
 from git import Repo
@@ -21,6 +22,11 @@ except GitCommandError as error:
     print(f"git error {str(error)}")
 
 repo = Repo('data')
+
+def exchange_rate():
+    rates = requests.get('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd').json()
+    btc_usd_rate = rates['bitcoin']['usd']
+    return btc_usd_rate
 
 @app.route('/api/v1/ready', methods=['GET'])
 def ready():
@@ -158,8 +164,13 @@ def notarize():
     if 'cid' not in data:
         return jsonify({'error': 'No cid provided'}), 400
 
+    btc_usd_rate = exchange_rate()
+    limit = 10.0/btc_usd_rate # USD10 max
+
+    print(f"notarize: rate {btc_usd_rate} and $10 limit {limit}")
+
     auth = authorizer.Authorizer()
-    txid = auth.notarize(data['xid'], data['cid'])
+    txid = auth.notarize(data['xid'], data['cid'], limit)
 
     return jsonify({'txid': txid})
 
@@ -190,7 +201,8 @@ def walletinfo():
     print(f"> getWalletinfo took {elapsed} seconds")
 
     start = time.time()
-    fee = auth.getFee(3) * 255/1000
+    rate = auth.getFee(3)
+    fee =  rate * 255/1000
     elapsed = time.time() - start
     print(f"> getFee took {elapsed} seconds")
 
@@ -199,9 +211,17 @@ def walletinfo():
     elapsed = time.time() - start
     print(f"> getAddress took {elapsed} seconds")
 
+    start = time.time()
+    btc_usd_rate = exchange_rate()
+    fee_usd = fee * btc_usd_rate
+    elapsed = time.time() - start
+    print(f"> exchange rates took {elapsed} seconds")
+
     info = {
         "wallet": walletinfo,
+        "rate": "{:.2f}".format(rate * 100000),
         "fee": "{:.8f}".format(fee),
+        "fee_usd": "{:.2f}".format(fee_usd),
         "staked": auth.staked,
         "balance": auth.balance,
         "notarizations": auth.balance//fee,

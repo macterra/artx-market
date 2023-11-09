@@ -1,6 +1,7 @@
 flask
 gitpython
-flit 
-python-bitcoinrpc 
-python-dateutil 
+flit
+python-bitcoinrpc
+python-dateutil
 py-cid
+requests

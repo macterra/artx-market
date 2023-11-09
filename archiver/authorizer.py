@@ -97,7 +97,7 @@ class Authorizer:
     def getAddress(self):
         return self.blockchain.getnewaddress("recv")
 
-    def notarize(self, xid, cid):
+    def notarize(self, xid, cid, limit):
         print(f"notarize {xid} {cid}")
 
         # Validate xid
@@ -148,7 +148,15 @@ class Authorizer:
         txfeeRate = self.getFee(3)
         txfee = txfeeRate * 255 / 1000  # expected size of 255 vBytes
 
+        if txfee > limit:
+            print(f"txfee {txfee} > limit {limit}")
+            return
+
+        print(f"bailing for test")
+        return
+
         for funtxn in self.funds:
+            funtxn["sequence"] = 0xffffffd # make it RBF
             inputs.append(funtxn)
             print("inputs", funtxn['amount'])
             amount += funtxn['amount']
