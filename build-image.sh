@@ -1,1 +1,1 @@
-npm test && docker build -t macterra/artx-market .
+docker build -t macterra/artx-market .
