@@ -112,7 +112,7 @@ function rebuildAssets() {
     }
 
     for (const [xid, assets] of Object.entries(agents)) {
-        console.log(`assets for ${xid}: ${JSON.stringify(assets, null, 2)}`);
+        //console.log(`assets for ${xid}: ${JSON.stringify(assets, null, 2)}`);
         agent.saveAssets(assets);
     }
 }

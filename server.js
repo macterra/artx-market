@@ -50,10 +50,6 @@ app.use(express.static(path.join(__dirname, 'frontend/build')));
 // Serve the assets
 app.use('/data', express.static(path.join(__dirname, config.data)));
 
-app.get('/api/v1/data', (req, res) => {
-    res.json({ message: 'Welcome to the ArtX!' });
-});
-
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, config.uploads);
@@ -193,14 +189,30 @@ function ensureAuthenticated(req, res, next) {
     }
 }
 
+let ratesCache = null;
+
+async function refreshRatesCache() {
+    const xrResp = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
+    const xrData = await xrResp.data;
+
+    xrData.storageRate = config.storageRate;
+    xrData.editionRate = config.editionRate;
+    xrData.uploadRate = config.uploadRate;
+    xrData.promoteFee = config.promoteFee;
+
+    ratesCache = xrData;
+}
+
 app.get('/api/v1/rates', async (req, res) => {
     try {
-        const xrResp = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
-        const xrData = await xrResp.json();
-        xrData.storageRate = config.storageRate;
-        xrData.editionRate = config.editionRate;
-        xrData.uploadRate = config.uploadRate;
-        res.json(xrData);
+        if (!ratesCache) {
+            await refreshRatesCache();
+        }
+        else {
+            refreshRatesCache();
+        }
+
+        res.json(ratesCache);
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({ message: 'Error fetching exchange rates' });
@@ -1086,7 +1098,7 @@ app.post('/api/v1/promote', ensureAuthenticated, async (req, res) => {
 
             if (promotedDate > oneDayAgo) {
                 const timeRemaining = Math.ceil((promotedDate.getTime() - oneDayAgo.getTime()) / (1000 * 60 * 60));
-                return res.status(400).json({ message: `Token was already promoted recently.\nPlease wait ${timeRemaining} hour(s) before trying again.` });
+                return res.status(400).json({ message: `"${tokenData.asset.title}" was already promoted recently.\n\nPlease wait ${timeRemaining} hour(s) before trying again.` });
             }
         }
 
@@ -1156,7 +1168,7 @@ cron.schedule('0 0 * * *', async () => {
 });
 
 xidb.integrityCheck().then(() => {
-
+    refreshRatesCache();
     archiver.commitChanges({ type: 'restart' });
 
     app.listen(config.port, () => {

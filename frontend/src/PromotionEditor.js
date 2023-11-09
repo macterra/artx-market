@@ -6,6 +6,7 @@ import axios from 'axios';
 const PromotionEditor = ({ metadata }) => {
     const [message, setMessage] = useState(null);
     const [link, setLink] = useState(null);
+    const [fee, setFee] = useState(null);
     const [disableSend, setDisableSend] = useState(false);
 
     useEffect(() => {
@@ -16,6 +17,9 @@ const PromotionEditor = ({ metadata }) => {
 
                 const creatorResponse = await axios.get(`/api/v1/profile/${metadata.asset.owner}`);
                 const creator = creatorResponse.data;
+
+                const ratesResponse = await axios.get('/api/v1/rates');
+                const rates = ratesResponse.data;
 
                 let message = `Check out "${metadata.asset.title}" by ${creator.name}`;
 
@@ -32,6 +36,7 @@ const PromotionEditor = ({ metadata }) => {
 
                 setMessage(`${message}\n#art #nft`);
                 setLink(window.location.href);
+                setFee(rates.promoteFee);
             }
             catch (error) {
                 console.log(error);
@@ -72,20 +77,17 @@ const PromotionEditor = ({ metadata }) => {
             spacing={3}
             sx={{ width: '80%', margin: 'auto' }} >
             <Grid item>
-                <Box
-                    border={1}
-                    borderColor="grey.500"
-                    p={1}
-                    m={1}
-                    style={{ whiteSpace: 'pre-wrap' }}
-                >
+                <Box border={1} borderColor="grey.500" p={1} m={1} style={{ whiteSpace: 'pre-wrap' }} >
                     <Typography align="left">{message}</Typography>
                     <Typography>{link}</Typography>
                     <img src={metadata.file.path} alt={metadata.asset.title} style={{ width: '80%', height: 'auto' }} />
                 </Box>
+            </Grid>
+            <Grid item>
                 <Button variant="contained" color="primary" onClick={handleSendClick} disabled={disableSend}>
                     Send Announcement
                 </Button>
+                <p style={{ fontSize: '0.5em' }}>{`promotions cost ${fee} credits`}</p>
             </Grid>
         </Grid>
     );
