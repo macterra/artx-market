@@ -174,7 +174,7 @@ function ViewAdmin() {
       <CssBaseline />
       <div className="App">
         <AppHeader navigate={navigate} />
-        <header className="App-header">
+        <header className="App-body">
           <AdminView navigate={navigate} />
         </header>
       </div>
