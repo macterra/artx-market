@@ -1,5 +1,6 @@
 # Custom ignores
 data/
+ipfs/
 frontend/build/
 nostr/strfry-db
 

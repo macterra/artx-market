@@ -30,7 +30,7 @@ services:
       - "5001:5001"
     volumes:
       - ./data:/export/data
-      - ./dist/ipfs:/data/ipfs
+      - ./ipfs:/data/ipfs
 
   archiver:
     image: macterra/artx-archiver
