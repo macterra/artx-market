@@ -13,15 +13,29 @@ const CollectionEditor = ({ navigate }) => {
     const [disableSave, setDisableSave] = useState(false);
     const [licenses, setLicenses] = useState([]);
 
+    async function updateSelection(index, collections) {
+        if (collections.length === 0) {
+            setRemoveable(false);
+            setSelectedIndex(0);
+            setSelectedCollection(null);
+            setDisableSave(true);
+        }
+        else {
+            const items = collections[index].collection?.assets?.length;
+            setRemoveable(items === 0);
+            setSelectedIndex(index);
+            setSelectedCollection(collections[index]);
+            setDisableSave(true);
+        }
+    }
+
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const getProfiles = await axios.get('/api/v1/profile');
-                const profiles = getProfiles.data;
-                setCollections(profiles.collections);
-                setRemoveable(false);
-                setSelectedIndex(0);
-                setSelectedCollection(profiles.collections[0]);
+                const getProfile = await axios.get('/api/v1/profile');
+                const profile = getProfile.data;
+                setCollections(profile.collections);
+                updateSelection(0, profile.collections);
 
                 const getLicenses = await axios.get('/api/v1/licenses');
                 const licenses = getLicenses.data;
@@ -67,14 +81,6 @@ const CollectionEditor = ({ navigate }) => {
             setDisableSave(false);
         }
     };
-
-    async function updateSelection(index, colls) {
-        const items = colls[index].collection?.assets?.length;
-        setRemoveable(items === 0);
-        setSelectedIndex(index);
-        setSelectedCollection(colls[index]);
-        setDisableSave(true);
-    }
 
     const handleCollectionSelected = async (index) => {
         updateSelection(index, collections);
@@ -170,7 +176,15 @@ const CollectionEditor = ({ navigate }) => {
     };
 
     if (!selectedCollection) {
-        return;
+        return (
+            <Grid container direction="column" justifyContent="flex-start" alignItems="center" spacing={3} >
+                <Grid item>
+                    <Button variant="contained" color="primary" onClick={handleAddCollection} disabled={disableAdd}>
+                        Add Collection
+                    </Button>
+                </Grid>
+            </Grid>
+        );
     }
 
     return (
@@ -195,7 +209,7 @@ const CollectionEditor = ({ navigate }) => {
                 </span>
             </Grid>
             <Grid item>
-                <form style={{ width: '300px' }}>
+                <div style={{ width: '300px' }}>
                     <TextField
                         label="Collection Name"
                         value={selectedCollection.asset.title}
@@ -255,7 +269,7 @@ const CollectionEditor = ({ navigate }) => {
                             max: 100,
                         }}
                     />
-                </form>
+                </div>
             </Grid>
             <Grid container direction="row" justifyContent="center" alignItems="center" spacing={3}>
                 <Grid item>
