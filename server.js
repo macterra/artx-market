@@ -1155,15 +1155,35 @@ cron.schedule('* * * * *', async () => {
     }
 });
 
-// Notarize market state at midnight
-cron.schedule('0 0 * * *', async () => {
+// Check whether to notarize hourly
+cron.schedule('0 * * * *', async () => {
     const adminData = admin.getAdmin();
-    if (!adminData.pending) {
-        console.log(`Notarizing market state...`);
-        const savedAdmin = await admin.notarizeState(adminData);
-        if (savedAdmin.pending) {
-            await archiver.commitChanges({ type: 'notarize-state', state: savedAdmin.xid, txn: savedAdmin.pending });
+
+    if (adminData.pending) {
+        // TBD bump fee here
+        return;
+    }
+
+    if (adminData.latest) {
+        const latestCert = getCert(adminData.latest);
+        const authTime = new Date(latestCert.auth.time);
+        const currentTime = new Date();
+
+        // Calculate the difference in milliseconds
+        const diff = currentTime - authTime;
+        const freq = 24; // TBD get frequency from config
+
+        // If less than freq hours have passed, return from the function
+        if (diff < freq * 60 * 60 * 1000) {
+            return;
         }
+    }
+
+    console.log(`Notarizing market state...`);
+    const savedAdmin = await admin.notarizeState(adminData);
+
+    if (savedAdmin.pending) {
+        await archiver.commitChanges({ type: 'notarize-state', state: savedAdmin.xid, txn: savedAdmin.pending });
     }
 });
 
