@@ -1143,6 +1143,12 @@ app.use((req, res, next) => {
     }
 });
 
+// Backup data every ? minutes
+cron.schedule('* * * * *', async () => {
+    await archiver.pushChanges();
+    console.log(`data backed up`);
+});
+
 // Check pending txn every minute
 cron.schedule('* * * * *', async () => {
     const adminData = admin.getAdmin();
