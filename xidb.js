@@ -185,16 +185,12 @@ function repairAsset(xid) {
     }
 
     if (assetData.nft) {
+        const templatePath = path.join(realConfig.data, 'nft.ejs');
+        const templateStats = fs.statSync(templatePath);
+        const templateUpdateTime = new Date(templateStats.mtime).getTime();
+        const assetUpdateTime = new Date(assetData.asset.updated).getTime();
 
-        if (assetData.nft.asset) {
-
-            assetData.nft.token = assetData.nft.asset;
-            delete assetData.nft.asset;
-
-            const token = asset.getAsset(assetData.nft.token);
-            assetData.nft.title = `${token.asset.title} (${assetData.asset.title})`;
-
-            asset.saveAsset(assetData);
+        if (templateUpdateTime > assetUpdateTime) {
             saveNft(xid);
 
             return {
