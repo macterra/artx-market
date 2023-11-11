@@ -38,7 +38,7 @@ const CertView = ({ navigate }) => {
 
     return (
         <Box>
-            <h1>Certificate</h1>
+            <div>Certificate</div>
             <div>
                 <Tabs
                     value={tab}

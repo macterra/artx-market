@@ -175,7 +175,9 @@ function ViewAdmin() {
       <div className="App">
         <AppHeader navigate={navigate} />
         <header className="App-body">
-          <AdminView navigate={navigate} />
+          <Box display="flex" flexDirection="column" justifyContent="flex-start" alignItems="center" flexGrow={1}>
+            <AdminView navigate={navigate} />
+          </Box>
         </header>
       </div>
     </ThemeProvider>

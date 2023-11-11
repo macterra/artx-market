@@ -169,8 +169,8 @@ const AdminView = ({ navigate }) => {
     }
 
     return (
-        <Box>
-            <h1>Admin</h1>
+        <Box style={{ width: '90vw' }}>
+            <div>Admin</div>
             <div>
                 <Tabs
                     value={tab}
@@ -181,7 +181,6 @@ const AdminView = ({ navigate }) => {
                     scrollButtons="auto"
                 >
                     <Tab key="state" value="state" label={'State'} />
-                    <Tab key="verify" value="verify" label={'Verify'} />
                     <Tab key="wallet" value="wallet" label={'Wallet'} />
                     <Tab key="users" value="users" label={'Users'} />
                     <Tab key="auditlog" value="auditlog" label={'Audit Log'} />
