@@ -188,9 +188,10 @@ function repairAsset(xid) {
         const templatePath = path.join(realConfig.data, 'nft.ejs');
         const templateStats = fs.statSync(templatePath);
         const templateUpdateTime = new Date(templateStats.mtime).getTime();
-        const assetUpdateTime = new Date(assetData.asset.updated).getTime();
+        const nftData = getNft(assetData.xid);
+        const nftUpdateTime = new Date(nftData.asset.updated).getTime();
 
-        if (templateUpdateTime > assetUpdateTime) {
+        if (templateUpdateTime > nftUpdateTime) {
             saveNft(xid);
 
             return {
