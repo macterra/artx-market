@@ -152,9 +152,6 @@ class Authorizer:
             print(f"txfee {txfee} > limit {limit}")
             return
 
-        print(f"bailing for test")
-        return
-
         for funtxn in self.funds:
             funtxn["sequence"] = 0xffffffd # make it RBF
             inputs.append(funtxn)

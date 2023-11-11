@@ -148,9 +148,14 @@ def register():
     if 'cid' not in data:
         return jsonify({'error': 'No cid provided'}), 400
 
+    btc_usd_rate = exchange_rate()
+    limit = 10.0/btc_usd_rate # USD10 max
+
+    print(f"register: rate {btc_usd_rate} and $10 limit {limit}")
+
     auth = authorizer.Authorizer()
     auth.register = True
-    txid = auth.notarize(data['xid'], data['cid'])
+    txid = auth.notarize(data['xid'], data['cid'], limit)
 
     return jsonify({'txid': txid})
 
