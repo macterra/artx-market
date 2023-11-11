@@ -1193,9 +1193,10 @@ cron.schedule('0 * * * *', async () => {
     }
 });
 
-xidb.integrityCheck().then(() => {
+xidb.integrityCheck().then(async () => {
     refreshRatesCache();
-    archiver.commitChanges({ type: 'restart' });
+    await archiver.commitChanges({ type: 'restart' });
+    archiver.pushChanges();
 
     app.listen(config.port, () => {
         console.log(`ArtX server running on ${config.host}:${config.port}`);
