@@ -47,8 +47,8 @@ const TokenView = ({ metadata, setTab, setRefreshKey }) => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const getProfile = await axios.get(`/api/v1/profile/`);
-                const profile = getProfile.data;
+                const getAuth = await axios.get(`/check-auth`);
+                const auth = getAuth.data;
 
                 const getCollection = await axios.get(`/api/v1/collections/${metadata.asset.collection}`);
                 const collection = getCollection.data;
@@ -68,7 +68,7 @@ const TokenView = ({ metadata, setTab, setRefreshKey }) => {
 
                     nfts.push(nft);
 
-                    if (nft.asset.owner === profile.xid) {
+                    if (nft.asset.owner === auth.userId) {
                         owned += 1;
                         ownedEditions.push(nft.nft.edition);
                     }
@@ -76,7 +76,7 @@ const TokenView = ({ metadata, setTab, setRefreshKey }) => {
 
                 setNfts(nfts);
                 setOwned(owned);
-                setOwnAll(metadata.asset.owner === profile.xid && owned === metadata.token.editions);
+                setOwnAll(metadata.asset.owner === auth.userId && owned === metadata.token.editions);
                 setRanges(convertToRanges(ownedEditions));
             } catch (error) {
                 console.error('Error:', error);
