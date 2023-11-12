@@ -150,7 +150,7 @@ class Authorizer:
 
         if limit > 0 and txfee > limit:
             print(f"txfee {txfee} > limit {limit}")
-            return
+            txfee = Decimal(limit)
 
         for funtxn in self.funds:
             funtxn["sequence"] = 0xfffffffd # make it RBF

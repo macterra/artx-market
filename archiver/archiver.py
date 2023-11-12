@@ -7,7 +7,7 @@ import requests
 from flask import Flask, jsonify, request
 from git import Repo
 from git.exc import GitCommandError
-from ipfs import *
+from ipfs import checkIpfs, getIpfs, IPFSError
 from datetime import datetime
 from threading import Lock
 
@@ -148,9 +148,13 @@ def register():
     if 'cid' not in data:
         return jsonify({'error': 'No cid provided'}), 400
 
-    auth = authorizer.Authorizer()
-    auth.register = True
-    txid = auth.notarize(data['xid'], data['cid'], 0)
+    try:
+        auth = authorizer.Authorizer()
+        auth.register = True
+        txid = auth.notarize(data['xid'], data['cid'], 0)
+    except Exception as e:
+        print(f"register exception: {e}")
+        return jsonify({'error': str(e)}), 500
 
     return jsonify({'txid': txid})
 
@@ -173,8 +177,12 @@ def notarize():
 
     print(f"notarize: rate {btc_usd_rate} and ${maxFee} limit {limit}")
 
-    auth = authorizer.Authorizer()
-    txid = auth.notarize(data['xid'], data['cid'], limit)
+    try:
+        auth = authorizer.Authorizer()
+        txid = auth.notarize(data['xid'], data['cid'], limit)
+    except Exception as e:
+        print(f"notarize exception: {e}")
+        return jsonify({'error': str(e)}), 500
 
     return jsonify({'txid': txid})
 
@@ -185,8 +193,12 @@ def certify():
     if not data or 'txid' not in data:
         return jsonify({'error': 'No txid provided'}), 400
 
-    auth = authorizer.Authorizer()
-    cert = auth.certify(data['txid'])
+    try:
+        auth = authorizer.Authorizer()
+        cert = auth.certify(data['txid'])
+    except Exception as e:
+        print(f"certify exception: {e}")
+        return jsonify({'error': str(e)}), 500
 
     return jsonify(cert)
 

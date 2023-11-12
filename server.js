@@ -1161,35 +1161,61 @@ cron.schedule('* * * * *', async () => {
     }
 });
 
-// Check whether to notarize hourly
-cron.schedule('0 * * * *', async () => {
-    const adminData = admin.getAdmin();
+// Check hourly whether to notarize
+cron.schedule('* * * * *', async () => {
+    try {
+        console.log(`notarization check...`);
+        const adminData = admin.getAdmin();
 
-    if (adminData.pending) {
-        // TBD bump fee here
-        return;
-    }
+        if (!adminData.latest) {
+            console.log(`not yet registered`);
+            // Not registered yet
+            return;
+        }
 
-    if (adminData.latest) {
-        const latestCert = getCert(adminData.latest);
+        const latestCert = admin.getCert(adminData.latest);
         const authTime = new Date(latestCert.auth.time);
         const currentTime = new Date();
 
-        // Calculate the difference in milliseconds
-        const diff = currentTime - authTime;
-        const freq = 24; // TBD get frequency from config
+        // Calculate the difference in hours
+        const diff = Math.round((currentTime - authTime) / 1000 / 60 / 60);
+        const freq = 18; // TBD get frequency from config
 
-        // If less than freq hours have passed, return from the function
-        if (diff < freq * 60 * 60 * 1000) {
+        // If less than freq hours have passed, notarization not needed
+        if (diff < freq) {
+            console.log(`less than ${freq} hours (${diff}) since last certification`);
             return;
         }
+
+        const minFee = 2;
+        const bumpRate = 1; // add $/hour
+        const bumpMax = 5;
+
+        if (adminData.pending) {
+            const delayed = Math.round(diff - freq);
+            const bumpFee = minFee + delayed * bumpRate;
+
+            if (bumpFee > bumpMax) {
+                console.log(`Notarization fee ${bumpFee} exceeds max ${bumpMax}. Manual intervention required.`);
+                return;
+            }
+
+            // TBD bump fee here
+            console.log(`Notarization confirmation delayed by ${delayed} hours`);
+            console.log(`Call bumpNotarization(${adminData.pending}, ${bumpFee})`);
+            //const savedAdmin = await admin.bumpNotarization(adminData, bumpFee);
+            return;
+        }
+
+        console.log(`Notarizing market state with fee=${minFee}...`);
+        const savedAdmin = await admin.notarizeState(adminData, minFee);
+
+        if (savedAdmin.pending) {
+            await archiver.commitChanges({ type: 'notarize-state', state: savedAdmin.xid, txn: savedAdmin.pending });
+        }
     }
-
-    console.log(`Notarizing market state...`);
-    const savedAdmin = await admin.notarizeState(adminData, 10); // TBD maxFee in config
-
-    if (savedAdmin.pending) {
-        await archiver.commitChanges({ type: 'notarize-state', state: savedAdmin.xid, txn: savedAdmin.pending });
+    catch (error) {
+        console.error(`Error in cron job: ${error}`);
     }
 });
 
