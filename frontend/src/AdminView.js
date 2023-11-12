@@ -214,6 +214,22 @@ const AdminView = ({ navigate }) => {
                                     <TableCell>{admin.updated}</TableCell>
                                 </TableRow>
                                 <TableRow>
+                                    <TableCell>Default Pfp</TableCell>
+                                    {admin.default_pfp ? (
+                                        <TableCell><a href={admin.default_pfp}>{admin.default_pfp}</a></TableCell>
+                                    ) : (
+                                        <TableCell>not set</TableCell>
+                                    )}
+                                </TableRow>
+                                <TableRow>
+                                    <TableCell>Default Thumbnail</TableCell>
+                                    {admin.default_thumbnail ? (
+                                        <TableCell><a href={admin.default_thumbnail}>{admin.default_thumbnail}</a></TableCell>
+                                    ) : (
+                                        <TableCell>not set</TableCell>
+                                    )}
+                                </TableRow>
+                                <TableRow>
                                     <TableCell>Githash</TableCell>
                                     <TableCell>{admin.githash}</TableCell>
                                 </TableRow>
