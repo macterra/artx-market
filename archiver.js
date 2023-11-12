@@ -12,9 +12,9 @@ async function register(xid, cid) {
     }
 }
 
-async function notarize(xid, cid) {
+async function notarize(xid, cid, maxFee) {
     try {
-        const response = await axios.post(`${config.archiver}/api/v1/notarize`, { xid: xid, cid: cid });
+        const response = await axios.post(`${config.archiver}/api/v1/notarize`, { xid: xid, cid: cid, maxFee: maxFee });
         return response.data.txid;
     }
     catch (error) {

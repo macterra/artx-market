@@ -49,10 +49,10 @@ async function registerState(adminState, config = realConfig) {
     return adminState;
 }
 
-async function notarizeState(adminState, config = realConfig) {
+async function notarizeState(adminState, maxFee = 10, config = realConfig) {
 
     adminState = saveAdmin(adminState, config);
-    adminState.pending = await archiver.notarize(adminState.xid, adminState.cid);
+    adminState.pending = await archiver.notarize(adminState.xid, adminState.cid, maxFee);
     adminState = saveAdmin(adminState, config);
 
     return adminState;

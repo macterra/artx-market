@@ -148,12 +148,12 @@ class Authorizer:
         txfeeRate = self.getFee(3)
         txfee = txfeeRate * 255 / 1000  # expected size of 255 vBytes
 
-        if txfee > limit:
+        if limit > 0 and txfee > limit:
             print(f"txfee {txfee} > limit {limit}")
             return
 
         for funtxn in self.funds:
-            funtxn["sequence"] = 0xffffffd # make it RBF
+            funtxn["sequence"] = 0xfffffffd # make it RBF
             inputs.append(funtxn)
             print("inputs", funtxn['amount'])
             amount += funtxn['amount']

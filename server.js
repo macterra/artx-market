@@ -360,7 +360,7 @@ app.get('/api/v1/admin/notarize', ensureAuthenticated, async (req, res) => {
             return res.status(500).json({ message: 'Authorization pending' });
         }
 
-        const savedAdmin = await admin.notarizeState(adminData);
+        const savedAdmin = await admin.notarizeState(adminData, 0);
 
         if (savedAdmin.pending) {
             savedAdmin.githash = await archiver.commitChanges({
@@ -1186,7 +1186,7 @@ cron.schedule('0 * * * *', async () => {
     }
 
     console.log(`Notarizing market state...`);
-    const savedAdmin = await admin.notarizeState(adminData);
+    const savedAdmin = await admin.notarizeState(adminData, 10); // TBD maxFee in config
 
     if (savedAdmin.pending) {
         await archiver.commitChanges({ type: 'notarize-state', state: savedAdmin.xid, txn: savedAdmin.pending });

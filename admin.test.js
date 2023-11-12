@@ -148,7 +148,7 @@ describe('notarizeState', () => {
             pending: txid
         };
 
-        const result = await admin.notarizeState(adminState, testConfig);
+        const result = await admin.notarizeState(adminState, 0, testConfig);
 
         expect(result).toEqual(expectedAdminState);
 
