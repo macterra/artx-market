@@ -144,8 +144,7 @@ async function notarizeCheck(config = realConfig) {
     const adminData = getAdmin(config);
 
     if (!adminData.latest) {
-        //console.log(`not yet registered`);
-        return;
+        return { message: `not yet registered` }
     }
 
     const latestCert = getCert(adminData.latest, config);
@@ -158,8 +157,7 @@ async function notarizeCheck(config = realConfig) {
 
     // If less than freq hours have passed, notarization not needed
     if (diff < freq) {
-        //console.log(`less than ${freq} hours (${diff}) since last certification`);
-        return;
+        return { message: `less than ${freq} hours (${diff}) since last certification` }
     }
 
     const minFee = config.notarize_min_fee;
@@ -168,28 +166,26 @@ async function notarizeCheck(config = realConfig) {
     const delayed = Math.round(diff - freq);
     const txnFee = minFee + delayed * bumpRate;
 
-    // if (delayed > 0) {
-    //     console.log(`Notarization confirmation delayed by ${delayed} hours`);
-    // }
-
     if (txnFee > maxFee) {
-        //console.log(`Notarization fee ${txnFee} exceeds max ${maxFee}. Manual intervention required.`);
-        return;
+        return { message: `Notarization fee ${txnFee} exceeds max ${maxFee}. Manual intervention required.` };
     }
 
     let savedAdmin;
+    let message;
 
     if (adminData.pending) {
-        //console.log(`RBF notarization txn with fee=${txnFee}`);
+        message = `RBF notarization txn with fee=${txnFee}`;
         savedAdmin = await notarizeBump(adminData, txnFee, config);
     } else {
-        //console.log(`Notarizing market state with fee=${txnFee}`);
+        message = `Notarizing market state with fee=${txnFee}`;
         savedAdmin = await notarizeState(adminData, txnFee, config);
     }
 
     if (savedAdmin.pending) {
         await archiver.commitChanges({ type: 'notarize-state', state: savedAdmin.xid, txn: savedAdmin.pending });
     }
+
+    return { message: message };
 }
 
 module.exports = {

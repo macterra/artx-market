@@ -1145,8 +1145,13 @@ app.use((req, res, next) => {
 
 // Backup data every ? minutes
 cron.schedule('* * * * *', async () => {
-    await archiver.pushChanges();
-    console.log(`data backed up`);
+    try {
+        await archiver.pushChanges();
+        console.log(`data backed up`);
+    }
+    catch (error) {
+        console.error(`Error in cron job: ${error}`);
+    }
 });
 
 // Check pending txn every minute
@@ -1162,7 +1167,8 @@ cron.schedule('* * * * *', async () => {
 // Check hourly whether to notarize
 cron.schedule('0 * * * *', async () => {
     try {
-        await admin.notarizeCheck();
+        const response = await admin.notarizeCheck();
+        console.log(`notarize check: ${response.message}`);
     }
     catch (error) {
         console.error(`Error in cron job: ${error}`);
