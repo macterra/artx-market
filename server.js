@@ -1162,7 +1162,7 @@ cron.schedule('* * * * *', async () => {
 });
 
 // Check hourly whether to notarize
-cron.schedule('* * * * *', async () => {
+cron.schedule('0 * * * *', async () => {
     try {
         console.log(`notarization check...`);
         const adminData = admin.getAdmin();
@@ -1179,7 +1179,7 @@ cron.schedule('* * * * *', async () => {
 
         // Calculate the difference in hours
         const diff = Math.round((currentTime - authTime) / 1000 / 60 / 60);
-        const freq = 18; // TBD get frequency from config
+        const freq = config.notarize_frequency;
 
         // If less than freq hours have passed, notarization not needed
         if (diff < freq) {
@@ -1187,9 +1187,9 @@ cron.schedule('* * * * *', async () => {
             return;
         }
 
-        const minFee = 1;
-        const bumpRate = 1;
-        const bumpMax = 5;
+        const minFee = config.notarize_min_fee;
+        const maxFee = config.notarize_max_fee;
+        const bumpRate = config.notarize_bump_rate;
         const delayed = Math.round(diff - freq);
         const txnFee = minFee + delayed * bumpRate;
 
@@ -1197,18 +1197,18 @@ cron.schedule('* * * * *', async () => {
             console.log(`Notarization confirmation delayed by ${delayed} hours`);
         }
 
-        if (txnFee > bumpMax) {
-            console.log(`Notarization fee ${txnFee} exceeds max ${bumpMax}. Manual intervention required.`);
+        if (txnFee > maxFee) {
+            console.log(`Notarization fee ${txnFee} exceeds max ${maxFee}. Manual intervention required.`);
             return;
         }
-
-        console.log(`Notarizing market state with fee=${txnFee}`);
 
         let savedAdmin;
 
         if (adminData.pending) {
+            console.log(`RBF notarization txn with fee=${txnFee}`);
             savedAdmin = await admin.notarizeBump(adminData, txnFee);
         } else {
+            console.log(`Notarizing market state with fee=${txnFee}`);
             savedAdmin = await admin.notarizeState(adminData, txnFee);
         }
 

@@ -32,7 +32,7 @@ class AuthTx():
         data = bytes.fromhex(hexdata)
         if data[0] != 0x6a:
             return False
-        if data[1] != 70:
+        if data[1] != 0x4c:
             return False
         try:
             op_return = data[2:].decode()
@@ -192,12 +192,13 @@ class Authorizer:
             print(f"txn {txid} already confirmed.")
             return
 
-        #print("vin", json.dumps(tx['vin'], indent=2, cls=Encoder))
-        #print("vout", json.dumps(tx['vout'], indent=2, cls=Encoder))
+        auth_tx = AuthTx(tx)
+
+        if not auth_tx.isValid:
+            print(f"txn {txid} not a valid auth txn.")
+            return
 
         mempool_entry = self.blockchain.getmempoolentry(txid)
-        #print("mempool entry", json.dumps(mempool_entry, indent=2, cls=Encoder))
-
         currentFee = mempool_entry["fee"]
 
         if txnfee < currentFee:
@@ -205,7 +206,7 @@ class Authorizer:
             return
 
         inputs = tx['vin']
-        hexdata = tx['vout'][0]['scriptPubKey']['hex']
+        hexdata = auth_tx.op_return.encode().hex()
         stake = tx['vout'][1]['value']
         authAddr = tx['vout'][1]['scriptPubKey']['address']
         change = tx['vout'][2]['value']
@@ -213,6 +214,7 @@ class Authorizer:
         newChange = change + currentFee - Decimal(txnfee)
 
         if newChange < 0:
+            # Need more inputs to cover increased fee
             self.updateWallet()
 
             for funtxn in self.funds:
@@ -223,21 +225,11 @@ class Authorizer:
                 if newChange > 0:
                     break
 
-        # print(f"hexdata {hexdata}")
-        # print(f"stake {stake}")
-        # print(f"authAddr {authAddr}")
-        # print(f"change {change}")
-        # print(f"changeAddr {changeAddr}")
-        # print(f"current_fee {currentFee}")
-        # print(f"newChange {newChange}")
-
         if newChange < 0:
             print(f"insufficent balance to cover txnfee {txnfee}")
             return;
 
         outputs = {"data": hexdata, authAddr: stake, changeAddr: newChange}
-        # print("outputs", json.dumps(outputs, indent=2, cls=Encoder))
-
         rawtxn = self.blockchain.createrawtransaction(inputs, outputs)
         sigtxn = self.blockchain.signrawtransactionwithwallet(rawtxn)
         dectxn = self.blockchain.decoderawtransaction(sigtxn['hex'])
@@ -337,5 +329,5 @@ if __name__ == "__main__":
 
     authorizer = Authorizer()
 
-    txid = 'ecfe2ada19343a6051c87bf72b07ddf2494cd7e61dc34e18fc96f3c19b5aaacf'
-    cert = authorizer.replaceByFee(txid, 0.00027)
+    txid = '1088486c4447127a377f70ab76d9e7a626765d2920a36b71cc27d315263d5209'
+    cert = authorizer.certify(txid)

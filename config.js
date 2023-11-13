@@ -34,6 +34,10 @@ const config = {
     newUser: 'GuestUser',
     initialCredits: 10000,
     dns_ns: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
+    notarize_frequency: 24,
+    notarize_min_fee: 1,
+    notarize_max_fee: 10,
+    notarize_bump_rate: 1,
 };
 
 module.exports = config;
