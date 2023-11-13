@@ -311,34 +311,45 @@ describe('getCert', () => {
 });
 
 describe('notarizeCheck', () => {
-    const txid = "test-txid";
+    const notarizeTxid = "notarize-txid";
+    const rbfTxid = "rbf-txid";
     const githash = "test-githash";
 
     beforeEach(() => {
-        jest.spyOn(archiver, 'notarize').mockResolvedValue(txid);
-        jest.spyOn(archiver, 'replaceByFee').mockResolvedValue(txid);
+        jest.spyOn(archiver, 'notarize').mockResolvedValue(notarizeTxid);
+        jest.spyOn(archiver, 'replaceByFee').mockResolvedValue(rbfTxid);
         jest.spyOn(archiver, 'commitChanges').mockResolvedValue(githash);
+
+        archiver.notarize.mockClear();
+        archiver.replaceByFee.mockClear();
+        archiver.commitChanges.mockClear();
     });
 
     afterEach(() => {
         mockFs.restore();
     });
 
-    it('should return immediately if not yet registered', async () => {
+    it('should be no-op if not yet registered', async () => {
 
-        const metaJson = { key: 'value' };
+        const adminData = { xid: 'test-xid', cid: 'test-cid' };
         mockFs({
             [testConfig.data]: {
-                'meta.json': JSON.stringify(metaJson)
+                'meta.json': JSON.stringify(adminData)
             }
         });
 
-        const result = await admin.notarizeCheck(testConfig);
+        await admin.notarizeCheck(testConfig);
+        //console.log(archiver.notarize.mock.calls);
 
-        expect(result).toBeUndefined();
+        const savedAdmin = admin.getAdmin(testConfig);
+        expect(savedAdmin).toEqual(adminData);
+
+        expect(archiver.notarize).not.toHaveBeenCalled();
+        expect(archiver.replaceByFee).not.toHaveBeenCalled();
+        expect(archiver.commitChanges).not.toHaveBeenCalled();
     });
 
-    it('should return immediately if certificate is recent', async () => {
+    it('should be no-op if certificate is recent', async () => {
 
         const certXid = 'mock-cert';
         const adminData = { latest: certXid };
@@ -362,8 +373,89 @@ describe('notarizeCheck', () => {
             },
         });
 
-        const result = await admin.notarizeCheck(testConfig);
+        await admin.notarizeCheck(testConfig);
 
-        expect(result).toBeUndefined();
+        const savedAdmin = admin.getAdmin(testConfig);
+        expect(savedAdmin).toEqual(adminData);
+
+        expect(archiver.notarize).not.toHaveBeenCalled();
+        expect(archiver.replaceByFee).not.toHaveBeenCalled();
+        expect(archiver.commitChanges).not.toHaveBeenCalled();
+    });
+
+    it('should trigger a notarization when cert expires', async () => {
+
+        const certXid = 'mock-cert';
+        const adminData = { xid: 'mock-xid', cid: 'mock-cid', latest: certXid };
+        const expiryTime = new Date();
+
+        expiryTime.setHours(expiryTime.getHours() - testConfig.notarize_frequency);
+
+        const certData = {
+            auth: {
+                time: expiryTime.toISOString(),
+                blockhash: 'testBlockhash',
+                tx: { txid: 'testTxid' },
+                cid: 'testCid',
+            },
+        };
+
+        mockFs({
+            [testConfig.data]: {
+                'meta.json': JSON.stringify(adminData)
+            },
+            [testConfig.certs]: {
+                [certXid]: {
+                    'meta.json': JSON.stringify(certData),
+                },
+            },
+        });
+
+        await admin.notarizeCheck(testConfig);
+
+        const savedAdmin = admin.getAdmin(testConfig);
+        expect(savedAdmin.pending).toEqual(notarizeTxid);
+
+        // Check that archiver.notarize was called with the correct arguments
+        expect(archiver.notarize).toHaveBeenCalledWith(adminData.xid, adminData.cid, testConfig.notarize_min_fee);
+    });
+
+    it('should bump the txn fee if notarization is late', async () => {
+
+        const certXid = 'mock-cert';
+        const adminData = { xid: 'mock-xid', cid: 'mock-cid', latest: certXid };
+        const expiryTime = new Date();
+        const hoursLate = 4;
+
+        expiryTime.setHours(expiryTime.getHours() - testConfig.notarize_frequency - hoursLate);
+
+        const certData = {
+            auth: {
+                time: expiryTime.toISOString(),
+                blockhash: 'testBlockhash',
+                tx: { txid: 'testTxid' },
+                cid: 'testCid',
+            },
+        };
+
+        mockFs({
+            [testConfig.data]: {
+                'meta.json': JSON.stringify(adminData)
+            },
+            [testConfig.certs]: {
+                [certXid]: {
+                    'meta.json': JSON.stringify(certData),
+                },
+            },
+        });
+
+        await admin.notarizeCheck(testConfig);
+
+        const savedAdmin = admin.getAdmin(testConfig);
+        expect(savedAdmin.pending).toEqual(notarizeTxid);
+
+        // Check that archiver.notarize was called with the correct arguments
+        const expectedFee = testConfig.notarize_min_fee + hoursLate * testConfig.notarize_bump_rate;
+        expect(archiver.notarize).toHaveBeenCalledWith(adminData.xid, adminData.cid, expectedFee);
     });
 });
