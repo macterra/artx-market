@@ -18,6 +18,10 @@ const testConfig = {
     block_link: 'http://block-link',
     txn_link: 'http://txn-link',
     ipfs_link: 'http://ipfs-link',
+    notarize_frequency: 10,
+    notarize_min_fee: 2,
+    notarize_max_fee: 20,
+    notarize_bump_rate: 2,
 };
 
 describe('getAdmin', () => {
@@ -303,5 +307,63 @@ describe('getCert', () => {
         const result = admin.getCert(xid, testConfig);
 
         expect(result).toEqual(expectedCert);
+    });
+});
+
+describe('notarizeCheck', () => {
+    const txid = "test-txid";
+    const githash = "test-githash";
+
+    beforeEach(() => {
+        jest.spyOn(archiver, 'notarize').mockResolvedValue(txid);
+        jest.spyOn(archiver, 'replaceByFee').mockResolvedValue(txid);
+        jest.spyOn(archiver, 'commitChanges').mockResolvedValue(githash);
+    });
+
+    afterEach(() => {
+        mockFs.restore();
+    });
+
+    it('should return immediately if not yet registered', async () => {
+
+        const metaJson = { key: 'value' };
+        mockFs({
+            [testConfig.data]: {
+                'meta.json': JSON.stringify(metaJson)
+            }
+        });
+
+        const result = await admin.notarizeCheck(testConfig);
+
+        expect(result).toBeUndefined();
+    });
+
+    it('should return immediately if certificate is recent', async () => {
+
+        const certXid = 'mock-cert';
+        const adminData = { latest: certXid };
+        const certData = {
+            auth: {
+                time: new Date().toISOString(),
+                blockhash: 'testBlockhash',
+                tx: { txid: 'testTxid' },
+                cid: 'testCid',
+            },
+        };
+
+        mockFs({
+            [testConfig.data]: {
+                'meta.json': JSON.stringify(adminData)
+            },
+            [testConfig.certs]: {
+                [certXid]: {
+                    'meta.json': JSON.stringify(certData),
+                },
+            },
+        });
+
+        const result = await admin.notarizeCheck(testConfig);
+
+        expect(result).toBeUndefined();
     });
 });

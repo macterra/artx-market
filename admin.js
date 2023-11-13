@@ -127,13 +127,80 @@ function getCert(xid, config = realConfig) {
     return cert;
 }
 
+async function certifyCheck() {
+    const adminData = getAdmin();
+
+    if (saveAdmin.pending) {
+        const savedAdmin = await certifyState(adminData);
+
+        if (!savedAdmin.pending) {
+            await archiver.commitChanges({ type: 'certify-state', state: savedAdmin.xid, cert: savedAdmin.latest });
+        }
+    }
+}
+
+async function notarizeCheck(config = realConfig) {
+    console.log(`notarization check...`);
+    const adminData = getAdmin(config);
+
+    if (!adminData.latest) {
+        console.log(`not yet registered`);
+        return;
+    }
+
+    const latestCert = getCert(adminData.latest, config);
+    const authTime = new Date(latestCert.auth.time);
+    const currentTime = new Date();
+
+    // Calculate the difference in hours
+    const diff = Math.round((currentTime - authTime) / 1000 / 60 / 60);
+    const freq = config.notarize_frequency;
+
+    // If less than freq hours have passed, notarization not needed
+    if (diff < freq) {
+        console.log(`less than ${freq} hours (${diff}) since last certification`);
+        return;
+    }
+
+    const minFee = config.notarize_min_fee;
+    const maxFee = config.notarize_max_fee;
+    const bumpRate = config.notarize_bump_rate;
+    const delayed = Math.round(diff - freq);
+    const txnFee = minFee + delayed * bumpRate;
+
+    if (delayed > 0) {
+        console.log(`Notarization confirmation delayed by ${delayed} hours`);
+    }
+
+    if (txnFee > maxFee) {
+        console.log(`Notarization fee ${txnFee} exceeds max ${maxFee}. Manual intervention required.`);
+        return;
+    }
+
+    let savedAdmin;
+
+    if (adminData.pending) {
+        console.log(`RBF notarization txn with fee=${txnFee}`);
+        savedAdmin = await notarizeBump(adminData, txnFee, config);
+    } else {
+        console.log(`Notarizing market state with fee=${txnFee}`);
+        savedAdmin = await notarizeState(adminData, txnFee, config);
+    }
+
+    if (savedAdmin.pending) {
+        await archiver.commitChanges({ type: 'notarize-state', state: savedAdmin.xid, txn: savedAdmin.pending });
+    }
+}
+
 module.exports = {
+    certifyCheck,
     certifyState,
     getAdmin,
     getAuditLog,
     getCert,
     getWalletInfo,
     notarizeBump,
+    notarizeCheck,
     notarizeState,
     registerState,
     saveAdmin,
