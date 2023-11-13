@@ -32,7 +32,7 @@ class AuthTx():
         data = bytes.fromhex(hexdata)
         if data[0] != 0x6a:
             return False
-        if data[1] != 0x4c:
+        if data[1] != 0x46:
             return False
         try:
             op_return = data[2:].decode()
@@ -329,5 +329,5 @@ if __name__ == "__main__":
 
     authorizer = Authorizer()
 
-    txid = '1088486c4447127a377f70ab76d9e7a626765d2920a36b71cc27d315263d5209'
+    txid = '5a903ad883ed19817be8867f51b4abf780551861005e9192b6b6c5687a248a6f'
     cert = authorizer.certify(txid)
