@@ -454,8 +454,85 @@ describe('notarizeCheck', () => {
         const savedAdmin = admin.getAdmin(testConfig);
         expect(savedAdmin.pending).toEqual(notarizeTxid);
 
-        // Check that archiver.notarize was called with the correct arguments
         const expectedFee = testConfig.notarize_min_fee + hoursLate * testConfig.notarize_bump_rate;
         expect(archiver.notarize).toHaveBeenCalledWith(adminData.xid, adminData.cid, expectedFee);
+    });
+
+    it('should trigger an RBF when cert is late', async () => {
+
+        const certXid = 'mock-cert';
+        const pendingTxid = 'mock-pending';
+        const adminData = { xid: 'mock-xid', cid: 'mock-cid', latest: certXid, pending: pendingTxid };
+        const expiryTime = new Date();
+        const hoursLate = 3;
+
+        expiryTime.setHours(expiryTime.getHours() - testConfig.notarize_frequency - hoursLate);
+
+        const certData = {
+            auth: {
+                time: expiryTime.toISOString(),
+                blockhash: 'testBlockhash',
+                tx: { txid: 'testTxid' },
+                cid: 'testCid',
+            },
+        };
+
+        mockFs({
+            [testConfig.data]: {
+                'meta.json': JSON.stringify(adminData)
+            },
+            [testConfig.certs]: {
+                [certXid]: {
+                    'meta.json': JSON.stringify(certData),
+                },
+            },
+        });
+
+        await admin.notarizeCheck(testConfig);
+
+        const savedAdmin = admin.getAdmin(testConfig);
+        expect(savedAdmin.pending).toEqual(rbfTxid);
+
+        const expectedFee = testConfig.notarize_min_fee + hoursLate * testConfig.notarize_bump_rate;
+        expect(archiver.replaceByFee).toHaveBeenCalledWith(pendingTxid, expectedFee);
+    });
+
+    it('should be a no-op if RBF fee exceeds max', async () => {
+
+        const certXid = 'mock-cert';
+        const pendingTxid = 'mock-pending';
+        const adminData = { xid: 'mock-xid', cid: 'mock-cid', latest: certXid, pending: pendingTxid };
+        const expiryTime = new Date();
+        const hoursLate = 24;
+
+        expiryTime.setHours(expiryTime.getHours() - testConfig.notarize_frequency - hoursLate);
+
+        const certData = {
+            auth: {
+                time: expiryTime.toISOString(),
+                blockhash: 'testBlockhash',
+                tx: { txid: 'testTxid' },
+                cid: 'testCid',
+            },
+        };
+
+        mockFs({
+            [testConfig.data]: {
+                'meta.json': JSON.stringify(adminData)
+            },
+            [testConfig.certs]: {
+                [certXid]: {
+                    'meta.json': JSON.stringify(certData),
+                },
+            },
+        });
+
+        await admin.notarizeCheck(testConfig);
+
+        const savedAdmin = admin.getAdmin(testConfig);
+        expect(savedAdmin).toEqual(adminData);
+
+        expect(archiver.notarize).not.toHaveBeenCalled();
+        expect(archiver.replaceByFee).not.toHaveBeenCalled();
     });
 });
