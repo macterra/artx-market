@@ -1187,28 +1187,30 @@ cron.schedule('* * * * *', async () => {
             return;
         }
 
-        const minFee = 2;
-        const bumpRate = 1; // add $/hour
+        const minFee = 1;
+        const bumpRate = 1;
         const bumpMax = 5;
+        const delayed = Math.round(diff - freq);
+        const txnFee = minFee + delayed * bumpRate;
 
-        if (adminData.pending) {
-            const delayed = Math.round(diff - freq);
-            const bumpFee = minFee + delayed * bumpRate;
-
-            if (bumpFee > bumpMax) {
-                console.log(`Notarization fee ${bumpFee} exceeds max ${bumpMax}. Manual intervention required.`);
-                return;
-            }
-
-            // TBD bump fee here
+        if (delayed > 0) {
             console.log(`Notarization confirmation delayed by ${delayed} hours`);
-            console.log(`Call bumpNotarization(${adminData.pending}, ${bumpFee})`);
-            //const savedAdmin = await admin.bumpNotarization(adminData, bumpFee);
+        }
+
+        if (txnFee > bumpMax) {
+            console.log(`Notarization fee ${txnFee} exceeds max ${bumpMax}. Manual intervention required.`);
             return;
         }
 
-        console.log(`Notarizing market state with fee=${minFee}...`);
-        const savedAdmin = await admin.notarizeState(adminData, minFee);
+        console.log(`Notarizing market state with fee=${txnFee}`);
+
+        let savedAdmin;
+
+        if (adminData.pending) {
+            savedAdmin = await admin.notarizeBump(adminData, txnFee);
+        } else {
+            savedAdmin = await admin.notarizeState(adminData, txnFee);
+        }
 
         if (savedAdmin.pending) {
             await archiver.commitChanges({ type: 'notarize-state', state: savedAdmin.xid, txn: savedAdmin.pending });

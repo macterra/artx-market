@@ -13,7 +13,7 @@ from cid import make_cid
 class Encoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, Decimal):
-            return float(obj)
+            return format(float(obj), '.8f')
 
 class AuthTx():
     def __init__(self, tx):
@@ -185,6 +185,69 @@ class Authorizer:
         print('txid', txid)
         return txid
 
+    def replaceByFee(self, txid, txnfee):
+        tx = self.blockchain.getrawtransaction(txid, 1)
+
+        if 'blockhash' in tx:
+            print(f"txn {txid} already confirmed.")
+            return
+
+        #print("vin", json.dumps(tx['vin'], indent=2, cls=Encoder))
+        #print("vout", json.dumps(tx['vout'], indent=2, cls=Encoder))
+
+        mempool_entry = self.blockchain.getmempoolentry(txid)
+        #print("mempool entry", json.dumps(mempool_entry, indent=2, cls=Encoder))
+
+        currentFee = mempool_entry["fee"]
+
+        if txnfee < currentFee:
+            print(f"new txnfee {txnfee} < current fee {currentFee}")
+            return
+
+        inputs = tx['vin']
+        hexdata = tx['vout'][0]['scriptPubKey']['hex']
+        stake = tx['vout'][1]['value']
+        authAddr = tx['vout'][1]['scriptPubKey']['address']
+        change = tx['vout'][2]['value']
+        changeAddr = tx['vout'][2]['scriptPubKey']['address']
+        newChange = change + currentFee - Decimal(txnfee)
+
+        if newChange < 0:
+            self.updateWallet()
+
+            for funtxn in self.funds:
+                funtxn["sequence"] = 0xfffffffd # make it RBF
+                inputs.append(funtxn)
+                print("inputs", funtxn['amount'])
+                newChange += funtxn['amount']
+                if newChange > 0:
+                    break
+
+        # print(f"hexdata {hexdata}")
+        # print(f"stake {stake}")
+        # print(f"authAddr {authAddr}")
+        # print(f"change {change}")
+        # print(f"changeAddr {changeAddr}")
+        # print(f"current_fee {currentFee}")
+        # print(f"newChange {newChange}")
+
+        if newChange < 0:
+            print(f"insufficent balance to cover txnfee {txnfee}")
+            return;
+
+        outputs = {"data": hexdata, authAddr: stake, changeAddr: newChange}
+        # print("outputs", json.dumps(outputs, indent=2, cls=Encoder))
+
+        rawtxn = self.blockchain.createrawtransaction(inputs, outputs)
+        sigtxn = self.blockchain.signrawtransactionwithwallet(rawtxn)
+        dectxn = self.blockchain.decoderawtransaction(sigtxn['hex'])
+        print('dec', json.dumps(dectxn, indent=2, cls=Encoder))
+
+        txid = self.blockchain.sendrawtransaction(sigtxn['hex'])
+        print('txid', txid)
+
+        return txid
+
     def certify(self, txid):
         tx = self.blockchain.getrawtransaction(txid, 1)
 
@@ -274,13 +337,5 @@ if __name__ == "__main__":
 
     authorizer = Authorizer()
 
-    #authorizer.register = True
-    xid = 'd59d815c-1b23-4de4-a6a9-ed8ca1060184'
-    #cid = 'QmbNcW8SqNvJ7QuX5zQhQ7fgUtFK8W2gx7GnEgCsPaqGf4'
-    cid = 'QmQiqxe6DfgmNj1JTe7Xk2hVQkgEqmMjRy6tuffqcTLJaB'
-    #authorizer.notarize(xid, cid)
-
-    #txid = '5e7997bc52587b24c7864b3aff8d185a156676117735bd3a7e87aecc42668c8a'
-    txid = '772fbd4d043f30d6843bd2c68eeb5b5b6e80d1579da41f8281b3511fc26cb798'
-    cert = authorizer.certify(txid)
-
+    txid = 'ecfe2ada19343a6051c87bf72b07ddf2494cd7e61dc34e18fc96f3c19b5aaacf'
+    cert = authorizer.replaceByFee(txid, 0.00027)

@@ -22,6 +22,16 @@ async function notarize(xid, cid, maxFee) {
     }
 }
 
+async function replaceByFee(txid, maxFee) {
+    try {
+        const response = await axios.post(`${config.archiver}/api/v1/replaceByFee`, { txid: txid, maxFee: maxFee });
+        return response.data.txid;
+    }
+    catch (error) {
+        console.error(`replaceByFee error: ${error}`);
+    }
+}
+
 async function certify(txid) {
     try {
         const response = await axios.post(`${config.archiver}/api/v1/certify`, { txid: txid });
@@ -117,6 +127,7 @@ async function pinAsset(xid) {
 }
 
 module.exports = {
+    replaceByFee,
     certify,
     commitChanges,
     getLogs,

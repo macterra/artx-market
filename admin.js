@@ -58,6 +58,18 @@ async function notarizeState(adminState, maxFee = 10, config = realConfig) {
     return adminState;
 }
 
+async function notarizeBump(adminState, maxFee = 10, config = realConfig) {
+
+    const pending = await archiver.replaceByFee(adminState.pending, maxFee);
+
+    if (pending) {
+        adminState.pending = pending;
+        adminState = saveAdmin(adminState, config);
+    }
+
+    return adminState;
+}
+
 async function certifyState(adminState, config = realConfig) {
 
     if (adminState.pending) {
@@ -121,6 +133,7 @@ module.exports = {
     getAuditLog,
     getCert,
     getWalletInfo,
+    notarizeBump,
     notarizeState,
     registerState,
     saveAdmin,

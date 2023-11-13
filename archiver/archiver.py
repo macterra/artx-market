@@ -202,6 +202,31 @@ def certify():
 
     return jsonify(cert)
 
+@app.route('/api/v1/replaceByFee', methods=['POST'])
+def replaceByFee():
+    data = request.get_json()
+
+    if not data or 'txid' not in data:
+        return jsonify({'error': 'No txid provided'}), 400
+
+    if 'maxFee' not in data:
+        return jsonify({'error': 'No maxFee provided'}), 400
+
+    maxFee = int(data['maxFee'])
+    btc_usd_rate = exchange_rate()
+    fee = maxFee/btc_usd_rate
+
+    print(f"bump: rate {btc_usd_rate} and ${maxFee} fee {fee}")
+
+    try:
+        auth = authorizer.Authorizer()
+        txid = auth.bump(data['txid'], fee)
+    except Exception as e:
+        print(f"bump exception: {e}")
+        return jsonify({'error': str(e)}), 500
+
+    return jsonify({'txid': txid})
+
 @app.route('/api/v1/walletinfo', methods=['GET'])
 def walletinfo():
     auth = authorizer.Authorizer()
