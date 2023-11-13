@@ -185,10 +185,21 @@ function repairAsset(xid) {
     }
 
     if (assetData.nft) {
+        const nftData = getNft(assetData.xid);
+
+        if (!nftData) {
+            saveNft(xid);
+
+            return {
+                xid: xid,
+                fixed: true,
+                message: `created NFT`,
+            }
+        }
+
         const templatePath = path.join(realConfig.data, 'nft.ejs');
         const templateStats = fs.statSync(templatePath);
         const templateUpdateTime = new Date(templateStats.mtime).getTime();
-        const nftData = getNft(assetData.xid);
         const nftUpdateTime = new Date(nftData.asset.updated).getTime();
 
         if (templateUpdateTime > nftUpdateTime) {
