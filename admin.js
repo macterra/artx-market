@@ -172,9 +172,9 @@ async function notarizeCheck(config = realConfig) {
 
     const minFee = config.notarize_min_fee;
     const maxFee = config.notarize_max_fee;
-    const bumpRate = config.notarize_bump_rate;
+    const rbfRate = config.notarize_rbf_rate;
     const delayed = -adminData.nextNotarize;
-    const txnFee = minFee + delayed * bumpRate;
+    const txnFee = minFee + delayed * rbfRate;
 
     if (txnFee > maxFee) {
         return { message: `Notarization fee ${txnFee} exceeds max ${maxFee}. Manual intervention required.` };

@@ -21,7 +21,7 @@ const testConfig = {
     notarize_frequency: 10,
     notarize_min_fee: 2,
     notarize_max_fee: 20,
-    notarize_bump_rate: 2,
+    notarize_rbf_rate: 2,
 };
 
 describe('getAdmin', () => {
@@ -425,7 +425,7 @@ describe('notarizeCheck', () => {
         expect(archiver.notarize).toHaveBeenCalledWith(adminData.xid, adminData.cid, testConfig.notarize_min_fee);
     });
 
-    it('should bump the txn fee if notarization is late', async () => {
+    it('should increase the txn fee if notarization is late', async () => {
 
         const certXid = 'mock-cert';
         const adminData = { xid: 'mock-xid', cid: 'mock-cid', latest: certXid };
@@ -459,7 +459,7 @@ describe('notarizeCheck', () => {
         const savedAdmin = admin.getAdmin(testConfig);
         expect(savedAdmin.pending).toEqual(notarizeTxid);
 
-        const expectedFee = testConfig.notarize_min_fee + hoursLate * testConfig.notarize_bump_rate;
+        const expectedFee = testConfig.notarize_min_fee + hoursLate * testConfig.notarize_rbf_rate;
         expect(archiver.notarize).toHaveBeenCalledWith(adminData.xid, adminData.cid, expectedFee);
     });
 
@@ -498,7 +498,7 @@ describe('notarizeCheck', () => {
         const savedAdmin = admin.getAdmin(testConfig);
         expect(savedAdmin.pending).toEqual(rbfTxid);
 
-        const expectedFee = testConfig.notarize_min_fee + hoursLate * testConfig.notarize_bump_rate;
+        const expectedFee = testConfig.notarize_min_fee + hoursLate * testConfig.notarize_rbf_rate;
         expect(archiver.replaceByFee).toHaveBeenCalledWith(pendingTxid, expectedFee);
     });
 
@@ -538,7 +538,7 @@ describe('notarizeCheck', () => {
             ...adminData,
             latestCertAge: testConfig.notarize_frequency + hoursLate,
             nextNotarize: -hoursLate,
-         };
+        };
         const savedAdmin = admin.getAdmin(testConfig);
         expect(savedAdmin).toEqual(expectedAdmin);
 
