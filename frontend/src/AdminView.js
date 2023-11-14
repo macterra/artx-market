@@ -239,18 +239,27 @@ const AdminView = ({ navigate }) => {
                                 </TableRow>
                                 <TableRow>
                                     <TableCell>Certificate</TableCell>
-                                    <TableCell><a href={`/cert/${admin.latest}`}>{admin.latest}</a></TableCell>
+                                    <TableCell>
+                                        <a href={`/cert/${admin.latest}`}>
+                                            {admin.latest}
+                                        </a> ({admin.latestCertAge} {admin.latestCertAge === 1 ? 'hour' : 'hours'} ago)
+                                    </TableCell>
                                 </TableRow>
-                                {admin.pending &&
+                                {admin.pending ? (
                                     <TableRow>
                                         <TableCell>Pending Txn</TableCell>
                                         <TableCell>
                                             <a href={`https://mempool.space/tx/${admin.pending}`} target="_blank" rel="noopener noreferrer">
                                                 {admin.pending}
-                                            </a>
+                                            </a> (for {-admin.nextNotarize} hours)
                                         </TableCell>
                                     </TableRow>
-                                }
+                                ) : (
+                                    <TableRow>
+                                        <TableCell>Next Txn</TableCell>
+                                        <TableCell>{admin.nextNotarize} {admin.nextNotarize === 1 ? 'hour' : 'hours'}</TableCell>
+                                    </TableRow>
+                                )}
                             </TableBody>
                         </Table>
                         <Grid container direction="row" justifyContent="center" alignItems="center" spacing={3}>

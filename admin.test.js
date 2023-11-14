@@ -375,8 +375,13 @@ describe('notarizeCheck', () => {
 
         await admin.notarizeCheck(testConfig);
 
+        const expectedAdmin = {
+            ...adminData,
+            latestCertAge: 0,
+            nextNotarize: testConfig.notarize_frequency,
+        };
         const savedAdmin = admin.getAdmin(testConfig);
-        expect(savedAdmin).toEqual(adminData);
+        expect(savedAdmin).toEqual(expectedAdmin);
 
         expect(archiver.notarize).not.toHaveBeenCalled();
         expect(archiver.replaceByFee).not.toHaveBeenCalled();
@@ -529,8 +534,13 @@ describe('notarizeCheck', () => {
 
         await admin.notarizeCheck(testConfig);
 
+        const expectedAdmin = {
+            ...adminData,
+            latestCertAge: testConfig.notarize_frequency + hoursLate,
+            nextNotarize: -hoursLate,
+         };
         const savedAdmin = admin.getAdmin(testConfig);
-        expect(savedAdmin).toEqual(adminData);
+        expect(savedAdmin).toEqual(expectedAdmin);
 
         expect(archiver.notarize).not.toHaveBeenCalled();
         expect(archiver.replaceByFee).not.toHaveBeenCalled();

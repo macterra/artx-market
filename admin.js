@@ -21,14 +21,25 @@ function getAdmin(config = realConfig) {
     }
 
     const jsonContent = fs.readFileSync(jsonPath, 'utf-8');
-    const jsonData = JSON.parse(jsonContent);
+    const adminData = JSON.parse(jsonContent);
     const cidPath = path.join(config.data, "CID");
 
     if (fs.existsSync(cidPath)) {
-        jsonData.cid = fs.readFileSync(cidPath, 'utf-8').trim();
+        adminData.cid = fs.readFileSync(cidPath, 'utf-8').trim();
     }
 
-    return jsonData;
+    if (adminData.latest) {
+        const latestCert = getCert(adminData.latest, config);
+        const authTime = new Date(latestCert.auth.time);
+        const currentTime = new Date();
+
+        // Calculate the difference in hours
+        const diff = Math.round((currentTime - authTime) / 1000 / 60 / 60);
+        adminData.latestCertAge = diff;
+        adminData.nextNotarize = config.notarize_frequency - diff;
+    }
+
+    return adminData;
 }
 
 function saveAdmin(adminData, config = realConfig) {
@@ -144,26 +155,18 @@ async function notarizeCheck(config = realConfig) {
     const adminData = getAdmin(config);
 
     if (!adminData.latest) {
-        return { message: `not yet registered` }
+        return { message: `Not yet registered` }
     }
 
-    const latestCert = getCert(adminData.latest, config);
-    const authTime = new Date(latestCert.auth.time);
-    const currentTime = new Date();
-
-    // Calculate the difference in hours
-    const diff = Math.round((currentTime - authTime) / 1000 / 60 / 60);
-    const freq = config.notarize_frequency;
-
     // If less than freq hours have passed, notarization not needed
-    if (diff < freq) {
-        return { message: `less than ${freq} hours (${diff}) since last certification` }
+    if (adminData.latestCertAge < config.notarize_frequency) {
+        return { message: `Less than ${config.notarize_frequency} hours (${adminData.latestCertAge}) since last certification` }
     }
 
     const minFee = config.notarize_min_fee;
     const maxFee = config.notarize_max_fee;
     const bumpRate = config.notarize_bump_rate;
-    const delayed = Math.round(diff - freq);
+    const delayed = -adminData.nextNotarize;
     const txnFee = minFee + delayed * bumpRate;
 
     if (txnFee > maxFee) {
