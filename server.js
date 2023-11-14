@@ -1157,7 +1157,8 @@ cron.schedule('* * * * *', async () => {
 // Check pending txn every minute
 cron.schedule('* * * * *', async () => {
     try {
-        await admin.certifyCheck();
+        const response = await admin.certifyCheck();
+        console.log(`certify check: ${response.message}`);
     }
     catch (error) {
         console.error(`Error in cron job: ${error}`);
@@ -1165,7 +1166,7 @@ cron.schedule('* * * * *', async () => {
 });
 
 // Check hourly whether to notarize
-cron.schedule('0 * * * *', async () => {
+cron.schedule('*/10 * * * *', async () => {
     try {
         const response = await admin.notarizeCheck();
         console.log(`notarize check: ${response.message}`);

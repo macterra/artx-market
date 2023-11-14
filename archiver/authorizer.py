@@ -187,6 +187,7 @@ class Authorizer:
 
     def replaceByFee(self, txid, txnfee):
         tx = self.blockchain.getrawtransaction(txid, 1)
+        txnfee = Decimal(txnfee)
 
         if 'blockhash' in tx:
             print(f"txn {txid} already confirmed.")
@@ -201,8 +202,8 @@ class Authorizer:
         mempool_entry = self.blockchain.getmempoolentry(txid)
         currentFee = mempool_entry["fee"]
 
-        if txnfee < currentFee:
-            print(f"new txnfee {txnfee} < current fee {currentFee}")
+        if (txnfee - currentFee) < 0.00001000:
+            print(f"new txnfee {txnfee} too close to current fee {currentFee}")
             return
 
         inputs = tx['vin']
@@ -211,7 +212,7 @@ class Authorizer:
         authAddr = tx['vout'][1]['scriptPubKey']['address']
         change = tx['vout'][2]['value']
         changeAddr = tx['vout'][2]['scriptPubKey']['address']
-        newChange = change + currentFee - Decimal(txnfee)
+        newChange = change + currentFee - txnfee
 
         if newChange < 0:
             # Need more inputs to cover increased fee

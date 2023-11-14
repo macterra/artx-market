@@ -141,12 +141,19 @@ function getCert(xid, config = realConfig) {
 async function certifyCheck() {
     const adminData = getAdmin();
 
-    if (saveAdmin.pending) {
+    if (adminData.pending) {
         const savedAdmin = await certifyState(adminData);
 
         if (!savedAdmin.pending) {
             await archiver.commitChanges({ type: 'certify-state', state: savedAdmin.xid, cert: savedAdmin.latest });
+            return { message: 'Certified' };
         }
+        else {
+            return { message: 'Still pending' };
+        }
+    }
+    else {
+        return { message: 'No pending txn' };
     }
 }
 
@@ -175,8 +182,9 @@ async function notarizeCheck(config = realConfig) {
 
     let savedAdmin;
     let message;
+    const currentPending = adminData.pending;
 
-    if (adminData.pending) {
+    if (currentPending) {
         message = `RBF notarization txn with fee=${txnFee}`;
         savedAdmin = await notarizeBump(adminData, txnFee, config);
     } else {
@@ -184,7 +192,7 @@ async function notarizeCheck(config = realConfig) {
         savedAdmin = await notarizeState(adminData, txnFee, config);
     }
 
-    if (savedAdmin.pending) {
+    if (savedAdmin.pending !== currentPending) {
         await archiver.commitChanges({ type: 'notarize-state', state: savedAdmin.xid, txn: savedAdmin.pending });
     }
 

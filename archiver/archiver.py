@@ -216,13 +216,13 @@ def replaceByFee():
     btc_usd_rate = exchange_rate()
     fee = maxFee/btc_usd_rate
 
-    print(f"bump: rate {btc_usd_rate} and ${maxFee} fee {fee}")
+    print(f"replaceByFee: rate {btc_usd_rate} and ${maxFee} fee {fee}")
 
     try:
         auth = authorizer.Authorizer()
-        txid = auth.bump(data['txid'], fee)
+        txid = auth.replaceByFee(data['txid'], fee)
     except Exception as e:
-        print(f"bump exception: {e}")
+        print(f"replaceByFee exception: {e}")
         return jsonify({'error': str(e)}), 500
 
     return jsonify({'txid': txid})
