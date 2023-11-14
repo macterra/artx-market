@@ -45,6 +45,10 @@ services:
     environment:
       - IPFS_CONNECT=/dns/ipfs/tcp/5001/http
       - BTC_CONNECT=${BTC_CONNECT}
+      - X_API_KEY=${X_API_KEY}
+      - X_API_SECRET=${X_API_SECRET}
+      - X_BOT_KEY=${X_BOT_KEY}
+      - X_BOT_SECRET=${X_BOT_SECRET}
     depends_on:
       - ipfs
 

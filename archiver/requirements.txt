@@ -5,3 +5,4 @@ python-bitcoinrpc
 python-dateutil
 py-cid
 requests
+requests_oauthlib

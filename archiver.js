@@ -126,6 +126,16 @@ async function pinAsset(xid) {
     }
 }
 
+async function tweet(message) {
+    try {
+        const response = await axios.post(`${config.archiver}/api/v1/tweet`, { message: message });
+        return response.data;
+    }
+    catch (error) {
+        console.error(`tweet error: ${error}`);
+    }
+}
+
 module.exports = {
     replaceByFee,
     certify,
@@ -136,5 +146,6 @@ module.exports = {
     pushChanges,
     ready,
     register,
+    tweet,
     walletinfo,
 };

@@ -1090,6 +1090,7 @@ app.post('/api/v1/promote', ensureAuthenticated, async (req, res) => {
 
         const assetData = asset.getAsset(xid);
         const tokenData = assetData.token ? assetData : asset.getAsset(assetData.nft.token);
+        const nftData = assetData.nft ? assetData : asset.getAsset(assetData.token.nfts[0]);
 
         if (tokenData.token.promoted) {
             const promotedDate = new Date(tokenData.token.promoted);
@@ -1109,6 +1110,10 @@ app.post('/api/v1/promote', ensureAuthenticated, async (req, res) => {
         const nostrMessage = nostr.createMessage(announcement);
 
         nostr.announceMessage(nostrMessage);
+
+        const nftLink = `${config.link}/${config.assets}/${nftData.xid}/index.html`;
+        const twitterMessage = `${message}\n\n${nftLink}`;
+        archiver.tweet(twitterMessage);
 
         agentData.credits -= promoteFee;
         agent.saveAgent(agentData);

@@ -12,6 +12,7 @@ from datetime import datetime
 from threading import Lock
 
 import authorizer
+import twitter
 
 app = Flask(__name__)
 lock = Lock()
@@ -270,6 +271,26 @@ def walletinfo():
     }
 
     return jsonify(info)
+
+@app.route('/api/v1/tweet', methods=['POST'])
+def tweet():
+    data = request.get_json()
+
+    if not data or 'message' not in data:
+        print(f"tweet error: no message provided")
+        return jsonify({'error': 'No message provided'}), 400
+
+    message = data['message']
+    print(f"tweet: message='{message}'")
+
+    try:
+        resp = twitter.tweet(message)
+    except Exception as e:
+        print(f"tweet exception: {e}")
+        return jsonify({'error': str(e)}), 500
+
+    print(f"tweet: resp={resp}")
+    return resp
 
 if __name__ == '__main__':
     port = int(os.getenv('ARC_PORT', 5115))

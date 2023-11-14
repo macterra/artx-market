@@ -70,7 +70,7 @@ const PromotionEditor = ({ metadata, xid }) => {
         }
 
         try {
-            const response = await axios.post('/api/v1/promote', { message: theMessage, xid: metadata.xid });
+            const response = await axios.post('/api/v1/promote', { message: theMessage, xid: xid || metadata.xid });
             alert(response.data.message || "Announcement sent!");
         }
         catch (error) {
