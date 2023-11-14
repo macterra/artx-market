@@ -157,7 +157,6 @@ const TokenTrader = ({ metadata, xid, setRefreshKey }) => {
                         </TableCell>
                     )
                 }
-                <TableCell>{listed ? '✔' : ''}</TableCell>
             </TableRow>
         );
     };
@@ -240,9 +239,8 @@ const TokenTrader = ({ metadata, xid, setRefreshKey }) => {
                                         <TableHead>
                                             <TableRow>
                                                 <TableCell>Edition</TableCell>
-                                                <TableCell>Price (USD)</TableCell>
+                                                <TableCell align="right">Price (USD)</TableCell>
                                                 <TableCell>Price (sats)</TableCell>
-                                                <TableCell>Listed</TableCell>
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
