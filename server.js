@@ -1183,6 +1183,7 @@ xidb.integrityCheck().then(async () => {
 
     app.listen(config.port, () => {
         console.log(`ArtX server running on ${config.host}:${config.port}`);
+        console.log(`config: ${JSON.stringify(config, null, 4)}`);
     });
 }).catch((error) => {
     console.error('Failed to start the server:', error);
