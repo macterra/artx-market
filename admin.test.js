@@ -136,8 +136,8 @@ describe('notarizeState', () => {
         mockFs.restore();
     });
 
-    it('should save the admin state, register it, and save it again', async () => {
-        const adminState = { key: 'value' };
+    it('should notarize the state and save the pending txn', async () => {
+        const adminState = { xid: 'xid', cid: 'cid' };
         const txid = 'test-txid';
         mockFs({
             [testConfig.data]: {}  // Empty directory
@@ -152,7 +152,33 @@ describe('notarizeState', () => {
             pending: txid
         };
 
-        const result = await admin.notarizeState(adminState, 0, testConfig);
+        const result = await admin.notarizeState(adminState, 3, testConfig);
+
+        expect(result).toEqual(expectedAdminState);
+
+        // Read the data that was written to meta.json and check that it matches the expected data
+        const writtenData = JSON.parse(fs.readFileSync(path.join(testConfig.data, 'meta.json'), 'utf-8'));
+        expect(writtenData).toEqual(expectedAdminState);
+    });
+
+    it('should replace-by-fee the pending txn', async () => {
+        const txid = 'test-txid';
+        const rbfTxid = 'rbf-txid';
+        const adminState = { xid: 'xid', cid: 'cid', pending: txid };
+        mockFs({
+            [testConfig.data]: {}  // Empty directory
+        });
+
+        // Mock archiver.register to return the mock pending value
+        jest.spyOn(archiver, 'replaceByFee').mockResolvedValue(rbfTxid);
+
+        const expectedAdminState = {
+            ...adminState,
+            updated: expect.any(String),
+            pending: rbfTxid,
+        };
+
+        const result = await admin.notarizeState(adminState, 3, testConfig);
 
         expect(result).toEqual(expectedAdminState);
 
@@ -307,6 +333,88 @@ describe('getCert', () => {
         const result = admin.getCert(xid, testConfig);
 
         expect(result).toEqual(expectedCert);
+    });
+});
+
+describe('certifyCheck', () => {
+
+    const certData = {
+        xid: 'cert-xid',
+        auth: {
+            time: new Date().toISOString(),
+            blockhash: 'testBlockhash',
+            tx: { txid: 'testTxid' },
+            cid: 'testCid',
+        },
+    };
+
+    it('should be no-op if no pending txn', async () => {
+
+        const adminData = { pending: null };
+
+        mockFs({
+            [testConfig.data]: {
+                'meta.json': JSON.stringify(adminData)
+            }
+        });
+
+        jest.spyOn(archiver, 'certify').mockResolvedValue(certData);
+        archiver.certify.mockClear();
+
+        await admin.certifyCheck(testConfig);
+
+        const savedAdmin = admin.getAdmin(testConfig);
+        expect(savedAdmin).toEqual(adminData);
+
+        expect(archiver.certify).not.toHaveBeenCalled();
+    });
+
+    it('should update cert if pending txn is confirmed', async () => {
+
+        const adminData = { pending: 'txid' };
+
+        mockFs({
+            [testConfig.data]: {
+                'meta.json': JSON.stringify(adminData)
+            }
+        });
+
+        jest.spyOn(archiver, 'certify').mockResolvedValue(certData);
+        archiver.certify.mockClear();
+
+        await admin.certifyCheck(testConfig);
+
+        const expectedAdmin = {
+            latest: certData.xid,
+            latestCertAge: 0,
+            pending: null,
+            nextNotarize: testConfig.notarize_frequency,
+            updated: expect.any(String),
+        };
+
+        const savedAdmin = admin.getAdmin(testConfig);
+        expect(savedAdmin).toEqual(expectedAdmin);
+        expect(archiver.certify).toHaveBeenCalled();
+    });
+
+    it('should not update cert if pending txn is not confirmed', async () => {
+
+        const adminData = { pending: 'txid' };
+
+        mockFs({
+            [testConfig.data]: {
+                'meta.json': JSON.stringify(adminData)
+            }
+        });
+
+        jest.spyOn(archiver, 'certify').mockResolvedValue(undefined);
+        archiver.certify.mockClear();
+
+        await admin.certifyCheck(testConfig);
+
+        const savedAdmin = admin.getAdmin(testConfig);
+        expect(savedAdmin).toEqual(adminData);
+        expect(archiver.certify).toHaveBeenCalled();
     });
 });
 

@@ -60,22 +60,20 @@ async function registerState(adminState, config = realConfig) {
     return adminState;
 }
 
-async function notarizeState(adminState, maxFee = 10, config = realConfig) {
+async function notarizeState(adminState, maxFee, config = realConfig) {
+    let pending;
 
-    adminState = saveAdmin(adminState, config);
-    adminState.pending = await archiver.notarize(adminState.xid, adminState.cid, maxFee);
-    adminState = saveAdmin(adminState, config);
-
-    return adminState;
-}
-
-async function notarizeBump(adminState, maxFee = 10, config = realConfig) {
-
-    const pending = await archiver.replaceByFee(adminState.pending, maxFee);
+    if (adminState.pending) {
+        pending = await archiver.replaceByFee(adminState.pending, maxFee);
+    }
+    else {
+        pending = await archiver.notarize(adminState.xid, adminState.cid, maxFee);
+    }
 
     if (pending) {
         adminState.pending = pending;
         adminState = saveAdmin(adminState, config);
+        await archiver.commitChanges({ type: 'notarize-state', state: adminState.xid, txn: adminState.pending });
     }
 
     return adminState;
@@ -96,6 +94,7 @@ async function certifyState(adminState, config = realConfig) {
             adminState.pending = null;
 
             adminState = saveAdmin(adminState, config);
+            await archiver.commitChanges({ type: 'certify-state', state: adminState.xid, cert: adminState.latest });
         }
     }
 
@@ -138,18 +137,17 @@ function getCert(xid, config = realConfig) {
     return cert;
 }
 
-async function certifyCheck() {
-    const adminData = getAdmin();
+async function certifyCheck(config = realConfig) {
+    const adminData = getAdmin(config);
 
     if (adminData.pending) {
-        const savedAdmin = await certifyState(adminData);
+        const savedAdmin = await certifyState(adminData, config);
 
-        if (!savedAdmin.pending) {
-            await archiver.commitChanges({ type: 'certify-state', state: savedAdmin.xid, cert: savedAdmin.latest });
-            return { message: 'Certified' };
+        if (savedAdmin.pending) {
+            return { message: 'Still pending' };
         }
         else {
-            return { message: 'Still pending' };
+            return { message: 'Certified!' };
         }
     }
     else {
@@ -158,14 +156,12 @@ async function certifyCheck() {
 }
 
 async function notarizeCheck(config = realConfig) {
-    //console.log(`notarization check...`);
     const adminData = getAdmin(config);
 
     if (!adminData.latest) {
         return { message: `Not yet registered` }
     }
 
-    // If less than freq hours have passed, notarization not needed
     if (adminData.latestCertAge < config.notarize_frequency) {
         return { message: `Less than ${config.notarize_frequency} hours (${adminData.latestCertAge}) since last certification` }
     }
@@ -180,23 +176,9 @@ async function notarizeCheck(config = realConfig) {
         return { message: `Notarization fee ${txnFee} exceeds max ${maxFee}. Manual intervention required.` };
     }
 
-    let savedAdmin;
-    let message;
-    const currentPending = adminData.pending;
+    await notarizeState(adminData, txnFee, config);
 
-    if (currentPending) {
-        message = `RBF notarization txn with fee=${txnFee}`;
-        savedAdmin = await notarizeBump(adminData, txnFee, config);
-    } else {
-        message = `Notarizing market state with fee=${txnFee}`;
-        savedAdmin = await notarizeState(adminData, txnFee, config);
-    }
-
-    if (savedAdmin.pending !== currentPending) {
-        await archiver.commitChanges({ type: 'notarize-state', state: savedAdmin.xid, txn: savedAdmin.pending });
-    }
-
-    return { message: message };
+    return { message: `Notarizing market state with fee=${txnFee}` };
 }
 
 module.exports = {
@@ -206,7 +188,6 @@ module.exports = {
     getAuditLog,
     getCert,
     getWalletInfo,
-    notarizeBump,
     notarizeCheck,
     notarizeState,
     registerState,
