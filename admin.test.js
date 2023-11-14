@@ -132,6 +132,13 @@ describe('registerState', () => {
 
 describe('notarizeState', () => {
 
+    const githash = "test-githash";
+
+    beforeEach(() => {
+        jest.spyOn(archiver, 'commitChanges').mockResolvedValue(githash);
+        archiver.commitChanges.mockClear();
+    });
+
     afterEach(() => {
         mockFs.restore();
     });
@@ -189,6 +196,13 @@ describe('notarizeState', () => {
 });
 
 describe('certifyState', () => {
+
+    const githash = "test-githash";
+
+    beforeEach(() => {
+        jest.spyOn(archiver, 'commitChanges').mockResolvedValue(githash);
+        archiver.commitChanges.mockClear();
+    });
 
     afterEach(() => {
         mockFs.restore();
@@ -347,6 +361,17 @@ describe('certifyCheck', () => {
             cid: 'testCid',
         },
     };
+
+    const githash = "test-githash";
+
+    beforeEach(() => {
+        jest.spyOn(archiver, 'commitChanges').mockResolvedValue(githash);
+        archiver.commitChanges.mockClear();
+    });
+
+    afterEach(() => {
+        mockFs.restore();
+    });
 
     it('should be no-op if no pending txn', async () => {
 
