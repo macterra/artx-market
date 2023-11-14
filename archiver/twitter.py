@@ -8,6 +8,9 @@ def tweet(msg):
     access_token = os.environ.get("X_BOT_KEY")
     access_secret = os.environ.get("X_BOT_SECRET")
 
+    if not all([consumer_key, consumer_secret, access_token, access_secret]):
+        raise Exception('All environment variables (X_API_KEY, X_API_SECRET, X_BOT_KEY, X_BOT_SECRET) must be set.')
+
     payload = { "text": msg }
 
     oauth = OAuth1Session(
