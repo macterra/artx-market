@@ -761,9 +761,15 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
         const completeSale = async () => {
             invoice.payment = sale.payment;
             await xidb.payoutSale(xid, buyerId, sellerId, invoice);
+            
             const event = { type: 'sale', agent: buyerId, asset: xid, price: assetData.nft.price };
             await archiver.commitChanges(event);
             nostr.announceEvent(event);
+
+            const nft = xidb.getNft(xid);
+            const nftLink = `${config.link}/${config.assets}/${xid}/index.html`;
+            const twitterMessage = `Congratulations to ${nft.owner.name} for collecting "${nft.nft.title}" by ${nft.creator.name}!\n\n${nftLink}`;
+            archiver.tweet(twitterMessage);
         };
 
         completeSale();
