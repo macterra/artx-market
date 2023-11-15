@@ -169,7 +169,7 @@ const AdminView = ({ navigate }) => {
     }
 
     return (
-        <Box style={{ width: '90vw' }}>
+        <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" style={{ width: '90vw' }}>
             <div>Admin</div>
             <div>
                 <Tabs

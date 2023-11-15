@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import {
-  useNavigate,
-  useParams,
-  BrowserRouter as Router,
-  Routes,
-  Route,
+    useNavigate,
+    useParams,
+    BrowserRouter as Router,
+    Routes,
+    Route,
 } from "react-router-dom";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -25,206 +25,243 @@ import Footer from "./Footer";
 import "./App.css";
 
 function App() {
-  return (
-    <>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<ViewLogin />} />
-          <Route path="/logout" element={<NotFound />} />
-          <Route path="/admin" element={<ViewAdmin />} />
-          <Route path="/cert/:xid" element={<ViewCert />} />
-          <Route path="/profile/:userId" element={<ViewProfile />} />
-          <Route path="/profile/edit/:jump?" element={<EditProfile />} />
-          <Route path="/collection/:xid" element={<ViewCollection />} />
-          <Route path="/asset/:xid" element={<ViewAsset />} />
-          <Route path="/nft/:xid" element={<ViewNft />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Router>
-      <Footer />
-    </>
-  );
+    return (
+        <>
+            <Router>
+                <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/login" element={<ViewLogin />} />
+                    <Route path="/logout" element={<NotFound />} />
+                    <Route path="/admin" element={<ViewAdmin />} />
+                    <Route path="/cert/:xid" element={<ViewCert />} />
+                    <Route path="/profile/:userId" element={<ViewProfile />} />
+                    <Route path="/profile/edit/:jump?" element={<EditProfile />} />
+                    <Route path="/collection/:xid" element={<ViewCollection />} />
+                    <Route path="/asset/:xid" element={<ViewAsset />} />
+                    <Route path="/nft/:xid" element={<ViewNft />} />
+                    <Route path="*" element={<NotFound />} />
+                </Routes>
+            </Router>
+        </>
+    );
 }
 
 const darkTheme = createTheme({
-  palette: {
-    mode: "dark",
-  },
+    palette: {
+        mode: "dark",
+    },
 });
 
 function Home() {
-  const navigate = useNavigate();
+    const navigate = useNavigate();
 
-  return (
-    <ThemeProvider theme={darkTheme}>
-      <CssBaseline />
-      <div className="App">
-        <AppHeader navigate={navigate} />
-        <header className="App-header">
-          <MainView navigate={navigate} />
-        </header>
-      </div>
-    </ThemeProvider>
-  );
+    return (
+        <ThemeProvider theme={darkTheme}>
+            <CssBaseline />
+            <div className="App">
+                <header className="App-header">
+                    <AppHeader navigate={navigate} />
+                </header>
+                <main className="App-content">
+                    <MainView navigate={navigate} />
+                </main>
+                <footer className="App-footer">
+                    <Footer />
+                </footer>
+            </div>
+        </ThemeProvider>
+    );
 }
 
 function ViewLogin() {
-  const navigate = useNavigate();
+    const navigate = useNavigate();
 
-  return (
-    <ThemeProvider theme={darkTheme}>
-      <CssBaseline />
-      <div className="App">
-        <AppHeader navigate={navigate} />
-        <header className="App-header">
-          <LoginView navigate={navigate} />
-        </header>
-      </div>
-    </ThemeProvider>
-  );
+    return (
+        <ThemeProvider theme={darkTheme}>
+            <CssBaseline />
+            <div className="App">
+                <header className="App-header">
+                    <AppHeader navigate={navigate} />
+                </header>
+                <main className="App-content">
+                    <LoginView navigate={navigate} />
+                </main>
+                <footer className="App-footer">
+                    <Footer />
+                </footer>
+            </div>
+        </ThemeProvider>
+    );
 }
 
 function ViewProfile() {
-  const { userId } = useParams();
-  const [refreshProfile, setRefreshProfile] = useState(null);
-  const navigate = useNavigate();
-
-  return (
-    <ThemeProvider theme={darkTheme}>
-      <CssBaseline />
-      <header className="App">
-        <AppHeader navigate={navigate} xid={userId} />
-      </header>
-      <div className="App-body">
-        <Box display="flex" flexDirection="column" flexGrow={1}>
-          <ProfileHeader
-            navigate={navigate}
-            userId={userId}
-            refreshProfile={refreshProfile}
-          />
-          <ProfileView
-            navigate={navigate}
-            setRefreshProfile={setRefreshProfile}
-          />
-        </Box>
-      </div>
-    </ThemeProvider>
-  );
+    const { userId } = useParams();
+    const [refreshProfile, setRefreshProfile] = useState(null);
+    const navigate = useNavigate();
+    
+    return (
+        <ThemeProvider theme={darkTheme}>
+            <CssBaseline />
+            <div className="App">
+                <header className="App-header">
+                    <AppHeader navigate={navigate} xid={userId} />
+                </header>
+                <main className="App-content">
+                    <ProfileHeader
+                        navigate={navigate}
+                        userId={userId}
+                        refreshProfile={refreshProfile}
+                    />
+                    <ProfileView
+                        navigate={navigate}
+                        setRefreshProfile={setRefreshProfile}
+                    />
+                </main>
+                <footer className="App-footer">
+                    <Footer />
+                </footer>
+            </div>
+        </ThemeProvider>
+    );
 }
 
 function EditProfile() {
-  const [refreshProfile, setRefreshProfile] = useState(null);
-  const navigate = useNavigate();
+    const [refreshProfile, setRefreshProfile] = useState(null);
+    const navigate = useNavigate();
 
-  return (
-    <ThemeProvider theme={darkTheme}>
-      <CssBaseline />
-      <header className="App">
-        <AppHeader navigate={navigate} />
-      </header>
-      <div className="App-body">
-        <Box display="flex" flexDirection="column" flexGrow={1}>
-          <ProfileEditor
-            navigate={navigate}
-            refreshProfile={refreshProfile}
-            setRefreshProfile={setRefreshProfile}
-          />
-        </Box>
-      </div>
-    </ThemeProvider>
-  );
+    return (
+        <ThemeProvider theme={darkTheme}>
+            <CssBaseline />
+            <div className="App">
+                <header className="App-header">
+                    <AppHeader navigate={navigate} />
+                </header>
+                <main className="App-content">
+                    <ProfileEditor
+                        navigate={navigate}
+                        refreshProfile={refreshProfile}
+                        setRefreshProfile={setRefreshProfile}
+                    />
+                </main>
+                <footer className="App-footer">
+                    <Footer />
+                </footer>
+            </div>
+        </ThemeProvider>
+    );
 }
 
 function ViewCollection() {
-  const navigate = useNavigate();
+    const navigate = useNavigate();
 
-  return (
-    <ThemeProvider theme={darkTheme}>
-      <CssBaseline />
-      <div className="App">
-        <AppHeader navigate={navigate} />
-        <header className="App-header">
-          <Box display="flex" flexDirection="column" flexGrow={1}>
-            <CollectionView navigate={navigate} />
-          </Box>
-        </header>
-      </div>
-    </ThemeProvider>
-  );
+    return (
+        <ThemeProvider theme={darkTheme}>
+            <CssBaseline />
+            <div className="App">
+                <header className="App-header">
+                    <AppHeader navigate={navigate} />
+                </header>
+                <main className="App-content">
+                    <CollectionView navigate={navigate} />
+                </main>
+                <footer className="App-footer">
+                    <Footer />
+                </footer>
+            </div>
+        </ThemeProvider>
+    );
 }
-function ViewAsset() {
-  const navigate = useNavigate();
 
-  return (
-    <ThemeProvider theme={darkTheme}>
-      <CssBaseline />
-      <div className="App">
-        <AppHeader navigate={navigate} />
-        <header className="App-header">
-          <AssetView navigate={navigate} />
-        </header>
-      </div>
-    </ThemeProvider>
-  );
+function ViewAsset() {
+    const navigate = useNavigate();
+
+    return (
+        <ThemeProvider theme={darkTheme}>
+            <CssBaseline />
+            <div className="App">
+                <header className="App-header">
+                    <AppHeader navigate={navigate} />
+                </header>
+                <main className="App-content">
+                    <AssetView navigate={navigate} />
+                </main>
+                <footer className="App-footer">
+                    <Footer />
+                </footer>
+            </div>
+        </ThemeProvider>
+    );
 }
 
 function ViewNft() {
-  const navigate = useNavigate();
+    const navigate = useNavigate();
 
-  return (
-    <ThemeProvider theme={darkTheme}>
-      <CssBaseline />
-      <div className="App">
-        <AppHeader navigate={navigate} />
-        <header className="App-header">
-          <NftView navigate={navigate} />
-        </header>
-      </div>
-    </ThemeProvider>
-  );
+    return (
+        <ThemeProvider theme={darkTheme}>
+            <CssBaseline />
+            <div className="App">
+                <header className="App-header">
+                    <AppHeader navigate={navigate} />
+                </header>
+                <main className="App-content">
+                    <NftView navigate={navigate} />
+                </main>
+                <footer className="App-footer">
+                    <Footer />
+                </footer>
+            </div>
+        </ThemeProvider>
+    );
 }
 
 function ViewAdmin() {
-  const navigate = useNavigate();
+    const navigate = useNavigate();
 
-  return (
-    <ThemeProvider theme={darkTheme}>
-      <CssBaseline />
-      <div className="App">
-        <AppHeader navigate={navigate} />
-        <header className="App-body">
-          <Box display="flex" flexDirection="column" justifyContent="flex-start" alignItems="center" flexGrow={1}>
-            <AdminView navigate={navigate} />
-          </Box>
-        </header>
-      </div>
-    </ThemeProvider>
-  );
+    return (
+        <ThemeProvider theme={darkTheme}>
+            <CssBaseline />
+            <div className="App">
+                <header className="App-header">
+                    <AppHeader navigate={navigate} />
+                </header>
+                <main className="App-content">
+                    <AdminView navigate={navigate} />
+                </main>
+                <footer className="App-footer">
+                    <Footer />
+                </footer>
+            </div>
+        </ThemeProvider>
+    );
 }
 
 function ViewCert() {
-  const navigate = useNavigate();
+    const navigate = useNavigate();
 
-  return (
-    <ThemeProvider theme={darkTheme}>
-      <CssBaseline />
-      <div className="App">
-        <AppHeader navigate={navigate} />
-        <header className="App-header">
-          <CertView navigate={navigate} />
-        </header>
-      </div>
-    </ThemeProvider>
-  );
+    return (
+        <ThemeProvider theme={darkTheme}>
+            <CssBaseline />
+            <div className="App">
+                <header className="App-header">
+                    <AppHeader navigate={navigate} />
+                </header>
+                <main className="App-content">
+                    <CertView navigate={navigate} />
+                </main>
+                <footer className="App-footer">
+                    <Footer />
+                </footer>
+            </div>
+        </ThemeProvider>
+    );
 }
 
 function NotFound() {
-  const navigate = useNavigate();
+    const navigate = useNavigate();
 
-  useEffect(() => {
-    navigate("/");
-  });
+    useEffect(() => {
+        navigate("/");
+    });
 }
 
 export default App;

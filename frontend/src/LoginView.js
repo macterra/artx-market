@@ -34,7 +34,8 @@ const LoginView = ({ navigate }) => {
         <Box
             style={{
                 display: 'flex',
-                justifyContent: 'center',
+                flexDirection: 'column',
+                justifyContent: 'flex-start',
                 alignItems: 'center',
                 height: '100vh'
             }}

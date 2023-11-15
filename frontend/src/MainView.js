@@ -31,11 +31,19 @@ const MainView = ({ navigate }) => {
     }
 
     return (
-        <Box>
-            <p>Recent Listings</p>
-            <ListingsGrid listings={listings} />
-            <p>Featured Artists</p>
-            <ProfileGrid collection={profiles} />
+        <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center">
+            {listings &&
+                <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center">
+                    <p>Recent Listings</p>
+                    <ListingsGrid listings={listings} />
+                </Box>
+            }
+            {profiles &&
+                <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center">
+                    <p>Featured Artists</p>
+                    <ProfileGrid collection={profiles} />
+                </Box>
+            }
         </Box>
     );
 };

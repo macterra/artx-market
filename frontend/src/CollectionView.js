@@ -145,11 +145,13 @@ const CollectionView = ({ navigate }) => {
                 <div style={{ fontSize: '0.5em' }}>by</div>
                 <AgentBadge xid={collection.asset.owner} />
             </Box>
-            {collection.collection.assets.length === 1 ? (
-                <span style={{ fontSize: '12px' }}> (1 item)</span>
-            ) : (
-                <span style={{ fontSize: '12px' }}> ({collection.collection.assets.length} items)</span>
-            )}
+            <Box display="flex" alignItems="center" justifyContent="center">
+                {collection.collection.assets.length === 1 ? (
+                    <span style={{ fontSize: '12px' }}> (1 item)</span>
+                ) : (
+                    <span style={{ fontSize: '12px' }}> ({collection.collection.assets.length} items)</span>
+                )}
+            </Box>
             {collection.isOwnedByUser &&
                 <Box style={{ marginLeft: '20px', marginRight: '20px' }}>
                     <Grid container alignItems="center" justifyContent="space-between">
