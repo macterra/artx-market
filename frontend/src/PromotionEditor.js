@@ -91,8 +91,7 @@ const PromotionEditor = ({ metadata, xid }) => {
             sx={{ width: '80%', margin: 'auto' }} >
             <Grid item>
                 <Box border={1} borderColor="grey.500" p={1} m={1} style={{ whiteSpace: 'pre-wrap' }} >
-                    <Typography align="left">{message}</Typography>
-                    <Typography>{link}</Typography>
+                    <Typography align="left" style={{ fontSize: '0.7em' }}>{message}</Typography>
                     <img src={metadata.file.path} alt={metadata.asset.title} style={{ width: '80%', height: 'auto' }} />
                 </Box>
             </Grid>
