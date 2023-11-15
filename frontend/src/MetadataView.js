@@ -96,36 +96,40 @@ const MetadataView = ({ navigate, metadata }) => {
                         <TableRow>
                             <TableCell>Collection:</TableCell>
                             <TableCell>
-                                <Button
-                                    color="inherit"
-                                    disabled={!firstXid}
-                                    onClick={() => navigate(`/asset/${firstXid}`)}>
-                                    {'\u003C\u003C'}
-                                </Button>
-                                <Button
-                                    color="inherit"
-                                    disabled={!prevXid}
-                                    onClick={() => navigate(`/asset/${prevXid}`)}>
-                                    {'\u003C'}
-                                </Button>
+                                <div style={{ display: 'inline-block' }}>
+                                    <Button
+                                        color="inherit"
+                                        disabled={!firstXid}
+                                        onClick={() => navigate(`/asset/${firstXid}`)}>
+                                        {'<<'}
+                                    </Button>
+                                    <Button
+                                        color="inherit"
+                                        disabled={!prevXid}
+                                        onClick={() => navigate(`/asset/${prevXid}`)}>
+                                        {'<'}
+                                    </Button>
+                                </div>
                                 <Button
                                     color="inherit"
                                     disabled={!collectionName}
                                     onClick={() => navigate(`/collection/${collectionId}`)}>
                                     {collectionName}
                                 </Button>
-                                <Button
-                                    color="inherit"
-                                    disabled={!nextXid}
-                                    onClick={() => navigate(`/asset/${nextXid}`)}>
-                                    {'\u003E'}
-                                </Button>
-                                <Button
-                                    color="inherit"
-                                    disabled={!lastXid}
-                                    onClick={() => navigate(`/asset/${lastXid}`)}>
-                                    {'\u003E\u003E'}
-                                </Button>
+                                <div style={{ display: 'inline-block' }}>
+                                    <Button
+                                        color="inherit"
+                                        disabled={!nextXid}
+                                        onClick={() => navigate(`/asset/${nextXid}`)}>
+                                        {'>'}
+                                    </Button>
+                                    <Button
+                                        color="inherit"
+                                        disabled={!lastXid}
+                                        onClick={() => navigate(`/asset/${lastXid}`)}>
+                                        {'>>'}
+                                    </Button>
+                                </div>
                             </TableCell>
                         </TableRow>
                     }
