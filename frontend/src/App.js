@@ -11,6 +11,7 @@ import CssBaseline from "@mui/material/CssBaseline";
 import Box from "@mui/material/Box";
 import AppHeader from "./AppHeader";
 import MainView from "./MainView";
+import LoginView from "./LoginView";
 import ProfileEditor from "./ProfileEditor";
 import AssetView from "./AssetView";
 import NftView from "./NftView";
@@ -29,6 +30,7 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/login" element={<ViewLogin />} />
           <Route path="/admin/" element={<ViewAdmin />} />
           <Route path="/cert/:xid" element={<ViewCert />} />
           <Route path="/profile/:userId" element={<ViewProfile />} />
@@ -60,6 +62,22 @@ function Home() {
         <AppHeader navigate={navigate} />
         <header className="App-header">
           <MainView navigate={navigate} />
+        </header>
+      </div>
+    </ThemeProvider>
+  );
+}
+
+function ViewLogin() {
+  const navigate = useNavigate();
+
+  return (
+    <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
+      <div className="App">
+        <AppHeader navigate={navigate} />
+        <header className="App-header">
+          <LoginView navigate={navigate} />
         </header>
       </div>
     </ThemeProvider>

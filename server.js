@@ -99,11 +99,15 @@ passport.use(new LnurlAuth.Strategy(async function (pubkey, done) {
 
 app.use(passport.authenticate('lnurl-auth'));
 
-app.get('/login',
+app.get('/authenticate',
     function (req, res, next) {
         if (req.user) {
             // Already authenticated.
-            return res.redirect(`/profile/${req.user.xid}`);
+            return res.send(`
+                <script>
+                    window.parent.postMessage('authenticated', '*');
+                </script>
+            `);
         }
         next();
     },
@@ -111,7 +115,7 @@ app.get('/login',
         title: 'Login with ⚡Lightning⚡',
         instruction: 'Click or scan the QR code with wallet to login',
         loginTemplateFilePath: path.join(config.data, 'login.html'),
-        callbackUrl: config.url + '/login',
+        callbackUrl: config.url + '/authenticate',
         cancelUrl: config.url
     })
 );
@@ -761,7 +765,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
         const completeSale = async () => {
             invoice.payment = sale.payment;
             await xidb.payoutSale(xid, buyerId, sellerId, invoice);
-            
+
             const event = { type: 'sale', agent: buyerId, asset: xid, price: assetData.nft.price };
             await archiver.commitChanges(event);
             nostr.announceEvent(event);

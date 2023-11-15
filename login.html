@@ -124,31 +124,16 @@
 </head>
 
 <body>
-	<div id="header">
-		<div style="font-size: 0.875rem;">
-			<a href="/">HOME</a>
-		</div>
-		<div style="font-size: 1.25rem;">
-			ArtX Market
-		</div>
-		<div style="font-size: 0.875rem;">
-			<a href="https://github.com/macterra/artx-market/wiki">HELP</a>
-		</div>
-	</div>
 	<div id="content">
 		<div class="wrap">
 			<h1>{{title}}</h1>
 			<p>{{instruction}}</p>
 			<a id="qrcode" href="{{href}}"><img src="{{dataUri}}"></a>
-			<div id="buttons">
-				{{#if cancelUrl}}
-				<a href="{{cancelUrl}}" class="button">Cancel</a>
-				{{/if}}
-			</div>
 			<div id="footer">
 				<div class="about">
 					<p>This page uses the <a href="https://lightninglogin.live/learn">lnurl-auth protocol</a>.</p>
-					<p>See <a href="https://github.com/macterra/artx-market/wiki/Lightning-wallet">list of apps</a> that support it.
+					<p>See <a href="https://github.com/macterra/artx-market/wiki/Lightning-wallet">list of apps</a> that
+						support it.
 					</p>
 				</div>
 				<div class="help">
@@ -157,7 +142,6 @@
 			</div>
 		</div>
 	</div>
-
 </body>
 
 </html>

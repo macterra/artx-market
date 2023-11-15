@@ -66,11 +66,12 @@ const AppHeader = ({ navigate, xid }) => {
     }, [xid]);
 
     const handleLogin = () => {
-        window.open('/login');
+        //window.open('/login');
+        navigate('/login');
     };
 
     const handleLogout = async () => {
-        await fetch('/logout', { method: 'GET', credentials: 'include' });
+        await axios.get('/logout');
         navigate('/');
     };
 
