@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Tab, Tabs } from '@mui/material';
 import PfpEditor from './PfpEditor';
 import TokenTrader from './TokenTrader';
@@ -8,8 +8,9 @@ import TokenHistory from './TokenHistory';
 import EditionView from './EditionView';
 import PromotionEditor from './PromotionEditor';
 
-const NftView = ({ navigate }) => {
+const NftView = () => {
     const { xid } = useParams();
+    const navigate = useNavigate();
 
     const [nft, setNft] = useState(null);
     const [isOwner, setIsOwner] = useState(false);

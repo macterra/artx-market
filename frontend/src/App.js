@@ -8,7 +8,6 @@ import {
 } from "react-router-dom";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
-import Box from "@mui/material/Box";
 import AppHeader from "./AppHeader";
 import MainView from "./MainView";
 import LoginView from "./LoginView";
@@ -52,18 +51,16 @@ const darkTheme = createTheme({
     },
 });
 
-function Home() {
-    const navigate = useNavigate();
-
+function CommonLayout({ children }) {
     return (
         <ThemeProvider theme={darkTheme}>
             <CssBaseline />
             <div className="App">
                 <header className="App-header">
-                    <AppHeader navigate={navigate} />
+                    <AppHeader />
                 </header>
                 <main className="App-content">
-                    <MainView navigate={navigate} />
+                    {children}
                 </main>
                 <footer className="App-footer">
                     <Footer />
@@ -73,32 +70,27 @@ function Home() {
     );
 }
 
-function ViewLogin() {
-    const navigate = useNavigate();
-
+function Home() {
     return (
-        <ThemeProvider theme={darkTheme}>
-            <CssBaseline />
-            <div className="App">
-                <header className="App-header">
-                    <AppHeader navigate={navigate} />
-                </header>
-                <main className="App-content">
-                    <LoginView navigate={navigate} />
-                </main>
-                <footer className="App-footer">
-                    <Footer />
-                </footer>
-            </div>
-        </ThemeProvider>
-    );
+        <CommonLayout>
+            <MainView />
+        </CommonLayout>
+    )
+}
+
+function ViewLogin() {
+    return (
+        <CommonLayout>
+            <LoginView />
+        </CommonLayout>
+    )
 }
 
 function ViewProfile() {
     const { userId } = useParams();
     const [refreshProfile, setRefreshProfile] = useState(null);
     const navigate = useNavigate();
-    
+
     return (
         <ThemeProvider theme={darkTheme}>
             <CssBaseline />
@@ -152,108 +144,43 @@ function EditProfile() {
 }
 
 function ViewCollection() {
-    const navigate = useNavigate();
-
     return (
-        <ThemeProvider theme={darkTheme}>
-            <CssBaseline />
-            <div className="App">
-                <header className="App-header">
-                    <AppHeader navigate={navigate} />
-                </header>
-                <main className="App-content">
-                    <CollectionView navigate={navigate} />
-                </main>
-                <footer className="App-footer">
-                    <Footer />
-                </footer>
-            </div>
-        </ThemeProvider>
-    );
+        <CommonLayout>
+            <CollectionView />
+        </CommonLayout>
+    )
 }
 
 function ViewAsset() {
-    const navigate = useNavigate();
-
     return (
-        <ThemeProvider theme={darkTheme}>
-            <CssBaseline />
-            <div className="App">
-                <header className="App-header">
-                    <AppHeader navigate={navigate} />
-                </header>
-                <main className="App-content">
-                    <AssetView navigate={navigate} />
-                </main>
-                <footer className="App-footer">
-                    <Footer />
-                </footer>
-            </div>
-        </ThemeProvider>
-    );
+        <CommonLayout>
+            <AssetView />
+        </CommonLayout>
+    )
 }
 
 function ViewNft() {
-    const navigate = useNavigate();
-
     return (
-        <ThemeProvider theme={darkTheme}>
-            <CssBaseline />
-            <div className="App">
-                <header className="App-header">
-                    <AppHeader navigate={navigate} />
-                </header>
-                <main className="App-content">
-                    <NftView navigate={navigate} />
-                </main>
-                <footer className="App-footer">
-                    <Footer />
-                </footer>
-            </div>
-        </ThemeProvider>
-    );
+        <CommonLayout>
+            <NftView />
+        </CommonLayout>
+    )
 }
 
 function ViewAdmin() {
-    const navigate = useNavigate();
-
     return (
-        <ThemeProvider theme={darkTheme}>
-            <CssBaseline />
-            <div className="App">
-                <header className="App-header">
-                    <AppHeader navigate={navigate} />
-                </header>
-                <main className="App-content">
-                    <AdminView navigate={navigate} />
-                </main>
-                <footer className="App-footer">
-                    <Footer />
-                </footer>
-            </div>
-        </ThemeProvider>
-    );
+        <CommonLayout>
+            <AdminView />
+        </CommonLayout>
+    )
 }
 
 function ViewCert() {
-    const navigate = useNavigate();
-
     return (
-        <ThemeProvider theme={darkTheme}>
-            <CssBaseline />
-            <div className="App">
-                <header className="App-header">
-                    <AppHeader navigate={navigate} />
-                </header>
-                <main className="App-content">
-                    <CertView navigate={navigate} />
-                </main>
-                <footer className="App-footer">
-                    <Footer />
-                </footer>
-            </div>
-        </ThemeProvider>
-    );
+        <CommonLayout>
+            <CertView />
+        </CommonLayout>
+    )
 }
 
 function NotFound() {

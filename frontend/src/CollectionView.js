@@ -1,13 +1,15 @@
 
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Box, Button, Grid } from '@mui/material';
 import ImageGrid from './ImageGrid';
 import AgentBadge from './AgentBadge';
 
-const CollectionView = ({ navigate }) => {
+const CollectionView = () => {
     const { xid } = useParams();
+    const navigate = useNavigate();
+    
     const [collection, setCollection] = useState(null);
     const [images, setImages] = useState(null);
     const [refreshKey, setRefreshKey] = useState(0);

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Table, TableBody, TableRow, TableCell, Tab, Tabs } from '@mui/material';
 
-const CertView = ({ navigate }) => {
+const CertView = () => {
     const { xid } = useParams();
+    const navigate = useNavigate();
+
     const [tab, setTab] = useState(null);
     const [cert, setCert] = useState(null);
     const [certJson, setCertJson] = useState(null);

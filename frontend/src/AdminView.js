@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
 import { Box, Button, Paper, TableContainer, Table, TableHead, TableBody, TableRow, TableCell, Tab, Tabs, Grid } from '@mui/material';
 import AuditLog from './AuditLog';
 import AgentBadge from './AgentBadge';
 
-const AdminView = ({ navigate }) => {
+const AdminView = () => {
+    const navigate = useNavigate();
 
     const [admin, setAdmin] = useState(null);
     const [disableButton, setDisableButton] = useState(false);

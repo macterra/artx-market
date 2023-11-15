@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from "react-router-dom";
 import axios from 'axios';
 import {
     AppBar,
@@ -16,7 +17,8 @@ import {
 
 import BuildTime from './BuildTime';
 
-const AppHeader = ({ navigate, xid }) => {
+const AppHeader = ({ xid }) => {
+    const navigate = useNavigate();
 
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [userId, setUserId] = useState(null);

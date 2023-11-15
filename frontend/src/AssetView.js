@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Tab, Tabs } from '@mui/material';
 import MetadataView from './MetadataView'
 import AssetEditor from './AssetEditor';
@@ -11,8 +11,9 @@ import TokenTrader from './TokenTrader';
 import TokenHistory from './TokenHistory';
 import PromotionEditor from './PromotionEditor';
 
-const AssetView = ({ navigate }) => {
+const AssetView = () => {
     const { xid } = useParams();
+    const navigate = useNavigate();
 
     const [metadata, setMetadata] = useState(null);
     const [isOwner, setIsOwner] = useState(false);

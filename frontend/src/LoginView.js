@@ -1,9 +1,11 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
 import { Box } from '@mui/material';
 import axios from 'axios';
 
-const LoginView = ({ navigate }) => {
+const LoginView = () => {
+    const navigate = useNavigate();
 
     useEffect(() => {
         const handleMessage = async (event) => {

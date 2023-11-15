@@ -5,7 +5,7 @@ import axios from 'axios';
 import ProfileGrid from './ProfileGrid';
 import ListingsGrid from './ListingsGrid';
 
-const MainView = ({ navigate }) => {
+const MainView = () => {
 
     const [profiles, setProfiles] = useState(null);
     const [listings, setListings] = useState(null);
@@ -24,7 +24,7 @@ const MainView = ({ navigate }) => {
         };
 
         fetchData();
-    }, [navigate]);
+    }, []);
 
     if (!profiles) {
         return;
