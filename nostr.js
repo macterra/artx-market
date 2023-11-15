@@ -150,7 +150,7 @@ function createAnnouncement(event) {
         assert.ok(nft.nft.link);
         assert.ok(nft.nft.preview);
 
-        const announcement = `Congratulations to ${nft.owner.name} for collecting "${nft.nft.title}" by ${nft.creator.name}!\n\n${nft.nft.link}\n\n${nft.nft.preview}`;
+        const announcement = `Congratulations to ${nft.owner.name} for collecting "${nft.nft.title}" by ${nft.creator.name}!\n#art #nft\n\n${nft.nft.link}\n\n${nft.nft.preview}`;
         return createMessage(announcement);
     }
 };

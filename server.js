@@ -772,7 +772,7 @@ app.post('/api/v1/asset/:xid/buy', ensureAuthenticated, async (req, res) => {
 
             const nft = xidb.getNft(xid);
             const nftLink = `${config.link}/${config.assets}/${xid}/index.html`;
-            const twitterMessage = `Congratulations to ${nft.owner.name} for collecting "${nft.nft.title}" by ${nft.creator.name}!\n\n${nftLink}`;
+            const twitterMessage = `Congratulations to ${nft.owner.name} for collecting "${nft.nft.title}" by ${nft.creator.name}!\n#art #nft\n\n${nftLink}`;
             archiver.tweet(twitterMessage);
         };
 
