@@ -83,12 +83,12 @@ const AppHeader = ({ navigate, xid }) => {
             <AppBar position="static">
                 <Toolbar>
                     <Button color="inherit" onClick={() => navigate('/')}>
-                        Home
+                        <img src="/artx-logo-64.png" alt="Logo" style={{ marginRight: '10px' }} /> ArtX
                     </Button>
                     {userId && (
                         xid === userId ? (
                             <Button color="inherit" onClick={() => navigate(`/profile/edit/`)}>
-                                Edit Profile
+                                Edit
                             </Button>
                         ) : (
                             <Button color="inherit" onClick={() => navigate(`/profile/${userId}`)}>
@@ -102,7 +102,7 @@ const AppHeader = ({ navigate, xid }) => {
                         </Button>
                     }
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                        ArtX Market
+                        &nbsp;
                     </Typography>
                     {isAuthenticated ? (
                         <Button color="inherit" onClick={handleLogout}>
