@@ -31,13 +31,14 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<ViewLogin />} />
-          <Route path="/admin/" element={<ViewAdmin />} />
+          <Route path="/logout" element={<NotFound />} />
+          <Route path="/admin" element={<ViewAdmin />} />
           <Route path="/cert/:xid" element={<ViewCert />} />
           <Route path="/profile/:userId" element={<ViewProfile />} />
           <Route path="/profile/edit/:jump?" element={<EditProfile />} />
           <Route path="/collection/:xid" element={<ViewCollection />} />
-          <Route path="/asset/:xid/" element={<ViewAsset />} />
-          <Route path="/nft/:xid/" element={<ViewNft />} />
+          <Route path="/asset/:xid" element={<ViewAsset />} />
+          <Route path="/nft/:xid" element={<ViewNft />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>

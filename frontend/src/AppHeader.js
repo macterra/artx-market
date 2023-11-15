@@ -72,7 +72,7 @@ const AppHeader = ({ navigate, xid }) => {
 
     const handleLogout = async () => {
         await axios.get('/logout');
-        navigate('/');
+        navigate('/logout');
     };
 
     const handleGettingStartedClick = async () => {
