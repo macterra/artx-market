@@ -196,24 +196,27 @@ function ensureAuthenticated(req, res, next) {
 let ratesCache = null;
 
 async function refreshRatesCache() {
-    const xrResp = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
-    const xrData = await xrResp.data;
+    try {
+        const xrResp = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
+        const xrData = await xrResp.data;
 
-    xrData.storageRate = config.storageRate;
-    xrData.editionRate = config.editionRate;
-    xrData.uploadRate = config.uploadRate;
-    xrData.promoteFee = config.promoteFee;
+        xrData.storageRate = config.storageRate;
+        xrData.editionRate = config.editionRate;
+        xrData.uploadRate = config.uploadRate;
+        xrData.promoteFee = config.promoteFee;
+        xrData.updated = new Date().toISOString();
 
-    ratesCache = xrData;
+        ratesCache = xrData;
+    }
+    catch (error) {
+        console.log(`refreshRatesCache error: ${error}`);
+    }
 }
 
 app.get('/api/v1/rates', async (req, res) => {
     try {
         if (!ratesCache) {
             await refreshRatesCache();
-        }
-        else {
-            refreshRatesCache();
         }
 
         res.json(ratesCache);
@@ -1185,6 +1188,17 @@ cron.schedule('*/10 * * * *', async () => {
     try {
         const response = await admin.notarizeCheck();
         console.log(`notarize check: ${response.message}`);
+    }
+    catch (error) {
+        console.error(`Error in cron job: ${error}`);
+    }
+});
+
+// Check hourly whether to notarize
+cron.schedule('0 * * * *', async () => {
+    try {
+        await refreshRatesCache();
+        //console.log(`refresh rates cache: ${JSON.stringify(ratesCache, null, 4)}}`);
     }
     catch (error) {
         console.error(`Error in cron job: ${error}`);
