@@ -9,7 +9,6 @@ import {
     Paper,
 } from '@mui/material';
 import axios from 'axios';
-import { setupCache } from 'axios-cache-interceptor';
 import utils from './utils';
 
 // Causing issues elsewhere with caching

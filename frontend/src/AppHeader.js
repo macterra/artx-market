@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from 'axios';
 import {
     AppBar,
@@ -17,7 +17,8 @@ import {
 
 import BuildTime from './BuildTime';
 
-const AppHeader = ({ xid }) => {
+const AppHeader = () => {
+    const { xid } = useParams();
     const navigate = useNavigate();
 
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -65,10 +66,9 @@ const AppHeader = ({ xid }) => {
         };
 
         checkAuthStatus();
-    }, [xid]);
+    }, []);
 
     const handleLogin = () => {
-        //window.open('/login');
         navigate('/login');
     };
 

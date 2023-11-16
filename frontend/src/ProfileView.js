@@ -4,15 +4,16 @@ import { Box, Tab, Tabs } from '@mui/material';
 import CollectionGrid from './CollectionGrid';
 import ImageGrid from './ImageGrid';
 
-const ProfileView = ({ navigate }) => {
-    const { userId } = useParams();
+const ProfileView = () => {
+    const { xid } = useParams();
+
     const [profile, setProfile] = useState(null);
     const [tab, setTab] = useState("created");
 
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const response = await fetch(`/api/v1/profile/${userId}`);
+                const response = await fetch(`/api/v1/profile/${xid}`);
                 const profileData = await response.json();
                 setProfile(profileData);
             } catch (error) {
@@ -21,7 +22,7 @@ const ProfileView = ({ navigate }) => {
         };
 
         fetchProfile();
-    }, [navigate, userId]);
+    }, [xid]);
 
     if (!profile) {
         return <p></p>;

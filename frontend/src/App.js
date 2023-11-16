@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import {
     useNavigate,
-    useParams,
     BrowserRouter as Router,
     Routes,
     Route,
@@ -33,7 +32,7 @@ function App() {
                     <Route path="/logout" element={<NotFound />} />
                     <Route path="/admin" element={<ViewAdmin />} />
                     <Route path="/cert/:xid" element={<ViewCert />} />
-                    <Route path="/profile/:userId" element={<ViewProfile />} />
+                    <Route path="/profile/:xid" element={<ViewProfile />} />
                     <Route path="/profile/edit/:jump?" element={<EditProfile />} />
                     <Route path="/collection/:xid" element={<ViewCollection />} />
                     <Route path="/asset/:xid" element={<ViewAsset />} />
@@ -87,60 +86,20 @@ function ViewLogin() {
 }
 
 function ViewProfile() {
-    const { userId } = useParams();
-    const [refreshProfile, setRefreshProfile] = useState(null);
-    const navigate = useNavigate();
-
     return (
-        <ThemeProvider theme={darkTheme}>
-            <CssBaseline />
-            <div className="App">
-                <header className="App-header">
-                    <AppHeader navigate={navigate} xid={userId} />
-                </header>
-                <main className="App-content">
-                    <ProfileHeader
-                        navigate={navigate}
-                        userId={userId}
-                        refreshProfile={refreshProfile}
-                    />
-                    <ProfileView
-                        navigate={navigate}
-                        setRefreshProfile={setRefreshProfile}
-                    />
-                </main>
-                <footer className="App-footer">
-                    <Footer />
-                </footer>
-            </div>
-        </ThemeProvider>
-    );
+        <CommonLayout>
+            <ProfileHeader />
+            <ProfileView />
+        </CommonLayout>
+    )
 }
 
 function EditProfile() {
-    const [refreshProfile, setRefreshProfile] = useState(null);
-    const navigate = useNavigate();
-
     return (
-        <ThemeProvider theme={darkTheme}>
-            <CssBaseline />
-            <div className="App">
-                <header className="App-header">
-                    <AppHeader navigate={navigate} />
-                </header>
-                <main className="App-content">
-                    <ProfileEditor
-                        navigate={navigate}
-                        refreshProfile={refreshProfile}
-                        setRefreshProfile={setRefreshProfile}
-                    />
-                </main>
-                <footer className="App-footer">
-                    <Footer />
-                </footer>
-            </div>
-        </ThemeProvider>
-    );
+        <CommonLayout>
+            <ProfileEditor />
+        </CommonLayout>
+    )
 }
 
 function ViewCollection() {

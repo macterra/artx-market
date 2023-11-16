@@ -1,14 +1,18 @@
 
 import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Button } from '@mui/material';
 
-const ProfileHeader = ({ navigate, userId, refreshProfile }) => {
+const ProfileHeader = () => {
+    const { xid } = useParams();
+    const navigate = useNavigate();
+
     const [profile, setProfile] = useState(null);
 
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const response = await fetch(`/api/v1/profile/${userId}`);
+                const response = await fetch(`/api/v1/profile/${xid}`);
                 const profileData = await response.json();
                 setProfile(profileData);
             } catch (error) {
@@ -17,7 +21,7 @@ const ProfileHeader = ({ navigate, userId, refreshProfile }) => {
         };
 
         fetchProfile();
-    }, [userId, refreshProfile]);
+    }, [xid]);
 
     if (!profile) {
         return <p>...</p>;

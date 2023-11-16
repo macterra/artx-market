@@ -5,7 +5,6 @@ import axios from 'axios';
 
 const PromotionEditor = ({ metadata, xid }) => {
     const [message, setMessage] = useState(null);
-    const [link, setLink] = useState(null);
     const [fee, setFee] = useState(null);
     const [disableSend, setDisableSend] = useState(false);
 
@@ -48,7 +47,6 @@ const PromotionEditor = ({ metadata, xid }) => {
                 }
 
                 setMessage(`${message}\n#art #nft`);
-                setLink(window.location.href);
                 setFee(rates.promoteFee);
             }
             catch (error) {

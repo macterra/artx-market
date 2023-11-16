@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Tab, Tabs } from '@mui/material';
 
 import NameEditor from './NameEditor';
@@ -11,10 +11,13 @@ import CreditsTrader from './CreditsTrader';
 import TxnLog from './TxnLog';
 import AgentBadge from './AgentBadge';
 
-const ProfileEditor = ({ navigate, refreshProfile, setRefreshProfile }) => {
+const ProfileEditor = () => {
     const { jump } = useParams();
+    const navigate = useNavigate();
+
     const [profile, setProfile] = useState({});
     const [tab, setTab] = useState(null);
+    const [refreshProfile, setRefreshProfile] = useState(null);
 
     useEffect(() => {
         const fetchProfile = async () => {
