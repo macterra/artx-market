@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from 'react';
 
-const AgentBadge = ({ agent, xid }) => {
+const AgentBadge = ({ agent, xid, fontSize }) => {
 
     const [user, setUser] = useState(null);
 
@@ -18,6 +18,8 @@ const AgentBadge = ({ agent, xid }) => {
             else {
                 setUser(agent);
             }
+
+            fontSize = fontSize || '1.0em';
         };
 
         fetchAgent();
@@ -28,7 +30,7 @@ const AgentBadge = ({ agent, xid }) => {
     }
 
     return (
-        <div style={{ display: 'flex', alignItems: 'center', marginLeft: '0.5em', marginRight: '0.5em' }}>
+        <div style={{ display: 'flex', alignItems: 'center', fontSize: fontSize, marginLeft: '0.5em', marginRight: '0.5em' }}>
             {user.pfp &&
                 <img
                     src={user.pfp}

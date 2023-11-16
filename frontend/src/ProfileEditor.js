@@ -52,7 +52,7 @@ const ProfileEditor = () => {
         <Box>
             <Box display="flex" alignItems="center" justifyContent="center">
                 <AgentBadge agent={profile} refreshProfile={refreshProfile} />
-                <div>Edit Profile</div>
+                <div>Settings</div>
             </Box>
             <Tabs
                 value={tab}

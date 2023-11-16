@@ -5,7 +5,7 @@ function openTab(url) {
   window.open(url, "_blank");
 }
 
-function Footer() {
+function AppFooter() {
   return (
     <footer className="footer">
       <Button color="inherit" onClick={() => openTab("https://discord.gg/RgZsQZqfp")}>
@@ -21,4 +21,4 @@ function Footer() {
   );
 }
 
-export default Footer;
+export default AppFooter;

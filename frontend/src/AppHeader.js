@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 
 import BuildTime from './BuildTime';
+import AgentBadge from './AgentBadge';
 
 const AppHeader = () => {
     const { xid } = useParams();
@@ -91,12 +92,10 @@ const AppHeader = () => {
                     {userId && (
                         xid === userId ? (
                             <Button color="inherit" onClick={() => navigate(`/profile/edit/`)}>
-                                Edit
+                                Settings
                             </Button>
                         ) : (
-                            <Button color="inherit" onClick={() => navigate(`/profile/${userId}`)}>
-                                Profile
-                            </Button>
+                            <AgentBadge xid={userId} fontSize={'.6em'} />
                         )
                     )}
                     {isAdmin &&

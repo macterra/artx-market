@@ -57,11 +57,9 @@ const ProfileHeader = () => {
                     )}
                 </a>
                 <div>
-                    <a href={`/profile/${profile.xid}`} style={linkStyle}>
-                        <span>{profile.name}</span>
-                    </a>
+                    <span>{profile.name}</span>
                     {profile.deposit &&
-                        <a href={`lightning:${profile.deposit}`} style={linkStyle}>⚡</a>
+                        <a href={`lightning:${profile.deposit}`} style={linkStyle} title={`zap ${profile.name} some sats!`}>⚡</a>
                     }
                     <span style={{ fontSize: '12px', display: 'block' }}>{profile.tagline}</span>
                 </div>
@@ -77,9 +75,11 @@ const ProfileHeader = () => {
             </div>
             {profile.isUser &&
                 <div style={{ marginLeft: 'auto', marginRight: '20px' }}>
-                    <Button variant="contained" color="primary" onClick={() => navigate('/profile/edit/coll')} style={{ marginRight: '10px' }}>
-                        Edit Collections
-                    </Button>
+                    {false &&
+                        <Button variant="contained" color="primary" onClick={() => navigate('/profile/edit/coll')} style={{ marginRight: '10px' }}>
+                            Edit Collections
+                        </Button>
+                    }
                     <Button variant="contained" color="primary" onClick={() => navigate('/profile/edit/credits')}>
                         Credits: {profile.credits}
                     </Button>
