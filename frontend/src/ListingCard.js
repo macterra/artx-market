@@ -1,4 +1,5 @@
 import React from 'react';
+import utils from './utils';
 
 const ListingCard = ({ listing }) => {
 
@@ -50,7 +51,7 @@ const ListingCard = ({ listing }) => {
             <div style={imgContainerStyle}>
                 <img src={listing.image} style={imgStyle} alt={listing.title} />
             </div>
-            <p style={titleStyle}>{listing.title}</p>
+            <p style={titleStyle}>{utils.truncateTitle(listing.title)}</p>
             {listing.editions === 1 ? (
                 <span style={textStyle}>for {listing.price} sats</span>
             ) : (listing.min === listing.max ? (
