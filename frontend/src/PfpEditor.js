@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from '@mui/material';
+import { Grid, Button } from '@mui/material';
 import axios from 'axios';
 
 const PfpEditor = ({ metadata }) => {
@@ -75,19 +75,25 @@ const PfpEditor = ({ metadata }) => {
     };
 
     return (
-        <div>
-            <img
-                src={metadata.file.path}
-                alt={metadata.asset.title}
-                style={{
-                    width: '200px',
-                    height: '200px',
-                    objectFit: 'cover',
-                    marginTop: '50px',
-                    borderRadius: '50%', // Add this line to create a circular mask
-                }}
-            />
-            <form>
+        <Grid container
+            direction="column"
+            justifyContent="flex-start"
+            alignItems="center"
+            spacing={2}
+            sx={{ width: '80%', margin: 'auto' }} >
+            <Grid item>
+                <img
+                    src={metadata.file.path}
+                    alt={metadata.asset.title}
+                    style={{
+                        width: '200px',
+                        height: '200px',
+                        objectFit: 'cover',
+                        borderRadius: '50%',
+                    }}
+                />
+            </Grid>
+            <Grid item>
                 <Button
                     variant="contained"
                     color="primary"
@@ -95,7 +101,8 @@ const PfpEditor = ({ metadata }) => {
                     disabled={disablePfp}>
                     Set Profile Pic
                 </Button>
-                <br></br>
+            </Grid>
+            <Grid item>
                 {showThumbnailButton &&
                     <Button
                         variant="contained"
@@ -105,7 +112,8 @@ const PfpEditor = ({ metadata }) => {
                         Set Collection Thumbnail
                     </Button>
                 }
-                <br></br>
+            </Grid>
+            <Grid item>
                 {showDefaultButton &&
                     <Button
                         variant="contained"
@@ -115,7 +123,8 @@ const PfpEditor = ({ metadata }) => {
                         Set Default Pfp
                     </Button>
                 }
-                <br></br>
+            </Grid>
+            <Grid item>
                 {showDefaultButton &&
                     <Button
                         variant="contained"
@@ -125,8 +134,8 @@ const PfpEditor = ({ metadata }) => {
                         Set Default Thumbnail
                     </Button>
                 }
-            </form>
-        </div >
+            </Grid>
+        </Grid>
     );
 };
 

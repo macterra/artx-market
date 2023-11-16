@@ -60,6 +60,7 @@ function CommonLayout({ children }) {
                 </header>
                 <main className="App-content">
                     {children}
+                    <div style={{ height: '64px' }} />
                 </main>
                 <footer className="App-footer">
                     <Footer />
