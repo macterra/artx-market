@@ -19,6 +19,7 @@ import CollectionView from "./CollectionView";
 import AdminView from "./AdminView";
 import CertView from "./CertView";
 import AppFooter from "./AppFooter";
+import ContentFooter from "./ContentFooter";
 
 import "./App.css";
 
@@ -60,7 +61,7 @@ function CommonLayout({ children }) {
                 </header>
                 <main className="App-content">
                     {children}
-                    <div style={{ height: '64px' }} />
+                    <ContentFooter />
                 </main>
                 <footer className="App-footer">
                     <AppFooter />
