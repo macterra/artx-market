@@ -363,13 +363,9 @@ app.get('/api/v1/admin/notarize', ensureAuthenticated, async (req, res) => {
             return res.status(500).json({ message: 'Not registered' });
         }
 
-        if (adminData.pending) {
-            return res.status(500).json({ message: 'Authorization pending' });
-        }
-
         const savedAdmin = await admin.notarizeState(adminData, 0);
 
-        if (savedAdmin.pending) {
+        if (savedAdmin.pending !== adminData.pending) {
             savedAdmin.githash = await archiver.commitChanges({
                 type: 'notarize-state',
                 agent: req.user.xid,

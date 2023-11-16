@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
+import axios from 'axios';
 import { Box, Button, Paper, TableContainer, Table, TableHead, TableBody, TableRow, TableCell, Tab, Tabs, Grid } from '@mui/material';
 import AuditLog from './AuditLog';
 import AgentBadge from './AgentBadge';
@@ -12,40 +13,33 @@ const AdminView = () => {
     const [disableVerify, setDisableVerify] = useState(false);
     const [tab, setTab] = useState(null);
     const [logs, setLogs] = useState([]);
+    const [walletInfo, setWalletInfo] = useState(null);
     const [walletJson, setWalletJson] = useState(null);
     const [userList, setUserList] = useState(null);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetch(`/api/v1/admin`);
+                const getAdmin = await axios.get(`/api/v1/admin`);
+                const admin = getAdmin.data;
 
-                if (response.status === 401) {
-                    navigate('/');
-                    return;
-                }
-
-                const admin = await response.json();
                 setAdmin(admin);
                 setTab('state');
 
-                const agentResponse = await fetch('/api/v1/admin/agents');
+                const getAgents = await axios.get('/api/v1/admin/agents');
+                const agents = getAgents.data;
 
-                if (agentResponse.ok) {
-                    const userList = await agentResponse.json();
-                    setUserList(userList);
-                }
+                setUserList(agents);
 
-                const walletResponse = await fetch(`/api/v1/admin/walletinfo`);
+                const getWalletInfo = await axios.get(`/api/v1/admin/walletinfo`);
+                const walletInfo = getWalletInfo.data;
+                const walletJson = JSON.stringify(walletInfo, null, 2);
 
-                if (walletResponse.ok) {
-                    const walletinfo = await walletResponse.json();
-                    const walletJson = JSON.stringify(walletinfo, null, 2);
-                    setWalletJson(walletJson);
-                }
-
+                setWalletInfo(walletInfo);
+                setWalletJson(walletJson);
             } catch (error) {
                 console.error('Error fetching admin data:', error);
+                navigate('/');
             }
         };
 
@@ -58,8 +52,9 @@ const AdminView = () => {
 
     const handleClaim = async () => {
         try {
-            const response = await fetch('/api/v1/admin/claim');
-            const admin = await response.json();
+            const getAdmin = await axios.get('/api/v1/admin/claim');
+            const admin = getAdmin.data;
+
             setAdmin(admin);
         } catch (error) {
             console.error('Error fetching admin data:', error);
@@ -69,8 +64,9 @@ const AdminView = () => {
     const handleSave = async () => {
         setDisableButton(true);
         try {
-            const response = await fetch('/api/v1/admin/save');
-            const admin = await response.json();
+            const getAdmin = await fetch('/api/v1/admin/save');
+            const admin = getAdmin.data;
+
             if (admin.xid) {
                 setAdmin(admin);
             }
@@ -84,10 +80,18 @@ const AdminView = () => {
     };
 
     const handleNotarize = async () => {
+
+        if (admin.pending) {
+            if (!window.confirm(`Spend USD ${walletInfo.fee_usd} for RBF?`)) {
+                return;
+            }
+        }
+
         setDisableButton(true);
         try {
-            const response = await fetch('/api/v1/admin/notarize');
-            const admin = await response.json();
+            const getAdmin = await axios.get('/api/v1/admin/notarize');
+            const admin = getAdmin.data;
+
             if (admin.pending) {
                 setAdmin(admin);
             }
@@ -103,8 +107,9 @@ const AdminView = () => {
     const handleRegister = async () => {
         setDisableButton(true);
         try {
-            const response = await fetch('/api/v1/admin/register');
-            const admin = await response.json();
+            const getAdmin = await axios.get('/api/v1/admin/register');
+            const admin = getAdmin.data;
+
             if (admin.pending) {
                 setAdmin(admin);
             }
@@ -120,8 +125,9 @@ const AdminView = () => {
     const handleCertify = async () => {
         setDisableButton(true);
         try {
-            const response = await fetch('/api/v1/admin/certify');
-            const admin = await response.json();
+            const getAdmin = await axios.get('/api/v1/admin/certify');
+            const admin = getAdmin.data;
+
             if (!admin.pending) {
                 setAdmin(admin);
             }
@@ -138,8 +144,8 @@ const AdminView = () => {
         setDisableVerify(true);
         setLogs([]);
 
-        const response = await fetch('/api/v1/admin/assets');
-        const assets = await response.json();
+        const getAssets = await axios.get('/api/v1/admin/assets');
+        const assets = getAssets.data;
         const logs = [];
 
         for (const [i, xid] of assets.entries()) {
@@ -272,7 +278,7 @@ const AdminView = () => {
                             </Grid>
                             {admin.latest ? (
                                 <Grid item>
-                                    <Button variant="contained" color="primary" onClick={handleNotarize} disabled={admin.pending || disableButton}>
+                                    <Button variant="contained" color="primary" onClick={handleNotarize} disabled={disableButton}>
                                         Notarize State
                                     </Button>
                                 </Grid>

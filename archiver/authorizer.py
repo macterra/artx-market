@@ -146,7 +146,7 @@ class Authorizer:
                 return
 
         txfeeRate = self.getFee(3)
-        txfee = txfeeRate * 255 / 1000  # expected size of 255 vBytes
+        txfee = Decimal(txfeeRate * 255 / 1000)  # expected size of 255 vBytes
 
         if limit > 0 and txfee > limit:
             print(f"txfee {txfee} > limit {limit}")
@@ -185,9 +185,9 @@ class Authorizer:
         print('txid', txid)
         return txid
 
-    def replaceByFee(self, txid, txnfee):
+    def replaceByFee(self, txid, txfee):
         tx = self.blockchain.getrawtransaction(txid, 1)
-        txnfee = Decimal(txnfee)
+        txfee = Decimal(txfee)
 
         if 'blockhash' in tx:
             print(f"txn {txid} already confirmed.")
@@ -202,9 +202,13 @@ class Authorizer:
         mempool_entry = self.blockchain.getmempoolentry(txid)
         currentFee = mempool_entry["fee"]
 
-        if (txnfee - currentFee) < 0.00001000:
-            print(f"new txnfee {txnfee} too close to current fee {currentFee}")
-            return
+        if txfee > 0:
+            if (txfee - currentFee) < 0.00001000:
+                print(f"new txnfee {txfee} too close to current fee {currentFee}")
+                return
+        else:
+            txfeeRate = self.getFee(3)
+            txfee = Decimal(txfeeRate * 255 / 1000)  # expected size of 255 vBytes
 
         inputs = tx['vin']
         hexdata = auth_tx.op_return.encode().hex()
@@ -212,7 +216,7 @@ class Authorizer:
         authAddr = tx['vout'][1]['scriptPubKey']['address']
         change = tx['vout'][2]['value']
         changeAddr = tx['vout'][2]['scriptPubKey']['address']
-        newChange = change + currentFee - txnfee
+        newChange = change + currentFee - txfee
 
         if newChange < 0:
             # Need more inputs to cover increased fee
@@ -227,7 +231,7 @@ class Authorizer:
                     break
 
         if newChange < 0:
-            print(f"insufficent balance to cover txnfee {txnfee}")
+            print(f"insufficent balance to cover txnfee {txfee}")
             return;
 
         outputs = {"data": hexdata, authAddr: stake, changeAddr: newChange}
