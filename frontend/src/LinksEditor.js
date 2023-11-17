@@ -1,64 +1,62 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
 import { Button, TextField, Grid, Select, MenuItem } from '@mui/material';
 
 const LinksEditor = ({ navigate }) => {
     const [links, setLinks] = useState([]);
-    const [selectedLinkIndex, setSelectedLinkIndex] = useState(null);
+    const [selectedIndex, setSelectedIndex] = useState(null);
     const [saved, setSaved] = useState(true);
+    const [disableButtons, setDisableButtons] = useState(false);
+    const [refreshProfile, setRefreshProfile] = useState(0);
+    const newLink = { name: "name", url: "https://" };
 
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                let response = await fetch(`/api/v1/profile`);
-                const profileData = await response.json();
+                const getProfile = await axios.get(`/api/v1/profile`);
+                const profileData = getProfile.data;
+                const links = profileData.links || [newLink];
 
-                if (profileData.links) {
-                    setLinks(profileData.links);
+                setLinks(links);
+
+                if (!selectedIndex || selectedIndex >= links.length) {
+                    setSelectedIndex(0);
                 }
-                else {
-                    setLinks([{ name: "name", url: "https://" }]);
-                }
-                setSelectedLinkIndex(0);
             } catch (error) {
                 console.error('Error fetching profile data:', error);
             }
         };
 
         fetchProfile();
-    }, []);
+    }, [refreshProfile]);
 
     const handleSaveClick = async () => {
-        try {
-            const response = await fetch('/api/v1/profile', {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json', },
-                body: JSON.stringify({ links: links }),
-            });
+        setDisableButtons(true);
 
-            if (response.ok) {
-                setSaved(true);
-            } else {
-                const data = await response.json();
-                console.error('Error updating profile:', data.message);
-                alert(data.message);
-            }
+        try {
+            await axios.patch('/api/v1/profile', { links: links });
+            setSaved(true);
+            setRefreshProfile((prevKey) => prevKey + 1);
         } catch (error) {
             console.error('Error updating profile:', error);
+            alert(`Error saving: ${error.response.data?.message || error}`);
         }
+
+        setDisableButtons(false);
     };
 
     const handleAddLink = async () => {
-        setLinks([
-            ...links,
-            { name: "name", url: "https://" },
-        ]);
-        setSelectedLinkIndex(links.length);
+        const newLinks = [...links, newLink];
+        setLinks(newLinks);
+        setSelectedIndex(links.length);
         setSaved(false);
     };
 
     const handleRemoveLink = async () => {
-        setLinks(links.filter((_, index) => index !== selectedLinkIndex));
-        setSelectedLinkIndex(0);
+        const newLinks = links.filter((_, index) => index !== selectedIndex);
+        setSelectedIndex(0);
+        setLinks(newLinks);
         setSaved(false);
     };
 
@@ -76,14 +74,31 @@ const LinksEditor = ({ navigate }) => {
         setSaved(false);
     };
 
+    if (!links || selectedIndex >= links.length) {
+        return (
+            <Grid container direction="row" justifyContent="center" alignItems="center" spacing={3} >
+                <Grid item>
+                    <Button variant="contained" color="primary" onClick={handleAddLink} disabled={links.length > 5 || disableButtons}>
+                        Add Link
+                    </Button>
+                </Grid>
+                <Grid item>
+                    <Button variant="contained" color="primary" onClick={handleSaveClick} disabled={saved || disableButtons}>
+                        Save
+                    </Button>
+                </Grid>
+            </Grid>
+        );
+    }
+
     return (
         <Grid container direction="column" justifyContent="flex-start" alignItems="center" spacing={3} >
             <Grid item>
                 <Select
                     style={{ width: '300px' }}
-                    value={selectedLinkIndex}
+                    value={selectedIndex}
                     fullWidth
-                    onChange={(event) => setSelectedLinkIndex(event.target.value)}
+                    onChange={(event) => setSelectedIndex(event.target.value)}
                 >
                     {links && links.map((link, index) => (
                         <MenuItem value={index} key={index}>
@@ -93,22 +108,22 @@ const LinksEditor = ({ navigate }) => {
                 </Select>
             </Grid>
             <Grid item>
-                {selectedLinkIndex !== null &&
+                {selectedIndex !== null &&
                     <form style={{ width: '300px' }}>
                         <TextField
                             label="Link Name"
-                            value={links[selectedLinkIndex].name}
+                            value={links[selectedIndex].name}
                             onChange={(e) =>
-                                handleLinkNameChange(e, selectedLinkIndex)
+                                handleLinkNameChange(e, selectedIndex)
                             }
                             fullWidth
                             margin="normal"
                         />
                         <TextField
                             label="URL"
-                            value={links[selectedLinkIndex].url}
+                            value={links[selectedIndex].url}
                             onChange={(e) =>
-                                handleLinkUrlChange(e, selectedLinkIndex)
+                                handleLinkUrlChange(e, selectedIndex)
                             }
                             fullWidth
                             margin="normal"
@@ -118,17 +133,17 @@ const LinksEditor = ({ navigate }) => {
             </Grid>
             <Grid container direction="row" justifyContent="center" alignItems="center" spacing={3} >
                 <Grid item>
-                    <Button variant="contained" color="primary" onClick={handleAddLink} disabled={links.length > 5}>
+                    <Button variant="contained" color="primary" onClick={handleAddLink} disabled={links.length > 5 || disableButtons}>
                         Add Link
                     </Button>
                 </Grid>
                 <Grid item>
-                    <Button variant="contained" color="primary" onClick={handleRemoveLink} disabled={links.length < 2}>
+                    <Button variant="contained" color="primary" onClick={handleRemoveLink} disabled={disableButtons}>
                         Remove
                     </Button>
                 </Grid>
                 <Grid item>
-                    <Button variant="contained" color="primary" onClick={handleSaveClick} disabled={saved}>
+                    <Button variant="contained" color="primary" onClick={handleSaveClick} disabled={saved || disableButtons}>
                         Save
                     </Button>
                 </Grid>

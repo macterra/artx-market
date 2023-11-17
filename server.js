@@ -878,7 +878,25 @@ app.patch('/api/v1/profile/', ensureAuthenticated, async (req, res) => {
         }
 
         if (links) {
-            // TBD verify links
+            for (const link of links) {
+                link.name = link.name.trim();
+
+                if (!link.name) {
+                    return res.status(400).json({ message: "link names can't be blank" });
+                }
+
+                try {
+                    link.url = link.url.trim();
+                    // Add https:// to link if missing
+                    if (!link.url.startsWith('http://') && !link.url.startsWith('https://')) {
+                        link.url = 'https://' + link.url;
+                    }
+                    await axios.get(link.url, { timeout: 3000 });
+                } catch (error) {
+                    return res.status(400).json({ message: `${link.url} is not a valid link: ${error}` });
+                }
+            }
+
             agentData.links = links;
         }
 
