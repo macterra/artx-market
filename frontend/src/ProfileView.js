@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Box, Tab, Tabs } from '@mui/material';
+import axios from 'axios';
+
 import CollectionGrid from './CollectionGrid';
 import ImageGrid from './ImageGrid';
 
@@ -13,11 +15,11 @@ const ProfileView = () => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const response = await fetch(`/api/v1/profile/${xid}`);
-                const profileData = await response.json();
-                setProfile(profileData);
+                const getProfile = await axios.get(`/api/v1/profile/${xid}`);
+                setProfile(getProfile.data);
             } catch (error) {
                 console.error('Error fetching profile data:', error);
+                // Let ProfileHeader navigate to home
             }
         };
 
@@ -28,15 +30,11 @@ const ProfileView = () => {
         return <p></p>;
     }
 
-    const handleTabChange = (event, newTab) => {
-        setTab(newTab);
-    };
-
     return (
         <Box>
             <Tabs
                 value={tab}
-                onChange={handleTabChange}
+                onChange={(_, newTab) => { setTab(newTab); }}
                 indicatorColor="primary"
                 textColor="primary"
                 variant="scrollable"

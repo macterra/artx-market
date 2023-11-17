@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Button } from '@mui/material';
+import axios from 'axios';
 
 const ProfileHeader = () => {
     const { xid } = useParams();
@@ -12,11 +13,11 @@ const ProfileHeader = () => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const response = await fetch(`/api/v1/profile/${xid}`);
-                const profileData = await response.json();
-                setProfile(profileData);
+                const getProfile = await axios.get(`/api/v1/profile/${xid}`);
+                setProfile(getProfile.data);
             } catch (error) {
                 console.error('Error fetching profile data:', error);
+                navigate('/');
             }
         };
 
@@ -24,7 +25,7 @@ const ProfileHeader = () => {
     }, [xid]);
 
     if (!profile) {
-        return <p>...</p>;
+        return <p></p>;
     }
 
     const linkStyle = {

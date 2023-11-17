@@ -251,6 +251,11 @@ function getAgentAndCollections(profileId, userId) {
     }
 
     let agentData = agent.getAgent(profileId);
+
+    if (!agentData) {
+        return;
+    }
+
     const assets = agent.getAssets(profileId);
 
     let collections = {};
