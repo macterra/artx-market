@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import {
     Table,
     TableBody,
@@ -67,8 +68,8 @@ const TokenHistory = ({ metadata, xid }) => {
                 }
 
                 if (record.type === 'list') {
-                    const response = await fetch(`/api/v1/asset/${record.edition}`);
-                    const edition = await response.json();
+                    const getEdition = await axios.get(`/api/v1/asset/${record.edition}`);
+                    const edition = getEdition.data;
 
                     if (record.price === 0) {
                         setMessage(
@@ -87,8 +88,8 @@ const TokenHistory = ({ metadata, xid }) => {
                 }
 
                 if (record.type === 'sale') {
-                    const response = await fetch(`/api/v1/asset/${record.edition}`);
-                    const edition = await response.json();
+                    const getEdition = await axios.get(`/api/v1/asset/${record.edition}`);
+                    const edition = getEdition.data;
 
                     setMessage(
                         <div style={{ display: 'flex', alignItems: 'center' }}>

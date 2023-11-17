@@ -8,6 +8,7 @@ import {
     TableHead,
     Paper,
 } from '@mui/material';
+import axios from 'axios';
 import utils from './utils';
 
 const AuditLog = () => {
@@ -15,13 +16,13 @@ const AuditLog = () => {
 
     useEffect(() => {
         const fetchLog = async () => {
-            const response = await fetch(`/api/v1/admin/auditlog`);
-
-            if (response.ok) {
-                const txnlog = await response.json();
-                setTxnLog(txnlog);
+            try {
+                const getAuditLog = await axios.get(`/api/v1/admin/auditlog`);
+                setTxnLog(getAuditLog.data);
+            } catch (error) {
+                console.log(error);
             }
-        };
+        }
 
         fetchLog();
     }, []);

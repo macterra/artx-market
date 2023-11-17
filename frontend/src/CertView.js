@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { Box, Table, TableBody, TableRow, TableCell, Tab, Tabs } from '@mui/material';
 
 const CertView = () => {
@@ -13,21 +14,15 @@ const CertView = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetch(`/api/v1/cert/${xid}`);
+                const getCert = await axios.get(`/api/v1/cert/${xid}`);
+                const cert = getCert.data;
 
-                if (response.status !== 200) {
-                    navigate('/');
-                    return;
-                }
-
-                console.log(`CertView status=${response.status}`);
-
-                const cert = await response.json();
                 setCert(cert);
                 setCertJson(JSON.stringify(cert, null, 2));
                 setTab("cert");
             } catch (error) {
-                console.error('Error fetching admin data:', error);
+                console.error('Error fetching cert data:', error);
+                navigate('/');
             }
         };
 

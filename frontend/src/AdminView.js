@@ -10,9 +10,7 @@ const AdminView = () => {
 
     const [admin, setAdmin] = useState(null);
     const [disableButton, setDisableButton] = useState(false);
-    const [disableVerify, setDisableVerify] = useState(false);
     const [tab, setTab] = useState(null);
-    const [logs, setLogs] = useState([]);
     const [walletInfo, setWalletInfo] = useState(null);
     const [walletJson, setWalletJson] = useState(null);
     const [userList, setUserList] = useState(null);
@@ -64,7 +62,7 @@ const AdminView = () => {
     const handleSave = async () => {
         setDisableButton(true);
         try {
-            const getAdmin = await fetch('/api/v1/admin/save');
+            const getAdmin = await axios.get('/api/v1/admin/save');
             const admin = getAdmin.data;
 
             if (admin.xid) {
@@ -138,32 +136,6 @@ const AdminView = () => {
             console.error('Error fetching admin data:', error);
         }
         setDisableButton(false);
-    };
-
-    const pinAssets = async () => {
-        setDisableVerify(true);
-        setLogs([]);
-
-        const getAssets = await axios.get('/api/v1/admin/assets');
-        const assets = getAssets.data;
-        const logs = [];
-
-        for (const [i, xid] of assets.entries()) {
-            const response = await fetch(`/api/v1/admin/pin/asset/${xid}`);
-            const asset = await response.json();
-            const index = (i + 1).toString().padStart(5, " ");
-
-            if (asset.cid) {
-                logs.push(`${index} Asset ${xid} ${asset.cid}`);
-            }
-            else if (asset.error) {
-                logs.push(`${index} Asset ${xid} ${asset.error}`);
-            }
-
-            setLogs([...logs]);
-        }
-
-        setDisableVerify(false);
     };
 
     if (!admin.owner) {
@@ -292,23 +264,6 @@ const AdminView = () => {
                             <Grid item>
                                 <Button variant="contained" color="primary" onClick={handleCertify} disabled={!admin.pending || disableButton}>
                                     Certify
-                                </Button>
-                            </Grid>
-                        </Grid>
-                    </Box>
-                }
-                {tab === 'verify' &&
-                    <Box>
-                        <textarea
-                            value={logs.join('\n')}
-                            readOnly
-                            style={{ width: '400px', height: '300px', overflow: 'auto' }}
-                        />
-                        <br></br>
-                        <Grid container direction="row" justifyContent="center" alignItems="center" spacing={3}>
-                            <Grid item>
-                                <Button variant="contained" color="primary" onClick={pinAssets} disabled={disableVerify}>
-                                    Pin Assets
                                 </Button>
                             </Grid>
                         </Grid>

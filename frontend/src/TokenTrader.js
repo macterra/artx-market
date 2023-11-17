@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import {
     Box,
     Button,
@@ -12,7 +13,6 @@ import {
     TableRow,
     TextField,
 } from '@mui/material';
-import axios from 'axios';
 import InvoiceView from './InvoiceView';
 
 const TokenTrader = ({ metadata, xid, setRefreshKey }) => {
@@ -26,23 +26,21 @@ const TokenTrader = ({ metadata, xid, setRefreshKey }) => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const response = await fetch('/api/v1/rates');
-                const xrates = await response.json();
+                const getRates = await axios.get('/api/v1/rates');
+                const xrates = getRates.data;
                 setExchangeRate(xrates.bitcoin.usd);
 
                 const nfts = [];
 
                 if (xid) {
                     // single NFT specified from NftView
-                    const response = await fetch(`/api/v1/asset/${xid}`);
-                    const nft = await response.json();
-                    nfts.push(nft);
+                    const getNft = await axios.get(`/api/v1/asset/${xid}`);
+                    nfts.push(getNft.data);
                 }
                 else {
                     for (const xid of metadata.token.nfts) {
-                        const response = await fetch(`/api/v1/asset/${xid}`);
-                        const nft = await response.json();
-                        nfts.push(nft);
+                        const getNft = await axios.get(`/api/v1/asset/${xid}`);
+                        nfts.push(getNft.data);
                     }
                 }
 
@@ -61,22 +59,12 @@ const TokenTrader = ({ metadata, xid, setRefreshKey }) => {
 
     const handleListClick = async (nft) => {
         try {
-            const response = await fetch(`/api/v1/asset/${nft.xid}/list`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', },
-                body: JSON.stringify({ price: nft.nft.newPrice }),
-            });
-
-            if (response.ok) {
-                nft.nft.price = nft.nft.newPrice;
-                setRefreshKey((prevKey) => prevKey + 1);
-            } else {
-                const data = await response.json();
-                console.error('Error listing:', data.message);
-                alert(data.message);
-            }
+            const response = await axios.post(`/api/v1/asset/${nft.xid}/list`, { price: nft.nft.newPrice });
+            nft.nft.price = nft.nft.newPrice;
+            setRefreshKey((prevKey) => prevKey + 1);
         } catch (error) {
             console.error('Error listing:', error);
+            alert(error.response.data.nessage);
         }
     };
 

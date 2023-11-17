@@ -1,5 +1,6 @@
 
 import { useEffect, useState } from 'react';
+import axios from 'axios';
 
 const AgentBadge = ({ agent, xid, fontSize }) => {
 
@@ -8,11 +9,11 @@ const AgentBadge = ({ agent, xid, fontSize }) => {
     useEffect(() => {
         const fetchAgent = async () => {
             if (xid) {
-                const response = await fetch(`/api/v1/profile/${xid}`);
-
-                if (response.ok) {
-                    const user = await response.json();
-                    setUser(user);
+                try {
+                    const getProfile = await axios.get(`/api/v1/profile/${xid}`);
+                    setUser(getProfile.data);
+                } catch (error) {
+                    console.log(error);
                 }
             }
             else {

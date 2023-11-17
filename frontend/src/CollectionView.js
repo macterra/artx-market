@@ -9,7 +9,7 @@ import AgentBadge from './AgentBadge';
 const CollectionView = () => {
     const { xid } = useParams();
     const navigate = useNavigate();
-    
+
     const [collection, setCollection] = useState(null);
     const [images, setImages] = useState(null);
     const [refreshKey, setRefreshKey] = useState(0);
@@ -24,8 +24,8 @@ const CollectionView = () => {
             try {
                 console.log(`fetchCollection ${refreshKey}`);
 
-                const response = await axios.get(`/api/v1/collections/${xid}`);
-                const collection = response.data;
+                const getCollection = await axios.get(`/api/v1/collections/${xid}`);
+                const collection = getCollection.data;
 
                 if (collection) {
                     setCollection(collection);
@@ -35,11 +35,11 @@ const CollectionView = () => {
                     return navigate('/');
                 }
 
-                const rates = await axios.get('/api/v1/rates');
-                const uploadRate = rates.data.uploadRate;
+                const getRates = await axios.get('/api/v1/rates');
+                const uploadRate = getRates.data.uploadRate;
 
-                const profile = await axios.get('/api/v1/profile');
-                const credits = profile.data.credits;
+                const getProfile = await axios.get('/api/v1/profile');
+                const credits = getProfile.data.credits;
 
                 setCredits(credits);
                 setDisableUpload(credits < 1);
@@ -105,18 +105,12 @@ const CollectionView = () => {
         setDisableMintAll(true);
 
         try {
-            const response = await fetch(`/api/v1/collections/${collection.xid}/mint-all`);
-
-            if (response.ok) {
-                setRefreshKey((prevKey) => prevKey + 1);
-            } else {
-                const data = await response.json();
-                console.error('Error:', data.message);
-                alert(data.message);
-            }
+            await axios.get(`/api/v1/collections/${collection.xid}/mint-all`);
+            setRefreshKey((prevKey) => prevKey + 1);
         }
         catch (error) {
             console.error('Error:', error);
+            alert(error.response.data.message);
         }
     };
 

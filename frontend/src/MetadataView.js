@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import {
     Table,
     TableBody,
@@ -61,8 +62,8 @@ const MetadataView = ({ navigate, metadata }) => {
                     setIsDeleted(true);
                 }
                 else {
-                    const response = await fetch(`/api/v1/collections/${metadata.asset.collection}`);
-                    const collectionData = await response.json();
+                    const getCollection = await axios.get(`/api/v1/collections/${metadata.asset.collection}`);
+                    const collectionData = getCollection.data;
                     const { firstXid, prevXid, nextXid, lastXid } = findAdjacentXids(collectionData.collection.assets, metadata.xid);
 
                     setCollectionId(collectionData.xid);

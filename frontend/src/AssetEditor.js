@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button, TextField, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import axios from 'axios';
 
 const AssetEditor = ({ metadata, setTab, setRefreshKey }) => {
     const [title, setTitle] = useState(null);
@@ -9,8 +10,8 @@ const AssetEditor = ({ metadata, setTab, setRefreshKey }) => {
     useEffect(() => {
         const fetchMetadata = async () => {
             try {
-                const profileResponse = await fetch('/api/v1/profile');
-                const profileData = await profileResponse.json();
+                const getProfile = await axios.get('/api/v1/profile');
+                const profileData = getProfile.data;
 
                 setTitle(metadata.asset.title);
                 setSelectedCollection(metadata.asset.collection);
@@ -29,45 +30,25 @@ const AssetEditor = ({ metadata, setTab, setRefreshKey }) => {
 
     const handleSaveClick = async () => {
         try {
-            const response = await fetch(`/api/v1/asset/${metadata.xid}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title: title, collection: selectedCollection }),
-            });
-
-            if (response.ok) {
-                metadata.asset.title = title;
-                metadata.asset.collection = selectedCollection;
-                setTab("meta");
-            } else {
-                const data = await response.json();
-                console.error('Error updating metadata:', data.message);
-                alert(data.message);
-            }
+            await axios.patch(`/api/v1/asset/${metadata.xid}`, { title: title, collection: selectedCollection });
+            metadata.asset.title = title;
+            metadata.asset.collection = selectedCollection;
+            setTab("meta");
         } catch (error) {
             console.error('Error updating metadata:', error);
+            alert(error.response.data.message);
         }
     };
 
     const handleDeleteClick = async () => {
         try {
-            const response = await fetch(`/api/v1/asset/${metadata.xid}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ collection: 'deleted' }),
-            });
-
-            if (response.ok) {
-                metadata.asset.collection = 'deleted';
-                setTab("meta");
-                setRefreshKey((prevKey) => prevKey + 1);
-            } else {
-                const data = await response.json();
-                console.error('Error updating metadata:', data.message);
-                alert(data.message);
-            }
+            await axios.patch(`/api/v1/asset/${metadata.xid}`, { collection: 'deleted' });
+            metadata.asset.collection = 'deleted';
+            setTab("meta");
+            setRefreshKey((prevKey) => prevKey + 1);
         } catch (error) {
             console.error('Error updating metadata:', error);
+            alert(error.response.data.message);
         }
     };
 

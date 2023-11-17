@@ -1,16 +1,18 @@
 const { requestInvoice } = require('lnurl-pay');
+const axios = require('axios');
 const config = require('./config');
 
 const checkServer = async () => {
-    const response = await fetch(`https://${config.ln_host}/api/v1/wallet`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-API-KEY': config.ln_api_key,
-        },
-    });
+    try {
+        const response = await axios.get(`https://${config.ln_host}/api/v1/wallet`, {
+            headers: { 'X-API-KEY': config.ln_api_key },
+        });
 
-    return response.ok;
+        return response.status === 200;
+    } catch (error) {
+        console.error(error);
+        return false;
+    }
 };
 
 const createInvoice = async (amount, memo, expiry) => {
@@ -24,29 +26,22 @@ const createInvoice = async (amount, memo, expiry) => {
             expiry: expiry || 180,
         };
 
-        const response = await fetch(`https://${config.ln_host}/api/v1/payments`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-API-KEY': config.ln_api_key,
-            },
-            body: JSON.stringify(data),
+        const getInvoice = await axios.post(`https://${config.ln_host}/api/v1/payments`, data, {
+            headers: { 'X-API-KEY': config.ln_api_key },
         });
 
-        if (response.ok) {
-            const invoiceData = await response.json();
+        const invoiceData = getInvoice.data;
 
-            invoiceData.qrcode = `https://${config.ln_host}/api/v1/qrcode/${invoiceData.payment_request}`;
-            invoiceData.paylink = `lightning:${invoiceData.payment_request}`;
-            invoiceData.wslink = `wss://${config.ln_host}/api/v1/ws/${config.ln_wallet}`;
-            invoiceData.amount = data.amount;
-            invoiceData.memo = data.memo;
-            invoiceData.expiry = data.expiry;
+        invoiceData.qrcode = `https://${config.ln_host}/api/v1/qrcode/${invoiceData.payment_request}`;
+        invoiceData.paylink = `lightning:${invoiceData.payment_request}`;
+        invoiceData.wslink = `wss://${config.ln_host}/api/v1/ws/${config.ln_wallet}`;
+        invoiceData.amount = data.amount;
+        invoiceData.memo = data.memo;
+        invoiceData.expiry = data.expiry;
 
-            console.log(`invoice: ${JSON.stringify(invoiceData, null, 2)}`);
+        console.log(`invoice: ${JSON.stringify(invoiceData, null, 2)}`);
 
-            return invoiceData;
-        }
+        return invoiceData;
     }
     catch (error) {
         console.log(error);
@@ -57,22 +52,13 @@ const createInvoice = async (amount, memo, expiry) => {
 
 const checkPayment = async (payment_hash) => {
     try {
-        const response = await fetch(`https://${config.ln_host}/api/v1/payments/${payment_hash}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-API-KEY': config.ln_api_key,
-            },
+        const getCheck = await axios.get(`https://${config.ln_host}/api/v1/payments/${payment_hash}`, {
+            headers: { 'X-API-KEY': config.ln_api_key },
         });
 
-        if (response.ok) {
-            const check = await response.json();
-            console.log(`checkPayment: ${JSON.stringify(check, null, 2)}`);
-            return check;
-        }
-        else {
-            console.log(`checkPayment: ${response}`);
-        }
+        const check = getCheck.data;
+        console.log(`checkPayment: ${JSON.stringify(check, null, 2)}`);
+        return check;
     }
     catch (error) {
         console.log(`checkPayment: ${error}`);
@@ -83,17 +69,11 @@ const checkPayment = async (payment_hash) => {
 
 const checkAddress = async (address) => {
     try {
-        const response = await fetch(`https://${config.ln_host}/api/v1/lnurlscan/${address}`, {
-            method: 'GET',
-            headers: {
-                'X-API-KEY': config.ln_api_key,
-            },
+        const getCheck = await axios.get(`https://${config.ln_host}/api/v1/lnurlscan/${address}`, {
+            headers: { 'X-API-KEY': config.ln_api_key },
         });
 
-        if (response.ok) {
-            const scan = await response.json();
-            return scan;
-        }
+        return getCheck.data;
     }
     catch (error) {
         console.log(error);
@@ -121,17 +101,11 @@ const sendPayment = async (address, amount, comment) => {
             bolt11: invoice,
         };
 
-        const response = await fetch(`https://${config.ln_host}/api/v1/payments`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-API-KEY': config.ln_admin_key,
-            },
-            body: JSON.stringify(data),
+        const getPayment = await axios.post(`https://${config.ln_host}/api/v1/payments`, data, {
+            headers: { 'X-API-KEY': config.ln_admin_key }
         });
 
-        const result = await response.json();
-        return result;
+        return getPayment.data;
     }
     catch (error) {
         console.log(error);

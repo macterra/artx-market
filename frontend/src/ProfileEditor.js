@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { Box, Tab, Tabs } from '@mui/material';
 
 import NameEditor from './NameEditor';
@@ -22,16 +23,9 @@ const ProfileEditor = () => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const response = await fetch(`/api/v1/profile`);
-
-                if (response.ok) {
-                    const data = await response.json();
-                    setProfile(data);
-                }
-                else {
-                    navigate('/');
-                }
-
+                const getProfile = await axios.get(`/api/v1/profile`);
+                setProfile(getProfile.data);
+                
                 if (!tab) {
                     setTab(jump || 'name');
                 }
