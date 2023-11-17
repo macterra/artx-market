@@ -32,7 +32,7 @@ function ScrollToTopButton() {
 
 function ContentFooter() {
     return (
-        <div style={{ height: '80px' }}>
+        <div style={{ height: '100px' }}>
             <ScrollToTopButton />
         </div>
     );
