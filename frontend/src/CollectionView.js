@@ -27,23 +27,26 @@ const CollectionView = () => {
                 const getCollection = await axios.get(`/api/v1/collections/${xid}`);
                 const collection = getCollection.data;
 
-                const getRates = await axios.get('/api/v1/rates');
-                const uploadRate = getRates.data.uploadRate;
-
-                const getProfile = await axios.get('/api/v1/profile');
-                const credits = getProfile.data.credits;
-                const budget = credits / uploadRate / 1000000;
-
                 setCollection(collection);
                 setImages(collection.collection.assets);
-
-                setCredits(credits);
-                setDisableUpload(credits < 1);
 
                 setShowMintAll(collection.costToMintAll > 0);
                 setDisableMintAll(collection.costToMintAll > credits);
 
-                setBudget(budget.toFixed(2));
+                const getAuth = await axios.get('/check-auth');
+                const auth = getAuth.data;
+
+                if (auth.isAuthenticated) {
+                    const getRates = await axios.get('/api/v1/rates');
+                    const uploadRate = getRates.data.uploadRate;
+                    const getProfile = await axios.get('/api/v1/profile');
+                    const credits = getProfile.data.credits;
+                    const budget = credits / uploadRate / 1000000;
+
+                    setCredits(credits);
+                    setDisableUpload(credits < 1);
+                    setBudget(budget.toFixed(2));
+                }
             } catch (error) {
                 console.error('Error fetching data:', error);
                 return navigate('/');
