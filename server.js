@@ -968,6 +968,10 @@ app.get('/api/v1/collections/:xid', async (req, res) => {
         const userId = req.user?.xid;
         const collection = xidb.getCollection(req.params.xid, userId);
 
+        if (!collection) {
+            return res.status(404).json({ message: 'Collection not found' });
+        }
+
         // Sort assets by created date
         collection.collection.assets = collection.collection.assets.sort((a, b) => {
             return a.asset.created.localeCompare(b.asset.created);

@@ -27,19 +27,15 @@ const CollectionView = () => {
                 const getCollection = await axios.get(`/api/v1/collections/${xid}`);
                 const collection = getCollection.data;
 
-                if (collection) {
-                    setCollection(collection);
-                    setImages(collection.collection.assets);
-                }
-                else {
-                    return navigate('/');
-                }
-
                 const getRates = await axios.get('/api/v1/rates');
                 const uploadRate = getRates.data.uploadRate;
 
                 const getProfile = await axios.get('/api/v1/profile');
                 const credits = getProfile.data.credits;
+                const budget = credits / uploadRate / 1000000;
+
+                setCollection(collection);
+                setImages(collection.collection.assets);
 
                 setCredits(credits);
                 setDisableUpload(credits < 1);
@@ -47,10 +43,10 @@ const CollectionView = () => {
                 setShowMintAll(collection.costToMintAll > 0);
                 setDisableMintAll(collection.costToMintAll > credits);
 
-                const budget = credits / uploadRate / 1000000;
                 setBudget(budget.toFixed(2));
             } catch (error) {
                 console.error('Error fetching data:', error);
+                return navigate('/');
             }
         };
 
