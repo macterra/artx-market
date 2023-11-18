@@ -1,13 +1,22 @@
-digraph G { 
+digraph G {
+  label="ArtX Architecture";
+  fontsize=18;
+
   node [shape=box];
-  React -> Express; 
-  Express -> Archiver; 
-  Express -> SatsPay; 
-  SatsPay -> LNBits;
+  Client [style=filled, fillcolor=lightblue];
+  API [style=filled, fillcolor=lightblue];
+  Archiver [style=filled, fillcolor=lightblue];
+  Pinner [style=filled, fillcolor=lightblue];
+  Client -> API;
+  API -> Archiver;
+  API -> LNBits;
+  API -> nostr;
   LNBits -> LND;
-  LND -> Bitcoin;
-  Express -> IPFS; 
-  Archiver -> git; 
-  Archiver -> IPFS; 
-  Archiver -> Bitcoin; 
+  LND -> bitcoin;
+  API -> IPFS;
+  Archiver -> git;
+  Archiver -> IPFS;
+  Archiver -> bitcoin;
+  Archiver -> twitter;
+  Pinner -> IPFS;
 }

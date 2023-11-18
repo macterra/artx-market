@@ -1,4 +1,7 @@
 digraph G {
+  label="API Modules";
+  fontsize=18;
+
   node [shape=box];
   xidb -> agent;
   xidb -> asset;
