@@ -19,8 +19,8 @@ services:
       NOSTR_RELAYS: ws://nostr:7777,ws://100.123.100.48:4848
       NOSTR_ANNOUNCE: sale,list
       NOTARIZE_FREQUENCY: 24
-      NOTARIZE_MIN_FEE: 1
-      NOTARIZE_MAX_FEE: 11
+      NOTARIZE_MIN_FEE: 2
+      NOTARIZE_MAX_FEE: 6
       NOTARIZE_RBF_RATE: 2
     depends_on:
       - archiver
