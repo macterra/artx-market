@@ -33,6 +33,7 @@ const AssetView = () => {
                 setIsOwner(metadata.userIsOwner);
             } catch (error) {
                 console.error('Error fetching metadata:', error);
+                navigate('/');
             }
         };
 
