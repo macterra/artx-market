@@ -9,6 +9,7 @@ const agent = require('./agent');
 const admin = require('./admin');
 const archiver = require('./archiver');
 const lnbits = require('./lnbits');
+const dateFns = require('date-fns');
 
 async function waitForArchiver() {
     let isReady = false;
@@ -518,6 +519,14 @@ function saveNft(xid, config = realConfig) {
     assetData.collection.link = `${config.link}/collection/${assetData.collection.xid}`;
     assetData.owner.link = `${config.link}/profile/${assetData.owner.xid}`;
     assetData.creator.link = `${config.link}/profile/${assetData.creator.xid}`;
+
+    const formatTime = (timestamp) => {
+        const date = new Date(timestamp);
+        return dateFns.format(date, "yyyy-MM-dd HH:mm:ss");
+    };
+
+    assetData.nft.minted = formatTime(assetData.asset.created);
+    assetData.nft.collected = formatTime(assetData.asset.updated);
 
     const templatePath = path.join(config.data, 'nft.ejs');
     const template = fs.readFileSync(templatePath, 'utf8');

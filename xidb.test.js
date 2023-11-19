@@ -147,10 +147,11 @@ describe('saveNft', () => {
         const mockCollectionXid = 'mockCollectionXid';
         const mockOwnerXid = 'mockOwnerXid';
         const mockCreatorXid = 'mockCreatorXid';
+        const mockTimestamp = new Date().toISOString();
 
         const mockNftData = {
             xid: mockNftXid,
-            asset: { owner: mockOwnerXid },
+            asset: { owner: mockOwnerXid, created: mockTimestamp, updated: mockTimestamp },
             nft: { token: mockTokenXid, title: 'mockNftTitle' }
         };
 
@@ -219,6 +220,7 @@ describe('saveNft', () => {
             xid: mockNftXid,
             asset: {
                 owner: mockOwnerData.xid,
+                created: expect.any(String),
                 updated: expect.any(String),
             },
             nft: {
@@ -227,6 +229,8 @@ describe('saveNft', () => {
                 preview: `${config.link}${mockTokenData.file.path}`,
                 image: '../mockPreviewImage',
                 link: `${config.link}/nft/${mockNftXid}`,
+                minted: expect.any(String),
+                collected: expect.any(String),
             },
             owner: {
                 ...mockOwnerData,

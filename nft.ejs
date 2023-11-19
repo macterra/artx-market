@@ -3,7 +3,7 @@
 
 <head>
     <title>
-        <%= nft.title %>
+        <%= nft.title %> by <%= creator.name %>
     </title>
 
     <meta property="og:title" content="<%= nft.title %>" />
@@ -14,6 +14,8 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@artxmarket" />
     <meta name="twitter:title" content="<%= nft.title %>" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <style>
         body {
@@ -39,6 +41,9 @@
 
         .container {
             display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            width: 100%;
             flex-wrap: wrap;
         }
 
@@ -148,7 +153,7 @@
                             Collected:
                         </td>
                         <td>
-                            <%= asset.updated %>
+                            <%= nft.collected %>
                         </td>
                     </tr>
                     <tr>
@@ -169,7 +174,7 @@
                             Minted:
                         </td>
                         <td>
-                            <%= asset.created %>
+                            <%= nft.minted %>
                         </td>
                     </tr>
                     <tr>
