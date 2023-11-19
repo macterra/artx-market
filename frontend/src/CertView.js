@@ -34,7 +34,7 @@ const CertView = () => {
     }
 
     return (
-        <Box>
+        <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" style={{ width: '90vw' }}>
             <div>Certificate</div>
             <div>
                 <Tabs
