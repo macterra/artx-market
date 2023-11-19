@@ -2,6 +2,10 @@
 <html>
 
 <head>
+    <title>
+        <%= nft.title %>
+    </title>
+
     <meta property="og:title" content="<%= nft.title %>" />
     <meta property="og:description" content="ArtX Market :: Built on Bitcoin" />
     <meta property="og:image" content="<%= nft.preview %>" />
@@ -15,12 +19,12 @@
         body {
             font-family: Roboto, Helvetica, Arial, sans-serif;
             font-weight: 400;
-            background-color: #282c34;
+            background-color: #0A2647;
             color: white;
         }
 
         a {
-            text-decoration: none;
+            text-decoration: underline;
             color: #fff;
         }
 
@@ -35,12 +39,23 @@
 
         .container {
             display: flex;
+            flex-wrap: wrap;
         }
 
-        .left,
-        .right {
+        .left-pane,
+        .right-pane {
             width: 50%;
             padding: 16px;
+            box-sizing: border-box;
+        }
+
+        /* Media query for screens narrower than 768px */
+        @media (max-width: 767px) {
+
+            .left-pane,
+            .right-pane {
+                width: 100%;
+            }
         }
 
         table {
@@ -76,10 +91,10 @@
 
 <body>
     <div class="container">
-        <div class="left">
+        <div class="left-pane">
             <img src="<%= nft.image %>" alt="<%= nft.title %>" style="width: 100%">
         </div>
-        <div class="right">
+        <div class="right-pane">
             <table>
                 <tbody>
                     <tr>
