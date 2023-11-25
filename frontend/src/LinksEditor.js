@@ -9,7 +9,7 @@ const LinksEditor = ({ navigate }) => {
     const [saved, setSaved] = useState(true);
     const [disableButtons, setDisableButtons] = useState(false);
     const [refreshProfile, setRefreshProfile] = useState(0);
-    const newLink = { name: "name", url: "https://" };
+    const newLink = { name: "name", url: "" };
 
     useEffect(() => {
         const fetchProfile = async () => {
