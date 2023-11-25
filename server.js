@@ -240,6 +240,14 @@ app.get('/api/v1/licenses', async (req, res) => {
     res.json(ValidLicenses);
 });
 
+app.get('/api/v1/config', async (req, res) => {
+    res.json({
+        discordLink: config.discordLink,
+        issuesLink: config.issuesLink,
+        helpLink: config.helpLink,
+    });
+});
+
 app.get('/api/v1/admin', ensureAuthenticated, async (req, res) => {
     try {
         const adminData = admin.getAdmin();

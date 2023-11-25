@@ -30,7 +30,6 @@ const config = {
     assets: 'data/assets',
     agents: 'data/agents',
     certs: 'data/certs',
-    defaultPfp: 'data/defaultPfp.png',
     newUser: 'GuestUser',
     initialCredits: 10000,
     dns_ns: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
@@ -38,6 +37,9 @@ const config = {
     notarize_min_fee: process.env.NOTARIZE_MIN_FEE ? parseInt(process.env.NOTARIZE_MIN_FEE, 10) : 1,
     notarize_max_fee: process.env.NOTARIZE_MAX_FEE ? parseInt(process.env.NOTARIZE_MAX_FEE, 10) : 10,
     notarize_rbf_rate: process.env.NOTARIZE_RBF_RATE ? parseInt(process.env.NOTARIZE_RBF_RATE, 10) : 1,
+    discordLink: process.env.DISCORD_LINK || 'https://discord.gg/kVEhkywupg',
+    issuesLink: process.env.ISSUES_LINK || 'https://github.com/macterra/artx-market/issues',
+    helpLink: process.env.HELP_LINK || 'https://github.com/macterra/artx-market/wiki/Getting-Started',
 };
 
 module.exports = config;
