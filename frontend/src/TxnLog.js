@@ -32,7 +32,7 @@ const TxnLog = ({ profile, refreshProfile }) => {
 
     function assetLink(metadata) {
         const title = utils.truncateTitle(metadata.asset.title, 20);
-        return <a href={`/asset/${metadata.xid}`}>{title}</a>;
+        return <a href={`/asset/${metadata.xid}`}>"{title}"</a>;
     }
 
     function collectionLink(metadata) {
@@ -41,8 +41,8 @@ const TxnLog = ({ profile, refreshProfile }) => {
     }
 
     function nftLink(metadata) {
-        const title = utils.truncateTitle(metadata.asset.title, 20);
-        return <a href={`/nft/${metadata.xid}`}>{title}</a>;
+        const title = utils.truncateTitle(metadata.nft.title, 20);
+        return <a href={`/nft/${metadata.xid}`}>"{title}"</a>;
     }
 
     function profileLink(agent) {
@@ -131,30 +131,27 @@ const TxnLog = ({ profile, refreshProfile }) => {
 
                 if (record.type === 'sell') {
                     const edition = await getAsset(record.edition);
-                    const token = await getAsset(edition.nft.token);
                     const buyer = await getProfile(record.buyer);
 
-                    setMessage(<div>Sold "{assetLink(token)} ({nftLink(edition)})" to {profileLink(buyer)}.</div>);
+                    setMessage(<div>Sold {nftLink(edition)} to {profileLink(buyer)}.</div>);
                     setSats(record.sats || record.price);
                     setCredits(record.credits);
                 }
 
                 if (record.type === 'buy') {
                     const edition = await getAsset(record.edition);
-                    const token = await getAsset(edition.nft.token);
                     const seller = await getProfile(record.seller);
 
-                    setMessage(<div>Bought "{assetLink(token)} ({nftLink(edition)})" from {profileLink(seller)}.</div>);
+                    setMessage(<div>Bought {nftLink(edition)} from {profileLink(seller)}.</div>);
                     setSats(-(record.sats || record.price));
                 }
 
                 if (record.type === 'royalty') {
                     const edition = await getAsset(record.edition);
-                    const token = await getAsset(edition.nft.token);
                     const buyer = await getProfile(record.buyer);
                     const seller = await getProfile(record.seller);
 
-                    setMessage(<div>Royalty when {profileLink(seller)} sold "{assetLink(token)} ({nftLink(edition)})" to {profileLink(buyer)}.</div>);
+                    setMessage(<div>Royalty when {profileLink(seller)} sold {nftLink(edition)} to {profileLink(buyer)}.</div>);
                     setSats(record.sats);
                     setCredits(record.credits);
                 }
