@@ -98,19 +98,10 @@ const AppHeader = () => {
                             <AgentBadge xid={userId} fontSize={'.6em'} />
                         )
                     )}
-                    {isAdmin &&
-                        <Button color="inherit" onClick={() => navigate('/admin')}>
-                            Admin
-                        </Button>
-                    }
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                         &nbsp;
                     </Typography>
-                    {isAuthenticated ? (
-                        <Button color="inherit" onClick={handleLogout}>
-                            Logout
-                        </Button>
-                    ) : (
+                    {!isAuthenticated && (
                         <Button color="inherit" onClick={handleLogin}>
                             Login
                         </Button>
@@ -119,10 +110,7 @@ const AppHeader = () => {
                         color="inherit"
                         aria-controls="help-menu"
                         aria-haspopup="true"
-                        onClick={handleHelpMenuClick}
-                    >
-                        Help
-                    </Button>
+                        onClick={handleHelpMenuClick}>☰</Button>
                     <Menu
                         id="help-menu"
                         anchorEl={anchorEl}
@@ -130,8 +118,10 @@ const AppHeader = () => {
                         open={Boolean(anchorEl)}
                         onClose={handleHelpMenuClose}
                     >
+                        {isAdmin && <MenuItem onClick={() => navigate('/admin')}>Admin</MenuItem>}
                         <MenuItem onClick={handleGettingStartedClick}>Getting Started</MenuItem>
                         <MenuItem onClick={handleAboutClick}>About</MenuItem>
+                        {isAuthenticated && <MenuItem onClick={handleLogout}>Logout</MenuItem>}
                     </Menu>
                 </Toolbar>
             </AppBar>
