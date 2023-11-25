@@ -74,67 +74,59 @@ const CreditsTrader = ({ profile, setRefreshProfile }) => {
 
     return (
         <div>
-            <form>
-                <Grid container direction="column" alignItems="center">
+            <Grid container direction="column" alignItems="center" spacing={2}>
+                <Grid item>
+                    <TextField
+                        label="Current balance"
+                        value={balance}
+                        fullWidth
+                        margin="normal"
+                        sx={{ width: '20ch' }}
+                    />
+                </Grid>
+                <Grid item>
+                    <TextField
+                        label="Purchase (1 credit/sat)"
+                        value={purchase}
+                        fullWidth
+                        margin="normal"
+                        type="number"
+                        onChange={(e) => handlePurchaseChange(e.target.value)}
+                        inputProps={{
+                            min: minPurchase,
+                            max: maxPurchase,
+                        }}
+                        sx={{ width: '20ch' }}
+                    />
+                </Grid>
+                <Grid container spacing={2} justifyContent="center">
                     <Grid item>
-                        <TextField
-                            label="Current balance"
-                            value={balance}
-                            fullWidth
-                            margin="normal"
-                            sx={{ width: '20ch' }}
-                        />
+                        <Button variant="contained" color="primary" onClick={() => setPurchase(1000)}>
+                            1K
+                        </Button>
                     </Grid>
                     <Grid item>
-                        <TextField
-                            label="Purchase (1 credit/sat)"
-                            value={purchase}
-                            fullWidth
-                            margin="normal"
-                            type="number"
-                            onChange={(e) => handlePurchaseChange(e.target.value)}
-                            inputProps={{
-                                min: minPurchase,
-                                max: maxPurchase,
-                            }}
-                            sx={{ width: '20ch' }}
-                        />
+                        <Button variant="contained" color="primary" onClick={() => setPurchase(5000)}>
+                            5K
+                        </Button>
                     </Grid>
                     <Grid item>
-                        <Box sx={{ marginTop: 2 }}>
-                            <Grid container spacing={2}>
-                                <Grid item>
-                                    <Button variant="contained" color="primary" onClick={() => setPurchase(1000)}>
-                                        1K
-                                    </Button>
-                                </Grid>
-                                <Grid item>
-                                    <Button variant="contained" color="primary" onClick={() => setPurchase(5000)}>
-                                        5K
-                                    </Button>
-                                </Grid>
-                                <Grid item>
-                                    <Button variant="contained" color="primary" onClick={() => setPurchase(10000)}>
-                                        10K
-                                    </Button>
-                                </Grid>
-                                <Grid item>
-                                    <Button variant="contained" color="primary" onClick={() => setPurchase(25000)}>
-                                        25K
-                                    </Button>
-                                </Grid>
-                            </Grid>
-                            <Grid container spacing={2} alignItems="center">
-                                <Grid item>
-                                    <Button variant="contained" color="primary" onClick={handlePurchaseClick} disabled={disablePurchase}>
-                                        Add Credits
-                                    </Button>
-                                </Grid>
-                            </Grid>
-                        </Box>
+                        <Button variant="contained" color="primary" onClick={() => setPurchase(10000)}>
+                            10K
+                        </Button>
+                    </Grid>
+                    <Grid item>
+                        <Button variant="contained" color="primary" onClick={() => setPurchase(25000)}>
+                            25K
+                        </Button>
                     </Grid>
                 </Grid>
-            </form>
+                <Grid item>
+                    <Button variant="contained" color="primary" onClick={handlePurchaseClick} disabled={disablePurchase}>
+                        Add Credits
+                    </Button>
+                </Grid>
+            </Grid>
             {invoice &&
                 <Modal
                     open={modalOpen}
@@ -168,7 +160,7 @@ const CreditsTrader = ({ profile, setRefreshProfile }) => {
                     </div>
                 </Modal>
             }
-        </div>
+        </div >
     );
 };
 
