@@ -1,73 +1,89 @@
 .App {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  background-color: #282c34;
-  font-size: calc(10px + 2vmin);
-  color: white;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: #282c34;
+    font-size: calc(10px + 2vmin);
+    color: white;
 }
 
 .App-header {
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  background-color: #144272;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    background-color: #144272;
 }
 
 .App-content {
-  flex: 1;
-  overflow-y: auto;
-  background-color: #0A2647;
+    flex: 1;
+    overflow-y: auto;
+    background-color: #0A2647;
 }
 
 .App-footer {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  background-color: #205295;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    background-color: #205295;
 }
 
 .App-link {
-  color: #61dafb;
+    color: #61dafb;
 }
 
 a {
-  color: white;
-  /* Change this to the desired color for all Link tags */
-  text-decoration: none;
-  /* Optional: remove underline from links */
+    color: white;
+    /* Change this to the desired color for all Link tags */
+    text-decoration: none;
+    /* Optional: remove underline from links */
 }
 
 a:hover {
-  color: #2C74B3;
-  /* Change this to the desired color for all Link tags on hover */
-  text-decoration: underline;
-  /* Optional: add underline on hover */
+    color: #2C74B3;
+    /* Change this to the desired color for all Link tags on hover */
+    text-decoration: underline;
+    /* Optional: add underline on hover */
 }
 
 .container {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  width: 100%;
-  flex-wrap: wrap;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    flex-wrap: wrap;
 }
 
 .left-pane,
 .right-pane {
-  width: 50%;
-  padding: 16px;
-  box-sizing: border-box;
+    width: 50%;
+    padding: 16px;
+    box-sizing: border-box;
 }
 
 /* Media query for screens narrower than 768px */
 @media (max-width: 767px) {
 
-  .left-pane,
-  .right-pane {
-    width: 100%;
-  }
+    .left-pane,
+    .right-pane {
+        width: 100%;
+    }
+}
+
+.dropzone {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 300px;
+    width: 300px;
+    border: 2px dashed #aaa;
+    border-radius: 5px;
+    transition: border 0.3s ease-in-out;
+    padding: 20px;
+}
+
+.dropzone.active {
+    border-color: #4481eb;
 }

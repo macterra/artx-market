@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useDropzone } from 'react-dropzone';
 import { Box, Button, Grid, Modal } from '@mui/material';
 import ImageGrid from './ImageGrid';
 import AgentBadge from './AgentBadge';
@@ -120,6 +121,16 @@ const CollectionView = () => {
         await uploadFiles(formData);
     };
 
+    const handleDrop = async (files) => {
+        const formData = new FormData();
+
+        for (const file of files) {
+            formData.append('images', file);
+        }
+
+        await uploadFiles(formData);
+    };
+
     const handleMintAllClick = async () => {
         setDisableMintAll(true);
 
@@ -176,6 +187,26 @@ const CollectionView = () => {
         );
     };
 
+    const FileUploadDropzone = () => {
+        const { getRootProps, getInputProps, isDragActive } = useDropzone({
+            onDrop: handleDrop,
+            accept: 'image/*',
+            multiple: true,
+            disabled: disableUpload
+        });
+
+        return (
+            <div {...getRootProps()} className={`${isDragActive ? 'dropzone active' : 'dropzone'}`}>
+                <input {...getInputProps()} />
+                {
+                    isDragActive ?
+                        <p>Drop the images here ...</p> :
+                        <p>Copy/Paste or Drag 'n' Drop some images here, or click to select files</p>
+                }
+            </div>
+        );
+    };
+
     return (
         <>
             <Box>
@@ -223,8 +254,8 @@ const CollectionView = () => {
                 <div style={{
                     backgroundColor: '#282c34',
                     padding: '1em',
-                    width: '600px',
-                    height: '600px',
+                    width: '400px',
+                    height: '400px',
                     overflow: 'auto',
                     display: 'flex',
                     flexDirection: 'column',
@@ -232,10 +263,8 @@ const CollectionView = () => {
                     justifyContent: 'center'
                 }}>
                     <FileUploadByPaste />
-                    <p>Upload Images</p>
-                    <p>You can copy/paste files here</p>
+                    <FileUploadDropzone />
                     <p style={{ fontSize: '14px' }}>You have {credits} credits, enough to upload {budget} MB.</p>
-
 
                     <input
                         id="file-upload"
