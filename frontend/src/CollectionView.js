@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Box, Button, Grid } from '@mui/material';
+import { Box, Button, Grid, Modal } from '@mui/material';
 import ImageGrid from './ImageGrid';
 import AgentBadge from './AgentBadge';
 
@@ -18,6 +18,7 @@ const CollectionView = () => {
     const [showMintAll, setShowMintAll] = useState(null);
     const [disableMintAll, setDisableMintAll] = useState(null);
     const [budget, setBudget] = useState(0);
+    const [modalOpen, setModalOpen] = useState(false);
 
     useEffect(() => {
         const fetchCollection = async () => {
@@ -60,14 +61,8 @@ const CollectionView = () => {
         return;
     }
 
-    const handleUpload = async (event) => {
+    const uploadFiles = async (formData) => {
         try {
-            const files = event.target.files;
-            const formData = new FormData();
-
-            for (const file of files) {
-                formData.append('images', file);
-            }
             const response = await axios.post(`/api/v1/collections/${collection.xid}/upload`, formData);
             const data = response.data;
 
@@ -100,6 +95,31 @@ const CollectionView = () => {
         }
     };
 
+    const handleUpload = async (event) => {
+        const files = event.target.files;
+        const formData = new FormData();
+
+        for (const file of files) {
+            formData.append('images', file);
+        }
+
+        await uploadFiles(formData);
+    };
+
+    const handlePaste = async (event) => {
+        const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+        const formData = new FormData();
+
+        for (const item of items) {
+            if (item.kind === 'file') {
+                const file = item.getAsFile();
+                formData.append('images', file);
+            }
+        }
+
+        await uploadFiles(formData);
+    };
+
     const handleMintAllClick = async () => {
         setDisableMintAll(true);
 
@@ -111,6 +131,14 @@ const CollectionView = () => {
             console.error('Error:', error);
             alert(error.response.data.message);
         }
+    };
+
+    const handleUploadClick = async () => {
+        setModalOpen(true);
+    };
+
+    const handleModalClose = async () => {
+        setModalOpen(false);
     };
 
     const CollectionBadge = ({ collection }) => {
@@ -133,46 +161,117 @@ const CollectionView = () => {
         );
     };
 
+    const FileUploadByPaste = () => {
+        useEffect(() => {
+            window.addEventListener('paste', handlePaste);
+
+            // Clean up the event listener when the component unmounts
+            return () => {
+                window.removeEventListener('paste', handlePaste);
+            }
+        }, []);
+
+        return (
+            <div></div>
+        );
+    };
+
     return (
-        <Box>
-            <Box display="flex" alignItems="center" justifyContent="center">
-                <CollectionBadge collection={collection} />
-                <div style={{ fontSize: '0.5em' }}>by</div>
-                <AgentBadge xid={collection.asset.owner} />
+        <>
+            <Box>
+                <Box display="flex" alignItems="center" justifyContent="center">
+                    <CollectionBadge collection={collection} />
+                    <div style={{ fontSize: '0.5em' }}>by</div>
+                    <AgentBadge xid={collection.asset.owner} />
+                </Box>
+                <Box display="flex" alignItems="center" justifyContent="center">
+                    {collection.collection.assets.length === 1 ? (
+                        <span style={{ fontSize: '12px' }}> (1 item)</span>
+                    ) : (
+                        <span style={{ fontSize: '12px' }}> ({collection.collection.assets.length} items)</span>
+                    )}
+                </Box>
+                {collection.isOwnedByUser &&
+                    <Box style={{ marginLeft: '20px', marginRight: '20px' }}>
+                        <Grid container alignItems="center" justifyContent="space-between">
+                            <Grid item>
+                                <Button variant="contained" color="primary" disabled={disableUpload} onClick={handleUploadClick}>
+                                    Upload...
+                                </Button>
+                            </Grid>
+                            <Grid item>
+                                {showMintAll &&
+                                    <Button variant="contained" color="primary" disabled={disableMintAll} onClick={handleMintAllClick}>
+                                        Mint All for {collection.costToMintAll} credits
+                                    </Button>
+                                }
+                            </Grid>
+                        </Grid>
+                    </Box>
+                }
+                <ImageGrid images={images} />
             </Box>
-            <Box display="flex" alignItems="center" justifyContent="center">
-                {collection.collection.assets.length === 1 ? (
-                    <span style={{ fontSize: '12px' }}> (1 item)</span>
-                ) : (
-                    <span style={{ fontSize: '12px' }}> ({collection.collection.assets.length} items)</span>
-                )}
-            </Box>
-            {collection.isOwnedByUser &&
-                <Box style={{ marginLeft: '20px', marginRight: '20px' }}>
-                    <Grid container alignItems="center" justifyContent="space-between">
+            <Modal
+                open={modalOpen}
+                onClose={() => handleModalClose()}
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                }}
+            >
+                <div style={{
+                    backgroundColor: '#282c34',
+                    padding: '1em',
+                    width: '600px',
+                    height: '600px',
+                    overflow: 'auto',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                }}>
+                    <FileUploadByPaste />
+                    <p>Upload Images</p>
+                    <p>You can copy/paste files here</p>
+                    <p style={{ fontSize: '14px' }}>You have {credits} credits, enough to upload {budget} MB.</p>
+
+
+                    <input
+                        id="file-upload"
+                        type="file"
+                        name="images"
+                        accept="image/*"
+                        multiple
+                        onChange={handleUpload}
+                        disabled={disableUpload}
+                        style={{ display: 'none' }}
+                    />
+
+                    <Grid container direction="row" justifyContent="center" alignItems="center" spacing={3}>
                         <Grid item>
-                            <span style={{ fontSize: '14px' }}>Upload:
-                                <input type="file" name="images" accept="image/*" multiple onChange={handleUpload} disabled={disableUpload} />
-                            </span>
-                            <span style={{ fontSize: '14px' }}>You have {credits} credits, enough to upload {budget} MB.</span>
-                            {disableUpload &&
+                            <label htmlFor="file-upload" className="custom-file-upload">
+                                <Button variant="contained" color="primary" component="span">
+                                    Select Images
+                                </Button>
+                            </label>
+                        </Grid>
+                        {disableUpload &&
+                            <Grid item>
                                 <Button variant="contained" color="primary" onClick={() => navigate('/profile/edit/credits')}>
                                     Credits: {credits}
                                 </Button>
-                            }
-                        </Grid>
+                            </Grid>
+                        }
                         <Grid item>
-                            {showMintAll &&
-                                <Button variant="contained" color="primary" disabled={disableMintAll} onClick={handleMintAllClick}>
-                                    Mint All for {collection.costToMintAll} credits
-                                </Button>
-                            }
+                            <Button variant="contained" color="primary" onClick={handleModalClose}>
+                                Close
+                            </Button>
                         </Grid>
                     </Grid>
-                </Box>
-            }
-            <ImageGrid images={images} />
-        </Box>
+                </div>
+            </Modal>
+        </>
     );
 };
 
