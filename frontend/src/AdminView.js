@@ -149,7 +149,7 @@ const AdminView = () => {
     }
 
     return (
-        <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" style={{ width: '90vw' }}>
+        <Box>
             <div>Admin</div>
             <div>
                 <Tabs
@@ -165,146 +165,150 @@ const AdminView = () => {
                     <Tab key="users" value="users" label={'Users'} />
                     <Tab key="auditlog" value="auditlog" label={'Audit Log'} />
                 </Tabs>
-                {tab === 'state' &&
-                    <Box>
-                        <Table>
-                            <TableBody>
-                                <TableRow>
-                                    <TableCell>Name</TableCell>
-                                    <TableCell>{admin.name}</TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell>XID</TableCell>
-                                    <TableCell>{admin.xid}</TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell>XID58</TableCell>
-                                    <TableCell>{admin.xid58}</TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell>Owner</TableCell>
-                                    <TableCell>{admin.owner}</TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell>Created</TableCell>
-                                    <TableCell>{admin.created}</TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell>Updated</TableCell>
-                                    <TableCell>{admin.updated}</TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell>Default Pfp</TableCell>
-                                    {admin.default_pfp ? (
-                                        <TableCell><a href={admin.default_pfp}>{admin.default_pfp}</a></TableCell>
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    <Box style={{ width: '90vw' }}>
+                        {tab === 'state' &&
+                            <Box>
+                                <Table>
+                                    <TableBody>
+                                        <TableRow>
+                                            <TableCell>Name</TableCell>
+                                            <TableCell>{admin.name}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>XID</TableCell>
+                                            <TableCell>{admin.xid}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>XID58</TableCell>
+                                            <TableCell>{admin.xid58}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>Owner</TableCell>
+                                            <TableCell>{admin.owner}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>Created</TableCell>
+                                            <TableCell>{admin.created}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>Updated</TableCell>
+                                            <TableCell>{admin.updated}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>Default Pfp</TableCell>
+                                            {admin.default_pfp ? (
+                                                <TableCell><a href={admin.default_pfp}>{admin.default_pfp}</a></TableCell>
+                                            ) : (
+                                                <TableCell>not set</TableCell>
+                                            )}
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>Default Thumbnail</TableCell>
+                                            {admin.default_thumbnail ? (
+                                                <TableCell><a href={admin.default_thumbnail}>{admin.default_thumbnail}</a></TableCell>
+                                            ) : (
+                                                <TableCell>not set</TableCell>
+                                            )}
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>Githash</TableCell>
+                                            <TableCell>{admin.githash}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>CID</TableCell>
+                                            <TableCell>{admin.cid}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>Certificate</TableCell>
+                                            <TableCell>
+                                                <a href={`/cert/${admin.latest}`}>
+                                                    {admin.latest}
+                                                </a> ({admin.latestCertAge} {admin.latestCertAge === 1 ? 'hour' : 'hours'} ago)
+                                            </TableCell>
+                                        </TableRow>
+                                        {admin.pending ? (
+                                            <TableRow>
+                                                <TableCell>Pending Txn</TableCell>
+                                                <TableCell>
+                                                    <a href={`https://mempool.space/tx/${admin.pending}`} target="_blank" rel="noopener noreferrer">
+                                                        {admin.pending}
+                                                    </a> (for {-admin.nextNotarize} hours)
+                                                </TableCell>
+                                            </TableRow>
+                                        ) : (
+                                            <TableRow>
+                                                <TableCell>Next Txn</TableCell>
+                                                <TableCell>{admin.nextNotarize} {admin.nextNotarize === 1 ? 'hour' : 'hours'}</TableCell>
+                                            </TableRow>
+                                        )}
+                                    </TableBody>
+                                </Table>
+                                <Grid container direction="row" justifyContent="center" alignItems="center" spacing={3}>
+                                    <Grid item>
+                                        <Button variant="contained" color="primary" onClick={handleSave} disabled={disableButton}>
+                                            Save All
+                                        </Button>
+                                    </Grid>
+                                    {admin.latest ? (
+                                        <Grid item>
+                                            <Button variant="contained" color="primary" onClick={handleNotarize} disabled={disableButton}>
+                                                Notarize State
+                                            </Button>
+                                        </Grid>
                                     ) : (
-                                        <TableCell>not set</TableCell>
+                                        <Grid item>
+                                            <Button variant="contained" color="primary" onClick={handleRegister} disabled={admin.pending || disableButton}>
+                                                Register State
+                                            </Button>
+                                        </Grid>
                                     )}
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell>Default Thumbnail</TableCell>
-                                    {admin.default_thumbnail ? (
-                                        <TableCell><a href={admin.default_thumbnail}>{admin.default_thumbnail}</a></TableCell>
-                                    ) : (
-                                        <TableCell>not set</TableCell>
-                                    )}
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell>Githash</TableCell>
-                                    <TableCell>{admin.githash}</TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell>CID</TableCell>
-                                    <TableCell>{admin.cid}</TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell>Certificate</TableCell>
-                                    <TableCell>
-                                        <a href={`/cert/${admin.latest}`}>
-                                            {admin.latest}
-                                        </a> ({admin.latestCertAge} {admin.latestCertAge === 1 ? 'hour' : 'hours'} ago)
-                                    </TableCell>
-                                </TableRow>
-                                {admin.pending ? (
-                                    <TableRow>
-                                        <TableCell>Pending Txn</TableCell>
-                                        <TableCell>
-                                            <a href={`https://mempool.space/tx/${admin.pending}`} target="_blank" rel="noopener noreferrer">
-                                                {admin.pending}
-                                            </a> (for {-admin.nextNotarize} hours)
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    <TableRow>
-                                        <TableCell>Next Txn</TableCell>
-                                        <TableCell>{admin.nextNotarize} {admin.nextNotarize === 1 ? 'hour' : 'hours'}</TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                        <Grid container direction="row" justifyContent="center" alignItems="center" spacing={3}>
-                            <Grid item>
-                                <Button variant="contained" color="primary" onClick={handleSave} disabled={disableButton}>
-                                    Save All
-                                </Button>
-                            </Grid>
-                            {admin.latest ? (
-                                <Grid item>
-                                    <Button variant="contained" color="primary" onClick={handleNotarize} disabled={disableButton}>
-                                        Notarize State
-                                    </Button>
+                                    <Grid item>
+                                        <Button variant="contained" color="primary" onClick={handleCertify} disabled={!admin.pending || disableButton}>
+                                            Certify
+                                        </Button>
+                                    </Grid>
                                 </Grid>
-                            ) : (
-                                <Grid item>
-                                    <Button variant="contained" color="primary" onClick={handleRegister} disabled={admin.pending || disableButton}>
-                                        Register State
-                                    </Button>
-                                </Grid>
-                            )}
-                            <Grid item>
-                                <Button variant="contained" color="primary" onClick={handleCertify} disabled={!admin.pending || disableButton}>
-                                    Certify
-                                </Button>
-                            </Grid>
-                        </Grid>
+                            </Box>
+                        }
+                        {tab === 'wallet' &&
+                            <Box>
+                                <textarea
+                                    value={walletJson}
+                                    readOnly
+                                    style={{ width: '600px', height: '400px', overflow: 'auto' }}
+                                />
+                            </Box>
+                        }
+                        {tab === 'users' && userList &&
+                            <TableContainer component={Paper} style={{ maxHeight: '600px', overflow: 'auto' }}>
+                                <Table>
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell>user</TableCell>
+                                            <TableCell>deposit</TableCell>
+                                            <TableCell>credits</TableCell>
+                                            <TableCell>updated</TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {userList.map((user, index) => (
+                                            <TableRow>
+                                                <TableCell><AgentBadge agent={user} /></TableCell>
+                                                <TableCell>{user.deposit}</TableCell>
+                                                <TableCell align="right">{user.credits}</TableCell>
+                                                <TableCell>{user.updated}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                        }
+                        {tab === 'auditlog' &&
+                            <AuditLog />
+                        }
                     </Box>
-                }
-                {tab === 'wallet' &&
-                    <Box>
-                        <textarea
-                            value={walletJson}
-                            readOnly
-                            style={{ width: '600px', height: '400px', overflow: 'auto' }}
-                        />
-                    </Box>
-                }
-                {tab === 'users' && userList &&
-                    <TableContainer component={Paper} style={{ maxHeight: '600px', overflow: 'auto' }}>
-                        <Table>
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell>user</TableCell>
-                                    <TableCell>deposit</TableCell>
-                                    <TableCell>credits</TableCell>
-                                    <TableCell>updated</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {userList.map((user, index) => (
-                                    <TableRow>
-                                        <TableCell><AgentBadge agent={user} /></TableCell>
-                                        <TableCell>{user.deposit}</TableCell>
-                                        <TableCell align="right">{user.credits}</TableCell>
-                                        <TableCell>{user.updated}</TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                }
-                {tab === 'auditlog' &&
-                    <AuditLog />
-                }
+                </div>
             </div>
         </Box>
     );
