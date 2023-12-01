@@ -578,3 +578,69 @@ describe('buyCredits', () => {
         expect(agentData).toBeUndefined();
     });
 });
+
+describe('getMergeKey', () => {
+    afterEach(() => {
+        mockFs.restore();
+    });
+
+    it('generates a valid merge key', async () => {
+
+        const mockUserId = 'mockUserId';
+        const mockAgentData = { xid: mockUserId, pubkey: 'mockPubKey' };
+
+        // Mock the file system
+        mockFs({
+            [config.agents]: {
+                [mockUserId]: {
+                    'agent.json': JSON.stringify(mockAgentData)
+                },
+            }
+        });
+
+        const mergeKey = agent.getMergeKey(mockUserId, config);
+
+        expect(mergeKey.length).toEqual(6);
+    });
+});
+
+describe('verifyMergeKey', () => {
+    afterEach(() => {
+        mockFs.restore();
+    });
+
+    it('verifies a valid merge key', async () => {
+
+        const mockUserId = 'mockUserId';
+        const mockAgentData = { xid: mockUserId, pubkey: 'mockPubKey' };
+
+        // Mock the file system
+        mockFs({
+            [config.agents]: {
+                [mockUserId]: {
+                    'agent.json': JSON.stringify(mockAgentData)
+                },
+            }
+        });
+
+        const mergeKey = agent.getMergeKey(mockUserId, config);
+        expect(agent.verifyMergeKey(mockUserId, mergeKey, config)).toEqual(true);
+    });
+
+    it('rejects an invalid merge key', async () => {
+
+        const mockUserId = 'mockUserId';
+        const mockAgentData = { xid: mockUserId, pubkey: 'mockPubKey' };
+
+        // Mock the file system
+        mockFs({
+            [config.agents]: {
+                [mockUserId]: {
+                    'agent.json': JSON.stringify(mockAgentData)
+                },
+            }
+        });
+
+        expect(agent.verifyMergeKey(mockUserId, 'XXXXXX', config)).toEqual(false);
+    });
+});

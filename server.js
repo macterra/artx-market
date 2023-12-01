@@ -830,6 +830,7 @@ app.get('/api/v1/profile/:xid?', async (req, res) => {
             agentData.isUser = (userId === agentData.xid);
             if (agentData.isUser) {
                 agentData.txnlog = agent.getTxnLog(userId);
+                agentData.mergeKey = agent.getMergeKey(userId);
             }
             res.json(agentData);
         } else {

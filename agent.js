@@ -1,5 +1,6 @@
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
 
 const utils = require('./utils');
 const admin = require('./admin');
@@ -216,6 +217,23 @@ async function buyCredits(userId, invoice, config = realConfig) {
     }
 }
 
+function getHash(userId, config = realConfig) {
+    const agentData = getAgent(userId, config);
+    return crypto.createHash('sha256').update(agentData.pubkey + agentData.xid).digest('hex');
+}
+
+function getMergeKey(userId, config = realConfig) {
+    const hash = getHash(userId, config);
+    const startIndex = Math.floor(Math.random() * (hash.length - 6));
+    const mergeKey = hash.slice(startIndex, startIndex + 6);
+    return mergeKey;
+}
+
+function verifyMergeKey(userId, mergeKey, config) {
+    const hash = getHash(userId, config);
+    return hash.toLowerCase().includes(mergeKey.toLowerCase());
+}
+
 module.exports = {
     addAsset,
     addCredits,
@@ -224,9 +242,11 @@ module.exports = {
     getAgent,
     getAgentFromKey,
     getAssets,
+    getMergeKey,
     getTxnLog,
     removeAsset,
     saveAgent,
     saveAssets,
     saveTxnLog,
+    verifyMergeKey,
 };
