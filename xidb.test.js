@@ -374,6 +374,11 @@ describe('getNft', () => {
 });
 
 describe('mergeAgents', () => {
+
+    afterEach(() => {
+        mockFs.restore();
+    });
+
     it('throws an error on invalid agent id', () => {
         expect(() => xidb.mergeAgents('unknownId', config)).toThrow();
     });
