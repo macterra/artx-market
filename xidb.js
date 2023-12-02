@@ -3,13 +3,15 @@ const fs = require('fs');
 const assert = require('assert');
 const uuid = require('uuid');
 const ejs = require('ejs');
+const dateFns = require('date-fns');
+
 const realConfig = require('./config');
 const asset = require('./asset');
 const agent = require('./agent');
 const admin = require('./admin');
 const archiver = require('./archiver');
 const lnbits = require('./lnbits');
-const dateFns = require('date-fns');
+const utils = require('./utils');
 
 async function waitForArchiver() {
     let isReady = false;
@@ -1045,6 +1047,46 @@ async function getListings(max = 8) {
     return selected.slice(0, max);
 }
 
+function mergeAgents(userId, config = realConfig) {
+    let source;
+    let target;
+
+    const agentData = agent.getAgent(userId, config);
+
+    assert.ok(agentData);
+    assert.ok(agentData.mergeTargetId || agentData.mergeSourceId);
+    assert.ok(!(agentData.mergeTargetId && agentData.mergeSourceId));
+
+    if (agentData.mergeTargetId) {
+        source = agentData;
+        const targetXid = utils.base58ToUuid(source.mergeTargetId);
+        target = agent.getAgent(targetXid, config);
+        const sourceId = utils.uuidToBase58(source.xid);
+        assert.ok(target.mergeSourceId === sourceId);
+    }
+    else if (agentData.mergeSourceId) {
+        target = agentData;
+        const sourceXid = utils.base58ToUuid(target.mergeSourceId);
+        source = agent.getAgent(sourceXid, config);
+        const targetId = utils.uuidToBase58(target.xid);
+        assert.ok(source.mergeTargetId === targetId);
+    }
+
+    for (const xid of allAssets(config)) {
+        const assetData = asset.getAsset(xid, config);
+
+        if (assetData.asset.owner === source.xid) {
+            assetData.asset.owner = target.xid;
+            asset.saveAsset(assetData, config);
+        }
+    }
+
+    source.merged = target.xid;
+    agent.saveAgent(source, config);
+
+    return { ok: true, logout: userId === source.xid }
+}
+
 module.exports = {
     allAgents,
     allAssets,
@@ -1057,6 +1099,7 @@ module.exports = {
     getNft,
     integrityCheck,
     isOwner,
+    mergeAgents,
     mintToken,
     payoutSale,
     purchaseAsset,

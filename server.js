@@ -961,6 +961,19 @@ app.post('/api/v1/profile/credit', ensureAuthenticated, async (req, res) => {
     }
 });
 
+app.get('/api/v1/profile/merge/', ensureAuthenticated, async (req, res) => {
+    const userId = req.user.xid;
+
+    try {
+        const results = xidb.mergeAgents(userId);
+        await archiver.commitChanges({ type: 'update', agent: userId });
+        res.json(results);
+    } catch (error) {
+        console.error('Error merging profiles:', error);
+        res.status(500).json({ message: 'Error merging profiles' });
+    }
+});
+
 app.post('/api/v1/profile/merge/authorize', ensureAuthenticated, async (req, res) => {
     const userId = req.user.xid;
     const { merge, targetId, sourceId } = req.body;

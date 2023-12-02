@@ -4,6 +4,7 @@ const path = require('path');
 const mockFs = require('mock-fs');
 
 const xidb = require('./xidb');
+const utils = require('./utils');
 const config = require('./test-config');
 
 describe('allAssets', () => {
@@ -370,4 +371,152 @@ describe('getNft', () => {
     });
 
     // Add more tests for different scenarios...
+});
+
+describe('mergeAgents', () => {
+    it('throws an error on invalid agent id', () => {
+        expect(() => xidb.mergeAgents('unknownId', config)).toThrow();
+    });
+
+    it('throws an error when merge unauthorized', () => {
+
+        const mockAgentId = uuid.v4();
+        const mergeId = utils.uuidToBase58(mockAgentId);
+
+        const sourceAgentId = uuid.v4();
+        const targetAgentId = uuid.v4();
+
+        const mockAgentData = {
+            xid: mockAgentId,
+        };
+
+        const sourceAgentData = {
+            xid: sourceAgentId,
+            mergeTargetId: mergeId,
+        };
+
+        const targetAgentData = {
+            xid: targetAgentId,
+            mergeSourceId: mergeId,
+        };
+
+        // Mock the file system
+        mockFs({
+            [config.agents]: {
+                [mockAgentId]: { 'agent.json': JSON.stringify(mockAgentData) },
+                [targetAgentId]: { 'agent.json': JSON.stringify(targetAgentData) },
+                [sourceAgentId]: { 'agent.json': JSON.stringify(sourceAgentData) },
+            }
+        });
+
+        expect(() => xidb.mergeAgents(mockAgentId, config)).toThrow();
+        expect(() => xidb.mergeAgents(targetAgentId, config)).toThrow();
+        expect(() => xidb.mergeAgents(sourceAgentId, config)).toThrow();
+    });
+
+    it('merges profiles when source initiates', () => {
+        const sourceAgentId = uuid.v4();
+        const targetAgentId = uuid.v4();
+
+        const sourceAgentData = {
+            xid: sourceAgentId,
+            mergeTargetId: utils.uuidToBase58(targetAgentId),
+        };
+
+        const targetAgentData = {
+            xid: targetAgentId,
+            mergeSourceId: utils.uuidToBase58(sourceAgentId),
+        };
+
+        const sourceAssetId = uuid.v4();
+        const targetAssetId = uuid.v4();
+
+        const sourceAssetData = {
+            xid: sourceAssetId,
+            asset: { owner: sourceAgentId },
+        };
+
+        const targetAssetData = {
+            xid: targetAssetId,
+            asset: { owner: targetAgentId },
+        };
+
+        // Mock the file system
+        mockFs({
+            [config.agents]: {
+                [targetAgentId]: { 'agent.json': JSON.stringify(targetAgentData) },
+                [sourceAgentId]: { 'agent.json': JSON.stringify(sourceAgentData) },
+            },
+            [config.assets]: {
+                [targetAssetId]: { 'meta.json': JSON.stringify(targetAssetData) },
+                [sourceAssetId]: { 'meta.json': JSON.stringify(sourceAssetData) },
+            },
+        });
+
+        const results = xidb.mergeAgents(sourceAgentId, config);
+
+        expect(results.ok).toBe(true);
+        expect(results.logout).toBe(true);
+
+        const assetJsonPath = path.join(config.assets, sourceAssetId, 'meta.json');
+        const assetData = JSON.parse(fs.readFileSync(assetJsonPath, 'utf-8'));
+        expect(assetData.asset.owner).toEqual(targetAgentId);
+
+        const agentJsonPath = path.join(config.agents, sourceAgentId, 'agent.json');
+        const agentData = JSON.parse(fs.readFileSync(agentJsonPath, 'utf-8'));
+        expect(agentData.merged).toEqual(targetAgentId);
+    });
+
+    it('merges profiles when target initiates', () => {
+        const sourceAgentId = uuid.v4();
+        const targetAgentId = uuid.v4();
+
+        const sourceAgentData = {
+            xid: sourceAgentId,
+            mergeTargetId: utils.uuidToBase58(targetAgentId),
+        };
+
+        const targetAgentData = {
+            xid: targetAgentId,
+            mergeSourceId: utils.uuidToBase58(sourceAgentId),
+        };
+
+        const sourceAssetId = uuid.v4();
+        const targetAssetId = uuid.v4();
+
+        const sourceAssetData = {
+            xid: sourceAssetId,
+            asset: { owner: sourceAgentId },
+        };
+
+        const targetAssetData = {
+            xid: targetAssetId,
+            asset: { owner: targetAgentId },
+        };
+
+        // Mock the file system
+        mockFs({
+            [config.agents]: {
+                [targetAgentId]: { 'agent.json': JSON.stringify(targetAgentData) },
+                [sourceAgentId]: { 'agent.json': JSON.stringify(sourceAgentData) },
+            },
+            [config.assets]: {
+                [targetAssetId]: { 'meta.json': JSON.stringify(targetAssetData) },
+                [sourceAssetId]: { 'meta.json': JSON.stringify(sourceAssetData) },
+            },
+        });
+
+        const results = xidb.mergeAgents(targetAgentId, config);
+
+        expect(results.ok).toBe(true);
+        expect(results.logout).toBe(false);
+
+        const assetJsonPath = path.join(config.assets, sourceAssetId, 'meta.json');
+        const assetData = JSON.parse(fs.readFileSync(assetJsonPath, 'utf-8'));
+        expect(assetData.asset.owner).toEqual(targetAgentId);
+
+        const agentJsonPath = path.join(config.agents, sourceAgentId, 'agent.json');
+        const agentData = JSON.parse(fs.readFileSync(agentJsonPath, 'utf-8'));
+        expect(agentData.merged).toEqual(targetAgentId);
+    });
 });
