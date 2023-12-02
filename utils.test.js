@@ -23,7 +23,29 @@ describe('uuidToBase58', () => {
         const invalidUUID = 'invalid-uuid-string';
 
         // Test
-        expect(() => uuidToBase58(invalidUUID)).toThrow();
+        expect(() => utils.uuidToBase58(invalidUUID)).toThrow();
+    });
+});
+
+describe('base58ToUuid', () => {
+    it('should convert a valid base58 encoded uuid back to original', () => {
+        // Generate a sample UUID
+        const sampleUUID = uuid.v4();
+
+        // Convert UUID to base58
+        const base58 = utils.uuidToBase58(sampleUUID);
+        const decodedUUID = utils.base58ToUuid(base58);
+
+        // Test
+        expect(decodedUUID).toEqual(sampleUUID);
+    });
+
+    it('should throw an error for invalid UUID', () => {
+        // Invalid UUID
+        const invalidBase58 = 'invalid-base58-string';
+
+        // Test
+        expect(() => utils.base58ToUuid(invalidUUID)).toThrow();
     });
 });
 

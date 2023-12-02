@@ -17,6 +17,16 @@ function uuidToBase58(uuidString) {
     return base58;
 }
 
+function base58ToUuid(base58String) {
+    // Decode the base58 string back to bytes
+    const bytes = bs58.decode(base58String);
+
+    // Convert the bytes back to a UUID
+    const uuidString = uuid.stringify(bytes);
+
+    return uuidString;
+}
+
 function getAgentId(key, config = realConfig) {
     const namespace = getMarketId(config);
     const userId = uuid.v5(key.toString(), namespace);
@@ -24,6 +34,7 @@ function getAgentId(key, config = realConfig) {
 }
 
 module.exports = {
+    base58ToUuid,
     getAgentId,
     getMarketId,
     uuidToBase58,

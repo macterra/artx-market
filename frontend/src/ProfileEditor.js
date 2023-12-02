@@ -10,6 +10,7 @@ import LnAddressEditor from './LnAddressEditor';
 import LinksEditor from './LinksEditor';
 import CreditsTrader from './CreditsTrader';
 import TxnLog from './TxnLog';
+import MergeEditor from './MergeEditor';
 import AgentBadge from './AgentBadge';
 
 const ProfileEditor = () => {
@@ -25,7 +26,7 @@ const ProfileEditor = () => {
             try {
                 const getProfile = await axios.get(`/api/v1/profile`);
                 setProfile(getProfile.data);
-                
+
                 if (!tab) {
                     setTab(jump || 'name');
                 }
@@ -62,6 +63,7 @@ const ProfileEditor = () => {
                 <Tab key="ln" value="ln" label={'Lightning'} />
                 <Tab key="credits" value="credits" label={'Credits'} />
                 <Tab key="log" value="log" label={'Log'} />
+                <Tab key="merge" value="merge" label={'Merge'} />
             </Tabs>
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <Box style={{ width: '90vw' }}>
@@ -82,6 +84,9 @@ const ProfileEditor = () => {
                     }
                     {tab === 'log' &&
                         <TxnLog profile={profile} refreshProfile={refreshProfile} />
+                    }
+                    {tab === 'merge' &&
+                        <MergeEditor profile={profile} refreshProfile={refreshProfile} />
                     }
                 </Box>
             </div>

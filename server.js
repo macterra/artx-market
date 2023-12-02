@@ -19,6 +19,7 @@ const admin = require('./admin');
 const xidb = require('./xidb');
 const archiver = require('./archiver');
 const nostr = require('./nostr');
+const utils = require('./utils');
 
 const app = express();
 
@@ -830,6 +831,7 @@ app.get('/api/v1/profile/:xid?', async (req, res) => {
             agentData.isUser = (userId === agentData.xid);
             if (agentData.isUser) {
                 agentData.txnlog = agent.getTxnLog(userId);
+                agentData.xid58 = utils.uuidToBase58(agentData.xid);
             }
             res.json(agentData);
         } else {
@@ -956,6 +958,87 @@ app.post('/api/v1/profile/credit', ensureAuthenticated, async (req, res) => {
     } catch (error) {
         console.error('Error adding credits:', error);
         res.status(500).json({ message: 'Error adding credits' });
+    }
+});
+
+app.post('/api/v1/profile/merge/authorize', ensureAuthenticated, async (req, res) => {
+    const userId = req.user.xid;
+    const { merge, targetId, sourceId } = req.body;
+
+    try {
+        const agentData = agent.getAgent(userId);
+        const xid58 = utils.uuidToBase58(agentData.xid);
+
+        let canMerge = false;
+        let otherName;
+
+        if (merge == 'nomerge') {
+            agentData.mergeTargetId = null;
+            agentData.mergeSourceId = null;
+        }
+        else if (merge == 'source') {
+            const xid = utils.base58ToUuid(sourceId);
+
+            if (xid === userId) {
+                return res.status(400).json({ message: `OK you merged with yourself. Congrats?` });
+            }
+
+            const sourceAgent = agent.getAgent(xid);
+
+            if (sourceAgent) {
+                agentData.mergeTargetId = null;
+                agentData.mergeSourceId = sourceId;
+
+                if (sourceAgent.mergeTargetId === xid58) {
+                    canMerge = true;
+                }
+                otherName = sourceAgent.name;
+            }
+            else {
+                return res.status(400).json({ message: `unknown ID ${sourceId}` });
+            }
+        }
+        else if (merge == 'target') {
+            const xid = utils.base58ToUuid(targetId);
+
+            if (xid === userId) {
+                return res.status(400).json({ message: `OK you merged with yourself. Congrats?` });
+            }
+
+            const targetAgent = agent.getAgent(xid);
+
+            if (targetAgent) {
+                agentData.mergeTargetId = targetId;
+                agentData.mergeSourceId = null;
+
+                if (targetAgent.mergeSourceId === xid58) {
+                    canMerge = true;
+                }
+                otherName = targetAgent.name;
+            }
+            else {
+                return res.status(400).json({ message: `unknown ID ${sourceId}` });
+            }
+        }
+
+        agent.saveAgent(agentData);
+        await archiver.commitChanges({ type: 'update', agent: userId });
+
+        const message = otherName
+            ? canMerge
+                ? `Merge with ${otherName} has been authorized.`
+                : `Merge is pending. Give your ID to ${otherName}.`
+            : `OK merge disabled`;
+
+        res.json({
+            canMerge: canMerge,
+            message: message,
+            newTargetId: agentData.mergeTargetId,
+            newSourceId: agentData.mergeSourceId,
+        });
+    } catch (error) {
+        console.error('Error authorizing merge:', error);
+        res.status(500).json({ message: 'Error authorizing merge' });
     }
 });
 
