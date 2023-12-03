@@ -77,6 +77,9 @@ passport.deserializeUser(function (key, done) {
 
 passport.use(new LnurlAuth.Strategy(async function (pubkey, done) {
     let user = map.user.get(pubkey);
+
+    //console.log(`passport ${pubkey} ${JSON.stringify(user)}`);
+
     if (!user) {
         try {
             let agentData = agent.getAgentFromKey(pubkey);
@@ -87,7 +90,7 @@ passport.use(new LnurlAuth.Strategy(async function (pubkey, done) {
                 await archiver.commitChanges({ type: 'create', agent: agentData.xid });
             }
 
-            console.log(`passport ${pubkey} ${agentData.xid}`);
+            // console.log(`passport ${pubkey} ${agentData.xid}`);
             user = { key: pubkey, xid: agentData.xid, };
             map.user.set(pubkey, user);
         }
@@ -122,11 +125,15 @@ app.get('/authenticate',
 );
 
 app.get('/logout', (req, res) => {
+
+    const userKey = req.user.key;
+
     req.session.destroy((err) => {
         if (err) {
             console.error('Error destroying session:', err);
             res.status(500).json({ message: 'Error logging out' });
         } else {
+            map.user.delete(userKey);
             res.json({ message: 'Logged out successfully' });
         }
     });
@@ -813,36 +820,6 @@ app.get('/api/v1/profiles/', async (req, res) => {
     }
 });
 
-app.get('/api/v1/profile/:xid?', async (req, res) => {
-    const profileId = req.params.xid;
-    const userId = req.user?.xid;
-
-    try {
-        const agentData = xidb.getAgentAndCollections(profileId, userId);
-
-        if (agentData) {
-            const collections = Object.values(agentData.collections);
-
-            // Sort collections by created date
-            agentData.collections = collections.sort((a, b) => {
-                return a.asset.created.localeCompare(b.asset.created);
-            });
-
-            agentData.isUser = (userId === agentData.xid);
-            if (agentData.isUser) {
-                agentData.txnlog = agent.getTxnLog(userId);
-                agentData.xid58 = utils.uuidToBase58(agentData.xid);
-            }
-            res.json(agentData);
-        } else {
-            res.status(404).json({ message: 'Profile not found' });
-        }
-    } catch (error) {
-        console.error('Error fetching profile data:', error);
-        res.status(500).json({ message: 'Error fetching profile data' });
-    }
-});
-
 app.patch('/api/v1/profile/', ensureAuthenticated, async (req, res) => {
     try {
         const { name, tagline, pfp, deposit, depositToCredits, collections, links } = req.body;
@@ -961,12 +938,17 @@ app.post('/api/v1/profile/credit', ensureAuthenticated, async (req, res) => {
     }
 });
 
-app.get('/api/v1/profile/merge/', ensureAuthenticated, async (req, res) => {
+app.get('/api/v1/profile/initiate-merge', ensureAuthenticated, async (req, res) => {
     const userId = req.user.xid;
 
     try {
         const results = xidb.mergeAgents(userId);
-        await archiver.commitChanges({ type: 'update', agent: userId });
+
+        if (results.ok) {
+            xidb.rebuildAssets();
+            await archiver.commitChanges({ type: 'merge', agent: userId });
+        }
+
         res.json(results);
     } catch (error) {
         console.error('Error merging profiles:', error);
@@ -974,7 +956,7 @@ app.get('/api/v1/profile/merge/', ensureAuthenticated, async (req, res) => {
     }
 });
 
-app.post('/api/v1/profile/merge/authorize', ensureAuthenticated, async (req, res) => {
+app.post('/api/v1/profile/authorize-merge', ensureAuthenticated, async (req, res) => {
     const userId = req.user.xid;
     const { merge, targetId, sourceId } = req.body;
 
@@ -1052,6 +1034,36 @@ app.post('/api/v1/profile/merge/authorize', ensureAuthenticated, async (req, res
     } catch (error) {
         console.error('Error authorizing merge:', error);
         res.status(500).json({ message: 'Error authorizing merge' });
+    }
+});
+
+app.get('/api/v1/profile/:xid?', async (req, res) => {
+    const profileId = req.params.xid;
+    const userId = req.user?.xid;
+
+    try {
+        const agentData = xidb.getAgentAndCollections(profileId, userId);
+
+        if (agentData) {
+            const collections = Object.values(agentData.collections);
+
+            // Sort collections by created date
+            agentData.collections = collections.sort((a, b) => {
+                return a.asset.created.localeCompare(b.asset.created);
+            });
+
+            agentData.isUser = (userId === agentData.xid);
+            if (agentData.isUser) {
+                agentData.txnlog = agent.getTxnLog(userId);
+                agentData.xid58 = utils.uuidToBase58(agentData.xid);
+            }
+            res.json(agentData);
+        } else {
+            res.status(404).json({ message: 'Profile not found' });
+        }
+    } catch (error) {
+        console.error('Error fetching profile data:', error);
+        res.status(500).json({ message: 'Error fetching profile data' });
     }
 });
 

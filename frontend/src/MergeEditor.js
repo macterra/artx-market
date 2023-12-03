@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
 import { Box, Button, Grid, TextField, FormControl, FormControlLabel, Radio, RadioGroup } from '@mui/material';
 import axios from 'axios';
 
 const MergeEditor = ({ profile }) => {
+    const navigate = useNavigate();
+
     const [merge, setMerge] = useState(null);
     const [sourceId, setSourceId] = useState(null);
     const [targetId, setTargetId] = useState(null);
@@ -26,7 +29,7 @@ const MergeEditor = ({ profile }) => {
         setDisableButtons(true);
 
         try {
-            const getMerge = await axios.post('/api/v1/profile/merge/authorize', {
+            const getMerge = await axios.post('/api/v1/profile/authorize-merge', {
                 merge: merge,
                 sourceId: sourceId,
                 targetId: targetId,
@@ -50,6 +53,25 @@ const MergeEditor = ({ profile }) => {
     };
 
     const handleMerge = async () => {
+        setDisableButtons(true);
+
+        try {
+            const getMerge = await axios.get('/api/v1/profile/initiate-merge');
+            const { logout } = getMerge.data;
+
+            if (logout) {
+                alert('Merge successful! You may login to your merged profile.');
+                await axios.get('/logout');
+                navigate('/logout');
+            }
+            else {
+                alert('Merge successful! Check for aquired assets.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+
+        setDisableButtons(false);
     };
 
     return (

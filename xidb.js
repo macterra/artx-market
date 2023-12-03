@@ -1103,6 +1103,7 @@ module.exports = {
     mintToken,
     payoutSale,
     purchaseAsset,
+    rebuildAssets,
     removeCollection,
     saveCollection,
     saveNft,

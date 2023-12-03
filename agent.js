@@ -10,6 +10,12 @@ const realConfig = require('./config');
 function getAgentFromKey(key) {
     const xid = utils.getAgentId(key);
     const agentData = getAgent(xid);
+
+    if (agentData?.merged) {
+        console.log(`getAgentFromKey relaying ${xid} to ${agentData.merged}`)
+        return getAgent(agentData.merged);
+    }
+
     return agentData;
 }
 
