@@ -45,8 +45,8 @@ const MergeEditor = ({ profile }) => {
         } catch (error) {
             console.error('Error:', error);
             alert(error.response.data.message);
-            setTargetId(null);
-            setSourceId(null);
+            setTargetId('');
+            setSourceId('');
         }
 
         setDisableButtons(false);
@@ -106,7 +106,6 @@ const MergeEditor = ({ profile }) => {
                                         Merge this profile into another one:
                                         <TextField
                                             label="Merge Target ID"
-                                            key={targetId}
                                             value={targetId}
                                             onChange={(e) => setTargetId(e.target.value)}
                                             fullWidth
@@ -123,7 +122,6 @@ const MergeEditor = ({ profile }) => {
                                         Merge another profile into this one:
                                         <TextField
                                             label="Merge Source ID"
-                                            key={sourceId}
                                             value={sourceId}
                                             onChange={(e) => setSourceId(e.target.value)}
                                             fullWidth

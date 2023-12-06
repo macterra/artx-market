@@ -968,8 +968,8 @@ app.post('/api/v1/profile/authorize-merge', ensureAuthenticated, async (req, res
         let otherName;
 
         if (merge == 'nomerge') {
-            agentData.mergeTargetId = null;
-            agentData.mergeSourceId = null;
+            agentData.mergeTargetId = '';
+            agentData.mergeSourceId = '';
         }
         else if (merge == 'source') {
             const xid = utils.base58ToUuid(sourceId);
@@ -981,7 +981,7 @@ app.post('/api/v1/profile/authorize-merge', ensureAuthenticated, async (req, res
             const sourceAgent = agent.getAgent(xid);
 
             if (sourceAgent) {
-                agentData.mergeTargetId = null;
+                agentData.mergeTargetId = '';
                 agentData.mergeSourceId = sourceId;
 
                 if (sourceAgent.mergeTargetId === xid58) {
@@ -1004,7 +1004,7 @@ app.post('/api/v1/profile/authorize-merge', ensureAuthenticated, async (req, res
 
             if (targetAgent) {
                 agentData.mergeTargetId = targetId;
-                agentData.mergeSourceId = null;
+                agentData.mergeSourceId = '';
 
                 if (targetAgent.mergeSourceId === xid58) {
                     canMerge = true;
