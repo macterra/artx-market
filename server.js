@@ -938,25 +938,7 @@ app.post('/api/v1/profile/credit', ensureAuthenticated, async (req, res) => {
     }
 });
 
-app.get('/api/v1/profile/initiate-merge', ensureAuthenticated, async (req, res) => {
-    const userId = req.user.xid;
-
-    try {
-        const results = xidb.mergeAgents(userId);
-
-        if (results.ok) {
-            xidb.rebuildAssets();
-            await archiver.commitChanges({ type: 'merge', agent: userId });
-        }
-
-        res.json(results);
-    } catch (error) {
-        console.error('Error merging profiles:', error);
-        res.status(500).json({ message: 'Error merging profiles' });
-    }
-});
-
-app.post('/api/v1/profile/authorize-merge', ensureAuthenticated, async (req, res) => {
+app.post('/api/v1/profile/merge', ensureAuthenticated, async (req, res) => {
     const userId = req.user.xid;
     const { merge, targetId, sourceId } = req.body;
 
@@ -964,7 +946,8 @@ app.post('/api/v1/profile/authorize-merge', ensureAuthenticated, async (req, res
         const agentData = agent.getAgent(userId);
         const xid58 = utils.uuidToBase58(agentData.xid);
 
-        let canMerge = false;
+        let doMerge = false;
+        let logout = false;
         let otherName;
 
         if (merge == 'nomerge') {
@@ -985,7 +968,7 @@ app.post('/api/v1/profile/authorize-merge', ensureAuthenticated, async (req, res
                 agentData.mergeSourceId = sourceId;
 
                 if (sourceAgent.mergeTargetId === xid58) {
-                    canMerge = true;
+                    doMerge = true;
                 }
                 otherName = sourceAgent.name;
             }
@@ -1007,7 +990,7 @@ app.post('/api/v1/profile/authorize-merge', ensureAuthenticated, async (req, res
                 agentData.mergeSourceId = '';
 
                 if (targetAgent.mergeSourceId === xid58) {
-                    canMerge = true;
+                    doMerge = true;
                 }
                 otherName = targetAgent.name;
             }
@@ -1017,16 +1000,45 @@ app.post('/api/v1/profile/authorize-merge', ensureAuthenticated, async (req, res
         }
 
         agent.saveAgent(agentData);
-        await archiver.commitChanges({ type: 'update', agent: userId });
 
-        const message = otherName
-            ? canMerge
-                ? `Merge with ${otherName} has been authorized.`
-                : `Merge is pending. Give your ID to ${otherName}.`
-            : `OK merge disabled`;
+        if (doMerge) {
+            const results = xidb.mergeAgents(userId);
+
+            if (results.ok) {
+                xidb.rebuildAssets();
+            }
+
+            agentData.mergeTargetId = '';
+            agentData.mergeSourceId = '';
+            logout = results.logout;
+
+            await archiver.commitChanges({ type: 'merge', agent: userId });
+        }
+        else {
+            await archiver.commitChanges({ type: 'update', agent: userId });
+        }
+
+        let message;
+
+        if (doMerge) {
+            if (logout) {
+                message = `Merge with ${otherName} has completed. Please login again.`;
+            }
+            else {
+                message = `Merge with ${otherName} has completed.`;
+            }
+        }
+        else {
+            if (otherName) {
+                message = `Merge is pending. Give your ID to ${otherName}.`;
+            }
+            else {
+                message = `OK merge disabled`;
+            }
+        }
 
         res.json({
-            canMerge: canMerge,
+            logout: logout,
             message: message,
             newTargetId: agentData.mergeTargetId,
             newSourceId: agentData.mergeSourceId,

@@ -10,7 +10,6 @@ const MergeEditor = ({ profile }) => {
     const [sourceId, setSourceId] = useState(null);
     const [targetId, setTargetId] = useState(null);
     const [disableButtons, setDisableButtons] = useState(false);
-    const [canMerge, setCanMerge] = useState(false);
 
     useEffect(() => {
         setMerge('nomerge');
@@ -29,46 +28,27 @@ const MergeEditor = ({ profile }) => {
         setDisableButtons(true);
 
         try {
-            const getMerge = await axios.post('/api/v1/profile/authorize-merge', {
+            const getMerge = await axios.post('/api/v1/profile/merge', {
                 merge: merge,
                 sourceId: sourceId,
                 targetId: targetId,
             });
-            const { canMerge, message, newSourceId, newTargetId } = getMerge.data;
 
-            console.log(`canMerge=${canMerge} newSourceId=${newSourceId} newSourceId=${newSourceId}`);
+            const { logout, message, newSourceId, newTargetId } = getMerge.data;
 
-            setCanMerge(canMerge);
             setTargetId(newTargetId);
             setSourceId(newSourceId);
             alert(message);
+
+            if (logout) {
+                await axios.get('/logout');
+                navigate('/logout');
+            }
         } catch (error) {
             console.error('Error:', error);
             alert(error.response.data.message);
             setTargetId('');
             setSourceId('');
-        }
-
-        setDisableButtons(false);
-    };
-
-    const handleMerge = async () => {
-        setDisableButtons(true);
-
-        try {
-            const getMerge = await axios.get('/api/v1/profile/initiate-merge');
-            const { logout } = getMerge.data;
-
-            if (logout) {
-                alert('Merge successful! You may login to your merged profile.');
-                await axios.get('/logout');
-                navigate('/logout');
-            }
-            else {
-                alert('Merge successful! Check for aquired assets.');
-            }
-        } catch (error) {
-            console.error('Error:', error);
         }
 
         setDisableButtons(false);
@@ -142,16 +122,7 @@ const MergeEditor = ({ profile }) => {
                                     color="primary"
                                     onClick={handleSave}
                                     disabled={disableButtons}>
-                                    Save
-                                </Button>
-                            </Grid>
-                            <Grid item>
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    onClick={handleMerge}
-                                    disabled={disableButtons || !canMerge}>
-                                    Merge
+                                    {merge === 'nomerge' ? 'Save' : 'Merge'}
                                 </Button>
                             </Grid>
                         </Grid>
