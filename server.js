@@ -251,6 +251,7 @@ app.get('/api/v1/licenses', async (req, res) => {
 app.get('/api/v1/config', async (req, res) => {
     res.json({
         discordLink: config.discordLink,
+        followLink: config.followLink,
         issuesLink: config.issuesLink,
         helpLink: config.helpLink,
     });

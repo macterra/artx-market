@@ -38,6 +38,7 @@ const config = {
     notarize_max_fee: process.env.NOTARIZE_MAX_FEE ? parseInt(process.env.NOTARIZE_MAX_FEE, 10) : 10,
     notarize_rbf_rate: process.env.NOTARIZE_RBF_RATE ? parseInt(process.env.NOTARIZE_RBF_RATE, 10) : 1,
     discordLink: process.env.DISCORD_LINK || 'https://discord.gg/kVEhkywupg',
+    followLink: process.env.FOLLOW_LINK || 'https://twitter.com/artxmarket',
     issuesLink: process.env.ISSUES_LINK || 'https://github.com/macterra/artx-market/issues',
     helpLink: process.env.HELP_LINK || 'https://github.com/macterra/artx-market/wiki/Getting-Started',
 };

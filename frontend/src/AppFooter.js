@@ -23,16 +23,18 @@ function AppFooter() {
     fetchData();
   }, []);
 
+  const logoStyle = { marginLeft: '10px', height: '32px' };
+
   return (
     <footer className="footer">
       <Button color="inherit" onClick={() => openTab(config.discordLink)}>
-        Join our discord
+        Join our discord <img src="/discord-mark-white.png" alt="Discord" style={logoStyle} />
       </Button>
       <Button color="inherit" onClick={() => openTab(config.issuesLink)}>
-        Report an issue
+        Report an issue <img src="/github-mark-white.png" alt="Github" style={logoStyle} />
       </Button>
-      <Button color="inherit" onClick={() => openTab(config.helpLink)}>
-        Getting started
+      <Button color="inherit" onClick={() => openTab(config.followLink)}>
+        Follow us <img src="/xcom-mark-white.png" alt="X.com" style={logoStyle} />
       </Button>
     </footer>
   );
