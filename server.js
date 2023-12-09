@@ -1203,20 +1203,19 @@ app.post('/api/v1/collections/:xid/upload', ensureAuthenticated, upload.array('i
         const collectionId = req.params.xid;
         const upload = await xidb.createAssets(req.user.xid, req.files, collectionId);
 
-        if (!upload.filesUploaded) {
-            return res.status(500).json({ message: 'Error processing images' });
+        if (upload.filesUploaded) {
+            const txn = {
+                'type': 'upload',
+                'xid': collectionId,
+                'files': upload.filesUploaded,
+                'bytes': upload.bytesUploaded,
+                'credits': upload.creditsDebited,
+            };
+
+            agent.saveTxnLog(req.user.xid, txn);
+            await archiver.commitChanges({ type: 'upload', agent: req.user.xid, asset: collectionId, files: upload.filesUploaded, bytes: upload.bytesUploaded });
         }
 
-        const txn = {
-            'type': 'upload',
-            'xid': collectionId,
-            'files': upload.filesUploaded,
-            'bytes': upload.bytesUploaded,
-            'credits': upload.creditsDebited,
-        };
-
-        agent.saveTxnLog(req.user.xid, txn);
-        await archiver.commitChanges({ type: 'upload', agent: req.user.xid, asset: collectionId, files: upload.filesUploaded, bytes: upload.bytesUploaded });
         res.status(200).json(upload);
     } catch (error) {
         console.error('Error processing files:', error);

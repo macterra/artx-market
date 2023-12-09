@@ -20,6 +20,8 @@ const CollectionView = () => {
     const [disableMintAll, setDisableMintAll] = useState(null);
     const [budget, setBudget] = useState(0);
     const [modalOpen, setModalOpen] = useState(false);
+    const [uploadResults, setUploadResults] = useState(null);
+    const [uploadWarnings, setUploadWarnings] = useState(null);
 
     useEffect(() => {
         const fetchCollection = async () => {
@@ -66,33 +68,39 @@ const CollectionView = () => {
         try {
             const response = await axios.post(`/api/v1/collections/${collection.xid}/upload`, formData);
             const data = response.data;
+            let uploadResults = ''
+            let uploadWarnings = '';
 
             if (data.filesUploaded) {
                 const mb = data.bytesUploaded / 1000000;
-                alert(`You were debited ${data.creditsDebited} credits to upload ${data.filesUploaded} files (${mb.toFixed(2)} MB)`);
+                uploadResults = `You were debited ${data.creditsDebited} credits to upload ${data.filesUploaded} files (${mb.toFixed(2)} MB)`;
                 setRefreshKey((prevKey) => prevKey + 1);
             }
 
             if (data.filesSkipped) {
                 if (data.filesSkipped === 1) {
-                    alert(`1 file was skipped due to insufficient credits.`);
+                    uploadWarnings = `1 file was skipped due to insufficient credits. `;
                 }
                 else {
-                    alert(`${data.filesSkipped} files were skipped due to insufficient credits.`);
+                    uploadWarnings = `${data.filesSkipped} files were skipped due to insufficient credits. `;
                 }
             }
 
             if (data.filesErrored) {
                 if (data.filesErrored === 1) {
-                    alert(`1 file was skipped due to error reading image.`);
+                    uploadWarnings += `1 file was skipped due to error reading image.`;
                 }
                 else {
-                    alert(`${data.filesErrored} files were skipped due to error reading image.`);
+                    uploadWarnings += `${data.filesErrored} files were skipped due to error reading image.`;
                 }
             }
+
+            setUploadResults(uploadResults);
+            setUploadWarnings(uploadWarnings);
         } catch (error) {
             console.error('Error uploading images:', error);
-            alert('Error uploading images');
+            setUploadResults('Error uploading images');
+            setUploadWarnings('');
         }
     };
 
@@ -201,7 +209,11 @@ const CollectionView = () => {
                 {
                     isDragActive ?
                         <p>Drop the images here ...</p> :
-                        <p>Copy/Paste or Drag 'n' Drop some images here, or click to select files</p>
+                        <div>
+                            <p>Copy/Paste or Drag 'n' Drop some images here, or click to select files</p>
+                            <p>{uploadResults}</p>
+                            <p>{uploadWarnings}</p>
+                        </div>
                 }
             </div>
         );
