@@ -7,8 +7,9 @@ import ListingsGrid from './ListingsGrid';
 
 const MainView = () => {
 
-    const [profiles, setProfiles] = useState(null);
-    const [listings, setListings] = useState(null);
+    const [profiles, setProfiles] = useState([]);
+    const [listings, setListings] = useState([]);
+    const [sales, setSales] = useState([]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -18,6 +19,9 @@ const MainView = () => {
 
                 const listings = await axios.get(`/api/v1/listings`);
                 setListings(listings.data);
+
+                const sales = await axios.get(`/api/v1/sales`);
+                setSales(sales.data);
             } catch (error) {
                 console.error('Error fetching profile data:', error);
             }
@@ -26,19 +30,21 @@ const MainView = () => {
         fetchData();
     }, []);
 
-    if (!profiles) {
-        return;
-    }
-
     return (
         <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center">
-            {listings &&
+            {listings.length > 0 &&
                 <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center">
                     <p>Recent Listings</p>
                     <ListingsGrid listings={listings} />
                 </Box>
             }
-            {profiles &&
+            {sales.length > 0 &&
+                <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center">
+                    <p>Recent Sales</p>
+                    <ListingsGrid listings={sales} />
+                </Box>
+            }
+            {profiles.length > 0 &&
                 <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center">
                     <p>Featured Artists</p>
                     <ProfileGrid collection={profiles} />

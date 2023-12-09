@@ -1047,6 +1047,65 @@ async function getListings(max = 8) {
     return selected.slice(0, max);
 }
 
+async function getSales(max = 8) {
+    const logs = await archiver.getLogs();
+    let sales = logs.filter(log => log.type === 'sale');
+    let selected = [];
+    let seen = {};
+    let listingsByToken = {};
+
+    for (let listing of sales) {
+
+        if (seen[listing.asset]) {
+            continue;
+        }
+
+        seen[listing.asset] = true;
+
+        try {
+            const nft = asset.getAsset(listing.asset);
+
+            if (!nft) {
+                continue;
+            }
+
+            if (nft.asset.owner !== listing.agent) {
+                continue;
+            }
+
+            const token = asset.getAsset(nft.nft.token);
+
+            if (!token) {
+                continue;
+            }
+
+            if (!listingsByToken[nft.nft.token]) {
+                listing.title = nft.nft.title;
+                listing.image = token.file.path;
+                listing.min = nft.nft.price;
+                listing.max = nft.nft.price;
+                listing.editions = 1;
+                listing.token = nft.nft.token;
+
+                selected.push(listing);
+                listingsByToken[nft.nft.token] = listing;
+            }
+            else {
+                let tokenListing = listingsByToken[nft.nft.token];
+                tokenListing.title = token.asset.title;
+                tokenListing.editions += 1;
+                tokenListing.min = Math.min(tokenListing.min, listing.price);
+                tokenListing.max = Math.max(tokenListing.max, listing.price);
+            }
+        }
+        catch (error) {
+            console.log(`getListings error: ${error}`);
+        }
+    }
+
+    return selected.slice(0, max);
+}
+
 function mergeAgents(userId, config = realConfig) {
     let source;
     let target;
@@ -1097,6 +1156,7 @@ module.exports = {
     getCollection,
     getListings,
     getNft,
+    getSales,
     integrityCheck,
     isOwner,
     mergeAgents,

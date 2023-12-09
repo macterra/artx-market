@@ -107,7 +107,7 @@ def push():
 def logs():
     with lock:
         try:
-            raw_logs = repo.git.log('-n', '100', '--pretty=format:"%h - %ad - %s"').split('\n')
+            raw_logs = repo.git.log('--since="1 week ago"', '--pretty=format:"%h - %ad - %s"').split('\n')
         except GitCommandError as error:
             print(f'Failed to fetch logs: {str(error)}')
             return jsonify({'error': f'Failed to fetch logs: {str(error)}'}), 500

@@ -811,6 +811,16 @@ app.get('/api/v1/listings', async (req, res) => {
     }
 });
 
+app.get('/api/v1/sales', async (req, res) => {
+    try {
+        const sales = await xidb.getSales();
+        res.status(200).json(sales);
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ message: 'Error' });
+    }
+});
+
 app.get('/api/v1/profiles/', async (req, res) => {
     try {
         const profiles = await xidb.getAllAgents();
