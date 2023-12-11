@@ -368,8 +368,9 @@ app.get('/api/v1/admin/register', ensureAuthenticated, async (req, res) => {
     }
 });
 
-app.get('/api/v1/admin/notarize', ensureAuthenticated, async (req, res) => {
+app.post('/api/v1/admin/notarize', ensureAuthenticated, async (req, res) => {
     try {
+        const { txnFee } = req.body;
         const adminData = admin.getAdmin();
 
         if (!adminData.owner || adminData.owner !== req.user.xid) {
@@ -380,7 +381,13 @@ app.get('/api/v1/admin/notarize', ensureAuthenticated, async (req, res) => {
             return res.status(500).json({ message: 'Not registered' });
         }
 
-        const savedAdmin = await admin.notarizeState(adminData, 0);
+        const maxFee = parseInt(txnFee, 10);
+
+        if (!maxFee) {
+            return res.status(401).json({ message: 'No txn fee specified' });
+        }
+
+        const savedAdmin = await admin.notarizeState(adminData, maxFee);
 
         if (savedAdmin.pending !== adminData.pending) {
             savedAdmin.githash = await archiver.commitChanges({

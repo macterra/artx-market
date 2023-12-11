@@ -79,15 +79,15 @@ const AdminView = () => {
 
     const handleNotarize = async () => {
 
-        if (admin.pending) {
-            if (!window.confirm(`Spend USD ${walletInfo.fee_usd} for RBF?`)) {
-                return;
-            }
+        const txnFee = prompt("Enter txn fee in USD", "0.0");
+
+        if (txnFee === null || txnFee === "") {
+            return;
         }
 
         setDisableButton(true);
         try {
-            const getAdmin = await axios.get('/api/v1/admin/notarize');
+            const getAdmin = await axios.post('/api/v1/admin/notarize', { txnFee: txnFee });
             const admin = getAdmin.data;
 
             if (admin.pending) {
