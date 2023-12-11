@@ -48,7 +48,6 @@ class Authorizer:
     def __init__(self):
         connect = os.environ.get("BTC_CONNECT")
         self.chain = "BTC"
-        print(f"connect={connect}")
         self.blockchain = AuthServiceProxy(connect, timeout=10)
         self.register = False
 
