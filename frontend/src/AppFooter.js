@@ -23,7 +23,7 @@ function AppFooter() {
     fetchData();
   }, []);
 
-  const logoStyle = { marginLeft: '10px', height: '32px' };
+  const logoStyle = { marginLeft: '10px', height: '20px' };
 
   return (
     <footer className="footer">
