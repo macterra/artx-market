@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Button } from '@mui/material';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import axios from 'axios';
 
 const ProfileHeader = () => {
@@ -9,6 +10,7 @@ const ProfileHeader = () => {
     const navigate = useNavigate();
 
     const [profile, setProfile] = useState(null);
+    const isViewportThin = useMediaQuery('(max-width:600px)');
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -74,13 +76,8 @@ const ProfileHeader = () => {
                     </div>
                 }
             </div>
-            {profile.isUser &&
+            {!isViewportThin && profile.isUser &&
                 <div style={{ marginLeft: 'auto', marginRight: '20px' }}>
-                    {false &&
-                        <Button variant="contained" color="primary" onClick={() => navigate('/profile/edit/coll')} style={{ marginRight: '10px' }}>
-                            Edit Collections
-                        </Button>
-                    }
                     <Button variant="contained" color="primary" onClick={() => navigate('/profile/edit/credits')}>
                         Credits: {profile.credits}
                     </Button>
