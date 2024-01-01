@@ -896,7 +896,12 @@ app.patch('/api/v1/profile/', ensureAuthenticated, async (req, res) => {
                     if (!link.url.startsWith('http://') && !link.url.startsWith('https://')) {
                         link.url = 'https://' + link.url;
                     }
-                    await axios.get(link.url, { timeout: 3000 });
+                    await axios.get(link.url, {
+                        timeout: 3000,
+                        headers: {
+                            'User-Agent': 'curl/7.64.1'
+                        }
+                     });
                 } catch (error) {
                     return res.status(400).json({ message: `${link.url} is not a valid link: ${error}` });
                 }
