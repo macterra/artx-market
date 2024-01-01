@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
-const AgentBadge = ({ agent, xid, fontSize }) => {
+const AgentBadge = ({ agent, xid, fontSize = '1.0em' }) => {
 
     const [user, setUser] = useState(null);
 
@@ -19,8 +19,6 @@ const AgentBadge = ({ agent, xid, fontSize }) => {
             else {
                 setUser(agent);
             }
-
-            fontSize = fontSize || '1.0em';
         };
 
         fetchAgent();

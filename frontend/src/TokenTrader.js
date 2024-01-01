@@ -59,7 +59,7 @@ const TokenTrader = ({ metadata, xid, setRefreshKey }) => {
 
     const handleListClick = async (nft) => {
         try {
-            const response = await axios.post(`/api/v1/asset/${nft.xid}/list`, { price: nft.nft.newPrice });
+            await axios.post(`/api/v1/asset/${nft.xid}/list`, { price: nft.nft.newPrice });
             nft.nft.price = nft.nft.newPrice;
             setRefreshKey((prevKey) => prevKey + 1);
         } catch (error) {

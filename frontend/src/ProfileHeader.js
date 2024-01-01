@@ -24,7 +24,7 @@ const ProfileHeader = () => {
         };
 
         fetchProfile();
-    }, [xid]);
+    }, [xid, navigate]);
 
     if (!profile) {
         return <p></p>;

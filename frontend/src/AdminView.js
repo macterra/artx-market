@@ -11,7 +11,6 @@ const AdminView = () => {
     const [admin, setAdmin] = useState(null);
     const [disableButton, setDisableButton] = useState(false);
     const [tab, setTab] = useState(null);
-    const [walletInfo, setWalletInfo] = useState(null);
     const [walletJson, setWalletJson] = useState(null);
     const [userList, setUserList] = useState(null);
 
@@ -33,7 +32,6 @@ const AdminView = () => {
                 const walletInfo = getWalletInfo.data;
                 const walletJson = JSON.stringify(walletInfo, null, 2);
 
-                setWalletInfo(walletInfo);
                 setWalletJson(walletJson);
             } catch (error) {
                 console.error('Error fetching admin data:', error);
