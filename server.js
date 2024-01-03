@@ -730,13 +730,13 @@ app.post('/api/v1/asset/:xid/list', ensureAuthenticated, async (req, res) => {
         }
 
         if (!assetData.nft) {
-            res.status(500).json({ message: 'Error' });
+            return res.status(500).json({ message: 'Error' });
         }
 
         const newPrice = parseInt(price, 10);
 
         if (newPrice < 0) {
-            res.status(500).json({ message: `Error: negative price ${newPrice}` });
+            return res.status(500).json({ message: `Error: negative price ${newPrice}` });
         }
 
         if (newPrice !== assetData.nft.price) {
@@ -901,7 +901,7 @@ app.patch('/api/v1/profile/', ensureAuthenticated, async (req, res) => {
                         headers: {
                             'User-Agent': 'curl/7.64.1'
                         }
-                     });
+                    });
                 } catch (error) {
                     return res.status(400).json({ message: `${link.url} is not a valid link: ${error}` });
                 }

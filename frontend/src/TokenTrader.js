@@ -64,7 +64,7 @@ const TokenTrader = ({ metadata, xid, setRefreshKey }) => {
             setRefreshKey((prevKey) => prevKey + 1);
         } catch (error) {
             console.error('Error listing:', error);
-            alert(error.response.data.nessage);
+            alert(error.response.data.message);
         }
     };
 
