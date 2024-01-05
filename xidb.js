@@ -56,7 +56,7 @@ async function integrityCheck() {
     const assets = allAssets();
 
     for (const [i, xid] of assets.entries()) {
-        const res = repairAsset(xid);
+        const res = await repairAsset(xid);
         const index = (i + 1).toString().padStart(5, " ");
 
         if (res.fixed) {
@@ -134,7 +134,7 @@ function allAgents(config = realConfig) {
     return agents;
 }
 
-function repairAsset(xid) {
+async function repairAsset(xid) {
 
     const removeInvalidAsset = (xid) => {
         asset.removeAsset(xid);
@@ -168,21 +168,23 @@ function repairAsset(xid) {
         return removeInvalidAsset(xid);
     }
 
-    if (assetData.token) {
-        const missingNftIds = [];
+    if (assetData.token?.url) {
+        const ipfs = await archiver.pinAsset(xid);
 
-        for (const nftId of assetData.token.nfts) {
-            const edition = asset.getAsset(nftId);
-            if (!edition) {
-                missingNftIds.push(nftId);
-            }
-        }
+        if (ipfs.cids) {
+            for (const pin of ipfs.cids) {
+                if (pin.name.includes(assetData.file.fileName)) {
+                    assetData.token.cid = pin.cid;
+                    assetData.token.link = `/ipfs/${pin.cid}?filename=${assetData.file.fileName}`;
+                    delete assetData.token.url;
+                    asset.saveAsset(assetData);
 
-        if (missingNftIds.length > 0) {
-            return {
-                xid: xid,
-                fixed: false,
-                message: `missing nft assets: ${missingNftIds}`,
+                    return {
+                        xid: xid,
+                        fixed: true,
+                        message: 'asset repinned',
+                    };
+                }
             }
         }
     }
@@ -669,10 +671,12 @@ async function mintToken(userId, xid, editions, license, royalty) {
 
     const ipfs = await archiver.pinAsset(xid);
 
-    if (!ipfs?.cid) {
+    if (!ipfs?.cids) {
         console.error(`mintToken error: ipfs pin failed for ${xid}`);
         return;
     }
+
+    const pin = ipfs.cids.find(pin => pin.name.includes(assetData.file.fileName));
 
     const nfts = [];
     editions = parseInt(editions, 10);
@@ -689,8 +693,8 @@ async function mintToken(userId, xid, editions, license, royalty) {
     royalty = parseFloat(royalty);
 
     assetData.token = {
-        cid: ipfs.cid,
-        url: `https://ipfs.io/ipfs/${ipfs.cid}/${assetData.file.fileName}`,
+        cid: pin.cid,
+        link: `/ipfs/${pin.cid}?filename=${assetData.file.fileName}`,
         royalty: royalty,
         license: license,
         editions: editions,

@@ -50,13 +50,14 @@ def pin(subfolder):
             start = time.time()
             ipfs = getIpfs()
             elapsed = time.time() - start
-            print(f"> getIpfs took {elapsed} seconds")
+            #print(f"> getIpfs took {elapsed} seconds")
 
             start = time.time()
-            res = ipfs.add(subfolder, recursive=True, pin=True, pattern="**")
+            pins = ipfs.add(subfolder, recursive=True, pin=True, pattern="**")
             elapsed = time.time() - start
-            print(f"> ipfs.add took {elapsed} seconds for {len(res)} items")
-            cid = res[-1]['Hash']
+            #print(f"> ipfs.add took {elapsed} seconds for {len(pins)} items")
+            cid = pins[-1]['Hash']
+            cids = [{ 'name': pin['Name'], 'cid': pin['Hash']} for pin in pins]
         else:
             print("IPFS not available")
             return jsonify({'error': 'IPFS not available'}), 500
@@ -68,7 +69,7 @@ def pin(subfolder):
         return jsonify({'error': f"An unexpected error occurred: {str(error)}"}), 500
 
     print(f"pinned {subfolder} to {cid}")
-    return jsonify({'path': subfolder, 'cid': cid})
+    return jsonify({'path': subfolder, 'cid': cid, 'cids': cids})
 
 @app.route('/api/v1/commit', methods=['POST'])
 def commit():

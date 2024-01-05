@@ -125,7 +125,7 @@ const TokenView = ({ metadata, setTab, setRefreshKey }) => {
                     <TableRow>
                         <TableCell>IPFS:</TableCell>
                         <TableCell>
-                            <a href={`/ipfs/${metadata.token.cid}/${metadata.file.fileName}`} target="_blank" rel="noopener noreferrer">
+                            <a href={`${metadata.token.link}`} target="_blank" rel="noopener noreferrer">
                                 {metadata.token.cid}
                             </a>
                         </TableCell>
