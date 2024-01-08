@@ -103,6 +103,24 @@ passport.use(new LnurlAuth.Strategy(async function (pubkey, done) {
 
 app.use(passport.authenticate('lnurl-auth'));
 
+app.use((req, res, next) => {
+    const userAgent = req.headers['user-agent'];
+
+    if (!/Mozilla/.test(userAgent)) {
+        const regex = /^\/nft\/([^\/]+)$/;
+        const match = req.url.match(regex);
+
+        if (match) {
+            const xid = match[1];
+            const nftLink = `/data/assets/${xid}/index.html`;
+            console.log(`Detected user-agent: ${userAgent}, redirecting to ${nftLink}`);
+            return res.redirect(nftLink);
+        }
+    }
+
+    next();
+});
+
 app.get('/authenticate',
     function (req, res, next) {
         if (req.user) {
