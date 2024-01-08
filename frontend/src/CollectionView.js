@@ -31,6 +31,8 @@ const CollectionView = () => {
                 const getCollection = await axios.get(`/api/v1/collections/${xid}`);
                 const collection = getCollection.data;
 
+                document.title = collection.asset.title;
+
                 setCollection(collection);
                 setImages(collection.collection.assets);
 

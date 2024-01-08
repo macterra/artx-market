@@ -16,7 +16,10 @@ const ProfileView = () => {
         const fetchProfile = async () => {
             try {
                 const getProfile = await axios.get(`/api/v1/profile/${xid}`);
-                setProfile(getProfile.data);
+                const profile = getProfile.data;
+
+                document.title = profile.name;
+                setProfile(profile);
             } catch (error) {
                 console.error('Error fetching profile data:', error);
                 // Let ProfileHeader navigate to home

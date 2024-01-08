@@ -25,7 +25,10 @@ const ProfileEditor = () => {
         const fetchProfile = async () => {
             try {
                 const getProfile = await axios.get(`/api/v1/profile`);
-                setProfile(getProfile.data);
+                const profile = getProfile.data;
+
+                document.title = `${profile.name} Settings`;
+                setProfile(profile);
 
                 if (!tab) {
                     setTab(jump || 'name');

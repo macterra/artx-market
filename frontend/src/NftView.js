@@ -23,6 +23,8 @@ const NftView = () => {
                 const asset = await axios.get(`/api/v1/nft/${xid}`);
                 const nft = asset.data;
 
+                document.title = nft.nft.title;
+
                 setNft(nft);
                 setIsOwner(nft.owned);
             } catch (error) {

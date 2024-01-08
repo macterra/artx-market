@@ -27,6 +27,9 @@ const AssetView = () => {
             try {
                 const asset = await axios.get(`/api/v1/asset/${xid}`);
                 const metadata = asset.data;
+
+                document.title = metadata.asset.title;
+
                 setMetadata(metadata);
                 setIsToken(!!metadata.token);
                 setIsDeleted(metadata.asset.collection === 'deleted');
