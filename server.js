@@ -108,7 +108,7 @@ app.use((req, res, next) => {
 
     console.log(`Detected user-agent: ${userAgent}`);
 
-    if (!/Mozilla/.test(userAgent)) {
+    if (/facebookexternalhit|bot/.test(userAgent)) {
         const regex = /^\/nft\/([^\/]+)$/;
         const match = req.url.match(regex);
 
