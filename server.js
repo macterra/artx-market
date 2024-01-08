@@ -106,6 +106,8 @@ app.use(passport.authenticate('lnurl-auth'));
 app.use((req, res, next) => {
     const userAgent = req.headers['user-agent'];
 
+    console.log(`Detected user-agent: ${userAgent}`);
+
     if (!/Mozilla/.test(userAgent)) {
         const regex = /^\/nft\/([^\/]+)$/;
         const match = req.url.match(regex);
@@ -113,7 +115,7 @@ app.use((req, res, next) => {
         if (match) {
             const xid = match[1];
             const nftLink = `/data/assets/${xid}/index.html`;
-            console.log(`Detected user-agent: ${userAgent}, redirecting to ${nftLink}`);
+            console.log(`Redirecting to ${nftLink}`);
             return res.redirect(nftLink);
         }
     }
