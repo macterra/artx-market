@@ -35,6 +35,9 @@ describe('createAsset', () => {
 
         // Mock the file system
         mockFs({
+            [config.data]: {
+                'asset.ejs': '',
+            },
             [config.uploads]: {
                 'test.jpg': 'test',
             },
@@ -120,6 +123,9 @@ describe('saveAsset', () => {
 
         // Mock the file system
         mockFs({
+            [config.data]: {
+                'asset.ejs': '',
+            },
             [config.assets]: {}  // Empty directory
         });
 
@@ -137,6 +143,67 @@ describe('saveAsset', () => {
         const assetJsonPath = path.join(config.assets, metadata.xid, 'meta.json');
         const writtenData = JSON.parse(fs.readFileSync(assetJsonPath, 'utf-8'));
         expect(writtenData).toEqual(expectedMetadata);
+    });
+
+    it('should save the asset static index.html', () => {
+
+        const metadata = {
+            xid: 'testXid',
+            asset: {
+                title: 'mockTitle',
+                owner: 'mockOwner',
+                collection: 'mockCollection',
+             },
+        };
+
+        const mockTemplate = `
+        <!DOCTYPE html>
+        <html>
+            <head>
+                <title><%= asset.title %></title>
+            </head>
+            <body>
+                <h1><%= asset.title %></h1>
+                <p>Owner: <%= asset.owner %></p>
+                <p>Collection: <%= asset.collection %></p>
+            </body>
+        </html>`;
+
+        const expectedHtml = `
+        <!DOCTYPE html>
+        <html>
+            <head>
+                <title>${metadata.asset.title}</title>
+            </head>
+            <body>
+                <h1>${metadata.asset.title}</h1>
+                <p>Owner: ${metadata.asset.owner}</p>
+                <p>Collection: ${metadata.asset.collection}</p>
+            </body>
+        </html>`;
+
+        // Mock the file system
+        mockFs({
+            [config.data]: {
+                'asset.ejs': mockTemplate,
+            },
+            [config.assets]: {}  // Empty directory
+        });
+
+        asset.saveAsset(metadata, config);
+
+        const expectedMetadata = {
+            xid: 'testXid',
+            asset: {
+                owner: 'owner1',
+                updated: expect.any(String)
+            },
+        };
+
+        // Read the data that was written to meta.json and check that it matches the expected data
+        const assetIndexPath = path.join(config.assets, metadata.xid, 'index.html');
+        const writtenData = fs.readFileSync(assetIndexPath, 'utf-8');
+        expect(writtenData).toEqual(expectedHtml);
     });
 });
 

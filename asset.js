@@ -6,6 +6,7 @@ const crypto = require('crypto');
 const uuid = require('uuid');
 const admin = require('./admin');
 const realConfig = require('./config');
+const ejs = require('ejs');
 
 function gitHash(fileBuffer) {
     const hasher = crypto.createHash('sha1');
@@ -118,6 +119,15 @@ function saveAsset(metadata, config = realConfig) {
 
     metadata.asset.updated = new Date().toISOString();
     fs.writeFileSync(assetJsonPath, JSON.stringify(metadata, null, 2));
+
+    const templateData = JSON.parse(JSON.stringify(metadata));
+    templateData.asset.link = `${config.link}/asset/${metadata.xid}`;
+
+    const templatePath = path.join(config.data, 'asset.ejs');
+    const template = fs.readFileSync(templatePath, 'utf8');
+    const html = ejs.render(template, templateData);
+    const htmlPath = path.join(assetFolder, 'index.html');
+    fs.writeFileSync(htmlPath, html);
 }
 
 function getHistory(xid, config = realConfig) {
