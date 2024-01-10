@@ -95,9 +95,6 @@ describe('transferAsset', () => {
         };
 
         mockFs({
-            [config.data]: {
-                'asset.ejs': '',
-            },
             [config.assets]: {
                 [mockNftXid]: {
                     'meta.json': JSON.stringify(mockAssetData),
@@ -451,9 +448,6 @@ describe('mergeAgents', () => {
 
         // Mock the file system
         mockFs({
-            [config.data]: {
-                'asset.ejs': '',
-            },
             [config.agents]: {
                 [targetAgentId]: { 'agent.json': JSON.stringify(targetAgentData) },
                 [sourceAgentId]: { 'agent.json': JSON.stringify(sourceAgentData) },
@@ -507,9 +501,6 @@ describe('mergeAgents', () => {
 
         // Mock the file system
         mockFs({
-            [config.data]: {
-                'asset.ejs': '',
-            },
             [config.agents]: {
                 [targetAgentId]: { 'agent.json': JSON.stringify(targetAgentData) },
                 [sourceAgentId]: { 'agent.json': JSON.stringify(sourceAgentData) },

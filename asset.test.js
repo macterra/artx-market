@@ -123,9 +123,6 @@ describe('saveAsset', () => {
 
         // Mock the file system
         mockFs({
-            [config.data]: {
-                'asset.ejs': '',
-            },
             [config.assets]: {}  // Empty directory
         });
 
@@ -151,9 +148,10 @@ describe('saveAsset', () => {
             xid: 'testXid',
             asset: {
                 title: 'mockTitle',
-                owner: 'mockOwner',
-                collection: 'mockCollection',
-             },
+            },
+            file: {
+                fileName: '_.png',
+            }
         };
 
         const mockTemplate = `
@@ -163,9 +161,8 @@ describe('saveAsset', () => {
                 <title><%= asset.title %></title>
             </head>
             <body>
-                <h1><%= asset.title %></h1>
-                <p>Owner: <%= asset.owner %></p>
-                <p>Collection: <%= asset.collection %></p>
+                <a href="<%= asset.link %>"><%= asset.title %></a>
+                <img src="<%= asset.image %>" />
             </body>
         </html>`;
 
@@ -176,9 +173,8 @@ describe('saveAsset', () => {
                 <title>${metadata.asset.title}</title>
             </head>
             <body>
-                <h1>${metadata.asset.title}</h1>
-                <p>Owner: ${metadata.asset.owner}</p>
-                <p>Collection: ${metadata.asset.collection}</p>
+                <a href="${config.link}/asset/${metadata.xid}">${metadata.asset.title}</a>
+                <img src="${config.link}/data/assets/${metadata.xid}/${metadata.file.fileName}" />
             </body>
         </html>`;
 

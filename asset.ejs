@@ -8,7 +8,7 @@
 
     <meta property="og:title" content="<%= asset.title %>" />
     <meta property="og:description" content="ArtX Market :: Built on Bitcoin" />
-    <meta property="og:image" content="<%= file.fileName %>" />
+    <meta property="og:image" content="<%= asset.image %>" />
     <meta property="og:url" content="<%= asset.link %>" />
 
     <meta name="twitter:card" content="summary_large_image" />
@@ -17,6 +17,9 @@
 </head>
 
 <body>
+    <a href="<%= asset.link %>">
+        <img src="<%= asset.image %>" alt="<%= asset.title %>"/>
+    </a>
 </body>
 
 </html>
