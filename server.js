@@ -113,7 +113,7 @@ app.use((req, res, next) => {
         const match = req.url.match(regex);
 
         if (match) {
-            const xid = match[1];
+            const xid = match[2];
             const nftLink = `/data/assets/${xid}/index.html`;
             console.log(`Redirecting to ${nftLink}`);
             return res.redirect(nftLink);
