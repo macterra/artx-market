@@ -218,6 +218,24 @@ async function repairAsset(xid) {
         }
     }
 
+    if (assetData.file) {
+        const templatePath = path.join(realConfig.data, 'asset.ejs');
+        const templateStats = fs.statSync(templatePath);
+        const templateUpdateTime = new Date(templateStats.mtime).getTime();
+        const assetUpdateTime = new Date(assetData.asset.updated).getTime();
+
+        if (templateUpdateTime > assetUpdateTime) {
+            assetData.asset.updated = new Date().toISOString();
+            asset.saveAsset(assetData);
+
+            return {
+                xid: xid,
+                fixed: true,
+                message: `saved asset index`,
+            }
+        }
+    }
+
     return {
         xid: xid,
         fixed: true,
