@@ -106,7 +106,7 @@ app.use(passport.authenticate('lnurl-auth'));
 app.use((req, res, next) => {
     const userAgent = req.headers['user-agent'];
 
-    console.log(`Detected user-agent: ${userAgent}`);
+    //console.log(`Detected user-agent: ${userAgent}`);
 
     if (/facebookexternalhit|bot|curl/.test(userAgent)) {
         const regex = /^\/(nft|asset)\/([^\/]+)$/;
