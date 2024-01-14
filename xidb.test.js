@@ -135,6 +135,60 @@ describe('transferAsset', () => {
     });
 });
 
+describe('saveAssetPage', () => {
+    it('returns an asset page', () => {
+        const metadata = {
+            xid: 'testXid',
+            asset: {
+                title: 'mockTitle',
+            },
+            file: {
+                fileName: '_.png',
+            }
+        };
+
+        const mockTemplate = `
+        <!DOCTYPE html>
+        <html>
+            <head>
+                <title><%= asset.title %></title>
+            </head>
+            <body>
+                <a href="<%= asset.link %>"><%= asset.title %></a>
+                <img src="<%= asset.image %>" />
+            </body>
+        </html>`;
+
+        const expectedHtml = `
+        <!DOCTYPE html>
+        <html>
+            <head>
+                <title>${metadata.asset.title}</title>
+            </head>
+            <body>
+                <a href="${config.link}/asset/${metadata.xid}">${metadata.asset.title}</a>
+                <img src="${config.link}/data/assets/${metadata.xid}/${metadata.file.fileName}" />
+            </body>
+        </html>`;
+
+        // Mock the file system
+        mockFs({
+            [config.data]: {
+                'asset.ejs': mockTemplate,
+            },
+            [config.assets]: {
+                [metadata.xid]: {
+                    'meta.json': JSON.stringify(metadata),
+                },
+            }
+        });
+
+        const html = xidb.getAssetPage(metadata.xid, config);
+
+        expect(html).toEqual(expectedHtml);
+    });
+});
+
 describe('saveNft', () => {
     afterEach(() => {
         // Restore the real file system after each test

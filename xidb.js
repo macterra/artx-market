@@ -219,19 +219,14 @@ async function repairAsset(xid) {
     }
 
     if (assetData.file) {
-        const templatePath = path.join(realConfig.data, 'asset.ejs');
-        const templateStats = fs.statSync(templatePath);
-        const templateUpdateTime = new Date(templateStats.mtime).getTime();
-        const assetUpdateTime = new Date(assetData.asset.updated).getTime();
+        const indexPath = path.join(realConfig.assets, xid, 'index.html');
 
-        if (templateUpdateTime > assetUpdateTime) {
-            assetData.asset.updated = new Date().toISOString();
-            asset.saveAsset(assetData);
-
+        if (fs.existsSync(indexPath)) {
+            fs.rmSync(indexPath);
             return {
                 xid: xid,
                 fixed: true,
-                message: `saved asset index`,
+                message: `removed asset index`,
             }
         }
     }

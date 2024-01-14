@@ -119,18 +119,6 @@ function saveAsset(metadata, config = realConfig) {
 
     metadata.asset.updated = new Date().toISOString();
     fs.writeFileSync(assetJsonPath, JSON.stringify(metadata, null, 2));
-
-    if (metadata.file) {
-        const templateData = JSON.parse(JSON.stringify(metadata));
-        templateData.asset.link = `${config.link}/asset/${metadata.xid}`;
-        templateData.asset.image = `${config.link}/data/assets/${metadata.xid}/${metadata.file.fileName}`;
-
-        const templatePath = path.join(config.data, 'asset.ejs');
-        const template = fs.readFileSync(templatePath, 'utf8');
-        const html = ejs.render(template, templateData);
-        const htmlPath = path.join(assetFolder, 'index.html');
-        fs.writeFileSync(htmlPath, html);
-    }
 }
 
 function getHistory(xid, config = realConfig) {
