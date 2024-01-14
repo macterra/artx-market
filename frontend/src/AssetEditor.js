@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Button, TextField, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { Button, TextField, FormControl, InputLabel, Select, MenuItem, Grid } from '@mui/material';
 import axios from 'axios';
 
 const AssetEditor = ({ metadata, setTab, setRefreshKey }) => {
-    const [title, setTitle] = useState(null);
+    const [title, setTitle] = useState('');
     const [collections, setCollections] = useState([]);
     const [selectedCollection, setSelectedCollection] = useState('');
 
@@ -76,12 +76,20 @@ const AssetEditor = ({ metadata, setTab, setRefreshKey }) => {
                     ))}
                 </Select>
             </FormControl>
-            <Button variant="contained" color="primary" onClick={handleSaveClick}>
-                Save
-            </Button>
-            <Button variant="contained" color="primary" onClick={handleDeleteClick}>
-                Delete
-            </Button>
+
+            <Grid container direction="row" justifyContent="center" alignItems="center" spacing={3}>
+                <Grid item>
+                    <Button variant="contained" color="primary" onClick={handleSaveClick}>
+                        Save
+                    </Button>
+                </Grid>
+                <Grid item>
+                    <Button variant="contained" color="primary" onClick={handleDeleteClick}>
+                        Delete
+                    </Button>
+                </Grid>
+            </Grid>
+
         </form>
     );
 };
