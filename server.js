@@ -124,7 +124,11 @@ app.use((req, res, next) => {
                 const html = xidb.getProfilePage(xid);
                 return res.status(200).send(html);
             }
-            else {
+            else if (type === 'asset') {
+                const html = xidb.getAssetPage(xid);
+                return res.status(200).send(html);
+            }
+            else if (type === 'nft') {
                 const nftLink = `/data/assets/${xid}/index.html`;
                 console.log(`Redirecting to ${nftLink}`);
                 return res.redirect(nftLink);

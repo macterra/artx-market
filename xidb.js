@@ -484,11 +484,22 @@ function getProfilePage(xid, config = realConfig) {
     agentData.link = `${config.link}/profile/${xid}`;
     agentData.image = `${config.link}${agentData.pfp}`;
 
-    console.log(JSON.stringify(agentData, null, 4));
-
     const templatePath = path.join(config.data, 'profile.ejs');
     const template = fs.readFileSync(templatePath, 'utf8');
     const html = ejs.render(template, agentData);
+
+    return html;
+}
+
+function getAssetPage(xid, config = realConfig) {
+    const assetData = asset.getAsset(xid, config);
+
+    assetData.asset.link = `${config.link}/asset/${xid}`;
+    assetData.asset.image = `${config.link}/data/assets/${xid}/${assetData.file.fileName}`;
+
+    const templatePath = path.join(config.data, 'asset.ejs');
+    const template = fs.readFileSync(templatePath, 'utf8');
+    const html = ejs.render(template, assetData);
 
     return html;
 }
@@ -1216,6 +1227,7 @@ module.exports = {
     createCollection,
     getAgentAndCollections,
     getAllAgents,
+    getAssetPage,
     getCollection,
     getCollectionPage,
     getListings,
