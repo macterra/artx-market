@@ -109,7 +109,7 @@ app.use((req, res, next) => {
     //console.log(`Detected user-agent: ${userAgent}`);
 
     if (/facebookexternalhit|bot|curl/.test(userAgent)) {
-        const regex = /^\/(nft|asset|collection)\/([^\/]+)$/;
+        const regex = /^\/(nft|asset|collection|profile)\/([^\/]+)$/;
         const match = req.url.match(regex);
 
         if (match) {
@@ -118,6 +118,10 @@ app.use((req, res, next) => {
 
             if (type === 'collection') {
                 const html = xidb.getCollectionPage(xid);
+                return res.status(200).send(html);
+            }
+            else if (type === 'profile') {
+                const html = xidb.getProfilePage(xid);
                 return res.status(200).send(html);
             }
             else {

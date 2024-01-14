@@ -471,11 +471,24 @@ function getCollectionPage(xid, config = realConfig) {
         }
     }
 
-    console.log(JSON.stringify(data, null, 4));
-
     const templatePath = path.join(config.data, 'collection.ejs');
     const template = fs.readFileSync(templatePath, 'utf8');
     const html = ejs.render(template, data);
+
+    return html;
+}
+
+function getProfilePage(xid, config = realConfig) {
+    const agentData = agent.getAgent(xid, config);
+
+    agentData.link = `${config.link}/profile/${xid}`;
+    agentData.image = `${config.link}${agentData.pfp}`;
+
+    console.log(JSON.stringify(agentData, null, 4));
+
+    const templatePath = path.join(config.data, 'profile.ejs');
+    const template = fs.readFileSync(templatePath, 'utf8');
+    const html = ejs.render(template, agentData);
 
     return html;
 }
@@ -1207,6 +1220,7 @@ module.exports = {
     getCollectionPage,
     getListings,
     getNft,
+    getProfilePage,
     getSales,
     integrityCheck,
     isOwner,
