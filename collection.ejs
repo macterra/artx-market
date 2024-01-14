@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>
+        <%= collection.title %>
+    </title>
+
+    <meta property="og:title" content="<%= collection.title %>" />
+    <meta property="og:description" content="ArtX Market :: Built on Bitcoin" />
+    <meta property="og:image" content="<%= collection.image %>" />
+    <meta property="og:url" content="<%= collection.link %>" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@artxmarket" />
+    <meta name="twitter:title" content="<%= collection.title %>" />
+</head>
+
+<body>
+    <a href="<%= collection.link %>">
+        <img src="<%= collection.image %>" alt="<%= collection.title %>"/>
+    </a>
+</body>
+
+</html>

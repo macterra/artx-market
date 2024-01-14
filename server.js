@@ -109,14 +109,22 @@ app.use((req, res, next) => {
     //console.log(`Detected user-agent: ${userAgent}`);
 
     if (/facebookexternalhit|bot|curl/.test(userAgent)) {
-        const regex = /^\/(nft|asset)\/([^\/]+)$/;
+        const regex = /^\/(nft|asset|collection)\/([^\/]+)$/;
         const match = req.url.match(regex);
 
         if (match) {
+            const type = match[1];
             const xid = match[2];
-            const nftLink = `/data/assets/${xid}/index.html`;
-            console.log(`Redirecting to ${nftLink}`);
-            return res.redirect(nftLink);
+
+            if (type === 'collection') {
+                const html = xidb.getCollectionPage(xid);
+                return res.status(200).send(html);
+            }
+            else {
+                const nftLink = `/data/assets/${xid}/index.html`;
+                console.log(`Redirecting to ${nftLink}`);
+                return res.redirect(nftLink);
+            }
         }
     }
 

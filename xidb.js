@@ -452,6 +452,34 @@ function getCollection(collectionId, userId, config = realConfig) {
     return collection;
 }
 
+function getCollectionPage(xid, config = realConfig) {
+    const collection = asset.getAsset(xid, config);
+    const owner = agent.getAgent(collection.asset.owner, config);
+    let thumbnail = collection.collection.thumbnail;
+
+    if (!thumbnail) {
+        const agentData = getAgentAndCollections(collection.asset.owner);
+        const collectionData = agentData.collections[xid];
+        thumbnail = collectionData.collection.thumbnail;
+    }
+
+    const data = {
+        collection: {
+            title: `${collection.asset.title} by ${owner.name}`,
+            link: `${config.link}/collection/${xid}`,
+            image: `${config.link}${thumbnail}`,
+        }
+    }
+
+    console.log(JSON.stringify(data, null, 4));
+
+    const templatePath = path.join(config.data, 'collection.ejs');
+    const template = fs.readFileSync(templatePath, 'utf8');
+    const html = ejs.render(template, data);
+
+    return html;
+}
+
 function getNft(xid, config = realConfig) {
     const jsonPath = path.join(config.assets, xid, 'nft.json');
 
@@ -1176,6 +1204,7 @@ module.exports = {
     getAgentAndCollections,
     getAllAgents,
     getCollection,
+    getCollectionPage,
     getListings,
     getNft,
     getSales,
