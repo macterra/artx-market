@@ -35,9 +35,7 @@ const CollectionView = () => {
 
                 setCollection(collection);
                 setImages(collection.collection.assets);
-
                 setShowMintAll(collection.costToMintAll > 0);
-                setDisableMintAll(collection.costToMintAll > credits);
 
                 const getAuth = await axios.get('/check-auth');
                 const auth = getAuth.data;
@@ -52,6 +50,7 @@ const CollectionView = () => {
                     setCredits(credits);
                     setDisableUpload(credits < 1);
                     setBudget(budget.toFixed(2));
+                    setDisableMintAll(collection.costToMintAll > credits);
                 }
             } catch (error) {
                 console.error('Error fetching data:', error);
