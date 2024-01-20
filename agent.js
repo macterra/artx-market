@@ -61,6 +61,7 @@ function saveAgent(agentData, config = realConfig) {
     }
 
     agentData.updated = new Date().toISOString();
+    agentData.credits = agentData.credits || 0;
     fs.writeFileSync(agentJsonPath, JSON.stringify(agentData, null, 2));
 }
 

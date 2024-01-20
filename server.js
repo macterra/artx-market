@@ -631,7 +631,7 @@ app.patch('/api/v1/asset/:xid', ensureAuthenticated, async (req, res) => {
 app.post('/api/v1/asset/:xid/mint', ensureAuthenticated, async (req, res) => {
     try {
         const xid = req.params.xid;
-        const { editions, license, royalty } = req.body;
+        let { editions, license, royalty } = req.body;
         const userId = req.user.xid;
         const assetData = asset.getAsset(xid);
 
@@ -642,7 +642,20 @@ app.post('/api/v1/asset/:xid/mint', ensureAuthenticated, async (req, res) => {
 
         if (assetData.token) {
             console.log('already minted');
-            return res.status(500).json({ message: 'Error' });
+            return res.status(400).json({ message: 'Error' });
+        }
+
+        editions = parseInt(editions) || 0;
+        royalty = parseInt(royalty) || 0;
+
+        if (editions < 0 || editions > 100) {
+            console.log(`editions out of range ${editions}`);
+            return res.status(400).json({ message: `Error: editions (${editions}) out of range (0-100)`});
+        }
+
+        if (royalty < 0 || royalty > 25) {
+            console.log(`royalty out of range ${royalty}`);
+            return res.status(400).json({ message: `Error: royalty (${royalty}) out of range (0-25)`});
         }
 
         const record = {

@@ -82,26 +82,10 @@ const TokenMinter = ({ navigate, metadata, setTab, setRefreshKey }) => {
     }
 
     const handleRoyaltyChange = async (value) => {
-        if (value < 0) {
-            value = 0;
-        }
-
-        if (value > 25) {
-            value = 25;
-        }
-
         setRoyalty(value);
     };
 
     const handleEditionsChange = async (value) => {
-        if (value < 1) {
-            value = 1;
-        }
-
-        if (value > 100) {
-            value = 100;
-        }
-
         const editions = value;
         setEditions(editions);
         const editionFee = editions * editionRate;
@@ -126,7 +110,7 @@ const TokenMinter = ({ navigate, metadata, setTab, setRefreshKey }) => {
             setRefreshKey((prevKey) => prevKey + 1);
         } catch (error) {
             console.error('Error minting:', error);
-            alert("Error minting, try again later.");
+            alert(error.response.data.message || 'Error minting');
             setDisableMint(false);
         }
     };
@@ -184,15 +168,15 @@ const TokenMinter = ({ navigate, metadata, setTab, setRefreshKey }) => {
                                     onChange={(e) => handleRoyaltyChange(e.target.value)}
                                     margin="normal"
                                     inputProps={{
-                                        min: 0, // Set the minimum value to 1
-                                        max: 25, // Set the maximum value to 100
+                                        min: 0,
+                                        max: 25,
                                     }}
                                     sx={{ width: '20ch' }}
                                 />
                             </TableCell>
                         </TableRow>
                         <TableRow>
-                            <TableCell>Editions (1-100):</TableCell>
+                            <TableCell>Editions (0-100):</TableCell>
                             <TableCell>
                                 <TextField
                                     type="number" // Set the input type to "number"
@@ -200,8 +184,8 @@ const TokenMinter = ({ navigate, metadata, setTab, setRefreshKey }) => {
                                     onChange={(e) => handleEditionsChange(e.target.value)}
                                     margin="normal"
                                     inputProps={{
-                                        min: 1, // Set the minimum value to 1
-                                        max: 100, // Set the maximum value to 100
+                                        min: 0,
+                                        max: 100,
                                     }}
                                     sx={{ width: '20ch' }}
                                 />

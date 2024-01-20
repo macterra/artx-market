@@ -162,24 +162,20 @@ const TokenView = ({ metadata, setTab, setRefreshKey }) => {
                                 }
                             </TableCell>
                         ) : (
-                            <TableCell>{metadata.token.editions}</TableCell>
+                            <TableCell>
+                                {metadata.token.editions}
+                                {ownAll &&
+                                    <Button variant="contained" color="primary" onClick={handleUnmint} style={{ marginLeft: '10px' }} disabled={disableUnmint}>
+                                        Unmint
+                                    </Button>
+                                }
+                            </TableCell>
                         )}
                     </TableRow>
                     {metadata.token.editions > 1 && owned > 0 &&
                         <TableRow>
                             <TableCell>Owned:</TableCell>
-                            <TableCell>
-                                {ownAll ?
-                                    <React.Fragment>
-                                        all
-                                        <Button variant="contained" color="primary" onClick={handleUnmint} style={{ marginLeft: '10px' }} disabled={disableUnmint}>
-                                            Unmint
-                                        </Button>
-                                    </React.Fragment>
-                                    :
-                                    `${owned} editions (${ranges})`
-                                }
-                            </TableCell>
+                            <TableCell>{ownAll ? `all` : `${owned} editions (${ranges})`}</TableCell>
                         </TableRow>
                     }
                     {nfts && nfts.length === 1 &&
