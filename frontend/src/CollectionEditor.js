@@ -70,6 +70,26 @@ const CollectionEditor = ({ navigate }) => {
             selectedCollection.collection.default.title = defaultTitle;
         }
 
+        const defaultEditions = parseInt(selectedCollection.collection.default.editions);
+
+        if (isNaN(defaultEditions) || defaultEditions < 0 || defaultEditions > 100) {
+            alert("Default editions must be in range 0-100");
+            return;
+        }
+        else {
+            selectedCollection.collection.default.editions = defaultEditions;
+        }
+
+        const defaultRoyalty = parseInt(selectedCollection.collection.default.royalty);
+
+        if (isNaN(defaultRoyalty) || defaultRoyalty < 0 || defaultRoyalty > 25) {
+            alert("Default royalty must be in range 0-25");
+            return;
+        }
+        else {
+            selectedCollection.collection.default.royalty = defaultRoyalty;
+        }
+
         setDisableSave(true);
 
         try {
@@ -246,7 +266,7 @@ const CollectionEditor = ({ navigate }) => {
                     <TextField
                         label="Default Royalty (0-25%)"
                         type="number"
-                        value={selectedCollection.collection.default.royalty || 0}
+                        value={selectedCollection.collection.default.royalty}
                         onChange={(e) =>
                             handleDefaultRoyaltyChange(e.target.value)
                         }
@@ -258,14 +278,14 @@ const CollectionEditor = ({ navigate }) => {
                         }}
                     />
                     <TextField
-                        label="Default Editions (1-100)"
+                        label="Default Editions (0-100)"
                         type="number"
-                        value={selectedCollection.collection.default.editions || 1}
+                        value={selectedCollection.collection.default.editions}
                         onChange={(e) => handleDefaultEditionsChange(e.target.value)}
                         fullWidth
                         margin="normal"
                         inputProps={{
-                            min: 1,
+                            min: 0,
                             max: 100,
                         }}
                     />
