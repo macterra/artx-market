@@ -4,12 +4,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useDropzone } from 'react-dropzone';
 import { Box, Button, Grid, Modal } from '@mui/material';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import ImageGrid from './ImageGrid';
 import AgentBadge from './AgentBadge';
 
 const CollectionView = () => {
     const { xid } = useParams();
     const navigate = useNavigate();
+    const isViewportThin = useMediaQuery('(max-width:600px)');
 
     const [collection, setCollection] = useState(null);
     const [images, setImages] = useState(null);
@@ -244,7 +246,7 @@ const CollectionView = () => {
                                 </Button>
                             </Grid>
                             <Grid item>
-                                {showMintAll &&
+                                {showMintAll && !isViewportThin &&
                                     <Button variant="contained" color="primary" disabled={disableMintAll} onClick={handleMintAllClick}>
                                         Mint All for {collection.costToMintAll} credits
                                     </Button>
