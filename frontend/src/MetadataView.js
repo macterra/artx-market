@@ -47,6 +47,7 @@ function findAdjacentXids(list, targetXid) {
 
 const MetadataView = ({ navigate, metadata }) => {
 
+    const [profile, setProfile] = useState(0);
     const [collectionId, setCollectionId] = useState(0);
     const [collectionName, setCollectionName] = useState(0);
     const [firstXid, setFirstXid] = useState(null);
@@ -62,6 +63,10 @@ const MetadataView = ({ navigate, metadata }) => {
                     setIsDeleted(true);
                 }
                 else {
+                    const getProfile = await axios.get(`/api/v1/profile/${metadata.asset.owner}`);
+                    const profile = getProfile.data;
+                    setProfile(profile);
+
                     const getCollection = await axios.get(`/api/v1/collections/${metadata.asset.collection}`);
                     const collectionData = getCollection.data;
                     const { firstXid, prevXid, nextXid, lastXid } = findAdjacentXids(collectionData.collection.assets, metadata.xid);
@@ -91,7 +96,12 @@ const MetadataView = ({ navigate, metadata }) => {
                 <TableBody>
                     <TableRow>
                         <TableCell>Title:</TableCell>
-                        <TableCell>{metadata.asset.title}</TableCell>
+                        <TableCell>
+                            <span>{metadata.asset.title}</span>
+                            {profile?.deposit &&
+                                <a href={`lightning:${profile.deposit}`} style={{ margin: '8px', textDecoration: 'none' }} title={`zap ${profile.name} some sats!`}>⚡</a>
+                            }
+                        </TableCell>
                     </TableRow>
                     {!isDeleted &&
                         <TableRow>
