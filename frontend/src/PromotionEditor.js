@@ -80,7 +80,6 @@ const PromotionEditor = ({ metadata, xid }) => {
 
         try {
             const response = await axios.post('/api/v1/promote', { message: theMessage, xid: xid || metadata.xid });
-            //alert(response.data.message || "Announcement sent! Check https://twitter.com/artxmarket");
             setDialogOpen(true);
         }
         catch (error) {
@@ -118,7 +117,7 @@ const PromotionEditor = ({ metadata, xid }) => {
                 <DialogContent>
                     <DialogContentText>
                         <p>Announcement sent!
-                            Check out <a href="https://twitter.com/artxmarket" target="_blank" rel="noopener noreferrer">@artxmarket</a> on twitter 
+                            Check out <a href="https://twitter.com/artxmarket" target="_blank" rel="noopener noreferrer">@artxmarket</a> on twitter
                             and <a href="https://primal.net/p/npub1artx0hgv2ud60xfepgujk6gd6765j86gg6gt4y32k0chje0myyushk76za" target="_blank" rel="noopener noreferrer">artx_machina</a> on nostr.
                         </p>
                     </DialogContentText>
