@@ -70,10 +70,13 @@ const TokenTrader = ({ metadata, xid, setRefreshKey }) => {
 
     function TradeTableRow({ nft }) {
         const [disableSave, setDisableSave] = useState(true);
+        const [satPrice, setSatPrice] = useState(0);
         const [usdPrice, setUsdPrice] = useState(0);
         const [listed, setListed] = useState(false);
 
         const updatePrice = (price) => {
+            setSatPrice(price);
+
             if (price > 0) {
                 const usdPrice = price * exchangeRate / 100000000;
                 setUsdPrice(`$${usdPrice.toFixed(2)}`);
@@ -97,12 +100,20 @@ const TokenTrader = ({ metadata, xid, setRefreshKey }) => {
                         <TableCell>
                             <Box display="flex" alignItems="center">
                                 <TextField
-                                    defaultValue={nft.nft.price}
+                                    value={satPrice}
                                     type="number"
                                     onChange={(event) => {
-                                        nft.nft.newPrice = parseInt(event.target.value, 10) || 0;
-                                        setDisableSave(nft.nft.price === nft.nft.newPrice);
-                                        updatePrice(nft.nft.newPrice);
+                                        const price = parseInt(event.target.value, 10);
+
+                                        if (isNaN(price)) {
+                                            setSatPrice(price);
+                                            setDisableSave(true);
+                                        }
+                                        else {
+                                            nft.nft.newPrice = price;
+                                            setDisableSave(nft.nft.price === nft.nft.newPrice);
+                                            updatePrice(nft.nft.newPrice);
+                                        }
                                     }}
                                     inputProps={{ min: 0 }}
                                     sx={{ width: '14ch', marginRight: 1 }}
