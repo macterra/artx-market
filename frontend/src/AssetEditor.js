@@ -57,7 +57,7 @@ const AssetEditor = ({ metadata, setTab, setRefreshKey }) => {
             <TextField
                 label="Title"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e) => setTitle(e.target.value.trim())}
                 fullWidth
                 margin="normal"
                 inputProps={{ maxLength: 40 }}

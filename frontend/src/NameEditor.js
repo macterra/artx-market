@@ -43,6 +43,9 @@ const NameEditor = ({ profile, setRefreshProfile }) => {
             console.error('Error updating profile:', error);
             alert("Could not save");
         }
+
+        setName(newName);
+        setTagline(newTagline);
     };
 
     return (
