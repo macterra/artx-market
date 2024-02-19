@@ -82,11 +82,12 @@ const TokenMinter = ({ navigate, metadata, setTab, setRefreshKey }) => {
     }
 
     const handleRoyaltyChange = async (value) => {
-        setRoyalty(value);
+        const royalty = parseInt(value, 10);
+        setRoyalty(royalty);
     };
 
     const handleEditionsChange = async (value) => {
-        const editions = value;
+        const editions = parseInt(value, 10);
         setEditions(editions);
         const editionFee = editions * editionRate;
         setEditionFee(editionFee);
