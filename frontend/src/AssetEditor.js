@@ -30,9 +30,11 @@ const AssetEditor = ({ metadata, setTab, setRefreshKey }) => {
 
     const handleSaveClick = async () => {
         try {
-            await axios.patch(`/api/v1/asset/${metadata.xid}`, { title: title, collection: selectedCollection });
-            metadata.asset.title = title;
+            const newTitle = title.trim();
+            await axios.patch(`/api/v1/asset/${metadata.xid}`, { title: newTitle, collection: selectedCollection });
+            metadata.asset.title = newTitle;
             metadata.asset.collection = selectedCollection;
+            setTitle(newTitle);
             setTab("meta");
         } catch (error) {
             console.error('Error updating metadata:', error);
@@ -57,7 +59,7 @@ const AssetEditor = ({ metadata, setTab, setRefreshKey }) => {
             <TextField
                 label="Title"
                 value={title}
-                onChange={(e) => setTitle(e.target.value.trim())}
+                onChange={(e) => setTitle(e.target.value)}
                 fullWidth
                 margin="normal"
                 inputProps={{ maxLength: 40 }}
